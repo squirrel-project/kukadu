@@ -1,0 +1,44 @@
+\hypertarget{structtFriHeader}{\section{t\-Fri\-Header \-Struct \-Reference}
+\label{structtFriHeader}\index{t\-Fri\-Header@{t\-Fri\-Header}}
+}
+
+
+{\ttfamily \#include $<$fri\-Comm.\-h$>$}
+
+\subsection*{\-Public \-Attributes}
+\begin{DoxyCompactItemize}
+\item 
+fri\-\_\-uint16\-\_\-t \hyperlink{structtFriHeader_a37b742fa9c012d740ffdbd54fa49e094}{send\-Seq\-Count}
+\item 
+fri\-\_\-uint16\-\_\-t \hyperlink{structtFriHeader_acc7e2afb407587e0f02776cdf53d8ab7}{refl\-Seq\-Count}
+\item 
+fri\-\_\-uint16\-\_\-t \hyperlink{structtFriHeader_acb8028f4bd6d620707e8f8cda3ebe3f9}{packet\-Size}
+\item 
+fri\-\_\-uint16\-\_\-t \hyperlink{structtFriHeader_a153933e518d1ce6c8ae70cde7a936938}{datagram\-Id}
+\end{DoxyCompactItemize}
+
+
+\subsection{\-Detailed \-Description}
+header data used in every packet in both directions 
+
+\subsection{\-Member \-Data \-Documentation}
+\hypertarget{structtFriHeader_a153933e518d1ce6c8ae70cde7a936938}{\index{t\-Fri\-Header@{t\-Fri\-Header}!datagram\-Id@{datagram\-Id}}
+\index{datagram\-Id@{datagram\-Id}!tFriHeader@{t\-Fri\-Header}}
+\subsubsection[{datagram\-Id}]{\setlength{\rightskip}{0pt plus 5cm}fri\-\_\-uint16\-\_\-t {\bf t\-Fri\-Header\-::datagram\-Id}}}\label{structtFriHeader_a153933e518d1ce6c8ae70cde7a936938}
+unique datagram id to detect version problems etc. \-Remote side\-: \-F\-R\-I\-\_\-\-D\-A\-T\-A\-G\-R\-A\-M\-\_\-\-I\-D\-\_\-\-C\-M\-D \hypertarget{structtFriHeader_acb8028f4bd6d620707e8f8cda3ebe3f9}{\index{t\-Fri\-Header@{t\-Fri\-Header}!packet\-Size@{packet\-Size}}
+\index{packet\-Size@{packet\-Size}!tFriHeader@{t\-Fri\-Header}}
+\subsubsection[{packet\-Size}]{\setlength{\rightskip}{0pt plus 5cm}fri\-\_\-uint16\-\_\-t {\bf t\-Fri\-Header\-::packet\-Size}}}\label{structtFriHeader_acb8028f4bd6d620707e8f8cda3ebe3f9}
+overall packet size \-Remote side\-: \-F\-R\-I\-\_\-\-C\-M\-D\-\_\-\-D\-A\-T\-A\-\_\-\-S\-I\-Z\-E \hypertarget{structtFriHeader_acc7e2afb407587e0f02776cdf53d8ab7}{\index{t\-Fri\-Header@{t\-Fri\-Header}!refl\-Seq\-Count@{refl\-Seq\-Count}}
+\index{refl\-Seq\-Count@{refl\-Seq\-Count}!tFriHeader@{t\-Fri\-Header}}
+\subsubsection[{refl\-Seq\-Count}]{\setlength{\rightskip}{0pt plus 5cm}fri\-\_\-uint16\-\_\-t {\bf t\-Fri\-Header\-::refl\-Seq\-Count}}}\label{structtFriHeader_acc7e2afb407587e0f02776cdf53d8ab7}
+reflected sequence counter (mirrored from last received packet) \-Used for detecting packet loss of \-U\-D\-P transfer and latency statistics \begin{DoxySeeAlso}{\-See also}
+\hyperlink{structtFriIntfStatistics}{t\-Fri\-Intf\-Statistics} remote side\-: put s.\-th. like cmd.\-head.\-refl\-Seq\-Count=msr.\-head.\-send\-Seq\-Count; 
+\end{DoxySeeAlso}
+\hypertarget{structtFriHeader_a37b742fa9c012d740ffdbd54fa49e094}{\index{t\-Fri\-Header@{t\-Fri\-Header}!send\-Seq\-Count@{send\-Seq\-Count}}
+\index{send\-Seq\-Count@{send\-Seq\-Count}!tFriHeader@{t\-Fri\-Header}}
+\subsubsection[{send\-Seq\-Count}]{\setlength{\rightskip}{0pt plus 5cm}fri\-\_\-uint16\-\_\-t {\bf t\-Fri\-Header\-::send\-Seq\-Count}}}\label{structtFriHeader_a37b742fa9c012d740ffdbd54fa49e094}
+sequence counter (increasing with every packet) of the sender \-Used for detecting packet loss of \-U\-D\-P \-Transfer, put in your code s.\-th. like fri\-\_\-uint16\-\_\-t seq\-Count; seq\-Count++; cmd.\-head.\-send\-Seq\-Count=seq\-Count; 
+
+\-The documentation for this struct was generated from the following file\-:\begin{DoxyCompactItemize}
+\item 
+/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/robot/robot\-Driver/src/kuka/\hyperlink{friComm_8h}{fri\-Comm.\-h}\end{DoxyCompactItemize}

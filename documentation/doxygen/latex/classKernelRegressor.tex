@@ -1,0 +1,66 @@
+\hypertarget{classKernelRegressor}{\section{\-Kernel\-Regressor \-Class \-Reference}
+\label{classKernelRegressor}\index{\-Kernel\-Regressor@{\-Kernel\-Regressor}}
+}
+
+
+\-Provides arbitrary interface for kernel methods.  
+
+
+
+
+{\ttfamily \#include $<$\-Kernel\-Regressor.\-h$>$}
+
+
+
+\-Inheritance diagram for \-Kernel\-Regressor\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classKernelRegressor__inherit__graph}
+\end{center}
+\end{figure}
+\subsection*{\-Public \-Member \-Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classKernelRegressor_a4dc472698406ed91148f7245d4c41687}{\-Kernel\-Regressor} ()
+\begin{DoxyCompactList}\small\item\em constructor \end{DoxyCompactList}\item 
+virtual vec \hyperlink{classKernelRegressor_a65529e1d764f9abf0498c93a35ac3f16}{fit\-At\-Position} (vec pos)=0
+\begin{DoxyCompactList}\small\item\em performs the kernel method for predicting the functin value at a given position \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{\-Detailed \-Description}
+\-This class provides the interface for kernel machine learning methods such as \-Gaussian process regression or locally weighted regression 
+
+\subsection{\-Constructor \& \-Destructor \-Documentation}
+\hypertarget{classKernelRegressor_a4dc472698406ed91148f7245d4c41687}{\index{\-Kernel\-Regressor@{\-Kernel\-Regressor}!\-Kernel\-Regressor@{\-Kernel\-Regressor}}
+\index{\-Kernel\-Regressor@{\-Kernel\-Regressor}!KernelRegressor@{\-Kernel\-Regressor}}
+\subsubsection[{\-Kernel\-Regressor}]{\setlength{\rightskip}{0pt plus 5cm}{\bf \-Kernel\-Regressor\-::\-Kernel\-Regressor} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classKernelRegressor_a4dc472698406ed91148f7245d4c41687}
+
+
+\subsection{\-Member \-Function \-Documentation}
+\hypertarget{classKernelRegressor_a65529e1d764f9abf0498c93a35ac3f16}{\index{\-Kernel\-Regressor@{\-Kernel\-Regressor}!fit\-At\-Position@{fit\-At\-Position}}
+\index{fit\-At\-Position@{fit\-At\-Position}!KernelRegressor@{\-Kernel\-Regressor}}
+\subsubsection[{fit\-At\-Position}]{\setlength{\rightskip}{0pt plus 5cm}virtual vec {\bf \-Kernel\-Regressor\-::fit\-At\-Position} (
+\begin{DoxyParamCaption}
+\item[{vec}]{pos}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}pure virtual\mbox{]}}}}\label{classKernelRegressor_a65529e1d764f9abf0498c93a35ac3f16}
+
+\begin{DoxyParams}{\-Parameters}
+{\em pos} & vector defining the required position \\
+\hline
+\end{DoxyParams}
+
+
+\-Implemented in \hyperlink{classLWRRegressor_aea55827ce2c63078414469fe21c16f23}{\-L\-W\-R\-Regressor}, and \hyperlink{classGaussianProcessRegressor_a9c4ad88ae6cbbc457cbfa17c64e59d1b}{\-Gaussian\-Process\-Regressor}.
+
+
+
+\-The documentation for this class was generated from the following files\-:\begin{DoxyCompactItemize}
+\item 
+/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/learning/\hyperlink{KernelRegressor_8h}{\-Kernel\-Regressor.\-h}\item 
+/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/learning/\hyperlink{KernelRegressor_8cpp}{\-Kernel\-Regressor.\-cpp}\end{DoxyCompactItemize}

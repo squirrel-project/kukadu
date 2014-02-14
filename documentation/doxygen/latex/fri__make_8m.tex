@@ -1,0 +1,59 @@
+\hypertarget{fri__make_8m}{\section{/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/robot/robot\-Driver/matlab/fri\-\_\-make.m \-File \-Reference}
+\label{fri__make_8m}\index{/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/robot/robot\-Driver/matlab/fri\-\_\-make.\-m@{/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/robot/robot\-Driver/matlab/fri\-\_\-make.\-m}}
+}
+\subsection*{\-Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{fri__make_8m_adf5551236b498d2ae6f450cd63e33404}{addpath} (\hyperlink{fri__make_8m_a919ec23156d81a01689d30e1f3ecf261}{path})
+\item 
+\hyperlink{fri__make_8m_ae96b9d6794f0d384fdb9394045c13ead}{addpath} (\hyperlink{fri__make_8m_a67bde10fb12fe881d5f930c1d870a1cc}{binaries\-Path})
+\end{DoxyCompactItemize}
+\subsection*{\-Variables}
+\begin{DoxyCompactItemize}
+\item 
+function fri\-\_\-make()\%\-F\-R\-I\-\_\-\-M\-A\-K\-E \*
+\-Compile \-M\-E\-X files of the \-F\-R\-I \*
+library.\%\-F\-R\-I\-\_\-\-M\-A\-K\-E() compiles \*
+all \-M\-E\-X files of the \-F\-R\-I \*
+librairy.\%\-Author else \-Windows \hyperlink{fri__make_8m_afb1e834bfadccc1994507cd54b092299}{o} = 'obj'
+\item 
+end \hyperlink{fri__make_8m_a9e0992eae3950adccaf4847fbff4231d}{command} = \mbox{[}'mex -\/v -\/\-I../src/ -\/outdir ''../bin/'' fri\-\_\-print\-Version.\-cpp ../bin/fri\-Remote.' \hyperlink{fri__make_8m_afb1e834bfadccc1994507cd54b092299}{o} ' ../bin/fri\-Udp.' \hyperlink{fri__make_8m_afb1e834bfadccc1994507cd54b092299}{o} ' ../bin/fri\-Main.' \hyperlink{fri__make_8m_afb1e834bfadccc1994507cd54b092299}{o} ' ../bin/fri\-Misc.' \hyperlink{fri__make_8m_afb1e834bfadccc1994507cd54b092299}{o}\mbox{]}
+\item 
+\-Add the directory containing \*
+the source and compiled files \*
+to \-Matlab s \hyperlink{fri__make_8m_a919ec23156d81a01689d30e1f3ecf261}{path} \mbox{[}\hyperlink{fri__make_8m_a919ec23156d81a01689d30e1f3ecf261}{path} trash ext\mbox{]} = fileparts(mfilename('fullpath'))
+\item 
+\hyperlink{fri__make_8m_a67bde10fb12fe881d5f930c1d870a1cc}{binaries\-Path} = \mbox{[}\hyperlink{fri__make_8m_a919ec23156d81a01689d30e1f3ecf261}{path} filesep '..' filesep 'bin'\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\subsection{\-Function \-Documentation}
+\hypertarget{fri__make_8m_adf5551236b498d2ae6f450cd63e33404}{\index{fri\-\_\-make.\-m@{fri\-\_\-make.\-m}!addpath@{addpath}}
+\index{addpath@{addpath}!fri_make.m@{fri\-\_\-make.\-m}}
+\subsubsection[{addpath}]{\setlength{\rightskip}{0pt plus 5cm}{\bf addpath} (
+\begin{DoxyParamCaption}
+\item[{{\bf path}}]{}
+\end{DoxyParamCaption}
+)}}\label{fri__make_8m_adf5551236b498d2ae6f450cd63e33404}
+\hypertarget{fri__make_8m_ae96b9d6794f0d384fdb9394045c13ead}{\index{fri\-\_\-make.\-m@{fri\-\_\-make.\-m}!addpath@{addpath}}
+\index{addpath@{addpath}!fri_make.m@{fri\-\_\-make.\-m}}
+\subsubsection[{addpath}]{\setlength{\rightskip}{0pt plus 5cm}{\bf addpath} (
+\begin{DoxyParamCaption}
+\item[{{\bf binaries\-Path}}]{}
+\end{DoxyParamCaption}
+)}}\label{fri__make_8m_ae96b9d6794f0d384fdb9394045c13ead}
+
+
+\subsection{\-Variable \-Documentation}
+\hypertarget{fri__make_8m_a67bde10fb12fe881d5f930c1d870a1cc}{\index{fri\-\_\-make.\-m@{fri\-\_\-make.\-m}!binaries\-Path@{binaries\-Path}}
+\index{binaries\-Path@{binaries\-Path}!fri_make.m@{fri\-\_\-make.\-m}}
+\subsubsection[{binaries\-Path}]{\setlength{\rightskip}{0pt plus 5cm}{\bf binaries\-Path} = \mbox{[}{\bf path} filesep '..' filesep 'bin'\mbox{]}}}\label{fri__make_8m_a67bde10fb12fe881d5f930c1d870a1cc}
+\hypertarget{fri__make_8m_a9e0992eae3950adccaf4847fbff4231d}{\index{fri\-\_\-make.\-m@{fri\-\_\-make.\-m}!command@{command}}
+\index{command@{command}!fri_make.m@{fri\-\_\-make.\-m}}
+\subsubsection[{command}]{\setlength{\rightskip}{0pt plus 5cm}{\bf command} = \mbox{[}'mex -\/v -\/\-I../src/ -\/outdir ''../bin/'' fri\-\_\-print\-Version.\-cpp ../bin/fri\-Remote.' {\bf o} ' ../bin/fri\-Udp.' {\bf o} ' ../bin/fri\-Main.' {\bf o} ' ../bin/fri\-Misc.' {\bf o}\mbox{]}}}\label{fri__make_8m_a9e0992eae3950adccaf4847fbff4231d}
+\hypertarget{fri__make_8m_afb1e834bfadccc1994507cd54b092299}{\index{fri\-\_\-make.\-m@{fri\-\_\-make.\-m}!o@{o}}
+\index{o@{o}!fri_make.m@{fri\-\_\-make.\-m}}
+\subsubsection[{o}]{\setlength{\rightskip}{0pt plus 5cm}function fri\-\_\-make () \%\-F\-R\-I\-\_\-\-M\-A\-K\-E \-Compile \-M\-E\-X files of the \-F\-R\-I library. \% \-F\-R\-I\-\_\-\-M\-A\-K\-E() compiles all \-M\-E\-X files of the \-F\-R\-I librairy. \% \-Author else \-Windows {\bf o} = 'obj'}}\label{fri__make_8m_afb1e834bfadccc1994507cd54b092299}
+\hypertarget{fri__make_8m_a919ec23156d81a01689d30e1f3ecf261}{\index{fri\-\_\-make.\-m@{fri\-\_\-make.\-m}!path@{path}}
+\index{path@{path}!fri_make.m@{fri\-\_\-make.\-m}}
+\subsubsection[{path}]{\setlength{\rightskip}{0pt plus 5cm}\-Add the directory containing the source and compiled files to \-Matlab s {\bf path}\mbox{[}{\bf path} trash ext\mbox{]} = fileparts(mfilename('fullpath'))}}\label{fri__make_8m_a919ec23156d81a01689d30e1f3ecf261}

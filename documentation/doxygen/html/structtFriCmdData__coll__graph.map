@@ -1,0 +1,5 @@
+<map id="G" name="G">
+<area shape="rect" id="node2" href="$structtFriKrlData.html" title="{tFriKrlData\n|+ realData\l+ intData\l+ boolData\l+ fill\l|}" alt="" coords="5,49,91,186"/>
+<area shape="rect" id="node4" href="$structtFriHeader.html" title="{tFriHeader\n|+ sendSeqCount\l+ reflSeqCount\l+ packetSize\l+ datagramId\l|}" alt="" coords="115,49,235,186"/>
+<area shape="rect" id="node6" href="$structtFriRobotCommand.html" title="{tFriRobotCommand\n|+ cmdFlags\l+ jntPos\l+ cartPos\l+ addJntTrq\l+ addTcpFT\l+ jntStiffness\l+ jntDamping\l+ cartStiffness\l+ cartDamping\l|}" alt="" coords="259,5,395,229"/>
+</map>

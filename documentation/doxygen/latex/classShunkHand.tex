@@ -1,0 +1,97 @@
+\hypertarget{classShunkHand}{\section{\-Shunk\-Hand \-Class \-Reference}
+\label{classShunkHand}\index{\-Shunk\-Hand@{\-Shunk\-Hand}}
+}
+
+
+{\ttfamily \#include $<$\-Schunk\-Hand.\-h$>$}
+
+\-Inheritance diagram for \-Shunk\-Hand\-:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{classShunkHand}
+\end{center}
+\end{figure}
+\subsection*{\-Public \-Member \-Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classShunkHand_a70c10a55421f76ecfa074069f10001ee}{\-Shunk\-Hand} (char $\ast$usb\-Device)
+\item 
+void \hyperlink{classShunkHand_a2a280e28dddb3467721f6ad2c0db7f30}{connect\-Hand} ()
+\begin{DoxyCompactList}\small\item\em \-Initializes the connection to the hand. \end{DoxyCompactList}\item 
+void \hyperlink{classShunkHand_a45dcb80e0645a46534398dbf7d8956f2}{close\-Hand} (double percentage, double velocity)
+\begin{DoxyCompactList}\small\item\em \-Opens and closes the hand according to the provided closing percentage and velocity. \end{DoxyCompactList}\item 
+void \hyperlink{classShunkHand_a11a34a1d7d19ab608c04184f7fdd1fbc}{disconnect\-Hand} ()
+\begin{DoxyCompactList}\small\item\em \-Closes connection between host computer and hand. \end{DoxyCompactList}\item 
+void \hyperlink{classShunkHand_a7f6fc5b63c54e07d11dda1de1f503050}{safely\-Destroy} ()
+\begin{DoxyCompactList}\small\item\em \-Method is called whenever destroy event occurs and ensures safe and clean termination of the programm (e.\-g. stops robot) \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{\-Constructor \& \-Destructor \-Documentation}
+\hypertarget{classShunkHand_a70c10a55421f76ecfa074069f10001ee}{\index{\-Shunk\-Hand@{\-Shunk\-Hand}!\-Shunk\-Hand@{\-Shunk\-Hand}}
+\index{\-Shunk\-Hand@{\-Shunk\-Hand}!ShunkHand@{\-Shunk\-Hand}}
+\subsubsection[{\-Shunk\-Hand}]{\setlength{\rightskip}{0pt plus 5cm}{\bf \-Shunk\-Hand\-::\-Shunk\-Hand} (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{usb\-Device}
+\end{DoxyParamCaption}
+)}}\label{classShunkHand_a70c10a55421f76ecfa074069f10001ee}
+
+
+\subsection{\-Member \-Function \-Documentation}
+\hypertarget{classShunkHand_a45dcb80e0645a46534398dbf7d8956f2}{\index{\-Shunk\-Hand@{\-Shunk\-Hand}!close\-Hand@{close\-Hand}}
+\index{close\-Hand@{close\-Hand}!ShunkHand@{\-Shunk\-Hand}}
+\subsubsection[{close\-Hand}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-Shunk\-Hand\-::close\-Hand} (
+\begin{DoxyParamCaption}
+\item[{double}]{percentage, }
+\item[{double}]{velocity}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}\label{classShunkHand_a45dcb80e0645a46534398dbf7d8956f2}
+
+\begin{DoxyParams}{\-Parameters}
+{\em percentage} & closing percentage (0.\-0 -\/ hand fully open, 1.\-0 hand fully closed) \\
+\hline
+{\em velocity} & closing velocity in range between 0 and 1 \\
+\hline
+\end{DoxyParams}
+
+
+\-Implements \hyperlink{classGenericHand_a88be8d6c42cfd7b48da1df7da68d2aca}{\-Generic\-Hand}.
+
+\hypertarget{classShunkHand_a2a280e28dddb3467721f6ad2c0db7f30}{\index{\-Shunk\-Hand@{\-Shunk\-Hand}!connect\-Hand@{connect\-Hand}}
+\index{connect\-Hand@{connect\-Hand}!ShunkHand@{\-Shunk\-Hand}}
+\subsubsection[{connect\-Hand}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-Shunk\-Hand\-::connect\-Hand} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}\label{classShunkHand_a2a280e28dddb3467721f6ad2c0db7f30}
+
+
+\-Implements \hyperlink{classGenericHand_ab8e8610f2ceed53ab3112ceef60e1cd0}{\-Generic\-Hand}.
+
+\hypertarget{classShunkHand_a11a34a1d7d19ab608c04184f7fdd1fbc}{\index{\-Shunk\-Hand@{\-Shunk\-Hand}!disconnect\-Hand@{disconnect\-Hand}}
+\index{disconnect\-Hand@{disconnect\-Hand}!ShunkHand@{\-Shunk\-Hand}}
+\subsubsection[{disconnect\-Hand}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-Shunk\-Hand\-::disconnect\-Hand} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}\label{classShunkHand_a11a34a1d7d19ab608c04184f7fdd1fbc}
+
+
+\-Implements \hyperlink{classGenericHand_acb5b9fff34fc22b9cebbc7d927ec4aa6}{\-Generic\-Hand}.
+
+\hypertarget{classShunkHand_a7f6fc5b63c54e07d11dda1de1f503050}{\index{\-Shunk\-Hand@{\-Shunk\-Hand}!safely\-Destroy@{safely\-Destroy}}
+\index{safely\-Destroy@{safely\-Destroy}!ShunkHand@{\-Shunk\-Hand}}
+\subsubsection[{safely\-Destroy}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-Shunk\-Hand\-::safely\-Destroy} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}\label{classShunkHand_a7f6fc5b63c54e07d11dda1de1f503050}
+
+
+\-Implements \hyperlink{classDestroyableObject_a728d19d81eca540efd68650867f197be}{\-Destroyable\-Object}.
+
+
+
+\-The documentation for this class was generated from the following files\-:\begin{DoxyCompactItemize}
+\item 
+/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/robot/mounted/\hyperlink{SchunkHand_8h}{\-Schunk\-Hand.\-h}\item 
+/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/robot/mounted/\hyperlink{SchunkHand_8cpp}{\-Schunk\-Hand.\-cpp}\end{DoxyCompactItemize}

@@ -1,0 +1,279 @@
+\hypertarget{classcSDHOptions}{\section{c\-S\-D\-H\-Options \-Class \-Reference}
+\label{classcSDHOptions}\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}}
+}
+
+
+class for command line option parsing holding option parsing results  
+
+
+
+
+{\ttfamily \#include $<$sdhoptions.\-h$>$}
+
+\subsection*{\-Public \-Member \-Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classcSDHOptions_a855dc504f792a70672dc6e6ce284beac}{c\-S\-D\-H\-Options} (char const $\ast$option\-\_\-selection=\hyperlink{sdhoptions_8h_a90372ef85e86e456fa18741a81f9b81d}{\-S\-D\-H\-U\-S\-A\-G\-E\-\_\-\-D\-E\-F\-A\-U\-L\-T})
+\item 
+\hyperlink{classcSDHOptions_af6ed7e84c211b5094b2d9c0d18f8a9f7}{$\sim$c\-S\-D\-H\-Options} ()
+\begin{DoxyCompactList}\small\item\em destructor, clean up \end{DoxyCompactList}\item 
+int \hyperlink{classcSDHOptions_a5424fed1754caa395e0db9638c92323a}{\-Parse} (int argc, char $\ast$$\ast$argv, char const $\ast$helptext, char const $\ast$progname, char const $\ast$version, char const $\ast$libname, char const $\ast$librelease)
+\item 
+void \hyperlink{classcSDHOptions_a01770c064f4dfe639ad443e8e44c7fb7}{\-Open\-Communication} (\-N\-S\-\_\-\-S\-D\-H c\-S\-D\-H \&hand)
+\end{DoxyCompactItemize}
+\subsection*{\-Public \-Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\-::string \hyperlink{classcSDHOptions_a85c5365609e4b34511b81d4c06e6c65c}{usage}
+\item 
+int \hyperlink{classcSDHOptions_a3cf6556a2758bf431b4e93e5c2adefb7}{debug\-\_\-level}
+\item 
+std\-::ostream $\ast$ \hyperlink{classcSDHOptions_a71ac0c016aeb7cc34c521d06fa905198}{debuglog}
+\item 
+int \hyperlink{classcSDHOptions_a565bf00d92a0aca8729c3bd1e0f92be2}{sdhport}
+\item 
+char \hyperlink{classcSDHOptions_aa33357676ec18be7dbd162e7dac93406}{sdh\-\_\-rs\-\_\-device} \mbox{[}\hyperlink{classcSDHOptions_a9caeb9858b718ed48145a833be2c9178}{\-M\-A\-X\-\_\-\-D\-E\-V\-\_\-\-L\-E\-N\-G\-T\-H}\mbox{]}
+\item 
+double \hyperlink{classcSDHOptions_a68c00cb00f9ee6a70974ce9c27e4f3d1}{timeout}
+\item 
+unsigned long \hyperlink{classcSDHOptions_a38c8ae82f4fa578b04d1a9b9fffbe063}{rs232\-\_\-baudrate}
+\item 
+bool \hyperlink{classcSDHOptions_afa459c797bb8fbb2ad6f45a39261e3d8}{use\-\_\-can\-\_\-esd}
+\item 
+int \hyperlink{classcSDHOptions_adefa363d3e2c61e37676037a09faaf06}{net}
+\item 
+bool \hyperlink{classcSDHOptions_ab0b03472ff934016086feaed1cf8d5ea}{use\-\_\-can\-\_\-peak}
+\item 
+char \hyperlink{classcSDHOptions_acd04aeab5f6ab8e962b739de10bf4d08}{sdh\-\_\-canpeak\-\_\-device} \mbox{[}\hyperlink{classcSDHOptions_a9caeb9858b718ed48145a833be2c9178}{\-M\-A\-X\-\_\-\-D\-E\-V\-\_\-\-L\-E\-N\-G\-T\-H}\mbox{]}
+\item 
+unsigned long \hyperlink{classcSDHOptions_a2376bfefe00e6f9832c16a979b99bf92}{can\-\_\-baudrate}
+\item 
+unsigned int \hyperlink{classcSDHOptions_a301e3d6b905c010e82a45420f5cd5634}{id\-\_\-read}
+\item 
+unsigned int \hyperlink{classcSDHOptions_a3ca7757c9dbb11c190987992582132ab}{id\-\_\-write}
+\item 
+bool \hyperlink{classcSDHOptions_a484031d2facdcdf2fc3ec9b26df45819}{use\-\_\-radians}
+\item 
+bool \hyperlink{classcSDHOptions_a6724ffca7223e593e24d74c90a238dab}{use\-\_\-fahrenheit}
+\item 
+double \hyperlink{classcSDHOptions_a62f70e83e50968e9cdee7b55cff12806}{period}
+\item 
+int \hyperlink{classcSDHOptions_a0de19c3e4d29f927c9bd8a4071a8e13d}{dsaport}
+\item 
+char \hyperlink{classcSDHOptions_a8d9d3490f0a39e8982cf9ae4c77f2147}{dsa\-\_\-rs\-\_\-device} \mbox{[}\hyperlink{classcSDHOptions_a9caeb9858b718ed48145a833be2c9178}{\-M\-A\-X\-\_\-\-D\-E\-V\-\_\-\-L\-E\-N\-G\-T\-H}\mbox{]}
+\item 
+bool \hyperlink{classcSDHOptions_ab285c659c8f86f4dd2c1582f9a5e3608}{do\-\_\-\-R\-L\-E}
+\item 
+int \hyperlink{classcSDHOptions_a7bdd78ad26a17faeceec15e2431a1c3e}{framerate}
+\item 
+bool \hyperlink{classcSDHOptions_a9c8cd3c89d1175f2a75afbbb119a7f9b}{fullframe}
+\item 
+bool \hyperlink{classcSDHOptions_a9ea9c47ffd54eb7a557e672cc76b23d3}{sensorinfo}
+\item 
+bool \hyperlink{classcSDHOptions_a3e1089848fb7702f5e94dd673601f463}{controllerinfo}
+\item 
+int \hyperlink{classcSDHOptions_a3dcaa4689b89c3f480cad4744a72c0f8}{matrixinfo} \mbox{[}6\mbox{]}
+\item 
+double \hyperlink{classcSDHOptions_addfa8552244a84c62fe26ef5c261a19d}{sensitivity} \mbox{[}6\mbox{]}
+\item 
+unsigned int \hyperlink{classcSDHOptions_abbd91d2dce6cda8d2e4d5103ce44c3c0}{threshold} \mbox{[}6\mbox{]}
+\item 
+bool \hyperlink{classcSDHOptions_afedb88e59b2ecf58b80c7b0b861ee189}{reset\-\_\-to\-\_\-default}
+\item 
+bool \hyperlink{classcSDHOptions_aca724e741552d1a6c415abf6a0bf2ecf}{persistent}
+\item 
+bool \hyperlink{classcSDHOptions_a73021f34d61c57f5991490b8dda9b557}{showdsasettings}
+\item 
+bool \hyperlink{classcSDHOptions_a57533df7afeb116231686a59bc86a5cd}{use\-\_\-tcp}
+\item 
+std\-::string \hyperlink{classcSDHOptions_a247c378f5874482d97343fc6c0e577be}{tcp\-\_\-adr}
+\item 
+int \hyperlink{classcSDHOptions_a8c7190b3d89ec6ff659d171e59fe5f45}{tcp\-\_\-port}
+\end{DoxyCompactItemize}
+\subsection*{\-Static \-Public \-Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static int const \hyperlink{classcSDHOptions_a9caeb9858b718ed48145a833be2c9178}{\-M\-A\-X\-\_\-\-D\-E\-V\-\_\-\-L\-E\-N\-G\-T\-H} = 32
+\end{DoxyCompactItemize}
+
+
+\subsection{\-Constructor \& \-Destructor \-Documentation}
+\hypertarget{classcSDHOptions_a855dc504f792a70672dc6e6ce284beac}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}}
+\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{c\-S\-D\-H\-Options}]{\setlength{\rightskip}{0pt plus 5cm}{\bf c\-S\-D\-H\-Options\-::c\-S\-D\-H\-Options} (
+\begin{DoxyParamCaption}
+\item[{char const $\ast$}]{option\-\_\-selection = {\ttfamily {\bf \-S\-D\-H\-U\-S\-A\-G\-E\-\_\-\-D\-E\-F\-A\-U\-L\-T}}}
+\end{DoxyParamCaption}
+)}}\label{classcSDHOptions_a855dc504f792a70672dc6e6ce284beac}
+constructor\-: init members to their default values
+
+
+\begin{DoxyParams}{\-Parameters}
+{\em option\-\_\-selection} & -\/ string that names the options to include in helptext for online help. \-With a text including one of the following keywords the corresponding helptext is added to the usage helptext
+\begin{DoxyItemize}
+\item \char`\"{}general\char`\"{} see sdhusage\-\_\-general
+\item \char`\"{}sdhcom\-\_\-serial\char`\"{} see sdhusage\-\_\-sdhcom\-\_\-serial
+\item \char`\"{}sdhcom\-\_\-common\char`\"{} see sdhusage\-\_\-sdhcom\-\_\-common
+\item \char`\"{}sdhcom\-\_\-esdcan\char`\"{} see sdhusage\-\_\-sdhcom\-\_\-esdcan
+\item \char`\"{}sdhcom\-\_\-peakcan\char`\"{} see sdhusage\-\_\-sdhcom\-\_\-peakcan
+\item \char`\"{}sdhcom\-\_\-cancommon\char`\"{} see sdhusage\-\_\-sdhcom\-\_\-cancommon
+\item \char`\"{}sdhcom\-\_\-tcp\char`\"{} see sdhusage\-\_\-sdhcom\-\_\-tcp
+\item \char`\"{}sdhother\char`\"{} see sdhusage\-\_\-sdhother
+\item \char`\"{}dsacom\char`\"{} see sdhusage\-\_\-dsacom
+\item \char`\"{}dsaother\char`\"{} see sdhusage\-\_\-dsaother 
+\end{DoxyItemize}\\
+\hline
+\end{DoxyParams}
+\hypertarget{classcSDHOptions_af6ed7e84c211b5094b2d9c0d18f8a9f7}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!$\sim$c\-S\-D\-H\-Options@{$\sim$c\-S\-D\-H\-Options}}
+\index{$\sim$c\-S\-D\-H\-Options@{$\sim$c\-S\-D\-H\-Options}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{$\sim$c\-S\-D\-H\-Options}]{\setlength{\rightskip}{0pt plus 5cm}{\bf c\-S\-D\-H\-Options\-::$\sim$c\-S\-D\-H\-Options} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classcSDHOptions_af6ed7e84c211b5094b2d9c0d18f8a9f7}
+
+
+\subsection{\-Member \-Function \-Documentation}
+\hypertarget{classcSDHOptions_a01770c064f4dfe639ad443e8e44c7fb7}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!\-Open\-Communication@{\-Open\-Communication}}
+\index{\-Open\-Communication@{\-Open\-Communication}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{\-Open\-Communication}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf c\-S\-D\-H\-Options\-::\-Open\-Communication} (
+\begin{DoxyParamCaption}
+\item[{\-N\-S\-\_\-\-S\-D\-H c\-S\-D\-H \&}]{hand}
+\end{DoxyParamCaption}
+)}}\label{classcSDHOptions_a01770c064f4dfe639ad443e8e44c7fb7}
+convenience function to open the communication of the given {\itshape hand\/} object according to the parsed parameters.
+
+
+\begin{DoxyParams}{\-Parameters}
+{\em hand} & -\/ reference to a c\-S\-D\-H object to open \\
+\hline
+\end{DoxyParams}
+\hypertarget{classcSDHOptions_a5424fed1754caa395e0db9638c92323a}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!\-Parse@{\-Parse}}
+\index{\-Parse@{\-Parse}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{\-Parse}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf c\-S\-D\-H\-Options\-::\-Parse} (
+\begin{DoxyParamCaption}
+\item[{int}]{argc, }
+\item[{char $\ast$$\ast$}]{argv, }
+\item[{char const $\ast$}]{helptext, }
+\item[{char const $\ast$}]{progname, }
+\item[{char const $\ast$}]{version, }
+\item[{char const $\ast$}]{libname, }
+\item[{char const $\ast$}]{librelease}
+\end{DoxyParamCaption}
+)}}\label{classcSDHOptions_a5424fed1754caa395e0db9638c92323a}
+parse the command line parameters {\itshape argc\/}, {\itshape argv\/} into members. {\itshape helptext\/}, {\itshape progname\/}, {\itshape version\/}, {\itshape libname\/} and {\itshape librelease\/} are used when printing online help. start parsing at option with index $\ast$p\-\_\-option\-\_\-index parse all options if parse\-\_\-all is true, else only one option is parsed
+
+\begin{DoxyReturn}{\-Returns}
+the optind index of the first non option argument in argv 
+\end{DoxyReturn}
+
+
+\subsection{\-Member \-Data \-Documentation}
+\hypertarget{classcSDHOptions_a2376bfefe00e6f9832c16a979b99bf92}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!can\-\_\-baudrate@{can\-\_\-baudrate}}
+\index{can\-\_\-baudrate@{can\-\_\-baudrate}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{can\-\_\-baudrate}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long {\bf c\-S\-D\-H\-Options\-::can\-\_\-baudrate}}}\label{classcSDHOptions_a2376bfefe00e6f9832c16a979b99bf92}
+\hypertarget{classcSDHOptions_a3e1089848fb7702f5e94dd673601f463}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!controllerinfo@{controllerinfo}}
+\index{controllerinfo@{controllerinfo}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{controllerinfo}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf c\-S\-D\-H\-Options\-::controllerinfo}}}\label{classcSDHOptions_a3e1089848fb7702f5e94dd673601f463}
+\hypertarget{classcSDHOptions_a3cf6556a2758bf431b4e93e5c2adefb7}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!debug\-\_\-level@{debug\-\_\-level}}
+\index{debug\-\_\-level@{debug\-\_\-level}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{debug\-\_\-level}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf c\-S\-D\-H\-Options\-::debug\-\_\-level}}}\label{classcSDHOptions_a3cf6556a2758bf431b4e93e5c2adefb7}
+\hypertarget{classcSDHOptions_a71ac0c016aeb7cc34c521d06fa905198}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!debuglog@{debuglog}}
+\index{debuglog@{debuglog}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{debuglog}]{\setlength{\rightskip}{0pt plus 5cm}std\-::ostream$\ast$ {\bf c\-S\-D\-H\-Options\-::debuglog}}}\label{classcSDHOptions_a71ac0c016aeb7cc34c521d06fa905198}
+\hypertarget{classcSDHOptions_ab285c659c8f86f4dd2c1582f9a5e3608}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!do\-\_\-\-R\-L\-E@{do\-\_\-\-R\-L\-E}}
+\index{do\-\_\-\-R\-L\-E@{do\-\_\-\-R\-L\-E}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{do\-\_\-\-R\-L\-E}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf c\-S\-D\-H\-Options\-::do\-\_\-\-R\-L\-E}}}\label{classcSDHOptions_ab285c659c8f86f4dd2c1582f9a5e3608}
+\hypertarget{classcSDHOptions_a8d9d3490f0a39e8982cf9ae4c77f2147}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!dsa\-\_\-rs\-\_\-device@{dsa\-\_\-rs\-\_\-device}}
+\index{dsa\-\_\-rs\-\_\-device@{dsa\-\_\-rs\-\_\-device}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{dsa\-\_\-rs\-\_\-device}]{\setlength{\rightskip}{0pt plus 5cm}char {\bf c\-S\-D\-H\-Options\-::dsa\-\_\-rs\-\_\-device}\mbox{[}{\bf \-M\-A\-X\-\_\-\-D\-E\-V\-\_\-\-L\-E\-N\-G\-T\-H}\mbox{]}}}\label{classcSDHOptions_a8d9d3490f0a39e8982cf9ae4c77f2147}
+\hypertarget{classcSDHOptions_a0de19c3e4d29f927c9bd8a4071a8e13d}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!dsaport@{dsaport}}
+\index{dsaport@{dsaport}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{dsaport}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf c\-S\-D\-H\-Options\-::dsaport}}}\label{classcSDHOptions_a0de19c3e4d29f927c9bd8a4071a8e13d}
+\hypertarget{classcSDHOptions_a7bdd78ad26a17faeceec15e2431a1c3e}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!framerate@{framerate}}
+\index{framerate@{framerate}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{framerate}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf c\-S\-D\-H\-Options\-::framerate}}}\label{classcSDHOptions_a7bdd78ad26a17faeceec15e2431a1c3e}
+\hypertarget{classcSDHOptions_a9c8cd3c89d1175f2a75afbbb119a7f9b}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!fullframe@{fullframe}}
+\index{fullframe@{fullframe}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{fullframe}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf c\-S\-D\-H\-Options\-::fullframe}}}\label{classcSDHOptions_a9c8cd3c89d1175f2a75afbbb119a7f9b}
+\hypertarget{classcSDHOptions_a301e3d6b905c010e82a45420f5cd5634}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!id\-\_\-read@{id\-\_\-read}}
+\index{id\-\_\-read@{id\-\_\-read}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{id\-\_\-read}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int {\bf c\-S\-D\-H\-Options\-::id\-\_\-read}}}\label{classcSDHOptions_a301e3d6b905c010e82a45420f5cd5634}
+\hypertarget{classcSDHOptions_a3ca7757c9dbb11c190987992582132ab}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!id\-\_\-write@{id\-\_\-write}}
+\index{id\-\_\-write@{id\-\_\-write}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{id\-\_\-write}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int {\bf c\-S\-D\-H\-Options\-::id\-\_\-write}}}\label{classcSDHOptions_a3ca7757c9dbb11c190987992582132ab}
+\hypertarget{classcSDHOptions_a3dcaa4689b89c3f480cad4744a72c0f8}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!matrixinfo@{matrixinfo}}
+\index{matrixinfo@{matrixinfo}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{matrixinfo}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf c\-S\-D\-H\-Options\-::matrixinfo}\mbox{[}6\mbox{]}}}\label{classcSDHOptions_a3dcaa4689b89c3f480cad4744a72c0f8}
+\hypertarget{classcSDHOptions_a9caeb9858b718ed48145a833be2c9178}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!\-M\-A\-X\-\_\-\-D\-E\-V\-\_\-\-L\-E\-N\-G\-T\-H@{\-M\-A\-X\-\_\-\-D\-E\-V\-\_\-\-L\-E\-N\-G\-T\-H}}
+\index{\-M\-A\-X\-\_\-\-D\-E\-V\-\_\-\-L\-E\-N\-G\-T\-H@{\-M\-A\-X\-\_\-\-D\-E\-V\-\_\-\-L\-E\-N\-G\-T\-H}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{\-M\-A\-X\-\_\-\-D\-E\-V\-\_\-\-L\-E\-N\-G\-T\-H}]{\setlength{\rightskip}{0pt plus 5cm}int const {\bf c\-S\-D\-H\-Options\-::\-M\-A\-X\-\_\-\-D\-E\-V\-\_\-\-L\-E\-N\-G\-T\-H} = 32\hspace{0.3cm}{\ttfamily  \mbox{[}static\mbox{]}}}}\label{classcSDHOptions_a9caeb9858b718ed48145a833be2c9178}
+\hypertarget{classcSDHOptions_adefa363d3e2c61e37676037a09faaf06}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!net@{net}}
+\index{net@{net}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{net}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf c\-S\-D\-H\-Options\-::net}}}\label{classcSDHOptions_adefa363d3e2c61e37676037a09faaf06}
+\hypertarget{classcSDHOptions_a62f70e83e50968e9cdee7b55cff12806}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!period@{period}}
+\index{period@{period}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{period}]{\setlength{\rightskip}{0pt plus 5cm}double {\bf c\-S\-D\-H\-Options\-::period}}}\label{classcSDHOptions_a62f70e83e50968e9cdee7b55cff12806}
+\hypertarget{classcSDHOptions_aca724e741552d1a6c415abf6a0bf2ecf}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!persistent@{persistent}}
+\index{persistent@{persistent}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{persistent}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf c\-S\-D\-H\-Options\-::persistent}}}\label{classcSDHOptions_aca724e741552d1a6c415abf6a0bf2ecf}
+\hypertarget{classcSDHOptions_afedb88e59b2ecf58b80c7b0b861ee189}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!reset\-\_\-to\-\_\-default@{reset\-\_\-to\-\_\-default}}
+\index{reset\-\_\-to\-\_\-default@{reset\-\_\-to\-\_\-default}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{reset\-\_\-to\-\_\-default}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf c\-S\-D\-H\-Options\-::reset\-\_\-to\-\_\-default}}}\label{classcSDHOptions_afedb88e59b2ecf58b80c7b0b861ee189}
+\hypertarget{classcSDHOptions_a38c8ae82f4fa578b04d1a9b9fffbe063}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!rs232\-\_\-baudrate@{rs232\-\_\-baudrate}}
+\index{rs232\-\_\-baudrate@{rs232\-\_\-baudrate}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{rs232\-\_\-baudrate}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long {\bf c\-S\-D\-H\-Options\-::rs232\-\_\-baudrate}}}\label{classcSDHOptions_a38c8ae82f4fa578b04d1a9b9fffbe063}
+\hypertarget{classcSDHOptions_acd04aeab5f6ab8e962b739de10bf4d08}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!sdh\-\_\-canpeak\-\_\-device@{sdh\-\_\-canpeak\-\_\-device}}
+\index{sdh\-\_\-canpeak\-\_\-device@{sdh\-\_\-canpeak\-\_\-device}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{sdh\-\_\-canpeak\-\_\-device}]{\setlength{\rightskip}{0pt plus 5cm}char {\bf c\-S\-D\-H\-Options\-::sdh\-\_\-canpeak\-\_\-device}\mbox{[}{\bf \-M\-A\-X\-\_\-\-D\-E\-V\-\_\-\-L\-E\-N\-G\-T\-H}\mbox{]}}}\label{classcSDHOptions_acd04aeab5f6ab8e962b739de10bf4d08}
+\hypertarget{classcSDHOptions_aa33357676ec18be7dbd162e7dac93406}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!sdh\-\_\-rs\-\_\-device@{sdh\-\_\-rs\-\_\-device}}
+\index{sdh\-\_\-rs\-\_\-device@{sdh\-\_\-rs\-\_\-device}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{sdh\-\_\-rs\-\_\-device}]{\setlength{\rightskip}{0pt plus 5cm}char {\bf c\-S\-D\-H\-Options\-::sdh\-\_\-rs\-\_\-device}\mbox{[}{\bf \-M\-A\-X\-\_\-\-D\-E\-V\-\_\-\-L\-E\-N\-G\-T\-H}\mbox{]}}}\label{classcSDHOptions_aa33357676ec18be7dbd162e7dac93406}
+\hypertarget{classcSDHOptions_a565bf00d92a0aca8729c3bd1e0f92be2}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!sdhport@{sdhport}}
+\index{sdhport@{sdhport}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{sdhport}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf c\-S\-D\-H\-Options\-::sdhport}}}\label{classcSDHOptions_a565bf00d92a0aca8729c3bd1e0f92be2}
+\hypertarget{classcSDHOptions_addfa8552244a84c62fe26ef5c261a19d}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!sensitivity@{sensitivity}}
+\index{sensitivity@{sensitivity}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{sensitivity}]{\setlength{\rightskip}{0pt plus 5cm}double {\bf c\-S\-D\-H\-Options\-::sensitivity}\mbox{[}6\mbox{]}}}\label{classcSDHOptions_addfa8552244a84c62fe26ef5c261a19d}
+\hypertarget{classcSDHOptions_a9ea9c47ffd54eb7a557e672cc76b23d3}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!sensorinfo@{sensorinfo}}
+\index{sensorinfo@{sensorinfo}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{sensorinfo}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf c\-S\-D\-H\-Options\-::sensorinfo}}}\label{classcSDHOptions_a9ea9c47ffd54eb7a557e672cc76b23d3}
+\hypertarget{classcSDHOptions_a73021f34d61c57f5991490b8dda9b557}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!showdsasettings@{showdsasettings}}
+\index{showdsasettings@{showdsasettings}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{showdsasettings}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf c\-S\-D\-H\-Options\-::showdsasettings}}}\label{classcSDHOptions_a73021f34d61c57f5991490b8dda9b557}
+\hypertarget{classcSDHOptions_a247c378f5874482d97343fc6c0e577be}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!tcp\-\_\-adr@{tcp\-\_\-adr}}
+\index{tcp\-\_\-adr@{tcp\-\_\-adr}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{tcp\-\_\-adr}]{\setlength{\rightskip}{0pt plus 5cm}std\-::string {\bf c\-S\-D\-H\-Options\-::tcp\-\_\-adr}}}\label{classcSDHOptions_a247c378f5874482d97343fc6c0e577be}
+\hypertarget{classcSDHOptions_a8c7190b3d89ec6ff659d171e59fe5f45}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!tcp\-\_\-port@{tcp\-\_\-port}}
+\index{tcp\-\_\-port@{tcp\-\_\-port}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{tcp\-\_\-port}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf c\-S\-D\-H\-Options\-::tcp\-\_\-port}}}\label{classcSDHOptions_a8c7190b3d89ec6ff659d171e59fe5f45}
+\hypertarget{classcSDHOptions_abbd91d2dce6cda8d2e4d5103ce44c3c0}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!threshold@{threshold}}
+\index{threshold@{threshold}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{threshold}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int {\bf c\-S\-D\-H\-Options\-::threshold}\mbox{[}6\mbox{]}}}\label{classcSDHOptions_abbd91d2dce6cda8d2e4d5103ce44c3c0}
+\hypertarget{classcSDHOptions_a68c00cb00f9ee6a70974ce9c27e4f3d1}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!timeout@{timeout}}
+\index{timeout@{timeout}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{timeout}]{\setlength{\rightskip}{0pt plus 5cm}double {\bf c\-S\-D\-H\-Options\-::timeout}}}\label{classcSDHOptions_a68c00cb00f9ee6a70974ce9c27e4f3d1}
+\hypertarget{classcSDHOptions_a85c5365609e4b34511b81d4c06e6c65c}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!usage@{usage}}
+\index{usage@{usage}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{usage}]{\setlength{\rightskip}{0pt plus 5cm}std\-::string {\bf c\-S\-D\-H\-Options\-::usage}}}\label{classcSDHOptions_a85c5365609e4b34511b81d4c06e6c65c}
+\hypertarget{classcSDHOptions_afa459c797bb8fbb2ad6f45a39261e3d8}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!use\-\_\-can\-\_\-esd@{use\-\_\-can\-\_\-esd}}
+\index{use\-\_\-can\-\_\-esd@{use\-\_\-can\-\_\-esd}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{use\-\_\-can\-\_\-esd}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf c\-S\-D\-H\-Options\-::use\-\_\-can\-\_\-esd}}}\label{classcSDHOptions_afa459c797bb8fbb2ad6f45a39261e3d8}
+\hypertarget{classcSDHOptions_ab0b03472ff934016086feaed1cf8d5ea}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!use\-\_\-can\-\_\-peak@{use\-\_\-can\-\_\-peak}}
+\index{use\-\_\-can\-\_\-peak@{use\-\_\-can\-\_\-peak}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{use\-\_\-can\-\_\-peak}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf c\-S\-D\-H\-Options\-::use\-\_\-can\-\_\-peak}}}\label{classcSDHOptions_ab0b03472ff934016086feaed1cf8d5ea}
+\hypertarget{classcSDHOptions_a6724ffca7223e593e24d74c90a238dab}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!use\-\_\-fahrenheit@{use\-\_\-fahrenheit}}
+\index{use\-\_\-fahrenheit@{use\-\_\-fahrenheit}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{use\-\_\-fahrenheit}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf c\-S\-D\-H\-Options\-::use\-\_\-fahrenheit}}}\label{classcSDHOptions_a6724ffca7223e593e24d74c90a238dab}
+\hypertarget{classcSDHOptions_a484031d2facdcdf2fc3ec9b26df45819}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!use\-\_\-radians@{use\-\_\-radians}}
+\index{use\-\_\-radians@{use\-\_\-radians}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{use\-\_\-radians}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf c\-S\-D\-H\-Options\-::use\-\_\-radians}}}\label{classcSDHOptions_a484031d2facdcdf2fc3ec9b26df45819}
+\hypertarget{classcSDHOptions_a57533df7afeb116231686a59bc86a5cd}{\index{c\-S\-D\-H\-Options@{c\-S\-D\-H\-Options}!use\-\_\-tcp@{use\-\_\-tcp}}
+\index{use\-\_\-tcp@{use\-\_\-tcp}!cSDHOptions@{c\-S\-D\-H\-Options}}
+\subsubsection[{use\-\_\-tcp}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf c\-S\-D\-H\-Options\-::use\-\_\-tcp}}}\label{classcSDHOptions_a57533df7afeb116231686a59bc86a5cd}
+
+
+\-The documentation for this class was generated from the following files\-:\begin{DoxyCompactItemize}
+\item 
+/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/robot/mounted/\hyperlink{sdhoptions_8h}{sdhoptions.\-h}\item 
+/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/robot/mounted/\hyperlink{sdhoptions_8cpp}{sdhoptions.\-cpp}\end{DoxyCompactItemize}

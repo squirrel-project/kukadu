@@ -1,0 +1,72 @@
+\hypertarget{sdhoptions_8cpp}{\section{/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/robot/mounted/sdhoptions.cpp \-File \-Reference}
+\label{sdhoptions_8cpp}\index{/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/robot/mounted/sdhoptions.\-cpp@{/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/robot/mounted/sdhoptions.\-cpp}}
+}
+
+
+\-Implementation of a class to parse common \-S\-D\-H related command line options.  
+
+
+{\ttfamily \#include $<$getopt.\-h$>$}\*
+{\ttfamily \#include $<$assert.\-h$>$}\*
+{\ttfamily \#include $<$iostream$>$}\*
+{\ttfamily \#include $<$fstream$>$}\*
+{\ttfamily \#include \char`\"{}sdh/sdh.\-h\char`\"{}}\*
+{\ttfamily \#include \char`\"{}sdh/sdhlibrary\-\_\-settings.\-h\char`\"{}}\*
+{\ttfamily \#include \char`\"{}sdh/release.\-h\char`\"{}}\*
+{\ttfamily \#include \char`\"{}sdh/dsa.\-h\char`\"{}}\*
+{\ttfamily \#include \char`\"{}sdhoptions.\-h\char`\"{}}\*
+\-Include dependency graph for sdhoptions.\-cpp\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{sdhoptions_8cpp__incl}
+\end{center}
+\end{figure}
+\subsection*{\-Defines}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{sdhoptions_8cpp_a5b45b6c1829ae4e062bceb78cbba002e}{\-X\-S\-T\-R\-I\-N\-G\-I\-F\-Y}(\-\_\-x)~\hyperlink{sdhoptions_8cpp_a0f4bf94ce01a331da306b94310faf208}{\-S\-T\-R\-I\-N\-G\-I\-F\-Y}(\-\_\-x)
+\item 
+\#define \hyperlink{sdhoptions_8cpp_a0f4bf94ce01a331da306b94310faf208}{\-S\-T\-R\-I\-N\-G\-I\-F\-Y}(\-\_\-s)~\#\-\_\-s
+\begin{DoxyCompactList}\small\item\em helper macro for \-X\-S\-T\-R\-I\-N\-G\-I\-F\-Y, see there \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{\-Detailed \-Description}
+\begin{DoxyAuthor}{\-Author}
+\-Dirk \-Osswald 
+\end{DoxyAuthor}
+\begin{DoxyDate}{\-Date}
+2008-\/05-\/05
+\end{DoxyDate}
+\hypertarget{sdhoptions_8cpp_sdhlibrary_cpp_demo_sdhoptions_cpp_copyright}{}\subsection{\-Copyright}\label{sdhoptions_8cpp_sdhlibrary_cpp_demo_sdhoptions_cpp_copyright}
+\-Copyright (c) 2008 \-S\-C\-H\-U\-N\-K \-Gmb\-H \& \-Co. \-K\-G
+
+
+
+ 
+
+\subsection{\-Define \-Documentation}
+\hypertarget{sdhoptions_8cpp_a0f4bf94ce01a331da306b94310faf208}{\index{sdhoptions.\-cpp@{sdhoptions.\-cpp}!\-S\-T\-R\-I\-N\-G\-I\-F\-Y@{\-S\-T\-R\-I\-N\-G\-I\-F\-Y}}
+\index{\-S\-T\-R\-I\-N\-G\-I\-F\-Y@{\-S\-T\-R\-I\-N\-G\-I\-F\-Y}!sdhoptions.cpp@{sdhoptions.\-cpp}}
+\subsubsection[{\-S\-T\-R\-I\-N\-G\-I\-F\-Y}]{\setlength{\rightskip}{0pt plus 5cm}\#define {\bf \-S\-T\-R\-I\-N\-G\-I\-F\-Y}(
+\begin{DoxyParamCaption}
+\item[{}]{\-\_\-s}
+\end{DoxyParamCaption}
+)~\#\-\_\-s}}\label{sdhoptions_8cpp_a0f4bf94ce01a331da306b94310faf208}
+\hypertarget{sdhoptions_8cpp_a5b45b6c1829ae4e062bceb78cbba002e}{\index{sdhoptions.\-cpp@{sdhoptions.\-cpp}!\-X\-S\-T\-R\-I\-N\-G\-I\-F\-Y@{\-X\-S\-T\-R\-I\-N\-G\-I\-F\-Y}}
+\index{\-X\-S\-T\-R\-I\-N\-G\-I\-F\-Y@{\-X\-S\-T\-R\-I\-N\-G\-I\-F\-Y}!sdhoptions.cpp@{sdhoptions.\-cpp}}
+\subsubsection[{\-X\-S\-T\-R\-I\-N\-G\-I\-F\-Y}]{\setlength{\rightskip}{0pt plus 5cm}\#define {\bf \-X\-S\-T\-R\-I\-N\-G\-I\-F\-Y}(
+\begin{DoxyParamCaption}
+\item[{}]{\-\_\-x}
+\end{DoxyParamCaption}
+)~{\bf \-S\-T\-R\-I\-N\-G\-I\-F\-Y}(\-\_\-x)}}\label{sdhoptions_8cpp_a5b45b6c1829ae4e062bceb78cbba002e}
+macro for stringification of {\itshape \-\_\-x\/} 
+
+allows to stringify the {\bfseries value} of a macro\-: 
+\begin{DoxyCode}
+   #define foo 4
+
+   STRINGIFY( foo ) // yields "foo"
+   XSTRINGIFY( foo ) // yields "4"
+\end{DoxyCode}
+ 

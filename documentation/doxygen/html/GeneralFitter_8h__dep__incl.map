@@ -1,0 +1,13 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$GeneralFitter_8cpp.html" title="/home/shangl/data/data_synched/studium/informatik/master/master_thesis/kukadu_framework/thesis/src/learning/GeneralFitter.cpp" alt="" coords="53,83,835,112"/>
+<area shape="rect" id="node5" href="$TrajectoryDMPLearner_8h.html" title="/home/shangl/data/data_synched/studium/informatik/master/master_thesis/kukadu_framework/thesis/src/trajectory/TrajectoryDMPLearner.h" alt="" coords="859,83,1693,112"/>
+<area shape="rect" id="node7" href="$DMPGeneralizer_8h.html" title="/home/shangl/data/data_synched/studium/informatik/master/master_thesis/kukadu_framework/thesis/src/trajectory/DMPGeneralizer.h" alt="" coords="32,160,829,189"/>
+<area shape="rect" id="node16" href="$DMPExecutor_8h.html" title="/home/shangl/data/data_synched/studium/informatik/master/master_thesis/kukadu_framework/thesis/src/trajectory/DMPExecutor.h" alt="" coords="884,160,1668,189"/>
+<area shape="rect" id="node27" href="$TrajectoryDMPLearner_8cpp.html" title="/home/shangl/data/data_synched/studium/informatik/master/master_thesis/kukadu_framework/thesis/src/trajectory/TrajectoryDMPLearner.cpp" alt="" coords="1692,160,2540,189"/>
+<area shape="rect" id="node9" href="$GenDMPReinforcer_8h.html" title="/home/shangl/data/data_synched/studium/informatik/master/master_thesis/kukadu_framework/thesis/src/trajectory/GenDMPReinforcer.h" alt="" coords="265,315,1081,344"/>
+<area shape="rect" id="node13" href="$DMPGeneralizer_8cpp.html" title="/home/shangl/data/data_synched/studium/informatik/master/master_thesis/kukadu_framework/thesis/src/trajectory/DMPGeneralizer.cpp" alt="" coords="24,237,837,267"/>
+<area shape="rect" id="node11" href="$GenDMPReinforcer_8cpp.html" title="/home/shangl/data/data_synched/studium/informatik/master/master_thesis/kukadu_framework/thesis/src/trajectory/GenDMPReinforcer.cpp" alt="" coords="259,392,1088,421"/>
+<area shape="rect" id="node19" href="$DMPReinforcer_8h.html" title="/home/shangl/data/data_synched/studium/informatik/master/master_thesis/kukadu_framework/thesis/src/trajectory/DMPReinforcer.h" alt="" coords="912,237,1704,267"/>
+<area shape="rect" id="node25" href="$DMPExecutor_8cpp.html" title="/home/shangl/data/data_synched/studium/informatik/master/master_thesis/kukadu_framework/thesis/src/trajectory/DMPExecutor.cpp" alt="" coords="1728,237,2525,267"/>
+<area shape="rect" id="node22" href="$DMPReinforcer_8cpp.html" title="/home/shangl/data/data_synched/studium/informatik/master/master_thesis/kukadu_framework/thesis/src/trajectory/DMPReinforcer.cpp" alt="" coords="1105,315,1911,344"/>
+</map>

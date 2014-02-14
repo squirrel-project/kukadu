@@ -1,0 +1,4 @@
+<map id="G" name="G">
+<area shape="rect" id="node5" href="$classSchunkHand.html" title="Provides control capabilities for the Schunk SDH robotic hand Implements the GenericHand interface fo..." alt="" coords="5,307,141,461"/>
+<area shape="rect" id="node2" href="$classDestroyableObject.html" title="Interface defining a callback function." alt="" coords="8,5,139,91"/>
+</map>

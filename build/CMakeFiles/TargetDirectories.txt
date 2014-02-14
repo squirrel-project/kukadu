@@ -1,0 +1,6 @@
+/home/shangl/catkin_ws/src/kukadu/src/kukadu_core/build/CMakeFiles/clean_test_results.dir
+/home/shangl/catkin_ws/src/kukadu/src/kukadu_core/build/CMakeFiles/doxygen.dir
+/home/shangl/catkin_ws/src/kukadu/src/kukadu_core/build/gtest/CMakeFiles/gtest.dir
+/home/shangl/catkin_ws/src/kukadu/src/kukadu_core/build/gtest/CMakeFiles/gtest_main.dir
+/home/shangl/catkin_ws/src/kukadu/src/kukadu_core/build/CMakeFiles/run_tests.dir
+/home/shangl/catkin_ws/src/kukadu/src/kukadu_core/build/CMakeFiles/tests.dir

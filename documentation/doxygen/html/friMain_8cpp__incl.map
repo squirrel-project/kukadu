@@ -1,0 +1,7 @@
+<map id="G" name="G">
+<area shape="rect" id="node15" href="$friUdp_8h_source.html" title="header for udp Communications *" alt="" coords="408,160,507,189"/>
+<area shape="rect" id="node39" href="$friRemote_8h_source.html" title="Remote class for handshaking/dealing with udp datastructures." alt="" coords="316,83,439,112"/>
+<area shape="rect" id="node42" href="$friMain_8h_source.html" title="friMain.h" alt="" coords="788,83,860,112"/>
+<area shape="rect" id="node44" href="$friMisc_8h_source.html" title="friMisc.h" alt="" coords="884,83,956,112"/>
+<area shape="rect" id="node36" href="$friComm_8h_source.html" title="This header file describes the basic communcation structures for the FastRobotInterface." alt="" coords="464,237,547,267"/>
+</map>

@@ -1,0 +1,105 @@
+\hypertarget{classDMPGeneralizer}{\section{\-D\-M\-P\-Generalizer \-Class \-Reference}
+\label{classDMPGeneralizer}\index{\-D\-M\-P\-Generalizer@{\-D\-M\-P\-Generalizer}}
+}
+
+
+\-This class is able to generalize task specific trajectories from previous examples.  
+
+
+
+
+{\ttfamily \#include $<$\-D\-M\-P\-Generalizer.\-h$>$}
+
+\subsection*{\-Public \-Member \-Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classDMPGeneralizer_a303eae31baa6a2c7b897c0fc23a8686c}{\-D\-M\-P\-Generalizer} (string base\-Folder, int deg\-Of\-Freedom, vector$<$ double $>$ tmpmys, vector$<$ double $>$ tmpsigmas, double az, double bz)
+\begin{DoxyCompactList}\small\item\em constructor \end{DoxyCompactList}\item 
+int \hyperlink{classDMPGeneralizer_a879e11ed7717071401af84c6a42a7bf2}{get\-Query\-Point\-Count} ()
+\begin{DoxyCompactList}\small\item\em returns number of trajectory samples \end{DoxyCompactList}\item 
+t\-\_\-querypoint \hyperlink{classDMPGeneralizer_a6e725b20d17d60f1851d4c812a0afa92}{get\-Query\-Point\-By\-Index} (int index)
+\begin{DoxyCompactList}\small\item\em returns a sample point by index \end{DoxyCompactList}\item 
+t\-\_\-learned\-\_\-dmp \hyperlink{classDMPGeneralizer_a1abc5c3749209d570467042757b5c462}{generalize\-Dmp} (\hyperlink{classGenericKernel}{\-Generic\-Kernel} $\ast$trajectory\-Kernel, \hyperlink{classGenericKernel}{\-Generic\-Kernel} $\ast$parameter\-Kernel, vec query, double beta)
+\begin{DoxyCompactList}\small\item\em returns the generalized trajectory at a certain query point \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{\-Detailed \-Description}
+\-This method works well on tasks, where the sample trajectories are similar in shape. \-Therefore, several simple trajectories have to be measured and stored in files. 
+
+\subsection{\-Constructor \& \-Destructor \-Documentation}
+\hypertarget{classDMPGeneralizer_a303eae31baa6a2c7b897c0fc23a8686c}{\index{\-D\-M\-P\-Generalizer@{\-D\-M\-P\-Generalizer}!\-D\-M\-P\-Generalizer@{\-D\-M\-P\-Generalizer}}
+\index{\-D\-M\-P\-Generalizer@{\-D\-M\-P\-Generalizer}!DMPGeneralizer@{\-D\-M\-P\-Generalizer}}
+\subsubsection[{\-D\-M\-P\-Generalizer}]{\setlength{\rightskip}{0pt plus 5cm}{\bf \-D\-M\-P\-Generalizer\-::\-D\-M\-P\-Generalizer} (
+\begin{DoxyParamCaption}
+\item[{string}]{base\-Folder, }
+\item[{int}]{deg\-Of\-Freedom, }
+\item[{vector$<$ double $>$}]{tmpmys, }
+\item[{vector$<$ double $>$}]{tmpsigmas, }
+\item[{double}]{az, }
+\item[{double}]{bz}
+\end{DoxyParamCaption}
+)}}\label{classDMPGeneralizer_a303eae31baa6a2c7b897c0fc23a8686c}
+
+\begin{DoxyParams}{\-Parameters}
+{\em base\-Folder} & folder that contains the sample trajectory files \\
+\hline
+{\em deg\-Of\-Freedom} & number of degrees of freedom \\
+\hline
+{\em tmpmys} & defines basis functions for dynamic movement primitives \\
+\hline
+{\em tmpsigmas} & defines basis functions for dynamic movement primitives \\
+\hline
+{\em az} & dmp az parameter \\
+\hline
+{\em bz} & dmp bz parameter \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{\-Member \-Function \-Documentation}
+\hypertarget{classDMPGeneralizer_a1abc5c3749209d570467042757b5c462}{\index{\-D\-M\-P\-Generalizer@{\-D\-M\-P\-Generalizer}!generalize\-Dmp@{generalize\-Dmp}}
+\index{generalize\-Dmp@{generalize\-Dmp}!DMPGeneralizer@{\-D\-M\-P\-Generalizer}}
+\subsubsection[{generalize\-Dmp}]{\setlength{\rightskip}{0pt plus 5cm}t\-\_\-learned\-\_\-dmp {\bf \-D\-M\-P\-Generalizer\-::generalize\-Dmp} (
+\begin{DoxyParamCaption}
+\item[{{\bf \-Generic\-Kernel} $\ast$}]{trajectory\-Kernel, }
+\item[{{\bf \-Generic\-Kernel} $\ast$}]{parameter\-Kernel, }
+\item[{vec}]{query, }
+\item[{double}]{beta}
+\end{DoxyParamCaption}
+)}}\label{classDMPGeneralizer_a1abc5c3749209d570467042757b5c462}
+
+\begin{DoxyParams}{\-Parameters}
+{\em trajectory\-Kernel} & kernel for trajectory shape generalization \\
+\hline
+{\em parameter\-Kernel} & kernel for trajectory goal generalization \\
+\hline
+{\em query} & required query point \\
+\hline
+{\em beta} & beta for \-Gaussian processes \\
+\hline
+\end{DoxyParams}
+\hypertarget{classDMPGeneralizer_a6e725b20d17d60f1851d4c812a0afa92}{\index{\-D\-M\-P\-Generalizer@{\-D\-M\-P\-Generalizer}!get\-Query\-Point\-By\-Index@{get\-Query\-Point\-By\-Index}}
+\index{get\-Query\-Point\-By\-Index@{get\-Query\-Point\-By\-Index}!DMPGeneralizer@{\-D\-M\-P\-Generalizer}}
+\subsubsection[{get\-Query\-Point\-By\-Index}]{\setlength{\rightskip}{0pt plus 5cm}t\-\_\-querypoint {\bf \-D\-M\-P\-Generalizer\-::get\-Query\-Point\-By\-Index} (
+\begin{DoxyParamCaption}
+\item[{int}]{index}
+\end{DoxyParamCaption}
+)}}\label{classDMPGeneralizer_a6e725b20d17d60f1851d4c812a0afa92}
+
+\begin{DoxyParams}{\-Parameters}
+{\em index} & index of sample point \\
+\hline
+\end{DoxyParams}
+\hypertarget{classDMPGeneralizer_a879e11ed7717071401af84c6a42a7bf2}{\index{\-D\-M\-P\-Generalizer@{\-D\-M\-P\-Generalizer}!get\-Query\-Point\-Count@{get\-Query\-Point\-Count}}
+\index{get\-Query\-Point\-Count@{get\-Query\-Point\-Count}!DMPGeneralizer@{\-D\-M\-P\-Generalizer}}
+\subsubsection[{get\-Query\-Point\-Count}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf \-D\-M\-P\-Generalizer\-::get\-Query\-Point\-Count} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classDMPGeneralizer_a879e11ed7717071401af84c6a42a7bf2}
+
+
+\-The documentation for this class was generated from the following files\-:\begin{DoxyCompactItemize}
+\item 
+/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/trajectory/\hyperlink{DMPGeneralizer_8h}{\-D\-M\-P\-Generalizer.\-h}\item 
+/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/trajectory/\hyperlink{DMPGeneralizer_8cpp}{\-D\-M\-P\-Generalizer.\-cpp}\end{DoxyCompactItemize}

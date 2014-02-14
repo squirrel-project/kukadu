@@ -1,0 +1,88 @@
+\hypertarget{classGenericHand}{\section{\-Generic\-Hand \-Class \-Reference}
+\label{classGenericHand}\index{\-Generic\-Hand@{\-Generic\-Hand}}
+}
+
+
+\-The \hyperlink{classGenericHand}{\-Generic\-Hand} provides a very elementary interface to control robot hands mounted on a robot arm \-This class provides very an interface for the very basic functionalities such as \char`\"{}connect to hand\char`\"{} or \char`\"{}close hand\char`\"{}.  
+
+
+
+
+{\ttfamily \#include $<$\-Generic\-Hand.\-h$>$}
+
+
+
+\-Inheritance diagram for \-Generic\-Hand\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=182pt]{classGenericHand__inherit__graph}
+\end{center}
+\end{figure}
+
+
+\-Collaboration diagram for \-Generic\-Hand\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=182pt]{classGenericHand__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{\-Public \-Member \-Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual void \hyperlink{classGenericHand_ab8e8610f2ceed53ab3112ceef60e1cd0}{connect\-Hand} ()=0
+\begin{DoxyCompactList}\small\item\em \-Initializes the connection to the hand. \end{DoxyCompactList}\item 
+virtual void \hyperlink{classGenericHand_a88be8d6c42cfd7b48da1df7da68d2aca}{close\-Hand} (double percentage, double velocity)=0
+\begin{DoxyCompactList}\small\item\em \-Opens and closes the hand according to the provided closing percentage and velocity. \end{DoxyCompactList}\item 
+virtual void \hyperlink{classGenericHand_acb5b9fff34fc22b9cebbc7d927ec4aa6}{disconnect\-Hand} ()=0
+\begin{DoxyCompactList}\small\item\em \-Closes connection between host computer and hand. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{\-Member \-Function \-Documentation}
+\hypertarget{classGenericHand_a88be8d6c42cfd7b48da1df7da68d2aca}{\index{\-Generic\-Hand@{\-Generic\-Hand}!close\-Hand@{close\-Hand}}
+\index{close\-Hand@{close\-Hand}!GenericHand@{\-Generic\-Hand}}
+\subsubsection[{close\-Hand}]{\setlength{\rightskip}{0pt plus 5cm}virtual void {\bf \-Generic\-Hand\-::close\-Hand} (
+\begin{DoxyParamCaption}
+\item[{double}]{percentage, }
+\item[{double}]{velocity}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}pure virtual\mbox{]}}}}\label{classGenericHand_a88be8d6c42cfd7b48da1df7da68d2aca}
+
+\begin{DoxyParams}{\-Parameters}
+{\em percentage} & closing percentage (0.\-0 -\/ hand fully open, 1.\-0 hand fully closed) \\
+\hline
+{\em velocity} & closing velocity in range between 0 and 1 \\
+\hline
+\end{DoxyParams}
+
+
+\-Implemented in \hyperlink{classSchunkHand_ad7955193f561aae87b4bf0c9482bc877}{\-Schunk\-Hand}.
+
+\hypertarget{classGenericHand_ab8e8610f2ceed53ab3112ceef60e1cd0}{\index{\-Generic\-Hand@{\-Generic\-Hand}!connect\-Hand@{connect\-Hand}}
+\index{connect\-Hand@{connect\-Hand}!GenericHand@{\-Generic\-Hand}}
+\subsubsection[{connect\-Hand}]{\setlength{\rightskip}{0pt plus 5cm}virtual void {\bf \-Generic\-Hand\-::connect\-Hand} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}pure virtual\mbox{]}}}}\label{classGenericHand_ab8e8610f2ceed53ab3112ceef60e1cd0}
+
+
+\-Implemented in \hyperlink{classSchunkHand_a127722f2f9221a6327cb60a285452d10}{\-Schunk\-Hand}.
+
+\hypertarget{classGenericHand_acb5b9fff34fc22b9cebbc7d927ec4aa6}{\index{\-Generic\-Hand@{\-Generic\-Hand}!disconnect\-Hand@{disconnect\-Hand}}
+\index{disconnect\-Hand@{disconnect\-Hand}!GenericHand@{\-Generic\-Hand}}
+\subsubsection[{disconnect\-Hand}]{\setlength{\rightskip}{0pt plus 5cm}virtual void {\bf \-Generic\-Hand\-::disconnect\-Hand} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}pure virtual\mbox{]}}}}\label{classGenericHand_acb5b9fff34fc22b9cebbc7d927ec4aa6}
+
+
+\-Implemented in \hyperlink{classSchunkHand_af0c67b101d6cfd19c4758347700c2346}{\-Schunk\-Hand}.
+
+
+
+\-The documentation for this class was generated from the following file\-:\begin{DoxyCompactItemize}
+\item 
+/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/robot/mounted/\hyperlink{GenericHand_8h}{\-Generic\-Hand.\-h}\end{DoxyCompactItemize}

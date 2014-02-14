@@ -1,0 +1,7 @@
+<map id="G" name="G">
+<area shape="rect" id="node1" href="$classDestroyableObject.html" title="Interface defining a callback function." alt="" coords="5,32,136,61"/>
+<area shape="rect" id="node3" href="$classControlQueue.html" title="Provides an interface for robot controllers." alt="" coords="185,5,287,35"/>
+<area shape="rect" id="node7" href="$classGenericHand.html" title="The GenericHand provides a very elementary interface to control robot hands mounted on a robot arm Th..." alt="" coords="187,59,285,88"/>
+<area shape="rect" id="node5" href="$classKukaControlQueue.html" title="The KukaControlQueue provides control capabilities for the Kuka LWR 4+ robotic arm." alt="" coords="337,5,468,35"/>
+<area shape="rect" id="node9" href="$classSchunkHand.html" title="Provides control capabilities for the Schunk SDH robotic hand Implements the GenericHand interface fo..." alt="" coords="355,59,451,88"/>
+</map>

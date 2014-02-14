@@ -1,0 +1,11 @@
+<map id="G" name="G">
+<area shape="rect" id="node2" href="$structtFriCmdData.html" title="{tFriCmdData\n|+ head\l+ krl\l+ cmd\l|}" alt="" coords="179,588,275,708"/>
+<area shape="rect" id="node4" href="$structtFriKrlData.html" title="{tFriKrlData\n|+ realData\l+ intData\l+ boolData\l+ fill\l|}" alt="" coords="165,297,251,434"/>
+<area shape="rect" id="node10" href="$structtFriMsrData.html" title="{tFriMsrData\n|+ head\l+ krl\l+ intf\l+ robot\l+ data\l|}" alt="" coords="376,571,467,725"/>
+<area shape="rect" id="node6" href="$structtFriHeader.html" title="{tFriHeader\n|+ sendSeqCount\l+ reflSeqCount\l+ packetSize\l+ datagramId\l|}" alt="" coords="456,297,576,434"/>
+<area shape="rect" id="node8" href="$structtFriRobotCommand.html" title="{tFriRobotCommand\n|+ cmdFlags\l+ jntPos\l+ cartPos\l+ addJntTrq\l+ addTcpFT\l+ jntStiffness\l+ jntDamping\l+ cartStiffness\l+ cartDamping\l|}" alt="" coords="5,253,141,477"/>
+<area shape="rect" id="node14" href="$structtFriRobotData.html" title="{tFriRobotData\n|+ msrJntPos\l+ msrCartPos\l+ cmdJntPos\l+ cmdJntPosFriOffset\l+ cmdCartPos\l+ cmdCartPosFriOffset\l+ msrJntTrq\l+ estExtJntTrq\l+ estExtTcpFT\l+ jacobian\l+ massMatrix\l+ gravity\l|}" alt="" coords="275,227,432,503"/>
+<area shape="rect" id="node16" href="$structtFriRobotState.html" title="{tFriRobotState\n|+ power\l+ control\l+ error\l+ warning\l+ temperature\l|}" alt="" coords="600,288,707,443"/>
+<area shape="rect" id="node18" href="$structtFriIntfState.html" title="{tFriIntfState\n|+ timestamp\l+ state\l+ quality\l+ desiredMsrSampleTime\l+ desiredCmdSampleTime\l+ safetyLimits\l+ stat\l|}" alt="" coords="731,271,907,460"/>
+<area shape="rect" id="node20" href="$structtFriIntfStatistics.html" title="{tFriIntfStatistics\n|+ answerRate\l+ latency\l+ jitter\l+ missRate\l+ missCounter\l|}" alt="" coords="761,5,876,160"/>
+</map>

@@ -1,0 +1,89 @@
+\hypertarget{classLWRRegressor}{\section{\-L\-W\-R\-Regressor \-Class \-Reference}
+\label{classLWRRegressor}\index{\-L\-W\-R\-Regressor@{\-L\-W\-R\-Regressor}}
+}
+
+
+\-Implements the locally weighted regression method.  
+
+
+
+
+{\ttfamily \#include $<$\-L\-W\-R\-Regressor.\-h$>$}
+
+
+
+\-Inheritance diagram for \-L\-W\-R\-Regressor\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=184pt]{classLWRRegressor__inherit__graph}
+\end{center}
+\end{figure}
+
+
+\-Collaboration diagram for \-L\-W\-R\-Regressor\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=184pt]{classLWRRegressor__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{\-Public \-Member \-Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classLWRRegressor_a536ce119230557df4154a2d92fdd0607}{\-L\-W\-R\-Regressor} (vector$<$ vec $>$ sample\-Xs, vector$<$ vec $>$ sample\-Ts, \hyperlink{classGenericKernel}{\-Generic\-Kernel} $\ast$kernel, vector$<$ mat $>$ design\-Matrices)
+\begin{DoxyCompactList}\small\item\em constructor, setting all the sample data, the selected kernel and a vector of design matrices (one design matrix for each sample) \end{DoxyCompactList}\item 
+vec \hyperlink{classLWRRegressor_aea55827ce2c63078414469fe21c16f23}{fit\-At\-Position} (vec pos)
+\begin{DoxyCompactList}\small\item\em performs the kernel method for predicting the functin value at a given position \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{\-Detailed \-Description}
+\-This class inherits from the \hyperlink{classKernelRegressor}{\-Kernel\-Regressor} and implements locally weighted regression. \-It reuses the design matrices computed by the \hyperlink{classGeneralFitter}{\-General\-Fitter} class. 
+
+\subsection{\-Constructor \& \-Destructor \-Documentation}
+\hypertarget{classLWRRegressor_a536ce119230557df4154a2d92fdd0607}{\index{\-L\-W\-R\-Regressor@{\-L\-W\-R\-Regressor}!\-L\-W\-R\-Regressor@{\-L\-W\-R\-Regressor}}
+\index{\-L\-W\-R\-Regressor@{\-L\-W\-R\-Regressor}!LWRRegressor@{\-L\-W\-R\-Regressor}}
+\subsubsection[{\-L\-W\-R\-Regressor}]{\setlength{\rightskip}{0pt plus 5cm}{\bf \-L\-W\-R\-Regressor\-::\-L\-W\-R\-Regressor} (
+\begin{DoxyParamCaption}
+\item[{vector$<$ vec $>$}]{sample\-Xs, }
+\item[{vector$<$ vec $>$}]{sample\-Ts, }
+\item[{{\bf \-Generic\-Kernel} $\ast$}]{kernel, }
+\item[{vector$<$ mat $>$}]{design\-Matrices}
+\end{DoxyParamCaption}
+)}}\label{classLWRRegressor_a536ce119230557df4154a2d92fdd0607}
+
+\begin{DoxyParams}{\-Parameters}
+{\em sample\-Xs} & vector of samples (x-\/axis) \\
+\hline
+{\em sample\-Ts} & vector of samples (y-\/axis) \\
+\hline
+{\em kernel} & the selected kernel implementation \\
+\hline
+{\em design\-Matrices} & vector of design matrices \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{\-Member \-Function \-Documentation}
+\hypertarget{classLWRRegressor_aea55827ce2c63078414469fe21c16f23}{\index{\-L\-W\-R\-Regressor@{\-L\-W\-R\-Regressor}!fit\-At\-Position@{fit\-At\-Position}}
+\index{fit\-At\-Position@{fit\-At\-Position}!LWRRegressor@{\-L\-W\-R\-Regressor}}
+\subsubsection[{fit\-At\-Position}]{\setlength{\rightskip}{0pt plus 5cm}vec {\bf \-L\-W\-R\-Regressor\-::fit\-At\-Position} (
+\begin{DoxyParamCaption}
+\item[{vec}]{pos}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}\label{classLWRRegressor_aea55827ce2c63078414469fe21c16f23}
+
+\begin{DoxyParams}{\-Parameters}
+{\em pos} & vector defining the required position \\
+\hline
+\end{DoxyParams}
+
+
+\-Implements \hyperlink{classKernelRegressor_a65529e1d764f9abf0498c93a35ac3f16}{\-Kernel\-Regressor}.
+
+
+
+\-The documentation for this class was generated from the following files\-:\begin{DoxyCompactItemize}
+\item 
+/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/learning/\hyperlink{LWRRegressor_8h}{\-L\-W\-R\-Regressor.\-h}\item 
+/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/learning/\hyperlink{LWRRegressor_8cpp}{\-L\-W\-R\-Regressor.\-cpp}\end{DoxyCompactItemize}

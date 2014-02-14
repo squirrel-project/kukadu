@@ -1,0 +1,148 @@
+\hypertarget{classDMPReinforcer}{\section{\-D\-M\-P\-Reinforcer \-Class \-Reference}
+\label{classDMPReinforcer}\index{\-D\-M\-P\-Reinforcer@{\-D\-M\-P\-Reinforcer}}
+}
+
+
+\-The \hyperlink{classDMPReinforcer}{\-D\-M\-P\-Reinforcer} provides a general framework for reinforcement learning.  
+
+
+
+
+{\ttfamily \#include $<$\-D\-M\-P\-Reinforcer.\-h$>$}
+
+
+
+\-Inheritance diagram for \-D\-M\-P\-Reinforcer\-:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=224pt]{classDMPReinforcer__inherit__graph}
+\end{center}
+\end{figure}
+\subsection*{\-Public \-Member \-Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classDMPReinforcer_a3360619f6e4f33d9ed9600165cf1c587}{\-D\-M\-P\-Reinforcer} (\hyperlink{classCostComputer}{\-Cost\-Computer} $\ast$cost, \hyperlink{classControlQueue}{\-Control\-Queue} $\ast$movement\-Queue, double ac, double dmp\-Step\-Size, double tol\-Abs\-Err, double tol\-Rel\-Err)
+\begin{DoxyCompactList}\small\item\em constructor \end{DoxyCompactList}\item 
+virtual t\-\_\-learned\-\_\-dmp \hyperlink{classDMPReinforcer_aa9459e4d8a500cc6851e19a804680db7}{get\-Initial\-Rollout} ()=0
+\begin{DoxyCompactList}\small\item\em returns the first rollout of the reinforcement learning algorithm \end{DoxyCompactList}\item 
+virtual t\-\_\-learned\-\_\-dmp \hyperlink{classDMPReinforcer_a0c82b35d96fe07663187b8befd5c1042}{compute\-Rollout\-Paramters} ()=0
+\begin{DoxyCompactList}\small\item\em computes the dmp parameters for the next rollout \end{DoxyCompactList}\item 
+t\-\_\-learned\-\_\-dmp \hyperlink{classDMPReinforcer_a78c7e984f751de8ec4c0c3f6958c21c9}{get\-Last\-Rollout\-Parameters} ()
+\item 
+t\-\_\-executor\-\_\-res \hyperlink{classDMPReinforcer_aca3f8c0cdcc83587e46afc60dbda26e6}{get\-Last\-Execution\-Results} ()
+\item 
+void \hyperlink{classDMPReinforcer_a62083811b2610a623f7d3fe8e7fadeee}{perform\-Rollout} (int do\-Simulation, int do\-Execution)
+\begin{DoxyCompactList}\small\item\em executes rollout. first, the trajectory is simulated and the user is asked, whether the trajectory really should be executed \end{DoxyCompactList}\item 
+bool \hyperlink{classDMPReinforcer_a3ab981755e30c3feb310e020ab705c3d}{get\-Is\-First\-Iteration} ()
+\begin{DoxyCompactList}\small\item\em returns true if the first iteration has not been performed yet \end{DoxyCompactList}\item 
+double \hyperlink{classDMPReinforcer_a93dbd9ce2b2de8b527dde3039854ace4}{get\-Last\-Rollout\-Cost} ()
+\begin{DoxyCompactList}\small\item\em returns cost for the last executed rollout \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{\-Detailed \-Description}
+\-It is an abstract class that implements elementary functionality that should be in common for all reinforcement learning methods (such as rollout execution). \-A concrete implementation of the \hyperlink{classDMPReinforcer}{\-D\-M\-P\-Reinforcer} has to implement the missing parts such as the methods get\-Initial\-Rollout and compute\-Rollout\-Paramters. 
+
+\subsection{\-Constructor \& \-Destructor \-Documentation}
+\hypertarget{classDMPReinforcer_a3360619f6e4f33d9ed9600165cf1c587}{\index{\-D\-M\-P\-Reinforcer@{\-D\-M\-P\-Reinforcer}!\-D\-M\-P\-Reinforcer@{\-D\-M\-P\-Reinforcer}}
+\index{\-D\-M\-P\-Reinforcer@{\-D\-M\-P\-Reinforcer}!DMPReinforcer@{\-D\-M\-P\-Reinforcer}}
+\subsubsection[{\-D\-M\-P\-Reinforcer}]{\setlength{\rightskip}{0pt plus 5cm}{\bf \-D\-M\-P\-Reinforcer\-::\-D\-M\-P\-Reinforcer} (
+\begin{DoxyParamCaption}
+\item[{{\bf \-Cost\-Computer} $\ast$}]{cost, }
+\item[{{\bf \-Control\-Queue} $\ast$}]{movement\-Queue, }
+\item[{double}]{ac, }
+\item[{double}]{dmp\-Step\-Size, }
+\item[{double}]{tol\-Abs\-Err, }
+\item[{double}]{tol\-Rel\-Err}
+\end{DoxyParamCaption}
+)}}\label{classDMPReinforcer_a3360619f6e4f33d9ed9600165cf1c587}
+
+\begin{DoxyParams}{\-Parameters}
+{\em cost} & \hyperlink{classCostComputer}{\-Cost\-Computer} instance that computes the cost of a given rollout \\
+\hline
+{\em movement\-Queue} & \hyperlink{classControlQueue}{\-Control\-Queue} instance for robot execution \\
+\hline
+{\em ac} & dmp phase stopping parameter \\
+\hline
+{\em dmp\-Step\-Size} & step size for dmp execution \\
+\hline
+{\em tol\-Abs\-Err} & absolute tolerated error for numerical approximation \\
+\hline
+{\em tol\-Rel\-Err} & relative tolerated error for numerical approximation \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{\-Member \-Function \-Documentation}
+\hypertarget{classDMPReinforcer_a0c82b35d96fe07663187b8befd5c1042}{\index{\-D\-M\-P\-Reinforcer@{\-D\-M\-P\-Reinforcer}!compute\-Rollout\-Paramters@{compute\-Rollout\-Paramters}}
+\index{compute\-Rollout\-Paramters@{compute\-Rollout\-Paramters}!DMPReinforcer@{\-D\-M\-P\-Reinforcer}}
+\subsubsection[{compute\-Rollout\-Paramters}]{\setlength{\rightskip}{0pt plus 5cm}virtual t\-\_\-learned\-\_\-dmp {\bf \-D\-M\-P\-Reinforcer\-::compute\-Rollout\-Paramters} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}pure virtual\mbox{]}}}}\label{classDMPReinforcer_a0c82b35d96fe07663187b8befd5c1042}
+
+
+\-Implemented in \hyperlink{classGenDMPReinforcer_aace5aaa5519a64a33f05b0fd95ac0b6e}{\-Gen\-D\-M\-P\-Reinforcer}.
+
+\hypertarget{classDMPReinforcer_aa9459e4d8a500cc6851e19a804680db7}{\index{\-D\-M\-P\-Reinforcer@{\-D\-M\-P\-Reinforcer}!get\-Initial\-Rollout@{get\-Initial\-Rollout}}
+\index{get\-Initial\-Rollout@{get\-Initial\-Rollout}!DMPReinforcer@{\-D\-M\-P\-Reinforcer}}
+\subsubsection[{get\-Initial\-Rollout}]{\setlength{\rightskip}{0pt plus 5cm}virtual t\-\_\-learned\-\_\-dmp {\bf \-D\-M\-P\-Reinforcer\-::get\-Initial\-Rollout} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}pure virtual\mbox{]}}}}\label{classDMPReinforcer_aa9459e4d8a500cc6851e19a804680db7}
+
+
+\-Implemented in \hyperlink{classGenDMPReinforcer_adf7e9353b54e429649fb5dd5dd17c28e}{\-Gen\-D\-M\-P\-Reinforcer}.
+
+\hypertarget{classDMPReinforcer_a3ab981755e30c3feb310e020ab705c3d}{\index{\-D\-M\-P\-Reinforcer@{\-D\-M\-P\-Reinforcer}!get\-Is\-First\-Iteration@{get\-Is\-First\-Iteration}}
+\index{get\-Is\-First\-Iteration@{get\-Is\-First\-Iteration}!DMPReinforcer@{\-D\-M\-P\-Reinforcer}}
+\subsubsection[{get\-Is\-First\-Iteration}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf \-D\-M\-P\-Reinforcer\-::get\-Is\-First\-Iteration} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classDMPReinforcer_a3ab981755e30c3feb310e020ab705c3d}
+\hypertarget{classDMPReinforcer_aca3f8c0cdcc83587e46afc60dbda26e6}{\index{\-D\-M\-P\-Reinforcer@{\-D\-M\-P\-Reinforcer}!get\-Last\-Execution\-Results@{get\-Last\-Execution\-Results}}
+\index{get\-Last\-Execution\-Results@{get\-Last\-Execution\-Results}!DMPReinforcer@{\-D\-M\-P\-Reinforcer}}
+\subsubsection[{get\-Last\-Execution\-Results}]{\setlength{\rightskip}{0pt plus 5cm}t\-\_\-executor\-\_\-res {\bf \-D\-M\-P\-Reinforcer\-::get\-Last\-Execution\-Results} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classDMPReinforcer_aca3f8c0cdcc83587e46afc60dbda26e6}
+\hypertarget{classDMPReinforcer_a93dbd9ce2b2de8b527dde3039854ace4}{\index{\-D\-M\-P\-Reinforcer@{\-D\-M\-P\-Reinforcer}!get\-Last\-Rollout\-Cost@{get\-Last\-Rollout\-Cost}}
+\index{get\-Last\-Rollout\-Cost@{get\-Last\-Rollout\-Cost}!DMPReinforcer@{\-D\-M\-P\-Reinforcer}}
+\subsubsection[{get\-Last\-Rollout\-Cost}]{\setlength{\rightskip}{0pt plus 5cm}double {\bf \-D\-M\-P\-Reinforcer\-::get\-Last\-Rollout\-Cost} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classDMPReinforcer_a93dbd9ce2b2de8b527dde3039854ace4}
+\hypertarget{classDMPReinforcer_a78c7e984f751de8ec4c0c3f6958c21c9}{\index{\-D\-M\-P\-Reinforcer@{\-D\-M\-P\-Reinforcer}!get\-Last\-Rollout\-Parameters@{get\-Last\-Rollout\-Parameters}}
+\index{get\-Last\-Rollout\-Parameters@{get\-Last\-Rollout\-Parameters}!DMPReinforcer@{\-D\-M\-P\-Reinforcer}}
+\subsubsection[{get\-Last\-Rollout\-Parameters}]{\setlength{\rightskip}{0pt plus 5cm}t\-\_\-learned\-\_\-dmp {\bf \-D\-M\-P\-Reinforcer\-::get\-Last\-Rollout\-Parameters} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classDMPReinforcer_a78c7e984f751de8ec4c0c3f6958c21c9}
+\hypertarget{classDMPReinforcer_a62083811b2610a623f7d3fe8e7fadeee}{\index{\-D\-M\-P\-Reinforcer@{\-D\-M\-P\-Reinforcer}!perform\-Rollout@{perform\-Rollout}}
+\index{perform\-Rollout@{perform\-Rollout}!DMPReinforcer@{\-D\-M\-P\-Reinforcer}}
+\subsubsection[{perform\-Rollout}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-D\-M\-P\-Reinforcer\-::perform\-Rollout} (
+\begin{DoxyParamCaption}
+\item[{int}]{do\-Simulation, }
+\item[{int}]{do\-Execution}
+\end{DoxyParamCaption}
+)}}\label{classDMPReinforcer_a62083811b2610a623f7d3fe8e7fadeee}
+
+\begin{DoxyParams}{\-Parameters}
+{\em do\-Simulation} & flag whether trajectory should be simulated \\
+\hline
+{\em do\-Execution} & flag whether trajectory should be executed at robot \\
+\hline
+\end{DoxyParams}
+
+
+\-The documentation for this class was generated from the following files\-:\begin{DoxyCompactItemize}
+\item 
+/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/trajectory/\hyperlink{DMPReinforcer_8h}{\-D\-M\-P\-Reinforcer.\-h}\item 
+/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/trajectory/\hyperlink{DMPReinforcer_8cpp}{\-D\-M\-P\-Reinforcer.\-cpp}\end{DoxyCompactItemize}

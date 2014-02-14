@@ -1,0 +1,4 @@
+<map id="G" name="G">
+<area shape="rect" id="node1" href="$classCostComputer.html" title="Interface for reinforcement learning cost function computation used by DMPReinforcer." alt="" coords="5,5,112,35"/>
+<area shape="rect" id="node3" href="$classTerminalCostComputer.html" title="The TerminalCostComputer implements the CostComputer interface." alt="" coords="160,5,317,35"/>
+</map>

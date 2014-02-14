@@ -1,0 +1,72 @@
+\hypertarget{classGenericKernel}{\section{\-Generic\-Kernel \-Class \-Reference}
+\label{classGenericKernel}\index{\-Generic\-Kernel@{\-Generic\-Kernel}}
+}
+
+
+\-Provides an interface for generic kernel functions.  
+
+
+
+
+{\ttfamily \#include $<$\-Generic\-Kernel.\-h$>$}
+
+
+
+\-Inheritance diagram for \-Generic\-Kernel\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classGenericKernel__inherit__graph}
+\end{center}
+\end{figure}
+\subsection*{\-Public \-Member \-Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classGenericKernel_abcaf5c25a540c85304912e5cf7087903}{\-Generic\-Kernel} ()
+\begin{DoxyCompactList}\small\item\em constructor \end{DoxyCompactList}\item 
+virtual double \hyperlink{classGenericKernel_a5b3ef309f47d56cfcb12d02bf0f0b5c7}{evaluate\-Kernel} (vec q1, vec q2, void $\ast$kernel\-Param)=0
+\begin{DoxyCompactList}\small\item\em computes kernel values with given vectors q1 and q2 and passes a not further specified kernel parameter that can be used by the kernel implementation \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{\-Detailed \-Description}
+\-The \hyperlink{classGenericKernel}{\-Generic\-Kernel} class is used by the \hyperlink{classKernelRegressor}{\-Kernel\-Regressor}. \-Implementations of \hyperlink{classGenericKernel}{\-Generic\-Kernel} have to provide a certain kernel function, according to the kernel criteria. 
+
+\subsection{\-Constructor \& \-Destructor \-Documentation}
+\hypertarget{classGenericKernel_abcaf5c25a540c85304912e5cf7087903}{\index{\-Generic\-Kernel@{\-Generic\-Kernel}!\-Generic\-Kernel@{\-Generic\-Kernel}}
+\index{\-Generic\-Kernel@{\-Generic\-Kernel}!GenericKernel@{\-Generic\-Kernel}}
+\subsubsection[{\-Generic\-Kernel}]{\setlength{\rightskip}{0pt plus 5cm}{\bf \-Generic\-Kernel\-::\-Generic\-Kernel} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classGenericKernel_abcaf5c25a540c85304912e5cf7087903}
+
+
+\subsection{\-Member \-Function \-Documentation}
+\hypertarget{classGenericKernel_a5b3ef309f47d56cfcb12d02bf0f0b5c7}{\index{\-Generic\-Kernel@{\-Generic\-Kernel}!evaluate\-Kernel@{evaluate\-Kernel}}
+\index{evaluate\-Kernel@{evaluate\-Kernel}!GenericKernel@{\-Generic\-Kernel}}
+\subsubsection[{evaluate\-Kernel}]{\setlength{\rightskip}{0pt plus 5cm}virtual double {\bf \-Generic\-Kernel\-::evaluate\-Kernel} (
+\begin{DoxyParamCaption}
+\item[{vec}]{q1, }
+\item[{vec}]{q2, }
+\item[{void $\ast$}]{kernel\-Param}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}pure virtual\mbox{]}}}}\label{classGenericKernel_a5b3ef309f47d56cfcb12d02bf0f0b5c7}
+
+\begin{DoxyParams}{\-Parameters}
+{\em q1} & vector q1 with \-K = \-K(d(q1, q2)) \\
+\hline
+{\em q2} & vector q2 with \-K = \-K(d(q1, q2)) \\
+\hline
+{\em kernel\-Param} & arbitrary kernel parameter \\
+\hline
+\end{DoxyParams}
+
+
+\-Implemented in \hyperlink{classGaussianKernel_a11e2ca51c88c8167b86c571187995d47}{\-Gaussian\-Kernel}, \hyperlink{classQuadraticKernel_a0e7260845bf72f6fb61722cfe7c4b984}{\-Quadratic\-Kernel}, and \hyperlink{classTricubeKernel_a53a425369baf0bb3e556a08a024baf5c}{\-Tricube\-Kernel}.
+
+
+
+\-The documentation for this class was generated from the following files\-:\begin{DoxyCompactItemize}
+\item 
+/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/learning/\hyperlink{GenericKernel_8h}{\-Generic\-Kernel.\-h}\item 
+/home/shangl/data/data\-\_\-synched/studium/informatik/master/master\-\_\-thesis/kukadu\-\_\-framework/thesis/src/learning/\hyperlink{GenericKernel_8cpp}{\-Generic\-Kernel.\-cpp}\end{DoxyCompactItemize}
