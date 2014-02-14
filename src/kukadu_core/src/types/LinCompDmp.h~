@@ -1,0 +1,31 @@
+#ifndef LINCOMPDMP
+#define LINCOMPDMP
+
+#include "Trajectory.h"
+#include "../utils/types.h"
+#include "../utils/conversion_utils.h"
+#include <vector>
+#include <armadillo>
+
+class LinCompDmp : public Trajectory {
+	
+private:
+	
+	
+	
+public:
+	
+	LinCompDmp(arma::vec supervisedTs, std::vector<arma::vec> sampleYs);
+	LinCompDmp(const LinCompDmp& copy);
+	LinCompDmp();
+	
+	std::vector<arma::vec> getCoefficients();
+	void setCoefficients(std::vector<arma::vec> coeffs);
+	
+	int operator==(Trajectory const& comp) const;
+	
+	Trajectory* copy();
+	
+};
+
+#endif

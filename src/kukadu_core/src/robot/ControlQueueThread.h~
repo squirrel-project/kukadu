@@ -1,0 +1,96 @@
+#ifndef CONTROLQUEUE
+#define CONTROLQUEUE
+
+#include <unistd.h>
+#include <queue>
+#include <iostream>
+#include <cstdlib>
+#include <math.h>
+#include <thread>
+#include <mutex>
+#include <time.h>
+
+// Custom librairies
+#include "../utils/DestroyableObject.h"
+#include "../utils/types.h"
+#include "robotDriver/src/friMain.h"
+#include "robotDriver/src/friMisc.h"
+#include "../robotDriver/src/kuka/friRemote.h"
+
+#define COMMAND_NOT_SET -100
+
+class ControlQueue : public DestroyableObject {
+
+private:
+
+	friRemote* friInst;
+	
+	int currentQueueSize;
+	int port;
+	int sleepTime;
+	int finish;
+	int currentMode;
+	int initMode;
+	
+	float loadMass;
+	float loadPos;
+	
+	float cpstiffnessxyz;
+	float cpstiffnessabc;
+	float cpdamping;
+	float axismaxdeltatrq;
+	float cpmaxdelta;
+	float maxforce;
+	
+	double timeThreadStarted;
+	double currentTime;
+	
+	std::queue<float*> movementQueue;
+	std::mutex currentJointsMutex;
+	std::mutex stiffnessMutex;
+	
+	bool isInit;
+	
+	float* startingJoints;
+	
+	void demoRobot();
+	void closeRobotSession();
+	void setInitValues();
+	
+	float* currentJoints;
+	float* controlRobot(float*);
+	float* setupCommandMode(int);
+	float* setupGuidedMeasurementMode(int);
+
+public:
+
+	ControlQueue(int port, int sleepTime, int initMode);
+	
+	void run();
+	void setFinish();
+	void addJointsPosToQueue(float*);
+	void switchMode(int);
+	void stopCurrentMode();
+	void initializeRobot(int);
+	void synchronizeToControlQueue(int maxNumJointsInQueue);
+	void setStartingJoints(float* joints);
+	void moveJoints(float* joints);
+	
+	void setAdditionalLoad(float loadMass, float loadPos);
+	void setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq);
+	
+	int getMovementDegreesOfFreedom();
+	
+	float* getCartesianPos();
+	float* getStartingJoints();
+	float* retrieveJointsFromRobot();
+	
+	mes_result getCurrentJoints();
+	bool isInitialized();
+	void safelyDestroy();
+    
+};
+
+void startControlQueue();
+
+#endif

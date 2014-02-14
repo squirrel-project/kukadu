@@ -1,0 +1,33 @@
+#ifndef DMPBASESET
+#define DMPBASESET
+
+#include "../utils/types.h"
+#include "../utils/utils.h"
+#include <vector>
+#include <armadillo>
+
+/*
+struct dmp_base {
+	float my;
+	std::vector<double> sigmas;
+};
+
+struct dmp_base_set {
+	std::vector<dmp_base> functions;
+};
+*/
+
+class DMPBase {
+	
+private:
+	
+	float my;
+	std::vector<double> sigmas;
+	
+public:
+	
+	DMPBase();
+	
+};
+
+#endif
