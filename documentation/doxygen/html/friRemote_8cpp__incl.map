@@ -1,5 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$friRemote_8h_source.html" title="Remote class for handshaking/dealing with udp datastructures." alt="" coords="547,83,637,112"/>
-<area shape="rect" id="node5" href="$friUdp_8h_source.html" title="header for udp Communications *" alt="" coords="559,160,625,189"/>
-<area shape="rect" id="node27" href="$friComm_8h_source.html" title="This header file describes the basic communcation structures for the FastRobotInterface." alt="" coords="971,237,1053,267"/>
-</map>

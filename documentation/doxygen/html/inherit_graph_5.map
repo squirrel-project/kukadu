@@ -1,4 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node1" href="$classDMPReinforcer.html" title="The DMPReinforcer provides a general framework for reinforcement learning." alt="" coords="5,5,117,35"/>
-<area shape="rect" id="node3" href="$classGenDMPReinforcer.html" title="The GenDMPReinforcer completes the DMPReinforcer implementation by reusing the DMPGeneralizer functio..." alt="" coords="165,5,301,35"/>
-</map>

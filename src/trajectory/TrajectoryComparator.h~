@@ -1,0 +1,14 @@
+#ifndef TRAJECTORYCOMPARATOR
+#define TRAJECTORYCOMPARATOR
+
+#include "../types/Trajectory.h"
+
+class TrajectoryComparator {
+	
+public:
+	
+	virtual int computeDistance() = 0;
+	
+};
+
+#endif

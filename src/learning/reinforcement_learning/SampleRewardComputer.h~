@@ -1,0 +1,30 @@
+#ifndef SAMPLEREWARDCOMPUTER
+#define SAMPLEREWARDCOMPUTER
+
+#include <armadillo>
+#include <vector>
+#include <cmath>
+
+#include "TrajectoryBasedReward.h"
+#include "../../utils/types.h"
+
+class SampleRewardComputer : public TrajectoryBasedReward {
+
+private:
+	
+	double tmax;
+	double slope;
+	
+	double computeFun(double t);
+
+public:
+
+	SampleRewardComputer(double slope);
+	double computeCost(t_executor_res results);
+	
+	t_executor_res getOptimalTraj(double tmax);
+	arma::vec computeFun(arma::vec t);
+	
+};
+
+#endif

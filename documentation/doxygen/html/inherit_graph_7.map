@@ -1,6 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node1" href="$classGenericKernel.html" title="Provides an interface for generic kernel functions." alt="" coords="5,59,109,88"/>
-<area shape="rect" id="node3" href="$classGaussianKernel.html" title="Implements a Gaussian kernel according to the GenericKernel specifiction." alt="" coords="157,5,272,35"/>
-<area shape="rect" id="node5" href="$classQuadraticKernel.html" title="Implements a quadratic kernel according to the GenericKernel specifiction." alt="" coords="157,59,272,88"/>
-<area shape="rect" id="node7" href="$classTricubeKernel.html" title="Implements a tricube kernel according to the GenericKernel specifiction." alt="" coords="164,112,265,141"/>
-</map>

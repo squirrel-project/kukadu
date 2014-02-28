@@ -1,4 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node2" href="$classGenericHand.html" title="{GenericHand\n||+ connectHand()\l+ closeHand()\l+ disconnectHand()\l}" alt="" coords="5,139,141,259"/>
-<area shape="rect" id="node4" href="$classDestroyableObject.html" title="{DestroyableObject\n||+ safelyDestroy()\l}" alt="" coords="8,5,139,91"/>
-</map>

@@ -1,0 +1,18 @@
+#include "Trajectory.h"
+
+Trajectory::Trajectory(arma::vec supervisedTs, std::vector<arma::vec> sampleYs) {
+	this->supervisedTs = supervisedTs;
+	this->sampleYs = sampleYs;
+}
+
+int Trajectory::getDegreesOfFreedom() {
+	return sampleYs.size();
+}
+	
+arma::vec Trajectory::getSupervisedTs() {
+	return supervisedTs;
+}
+
+arma::vec Trajectory::getSamplYByIndex(int idx) {
+	return sampleYs.at(
+}

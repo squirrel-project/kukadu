@@ -1,5 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node1" href="$classTrajectoryGenerator.html" title="The TrajectoryGenerator defines an interface to define basis functions for linear regression (see Gen..." alt="" coords="7,32,143,61"/>
-<area shape="rect" id="node3" href="$classDMPTrajectoryGenerator.html" title="Implements the TrajectoryGenerator interface for dynamic movement primitives." alt="" coords="193,5,359,35"/>
-<area shape="rect" id="node5" href="$classPolyTrajectoryGenerator.html" title="Implements the TrajectoryGenerator interface for polynomials." alt="" coords="195,59,357,88"/>
-</map>

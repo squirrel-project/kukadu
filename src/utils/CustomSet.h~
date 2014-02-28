@@ -1,0 +1,25 @@
+#ifndef CUSTOMSET
+#define CUSTOMSET
+
+#include <utility>
+#include <math.h>
+#include <vector>
+#include <armadillo>
+
+// created my own set implementation, because there is either a bug in the library or i am to stupid to define a total order on vectors
+class CustomSet : public std::vector<arma::vec> {
+
+private:
+	
+	int compareArmadilloVec(arma::vec vec1, arma::vec vec2);
+	
+public:
+	
+	CustomSet();
+	
+	std::pair<std::vector<arma::vec>::iterator, int> insert(arma::vec vec1);
+	std::vector<arma::vec>::iterator find(arma::vec vec1);
+	
+};
+
+#endif

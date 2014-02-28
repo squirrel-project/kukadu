@@ -1,6 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$classControlQueue.html" title="Provides an interface for robot controllers." alt="" coords="5,139,240,397"/>
-<area shape="rect" id="node7" href="$classGenericHand.html" title="The GenericHand provides a very elementary interface to control robot hands mounted on a robot arm Th..." alt="" coords="264,208,400,328"/>
-<area shape="rect" id="node5" href="$classKukaControlQueue.html" title="The KukaControlQueue provides control capabilities for the Kuka LWR 4+ robotic arm." alt="" coords="20,445,225,704"/>
-<area shape="rect" id="node9" href="$classSchunkHand.html" title="Provides control capabilities for the Schunk SDH robotic hand Implements the GenericHand interface fo..." alt="" coords="264,497,400,652"/>
-</map>
