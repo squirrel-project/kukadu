@@ -24,12 +24,8 @@ DictionaryTrajectory::DictionaryTrajectory(int degOfFreedom, std::string baseFol
 		Dmp learnedDmps = dmpLearner->fitTrajectories();
 		queryPoints.at(i).setDmp(learnedDmps);
 		
-		cout << "(DMPGeneralizer) goals for query point [";
-		cout << queryPoints.at(i).getQueryPoint().t();
-		cout << "]" << endl;
-		cout << "\t [";
-		cout << queryPoints.at(i).getDmp().getG().t();
-		cout << "]" << endl;
+        cout << "(DMPGeneralizer) goals for query point [" << queryPoints.at(i).getQueryPoint().t() << "]" << endl << "\t [";
+        cout << queryPoints.at(i).getDmp().getG().t() << "]" << endl;
 		
 		delete dmpLearner;
 		

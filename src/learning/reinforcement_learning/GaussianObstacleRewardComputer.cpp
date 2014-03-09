@@ -77,8 +77,8 @@ double GraspingRewardComputer::computeCost(t_executor_res results) {
 	vec distVec = (worldVec - pos).t() * (worldVec - pos);
 	double reward = 1 / exp( distVec(0) );
 	
-	cout << "world vector: " << worldVec.t() << endl;
-	cout << "ground truth: " << pos.t() << endl;
+    cout << "world vector: " << worldVec.t() << endl;
+    cout << "ground truth: " << pos.t() << endl;
 	
 	return reward;
 	

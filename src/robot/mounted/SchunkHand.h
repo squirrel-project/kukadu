@@ -19,7 +19,7 @@ class SchunkHand : public GenericHand {
 
 private:
 
-	char* usbDevice;
+    const char* usbDevice;
 	
 	SDH::cSDHBase::eGraspId currentGrasp;
 	
@@ -31,7 +31,7 @@ public:
 	/** \brief SchunkHand constructor taking the connection port name
 	 * \param usbDevice usb port name (e.g. "/dev/ttyUSB0")
 	 */
-	SchunkHand(char* usbDevice);
+    SchunkHand(const char* usbDevice);
 
 	void connectHand();
 	void closeHand(double percentage, double velocity);

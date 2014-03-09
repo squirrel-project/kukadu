@@ -23,7 +23,7 @@ DictionaryGeneralizer::DictionaryGeneralizer(arma::vec initQueryPoint, ControlQu
 	this->currentQuery = initQueryPoint;
 	this->tEnd = dictTraj->getTmax();
 	this->ac = ac;
-	this->as = as;
+    this->as = as;
 	
 	this->maxRelativeToMeanDistance = maxRelativeToMeanDistance;
 
@@ -97,7 +97,7 @@ double DictionaryGeneralizer::getCurrentTime() {
 // TODO: find out why metric can produce negative distances after reinforcement learning
 t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, double ac, double as) {
 	
-	int firstTime = 1;
+    int firstTime = 1;
 	double norm = 0.0;
 	currentTime = 0.0;
 	int points = getQueryPointCount();
@@ -113,14 +113,14 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 	
 	// simulation is standard option
 	int simulate = 1;
-	int isFirstIteration = 1;
+    int isFirstIteration = 1;
 	
 	double alpham = 1.0;
 	
 	// if queue is defined, execute trajectory
 	if(this->queue) simulate = 0;
 	
-	// cout << "(DictionaryGeneralizer) starting generalized execution" << endl;
+    cout << "(DictionaryGeneralizer) starting generalized execution" << endl;
 
 	t_executor_res ret;
 	//vector<vector<double>> retY;
@@ -148,6 +148,9 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 
 	// execute dmps and compute linear combination
 	for(; currentTime < tEnd; currentTime += stepSize) {
+
+        if((currentTime - ((int) currentTime)) < 0.02)
+            cout << "(DictionaryGeneralizer) execution of trajectory (currentTime: " << currentTime << ")" << endl;
 		
 		vec distanceCoeffs(points);
 		vec nextJoints(degOfFreedom);
@@ -158,7 +161,8 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 		
 			// compute all distances
 			for(int i = 0; i < points; ++i) {
-				distanceCoeffs(i) = metric.computeSquaredDistance(dictTraj->getQueryPoints().at(i).getQueryPoint(), currentQuery);
+                double currCoeff = metric.computeSquaredDistance(dictTraj->getQueryPoints().at(i).getQueryPoint(), currentQuery);
+                distanceCoeffs(i) = currCoeff;
 			}
 //			cout << distanceCoeffs.t() << endl;
 			
@@ -174,13 +178,19 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 				
 				dictTraj->setCurrentQueryPoint(currentQuery);
 				
-				for(int i = 0; i < points; ++i)
-					currentCoefficients(i) = 1 / exp(alpham * distanceCoeffs(i));
+                for(int i = 0; i < points; ++i) {
+                    double currCoeff = 1 / exp(alpham * distanceCoeffs(i));
+                    currentCoefficients(i) = currCoeff;
+                }
 				
 				// drop trajectories that are too far away
-				for(int i = 0; i < points; ++i)
-					if(distanceCoeffs(i) > (avgDist * maxRelativeToMeanDistance))
+                double tolerableDistance = avgDist * maxRelativeToMeanDistance;
+                for(int i = 0; i < points; ++i) {
+                    double currCoeff = distanceCoeffs(i);
+                    if(currCoeff > tolerableDistance) {
 						currentCoefficients(i) = 0.0;
+                    }
+                }
 
 				oldCoefficients = newCoefficients = currentCoefficients;
 				
@@ -201,22 +211,24 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 					if(distanceCoeffs(i) > (avgDist * maxRelativeToMeanDistance))
 						newCoefficients(i) = 0.0;
 				
-			//	cout << currentQuery << endl;
-			//	cout << distanceCoeffs.t() << endl;
-			//	cout << avgDist << " " << maxRelativeToMeanDistance << " " << (avgDist * maxRelativeToMeanDistance) << endl << endl << endl << endl;
 				oldCoefficients = currentCoefficients;
 				
 			}
-			
+
+            if(dot(currentCoefficients, currentCoefficients) == 0.0) {
+                string errStr = "(DictionaryGeneralizer) all coefficients are 0, please recheck your settings";
+                cerr << errStr << endl;
+                throw "(DictionaryGeneralizer) all coefficients are 0, please recheck your settings";
+            }
+
 			// compute coefficient switching
 			currentCoefficients = (1 - exp(- as * switchTime)) * newCoefficients + oldCoefficients * exp(- as * switchTime);
-			
-	//		cout << currentCoefficients << endl;
 			
 			// compute new normalization
 			norm = 0.0;
 			for(int i = 0; i < points; ++i) {
-				norm += currentCoefficients(i);
+                double currCoeff = currentCoefficients(i);
+                norm += currCoeff;
 			}
 			
 			switchTime += stepSize;
@@ -228,50 +240,56 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 			vec currJoints(degOfFreedom);
 			currJoints.fill(0.0);
 			currJoints = execs.at(i)->doIntegrationStep(ac);
-			
-			nextJoints += currentCoefficients(i) / norm * currJoints;
 
-		}
-		
-		if(isFirstIteration && !simulate) {
-			
-			cout << "(DictionaryGeneralizer) moving to initial execution position" << endl;
-			float* startingJoints = new float[nextJoints.n_elem];
-			for(int i = 0; i < nextJoints.n_elem; ++i) startingJoints[i] = nextJoints(i);
-			queue->moveJoints(startingJoints);
-			isFirstIteration = 0;
-			cout << "(DictionaryGeneralizer) starting trajectory execution" << endl;
-			
-		} else {
-		
-		
-			if(!simulate)  {
+            double currCoeff = currentCoefficients(i);
+            nextJoints += currCoeff / norm * currJoints;
 
-				float* moveJoints = new float[nextJoints.n_elem];
-				
-				// move to desired position
-				for(int i = 0; i < nextJoints.n_elem; ++i) {
-					moveJoints[i] = nextJoints(i);
-				}
-				
-				// synchronize to control queue (maximum one joint array has to be already in there --> needed for phase stopping such that DMPExecutor does not progress to fast)
-				queue->synchronizeToControlQueue(0);
-				queue->addJointsPosToQueue(moveJoints);
-				
-				float* currentJoints = queue->getCurrentJoints().joints;
-				for(int i = 0; i < nextJoints.n_elem; ++i) {
-					nextJoints(i) = currentJoints[i];
-				}
+            // query points not correct
+/*
+            if(currCoeff/norm > 0.5)
+                cout << "influental query point: " << dictTraj->getQueryPoints().at(i).getQueryPoint().t() << endl;
+            else
+                cout << "non-influental query point: " << dictTraj->getQueryPoints().at(i).getQueryPoint().t() << endl;
+*/
+        }
 
-			} else {
-				
-			}
-			
-		}
+        if(!simulate) {
+
+            // if real robot execution and first integration step --> move to initial position
+            if(isFirstIteration) {
+
+                cout << "(DictionaryGeneralizer) moving to initial execution position" << endl;
+                float* startingJoints = new float[nextJoints.n_elem];
+                for(int i = 0; i < nextJoints.n_elem; ++i) startingJoints[i] = nextJoints(i);
+                queue->moveJoints(startingJoints);
+                isFirstIteration = 0;
+                cout << "(DictionaryGeneralizer) starting trajectory execution" << endl;
+
+            } else {
+
+                // if not first integration step but real robot execution --> add new positions to queue
+                float* moveJoints = new float[nextJoints.n_elem];
+
+                // move to desired position
+                for(int i = 0; i < nextJoints.n_elem; ++i) {
+                    moveJoints[i] = nextJoints(i);
+                }
+
+                // synchronize to control queue (maximum one joint array has to be already in there --> needed for phase stopping such that DMPExecutor does not progress to fast)
+                queue->synchronizeToControlQueue(0);
+                queue->addJointsPosToQueue(moveJoints);
+
+                float* currentJoints = queue->getCurrentJoints().joints;
+                for(int i = 0; i < nextJoints.n_elem; ++i) {
+                    nextJoints(i) = currentJoints[i];
+                }
+
+            }
+        }
 		
 		for(int i = 0; i < degOfFreedom; ++i)
 			retY[i].push_back(nextJoints(i));
-// cout << nextJoints.t() << endl;
+
 		retT.push_back(currentTime);
 		
 	}

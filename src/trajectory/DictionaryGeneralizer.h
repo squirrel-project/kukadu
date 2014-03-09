@@ -30,6 +30,7 @@ class DictionaryGeneralizer : public TrajectoryExecutor {
 private:
 	
 	int newQpSwitch;
+    int firstTime;
 	double as;
 	double switchTime;
 	arma::vec oldCoefficients;

@@ -23,7 +23,7 @@
 #include "../include/kukadu.h"
 #include "../src/utils/gnuplot-cpp/gnuplot_i.hpp"
 
-#define DOSIMULATION 1
+#define DOSIMULATION 0
 
 using namespace std;
 using namespace arma;
@@ -39,8 +39,6 @@ void switch2dQueryPoint();
 
 char consoleInput = 0;
 char consoleInputter();
-
-t_executor_res executeDemo(ControlQueue* movementQu, string file, int doSimulation);
 
 void testIROS();
 void testIROSGrasping();
@@ -88,7 +86,7 @@ double ac = 10;
 string left_hardware = "left_arm";
 string right_hardware = "right_arm";
 
-string hardware = right_hardware;
+string hardware = left_hardware;
 	
 string prefix = "real";
 
@@ -141,6 +139,7 @@ int main(int argc, char** args) {
 		// sample call: rosrun kukadu kukadu mes /home/shangl/iis_robot_sw/iis_catkin_ws/src/kukadu/src/kukadu_core/movements/iros2014/real_robot_2d_pickup/traj_8-6.txt
 		mode = 1;
 		outFile = args[2];
+        cout << "outfile: " << outFile << endl;
 	}
 	else if(!strcmp(args[1], "demo")) {
 		// sample call: rosrun kukadu kukadu demo /home/shangl/iis_robot_sw/iis_catkin_ws/src/kukadu/src/kukadu_core/movements/thesis_sample/pickup-gen-1d/traj_5.txt
@@ -282,7 +281,7 @@ int main(int argc, char** args) {
 		
 		raQueue->switchMode(30);
 		
-		executeDemo(raQueue, screwFile, doSimulation);
+        executeDemo(raQueue, screwFile, doSimulation, az, bz, 1);
 		raHand->closeHand(0.0, handVelocity);
 		
 		raQueue->switchMode(30);
@@ -447,8 +446,8 @@ int main(int argc, char** args) {
 		
 		}
 		
-		if(!doSimulation) executeDemo(raQueue, inFile, doSimulation);
-		else executeDemo(NULL, inFile, doSimulation);
+        if(!doSimulation) executeDemo(raQueue, inFile, doSimulation, az, bz, 1);
+        else executeDemo(NULL, inFile, doSimulation, az, bz, 1);
 		
 	} else if(mode == 3) {
 		
@@ -487,8 +486,8 @@ int main(int argc, char** args) {
 		}
 		
 		t_executor_res dmpResult;
-		if(!doSimulation) dmpResult = executeDemo(raQueue, inFile, doSimulation);
-		else dmpResult = executeDemo(NULL, inFile, doSimulation);
+        if(!doSimulation) dmpResult = executeDemo(raQueue, inFile, doSimulation, az, bz, 1);
+        else dmpResult = executeDemo(NULL, inFile, doSimulation, az, bz, 1);
 		
 		ofstream oFile;
 		oFile.open(outFile);
@@ -627,7 +626,7 @@ void testIROSGrasping() {
 //	t_executor_res opt = reward.getOptimalTraj(5.0);
 	
 	cout << "execute ground truth for (8, 8)" << endl;
-	t_executor_res opt = executeDemo(NULL, "/home/shangl/iis_robot_sw/iis_catkin_ws/src/kukadu/src/kukadu_core/movements/iros2014/traj_8-8.txt", doSimulation);
+    t_executor_res opt = executeDemo(NULL, "/home/shangl/iis_robot_sw/iis_catkin_ws/src/kukadu/src/kukadu_core/movements/iros2014/traj_8-8.txt", doSimulation, az, bz, 0);
 	
 	// speedup testing process by inserting already learned metric result
 	mat m(2,2);
@@ -1233,98 +1232,6 @@ void testMetric() {
 char consoleInputter() {
 	cin >> consoleInput;
 	return consoleInput;
-}
-
-t_executor_res executeDemo(ControlQueue* movementQu, string file, int doSimulation) {
-	
-	int columns = 8;
-	int kukaPort = 49938;
-	int plotNum = columns - 1;
-	
-	// constant for phase stopping
-	double ac = 10;
-
-	double tolAbsErr = 1e-1;
-	double tolRelErr = 1e-1;
-
-	int kukaStepWaitTime = 1.3 * 1e4;
-	double dmpStepSize = kukaStepWaitTime * 1e-6;
-	
-	// with current implementation tStart has to be 0.0
-	double tStart = 0.0;
-	double tEnd = 7.5;
-	double tau = 0.8;
-	
-	// TODO: find a better way to really determine these constants (got these values by trying out with real robot data)
-	double az = 48.0;
-	double bz = (az - 1) / 4;
-	
-	// vector<double> tmpmys{0, 1, 2, 3, 4, 5, 6, 7, 8};
-	vector<double> tmpmys;
-	vector<double> tmpsigmas{0.2, 0.8};
-	
-	// reading in file
-	mat joints = readMovements(file, columns);
-	
-	tmpmys = constructDmpMys(joints);
-	
-	double ax = -log((float)0.1) / joints(joints.n_rows - 1, 0) / tau;
-	// double ax = 0.2;
-	
-	vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
-
-	float timeCounter = 0.0;
-	float* jointValues = NULL;
-	float* currentJoints = NULL;
-
-	TrajectoryDMPLearner dmpLearner(baseDef, tau, az, bz, ax, joints, columns - 1);
-	Dmp learnedDmps = dmpLearner.fitTrajectories();
-	vector<vec> dmpCoeffs = learnedDmps.getDmpCoeffs();
-
-	if(!doSimulation) {
-		
-		double* tmp = createDoubleArrayFromArmaVector(learnedDmps.getY0());
-		float* startingJoints = new float[columns - 1];
-		for(int i = 0; i < (columns - 1); ++i) startingJoints[i] = tmp[i];
-		movementQu->moveJoints(startingJoints);
-		
-		currentJoints = movementQu->getCurrentJoints().joints;
-		printf("(main) begin joint [%f,%f,%f,%f,%f,%f,%f]\n", currentJoints[0], currentJoints[1], currentJoints[2], currentJoints[3], currentJoints[4], currentJoints[5], currentJoints[6]);
-		fflush(stdout);
-
-	}
-	
-	DMPExecutor dmpexec(learnedDmps);
-	t_executor_res dmpResult;
-	if(doSimulation) dmpResult = dmpexec.simulateTrajectory(tStart, learnedDmps.getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
-	else {
-		
-		dmpResult = dmpexec.executeTrajectory(ac, tStart, learnedDmps.getTmax(), dmpStepSize, tolAbsErr, tolRelErr, movementQu);
-		
-		movementQu->switchMode(10);
-		movementQu->stopCurrentMode();
-		
-	}
-
-	for(int plotTraj = 0; plotTraj < plotNum; ++plotTraj) {
-		
-		ostringstream convert;   // stream used for the conversion
-		convert << plotTraj;
-		
-		string title = string("fitted sensor data (joint") + convert.str() + string(")");
-		g1 = new Gnuplot(title);
-		g1->set_style("lines").plot_xy(armadilloToStdVec(learnedDmps.getSupervisedTs()), armadilloToStdVec(learnedDmps.getSampleYByIndex(plotTraj)), "sample y");
-		g1->set_style("lines").plot_xy(armadilloToStdVec(dmpResult.t), armadilloToStdVec(dmpResult.y[plotTraj]), "dmp y");
-		g1->showonscreen();
-		
-	}
-	
-	g1 = new Gnuplot(string("internal clock plot"));
-	g1->set_style("lines").plot_xy(armadilloToStdVec(dmpResult.t), armadilloToStdVec(dmpResult.internalClock), "internal clock");
-	g1->showonscreen();
-	
-	return dmpResult;
-
 }
 
 void switchQueryPoint() {

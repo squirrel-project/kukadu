@@ -3,6 +3,100 @@
 using namespace std;
 using namespace arma;
 
+t_executor_res executeDemo(ControlQueue* movementQu, string file, int doSimulation, double az, double bz, int plotResults) {
+	
+	Gnuplot* g1 = NULL;
+	
+	int columns = 8;
+	int kukaPort = 49938;
+	int plotNum = columns - 1;
+	
+	// constant for phase stopping
+	double ac = 10;
+
+	double tolAbsErr = 1e-1;
+	double tolRelErr = 1e-1;
+
+	int kukaStepWaitTime = 1.3 * 1e4;
+	double dmpStepSize = kukaStepWaitTime * 1e-6;
+	
+	// with current implementation tStart has to be 0.0
+	double tStart = 0.0;
+	double tEnd = 7.5;
+	double tau = 0.8;
+	
+	// vector<double> tmpmys{0, 1, 2, 3, 4, 5, 6, 7, 8};
+	vector<double> tmpmys;
+	vector<double> tmpsigmas{0.2, 0.8};
+	
+	// reading in file
+	mat joints = readMovements(file, columns);
+	
+	tmpmys = constructDmpMys(joints);
+	
+	double ax = -log((float)0.1) / joints(joints.n_rows - 1, 0) / tau;
+	// double ax = 0.2;
+	
+	vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
+
+	float timeCounter = 0.0;
+	float* jointValues = NULL;
+	float* currentJoints = NULL;
+
+	TrajectoryDMPLearner dmpLearner(baseDef, tau, az, bz, ax, joints, columns - 1);
+	Dmp learnedDmps = dmpLearner.fitTrajectories();
+	vector<vec> dmpCoeffs = learnedDmps.getDmpCoeffs();
+
+	if(!doSimulation) {
+		
+		double* tmp = createDoubleArrayFromArmaVector(learnedDmps.getY0());
+		float* startingJoints = new float[columns - 1];
+		for(int i = 0; i < (columns - 1); ++i) startingJoints[i] = tmp[i];
+		movementQu->moveJoints(startingJoints);
+		
+		currentJoints = movementQu->getCurrentJoints().joints;
+		printf("(main) begin joint [%f,%f,%f,%f,%f,%f,%f]\n", currentJoints[0], currentJoints[1], currentJoints[2], currentJoints[3], currentJoints[4], currentJoints[5], currentJoints[6]);
+		fflush(stdout);
+
+	}
+	
+	DMPExecutor dmpexec(learnedDmps);
+	t_executor_res dmpResult;
+	if(doSimulation) dmpResult = dmpexec.simulateTrajectory(tStart, learnedDmps.getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+	else {
+		
+		dmpResult = dmpexec.executeTrajectory(ac, tStart, learnedDmps.getTmax(), dmpStepSize, tolAbsErr, tolRelErr, movementQu);
+		
+		movementQu->switchMode(10);
+		movementQu->stopCurrentMode();
+		
+	}
+
+    if(plotResults) {
+
+        for(int plotTraj = 0; plotTraj < plotNum; ++plotTraj) {
+
+            ostringstream convert;   // stream used for the conversion
+            convert << plotTraj;
+
+            string title = string("fitted sensor data (joint") + convert.str() + string(")");
+            g1 = new Gnuplot(title);
+            g1->set_style("lines").plot_xy(armadilloToStdVec(learnedDmps.getSupervisedTs()), armadilloToStdVec(learnedDmps.getSampleYByIndex(plotTraj)), "sample y");
+            g1->set_style("lines").plot_xy(armadilloToStdVec(dmpResult.t), armadilloToStdVec(dmpResult.y[plotTraj]), "dmp y");
+            g1->showonscreen();
+
+        }
+
+        g1 = new Gnuplot(string("internal clock plot"));
+        g1->set_style("lines").plot_xy(armadilloToStdVec(dmpResult.t), armadilloToStdVec(dmpResult.internalClock), "internal clock");
+        g1->showonscreen();
+
+    }
+	
+	return dmpResult;
+
+}
+
 /* reimplements the getch() function available on windows
  * 
  * returns: sign take from console

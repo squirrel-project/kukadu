@@ -100,6 +100,7 @@ include_directories(
   $ENV{OROCOS_HOME}/kuka_robot_hardware/lwr_fri/msg_gen/cpp/include
   $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/
   /opt/ros/groovy/stacks/rtt_common_msgs/rtt_geometry_msgs/include
+  /opt/ros/groovy/stacks/pr2_controllers/pr2_controllers_msgs/msg_gen/cpp/include
 )
 
 ## Declare a cpp library
@@ -198,6 +199,7 @@ src/learning/LWRRegressor.cpp
 src/robot/mounted/sdhoptions.cpp
 src/utils/DestroyableObject.cpp
 src/robot/mounted/GenericHand.cpp
+src/robot/mounted/RosSchunk.cpp
 src/robot/mounted/SchunkHand.cpp
 src/learning/QuadraticKernel.cpp
 src/learning/GaussianKernel.cpp
@@ -229,9 +231,13 @@ src/learning/reinforcement_learning/GaussianObstacleRewardComputer.cpp
 src/learning/reinforcement_learning/GeneralReinforcer.cpp
 src/trajectory/TrajectoryExecutor.cpp
 src/utils/CustomSet.cpp
-src/mainScrewOrocos.cpp)
+)
 
 add_executable(kukadu src/mainScrewOrocos.cpp)
-target_link_libraries(kukadu kukadulib)
-target_link_libraries(kukadu ${catkin_LIBRARIES} gsl gslcblas SDHLibrary-CPP stdc++ armadillo)
-target_link_libraries(kukadu $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
+target_link_libraries(kukadu kukadulib ${catkin_LIBRARIES} gsl gslcblas SDHLibrary-CPP stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
+
+add_executable(kukadu_screwing src/intellactScrewing.cpp)
+target_link_libraries(kukadu_screwing kukadulib ${catkin_LIBRARIES} gsl gslcblas SDHLibrary-CPP stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
+
+add_executable(kukadu_iros src/iros2014.cpp)
+target_link_libraries(kukadu_iros kukadulib ${catkin_LIBRARIES} gsl gslcblas SDHLibrary-CPP stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})

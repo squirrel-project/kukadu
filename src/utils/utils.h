@@ -26,11 +26,15 @@
 
 #include "Tokenizer.h"
 #include "../trajectory/DMPTrajectoryGenerator.h"
+#include "../trajectory/TrajectoryDMPLearner.h"
 #include "../learning/GaussianProcessRegressor.h"
 #include "../learning/TricubeKernel.h"
 #include "../learning/GaussianKernel.h"
+#include "../robot/ControlQueue.h"
 #include "../types/DMPBase.h"
 #include "types.h"
+
+#include "gnuplot-cpp/gnuplot_i.hpp"
 
 void printDoubleVector(std::vector<double>* data);
 void printDoubleVector(double* data, int size);
@@ -81,5 +85,7 @@ std::vector<double> constructDmpMys(arma::mat joints);
 
 arma::vec squareMatrixToColumn(arma::mat m);
 arma::mat columnToSquareMatrix(arma::vec c);
+
+t_executor_res executeDemo(ControlQueue* movementQu, std::string file, int doSimulation, double az, double bz, int plotResults);
 
 #endif

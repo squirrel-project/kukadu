@@ -18,6 +18,7 @@
 #include "../src/utils/CustomSet.h"
 #include "../src/robot/mounted/GenericHand.h"
 #include "../src/robot/mounted/SchunkHand.h"
+#include "../src/robot/mounted/RosSchunk.h"
 #include "../src/robot/ControlQueue.h"
 #include "../src/robot/KukaControlQueue.h"
 #include "../src/trajectory/DMPExecutor.h"

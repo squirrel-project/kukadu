@@ -3,7 +3,7 @@
 using namespace SDH;
 using namespace std;
 
-SchunkHand::SchunkHand(char* usbDevice) {
+SchunkHand::SchunkHand(const char* usbDevice) {
 	
 	this->usbDevice = usbDevice;
 	

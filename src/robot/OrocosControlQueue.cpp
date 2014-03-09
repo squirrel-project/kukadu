@@ -46,7 +46,7 @@ OrocosControlQueue::OrocosControlQueue(int argc, char** argv, int sleepTime, str
 	pubCommand = node.advertise<motion_control_msgs::JointPositions>(commandTopic, 10);
 	pubSwitchMode = node.advertise<std_msgs::Int32>(switchModeTopic, 1);
 	pubPtp = node.advertise<std_msgs::Float64MultiArray>(ptpTopic, 10);
-	pubAddLoad = node.advertise<std_msgs::Float32MultiArray>(addLoadTopic, 1);
+//	pubAddLoad = node.advertise<std_msgs::Float32MultiArray>(addLoadTopic, 1);
 	
 	usleep(1e6);
 

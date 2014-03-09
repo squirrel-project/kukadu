@@ -46,10 +46,9 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 	if(isFirstIteration) {
 		
 		rollout = getInitialRollout();
-		isFirstIteration = false;
 		
-		trajEx->setTrajectory(rollout.at(0));
-		lastUpdateRes = trajEx->simulateTrajectory();
+    //	trajEx->setTrajectory(rollout.at(0));
+    //	lastUpdateRes = trajEx->simulateTrajectory();
 		
 		
 	}
@@ -62,8 +61,9 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 	lastCost.clear();
 	dmpResult.clear();
 	
-//	cout << "(DMPReinforcer) performing next rollout" << endl;
 	for(int k = 0; k < rollout.size(); ++k) {
+
+        cout << "(DMPReinforcer) performing rollout " << k << endl;
 
 		if(doSimulation) {
 			
@@ -71,9 +71,14 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 			t_executor_res simRes = trajEx->simulateTrajectory();
 			dmpResult.push_back(simRes);
 
+            if(isFirstIteration)
+                lastUpdateRes = simRes;
+
 		}
 
-		if(doExecution) {
+        if(doExecution) {
+
+            dmpResult.clear();
 			
 			cout << "(DMPReinforcer) do you want to execute this trajectory? (y/N) ";
 			cin >> cont;
@@ -106,7 +111,8 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 			
 		}
 		
-		double delta = cost->computeCost(dmpResult.at(k));
+        t_executor_res resK = dmpResult.at(k);
+        double delta = cost->computeCost(resK);
 		lastCost.push_back(delta);
 
 	}
@@ -118,7 +124,11 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 	lastUpdate = updateStep();
 	
 	trajEx->setTrajectory(lastUpdate);
-	lastUpdateRes = trajEx->simulateTrajectory();
+
+    if(!isFirstIteration) {
+        cout << "(GeneralReinforcer) performing newest update" << endl;
+        lastUpdateRes = trajEx->simulateTrajectory();
+    }
 	
 	lastUpdateCost = cost->computeCost(lastUpdateRes);
 	
@@ -140,11 +150,10 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 	}
 	
 	this->lastUpdate = lastUpdate;
+    isFirstIteration = false;
 	
-//	cout << "(DMPReinforcer) last update reward/cost: " << lastUpdateCost << endl;
-	
+    cout << "(DMPReinforcer) last update reward/cost: " << lastUpdateCost << endl;
 	cout << lastUpdateCost << endl;
-	
 	cout << endl;
 
 }
