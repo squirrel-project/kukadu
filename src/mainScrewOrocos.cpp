@@ -86,7 +86,7 @@ double ac = 10;
 string left_hardware = "left_arm";
 string right_hardware = "right_arm";
 
-string hardware = left_hardware;
+string hardware = right_hardware;
 	
 string prefix = "real";
 
@@ -138,7 +138,13 @@ int main(int argc, char** args) {
 		// sample call: rosrun kukadu kukadu mes /home/shangl/demomes.txt
 		// sample call: rosrun kukadu kukadu mes /home/shangl/iis_robot_sw/iis_catkin_ws/src/kukadu/src/kukadu_core/movements/iros2014/real_robot_2d_pickup/traj_8-6.txt
 		mode = 1;
-		outFile = args[2];
+
+        if(!strcmp(args[2], "right") || !strcmp(args[2], "left"))
+            hardware = string(args[2]) + "_arm";
+        else
+            throw "(mainScrewOrocos) arm not defined";
+
+        outFile = args[3];
         cout << "outfile: " << outFile << endl;
 	}
 	else if(!strcmp(args[1], "demo")) {
