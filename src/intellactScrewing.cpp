@@ -149,6 +149,9 @@ int main(int argc, char** args) {
 
         if(doRightOperation) {
             raQueue->stopCurrentMode();
+        //    raQueue->setStiffness(2000, 150, 0.7, 7.0, 70, 2.0);
+        //    raQueue->setStiffness(4000, 250, 0.7, 7.0, 70, 2.0);
+        //    raQueue->switchMode(30);
             raQueue->switchMode(10);
         }
 
@@ -204,8 +207,10 @@ int main(int argc, char** args) {
     }
 
     // execute screwing
-    if(doRightOperation)
+    if(doRightOperation) {
         executeDemo(raQueue, screwFile.c_str(), simulate, az, bz, 1);
+        cout << "finished demo execution" << endl;
+    }
 
     if(!simulate) {
 
