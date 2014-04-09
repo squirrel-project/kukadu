@@ -67,8 +67,8 @@ t_executor_res executeDemo(ControlQueue* movementQu, string file, int doSimulati
 		
 		dmpResult = dmpexec.executeTrajectory(ac, tStart, learnedDmps.getTmax(), dmpStepSize, tolAbsErr, tolRelErr, movementQu);
 		
-		movementQu->switchMode(10);
-		movementQu->stopCurrentMode();
+    //	movementQu->switchMode(10);
+    //	movementQu->stopCurrentMode();
 		
 	}
 

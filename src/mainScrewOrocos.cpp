@@ -23,7 +23,7 @@
 #include "../include/kukadu.h"
 #include "../src/utils/gnuplot-cpp/gnuplot_i.hpp"
 
-#define DOSIMULATION 0
+#define DOSIMULATION 1
 
 using namespace std;
 using namespace arma;
@@ -367,7 +367,7 @@ int main(int argc, char** args) {
 		
 		ControlQueue* laQueue = NULL;
 		thread* raThr = NULL;
-		
+        /*
 		// execute guided measurement
 		laQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime,
 						prefix + "/" + hardware + "/" + "joint_control" + "/" + moveTopic,
@@ -422,9 +422,12 @@ int main(int argc, char** args) {
 			
 			
 		}
-		
+
 		laQueue->switchMode(10);
 		laQueue->stopCurrentMode();
+
+        */
+
 		if(!doSimulation) {
 			
 			thread* raThr = NULL;

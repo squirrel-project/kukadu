@@ -28,7 +28,13 @@
 #include <std_msgs/Float32MultiArray.h>
 #include <std_msgs/MultiArrayDimension.h>
 #include <geometry_msgs/Pose.h>
-#include <lwr_fri/typekit/Types.hpp>
+#include <iis_orocos/CartesianImpedance.h>
+#include <iis_orocos/FriJointCommand.h>
+#include <iis_orocos/FriJointImpedance.h>
+#include <iis_orocos/FriJointState.h>
+#include <iis_orocos/FriRobotData.h>
+#include <iis_orocos/FriRobotJntData.h>
+#include <iis_orocos/OrocosError.h>
 
 #define COMMAND_NOT_SET -100
 

@@ -16,7 +16,7 @@ RosSchunk::RosSchunk(ros::NodeHandle node, string trajTopic, std::string stateTo
     joint_names_str.push_back(hand + "_sdh_finger_13_joint");
     joint_names_str.push_back(hand + "_sdh_finger_22_joint");
     joint_names_str.push_back(hand + "_sdh_finger_23_joint");
-
+/*
     ros::ServiceClient client = node.serviceClient<cob_srvs::Trigger>("/real/" + hand + "_sdh/settings/init");
     cob_srvs::Trigger trig;
     if(!client.call(trig)) {
@@ -25,7 +25,7 @@ RosSchunk::RosSchunk(ros::NodeHandle node, string trajTopic, std::string stateTo
         throw msg;
 
     }
-
+*/
     previousCurrentPosQueueSize = 10;
     isFirstCallback = true;
 

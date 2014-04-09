@@ -11,7 +11,7 @@
 #include <control_msgs/FollowJointTrajectoryActionGoal.h>
 #include <trajectory_msgs/JointTrajectory.h>
 #include <trajectory_msgs/JointTrajectoryPoint.h>
-#include "/home/shangl/rosmake_ws/cob_common/cob_srvs/srv_gen/cpp/include/cob_srvs/Trigger.h"
+// #include <cob_srvs/Trigger.h>
 
 #include "GenericHand.h"
 

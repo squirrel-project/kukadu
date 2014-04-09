@@ -39,9 +39,10 @@ OrocosControlQueue::OrocosControlQueue(int argc, char** argv, int sleepTime, str
 	subCartPos = node.subscribe(retCartPosTopic, 2, &OrocosControlQueue::robotCartPosCallback, this);
 	subComState = node.subscribe(commandStateTopic, 2, &OrocosControlQueue::commandStateCallback, this);
 	subPtpReached = node.subscribe(ptpReachedTopic, 2, &OrocosControlQueue::phpReachedCallback, this);
+    cout << ptpReachedTopic << endl;
 	
-	pub_set_cart_stiffness = node.advertise<lwr_fri::CartesianImpedance>(stiffnessTopic, 1);
-	pub_set_joint_stiffness = node.advertise<lwr_fri::FriJointImpedance>(jntStiffnessTopic, 1);
+    pub_set_cart_stiffness = node.advertise<iis_orocos::CartesianImpedance>(stiffnessTopic, 1);
+    pub_set_joint_stiffness = node.advertise<iis_orocos::FriJointImpedance>(jntStiffnessTopic, 1);
 	
 	pubCommand = node.advertise<motion_control_msgs::JointPositions>(commandTopic, 10);
 	pubSwitchMode = node.advertise<std_msgs::Int32>(switchModeTopic, 1);
@@ -239,7 +240,7 @@ void OrocosControlQueue::setAdditionalLoad(float loadMass, float loadPos) {
 
 void OrocosControlQueue::setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq) {
 
-	lwr_fri::CartesianImpedance imp;
+    iis_orocos::CartesianImpedance imp;
 	
 	imp.stiffness.linear.x = imp.stiffness.linear.y = imp.stiffness.linear.z = cpstiffnessxyz;
 	imp.damping.linear.x = imp.damping.linear.y = imp.damping.linear.z = cpdamping;
@@ -248,7 +249,7 @@ void OrocosControlQueue::setStiffness(float cpstiffnessxyz, float cpstiffnessabc
 	imp.cpmaxdelta = cpmaxdelta;
 	imp.axismaxdeltatrq = axismaxdeltatrq;
 	
-	lwr_fri::FriJointImpedance newImpedance;
+    iis_orocos::FriJointImpedance newImpedance;
 	for (int j = 0; j < 7; j++){
 		newImpedance.stiffness[j] = cpstiffnessxyz;
 		newImpedance.damping[j] = cpdamping;
