@@ -128,9 +128,9 @@ int main(int argc, char** args) {
     //    return 1;
     }
 	
-	if(!DOSIMULATION) {
+//    if(!DOSIMULATION) {
 		ros::init(argc, args, "kukadu"); node = new ros::NodeHandle(); usleep(1e6);
-	}
+//    }
 	
 	if(!strcmp(args[1], "screw"))
 		mode = 0;
@@ -312,10 +312,10 @@ int main(int argc, char** args) {
 						prefix + "/" + hardware + "/" + "cartesian_control" + "/" + setCartImpTopic,
 						prefix + "/" + hardware + "/" + "joint_control" + "/" + setJntImpTopic,
 					//	prefix + "/" + hardware + "/" + "joint_control" + "/" + jntPtpTopic,
-						"joint_control/ptp",
+                        prefix + "/" + hardware + "/" + "joint_control" + "/" + "ptp",
 						prefix + "/" + hardware + "/" + "settings" + "/" + getCmdStateTopic,
 					//	prefix + "/" + hardware + "/" + "sensoring" + "/" + ptpReachedTopic,
-						"joint_control/right_arm/PtpReached",
+                        prefix + "/" + hardware + "/" + "joint_control" + "/" + "ptp_reached",
 						prefix + "/" + hardware + "/" + "settings" + "/" + setAddLoadTopic,
 				   *node
 			      );
@@ -360,8 +360,9 @@ int main(int argc, char** args) {
  
 		}
  
-		laQueue->switchMode(10);
-		laQueue->stopCurrentMode();
+        laQueue->stopCurrentMode();
+        laQueue->switchMode(10);
+        laQueue->stopCurrentMode();
 		
 	} else if(mode == 2) {
 		
@@ -433,19 +434,21 @@ int main(int argc, char** args) {
 			thread* raThr = NULL;
 			
 			// execute guided measurement
-			raQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime,
-						prefix + "/" + hardware + "/" + "joint_control" + "/" + moveTopic,
-						prefix + "/" + hardware + "/" + "joint_control" + "/" + jntPosTopic,
-						prefix + "/" + hardware + "/" + "settings" + "/" + switchTopic,
-						prefix + "/" + hardware + "/" + "cartesian_control" + "/" + carPosTopic,
-						prefix + "/" + hardware + "/" + "cartesian_control" + "/" + setCartImpTopic,
-						prefix + "/" + hardware + "/" + "joint_control" + "/" + setJntImpTopic,
-						prefix + "/" + hardware + "/" + "joint_control" + "/" + jntPtpTopic,
-						prefix + "/" + hardware + "/" + "settings" + "/" + getCmdStateTopic,
-						prefix + "/" + hardware + "/" + "sensoring" + "/" + ptpReachedTopic,
-						prefix + "/" + hardware + "/" + "settings" + "/" + setAddLoadTopic,
-				   *node
-			      );
+            raQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime,
+                                             prefix + "/" + hardware + "/" + "joint_control" + "/" + moveTopic,
+                                             prefix + "/" + hardware + "/" + "joint_control" + "/" + jntPosTopic,
+                                             prefix + "/" + hardware + "/" + "settings" + "/" + switchTopic,
+                                             prefix + "/" + hardware + "/" + "cartesian_control" + "/" + carPosTopic,
+                                             prefix + "/" + hardware + "/" + "cartesian_control" + "/" + setCartImpTopic,
+                                             prefix + "/" + hardware + "/" + "joint_control" + "/" + setJntImpTopic,
+                                         //	prefix + "/" + hardware + "/" + "joint_control" + "/" + jntPtpTopic,
+                                             prefix + "/" + hardware + "/" + "joint_control" + "/" + "ptp",
+                                             prefix + "/" + hardware + "/" + "settings" + "/" + getCmdStateTopic,
+                                         //	prefix + "/" + hardware + "/" + "sensoring" + "/" + ptpReachedTopic,
+                                             prefix + "/" + hardware + "/" + "joint_control" + "/" + "ptp_reached",
+                                             prefix + "/" + hardware + "/" + "settings" + "/" + setAddLoadTopic,
+                                        *node
+                                       );
 			
 			raQueue->stopCurrentMode();
 			raThr = raQueue->startQueueThread();
@@ -470,21 +473,21 @@ int main(int argc, char** args) {
 			thread* raThr = NULL;
 			
 			// execute guided measurement
-			raQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime,
-						prefix + "/" + hardware + "/" + "joint_control" + "/" + moveTopic,
-						prefix + "/" + hardware + "/" + "joint_control" + "/" + jntPosTopic,
-						prefix + "/" + hardware + "/" + "settings" + "/" + switchTopic,
-						prefix + "/" + hardware + "/" + "cartesian_control" + "/" + carPosTopic,
-						prefix + "/" + hardware + "/" + "cartesian_control" + "/" + setCartImpTopic,
-						prefix + "/" + hardware + "/" + "joint_control" + "/" + setJntImpTopic,
-					//	prefix + "/" + hardware + "/" + "joint_control" + "/" + jntPtpTopic,
-						"joint_control/ptp",
-						prefix + "/" + hardware + "/" + "settings" + "/" + getCmdStateTopic,
-					//	prefix + "/" + hardware + "/" + "sensoring" + "/" + ptpReachedTopic,
-						"joint_control/right_arm/PtpReached",
-						prefix + "/" + hardware + "/" + "settings" + "/" + setAddLoadTopic,
-				   *node
-			      );
+            raQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime,
+                                             prefix + "/" + hardware + "/" + "joint_control" + "/" + moveTopic,
+                                             prefix + "/" + hardware + "/" + "joint_control" + "/" + jntPosTopic,
+                                             prefix + "/" + hardware + "/" + "settings" + "/" + switchTopic,
+                                             prefix + "/" + hardware + "/" + "cartesian_control" + "/" + carPosTopic,
+                                             prefix + "/" + hardware + "/" + "cartesian_control" + "/" + setCartImpTopic,
+                                             prefix + "/" + hardware + "/" + "joint_control" + "/" + setJntImpTopic,
+                                         //	prefix + "/" + hardware + "/" + "joint_control" + "/" + jntPtpTopic,
+                                             prefix + "/" + hardware + "/" + "joint_control" + "/" + "ptp",
+                                             prefix + "/" + hardware + "/" + "settings" + "/" + getCmdStateTopic,
+                                         //	prefix + "/" + hardware + "/" + "sensoring" + "/" + ptpReachedTopic,
+                                             prefix + "/" + hardware + "/" + "joint_control" + "/" + "ptp_reached",
+                                             prefix + "/" + hardware + "/" + "settings" + "/" + setAddLoadTopic,
+                                        *node
+                                       );
 			
 			raQueue->stopCurrentMode();
 			raThr = raQueue->startQueueThread();
@@ -519,19 +522,21 @@ int main(int argc, char** args) {
 		thread* raThr = NULL;
 		
 		// execute guided measurement
-		laQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime,
-						prefix + "/" + hardware + "/" + "joint_control" + "/" + moveTopic,
-						prefix + "/" + hardware + "/" + "joint_control" + "/" + jntPosTopic,
-						prefix + "/" + hardware + "/" + "settings" + "/" + switchTopic,
-						prefix + "/" + hardware + "/" + "cartesian_control" + "/" + carPosTopic,
-						prefix + "/" + hardware + "/" + "cartesian_control" + "/" + setCartImpTopic,
-						prefix + "/" + hardware + "/" + "joint_control" + "/" + setJntImpTopic,
-						prefix + "/" + hardware + "/" + "joint_control" + "/" + jntPtpTopic,
-						prefix + "/" + hardware + "/" + "settings" + "/" + getCmdStateTopic,
-						prefix + "/" + hardware + "/" + "sensoring" + "/" + ptpReachedTopic,
-						prefix + "/" + hardware + "/" + "settings" + "/" + setAddLoadTopic,
-				   *node
-			      );
+        laQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime,
+                                         prefix + "/" + hardware + "/" + "joint_control" + "/" + moveTopic,
+                                         prefix + "/" + hardware + "/" + "joint_control" + "/" + jntPosTopic,
+                                         prefix + "/" + hardware + "/" + "settings" + "/" + switchTopic,
+                                         prefix + "/" + hardware + "/" + "cartesian_control" + "/" + carPosTopic,
+                                         prefix + "/" + hardware + "/" + "cartesian_control" + "/" + setCartImpTopic,
+                                         prefix + "/" + hardware + "/" + "joint_control" + "/" + setJntImpTopic,
+                                     //	prefix + "/" + hardware + "/" + "joint_control" + "/" + jntPtpTopic,
+                                         prefix + "/" + hardware + "/" + "joint_control" + "/" + "ptp",
+                                         prefix + "/" + hardware + "/" + "settings" + "/" + getCmdStateTopic,
+                                     //	prefix + "/" + hardware + "/" + "sensoring" + "/" + ptpReachedTopic,
+                                         prefix + "/" + hardware + "/" + "joint_control" + "/" + "ptp_reached",
+                                         prefix + "/" + hardware + "/" + "settings" + "/" + setAddLoadTopic,
+                                    *node
+                                   );
 		
 //		prefix = "Right";
 //		laQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime, prefix + string("MoveJoints"), prefix + string("PosJoints"), prefix + string("SwitchMode"),
