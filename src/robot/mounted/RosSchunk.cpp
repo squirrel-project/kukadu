@@ -5,27 +5,9 @@ using namespace std;
 RosSchunk::RosSchunk(ros::NodeHandle node, string trajTopic, std::string stateTopic, string hand) {
 
     this->node = node;
-    trajPub = node.advertise<control_msgs::FollowJointTrajectoryActionGoal>(trajTopic, 1);
+    trajPub = node.advertise<motion_control_msgs::JointPositions>(trajTopic, 1);
 
     stateSub = node.subscribe(stateTopic, 1, &RosSchunk::stateCallback, this);
-
-    joint_names_str.push_back(hand + "_sdh_knuckle_joint");
-    joint_names_str.push_back(hand + "_sdh_thumb_2_joint");
-    joint_names_str.push_back(hand + "_sdh_thumb_3_joint");
-    joint_names_str.push_back(hand + "_sdh_finger_12_joint");
-    joint_names_str.push_back(hand + "_sdh_finger_13_joint");
-    joint_names_str.push_back(hand + "_sdh_finger_22_joint");
-    joint_names_str.push_back(hand + "_sdh_finger_23_joint");
-/*
-    ros::ServiceClient client = node.serviceClient<cob_srvs::Trigger>("/real/" + hand + "_sdh/settings/init");
-    cob_srvs::Trigger trig;
-    if(!client.call(trig)) {
-        string msg = "(RosSchunk) initializition didnt work";
-        cerr << msg << endl;
-        throw msg;
-
-    }
-*/
     previousCurrentPosQueueSize = 10;
     isFirstCallback = true;
 
@@ -232,23 +214,9 @@ void RosSchunk::safelyDestroy() {
 
 void RosSchunk::publishSdhJoints(std::vector<float> positions) {
 
-        control_msgs::FollowJointTrajectoryActionGoal actionGoal;
-        control_msgs::FollowJointTrajectoryGoal& goal = actionGoal.goal;
-        trajectory_msgs::JointTrajectory& traj = goal.trajectory;
-
-        traj.joint_names = joint_names_str;
-        trajectory_msgs::JointTrajectoryPoint point;
-
-        //conversion to double
-        point.positions.resize(positions.size());
-
-        for (int i=0; i < positions.size(); i++)
-                point.positions[i] = positions.at(i);
-
-
-        std::vector<trajectory_msgs::JointTrajectoryPoint> pointtrajectory;
-        pointtrajectory.push_back(point);
-        traj.points = pointtrajectory;
+        motion_control_msgs::JointPositions newJoints;
+        for(int i = 0; i < positions.size(); ++i)
+            newJoints.positions.push_back(positions.at(i));
 
         currentCommandedPos = positions;
 
@@ -263,13 +231,12 @@ void RosSchunk::publishSdhJoints(std::vector<float> positions) {
         int nr_trial = 3;
         for(int i = 0; i < 3; i++ ){
 
-                trajPub.publish(actionGoal);
+                trajPub.publish(newJoints);
                 usleep(500*1000);
 
         }
 
         while(!targetReached)
             ros::spinOnce();
-
 
 }

@@ -11,6 +11,7 @@
 #include <control_msgs/FollowJointTrajectoryActionGoal.h>
 #include <trajectory_msgs/JointTrajectory.h>
 #include <trajectory_msgs/JointTrajectoryPoint.h>
+#include <motion_control_msgs/JointPositions.h>
 // #include <cob_srvs/Trigger.h>
 
 #include "GenericHand.h"

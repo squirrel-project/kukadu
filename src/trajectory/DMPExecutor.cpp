@@ -83,12 +83,12 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 		
 		int currentSystem = (int) (i / 2);
 		f[i + 0] = y[i + 1] / tau;
-		double g = gs(currentSystem);
+        double g = gs(currentSystem);
+        arma::vec currentCoeffs = dmpCoeffs.at(currentSystem);
 		
 		if(t <= (duration + 0.2)) {
 			
-			double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSize - 1], dmpCoeffs.at(currentSystem));
-			
+            double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSize - 1], currentCoeffs);
 			f[i + 1] = 1 / tau * (az * (bz * (g - y[i + 0]) - y[i + 1]) + addTerm);
 			
 		} else {
@@ -100,7 +100,6 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 	if(this->simulate == EXECUTE_ROBOT) {
 
 		currentJoints = controlQueue->getCurrentJoints().joints;
-		
 		double corrector = 0.0;
 		
 		if(!usesExternalError()) {
