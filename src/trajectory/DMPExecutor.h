@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <cstdlib>
+#include <chrono>
 
 
 #include <gsl/gsl_errno.h>
@@ -41,6 +42,12 @@ private:
 	double bz;
 	double ax;
 	double ac;
+
+    // for optimization
+    double axDivTau;
+    double oneDivTau;
+    double durationThresh;
+    int odeSystemSizeMinOne;
 
 	double duration;
 	

@@ -119,3 +119,6 @@ target_link_libraries(kukadu_screwing2 kukadulib ${catkin_LIBRARIES} gsl gslcbla
 
 add_executable(kukadu_iros src/iros2014.cpp)
 target_link_libraries(kukadu_iros kukadulib ${catkin_LIBRARIES} gsl gslcblas SDHLibrary-CPP stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
+
+add_executable(kukadu_humanoids src/humanoids2014.cpp)
+target_link_libraries(kukadu_humanoids kukadulib ${catkin_LIBRARIES} gsl gslcblas SDHLibrary-CPP stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})

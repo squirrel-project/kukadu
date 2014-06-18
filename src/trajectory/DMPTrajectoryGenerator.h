@@ -25,6 +25,14 @@ private:
 	std::vector<DMPBase> baseDef;
 
 	double ax, tau;
+    // for optimization
+    double previousX;
+    arma::vec prevBasFun;
+    double previousNorm;
+
+    int baseFunctionCount;
+    int myssize;
+    int sigmassize;
 	
 	double computeNormalization(double x);
 	

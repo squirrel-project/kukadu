@@ -32,6 +32,9 @@ void DMPExecutor::construct(Dmp traj, int suppressMessages) {
 	this->tau = traj.getTau(); this->az = traj.getAz(); this->bz = traj.getBz(); this->ax = traj.getAx(); this->gs = traj.getG();
 	this->y0s = traj.getY0(); this->dy0s = traj.getDy0(); this->ddy0s = traj.getDdy0();
 	this->trajGen = new DMPTrajectoryGenerator(this->baseDef, ax, tau);
+
+    this->axDivTau = ax / tau;
+    this->oneDivTau = 1 / tau;
 	
 	this->simulate = SIMULATE_DMP;
 	this->degofFreedom = y0s.n_elem;
@@ -45,6 +48,9 @@ void DMPExecutor::construct(Dmp traj, int suppressMessages) {
 	externalErrorUsing = 0;
 	externalError = 0.0;
 	t = 0.0;
+
+    this->durationThresh = duration + 0.2;
+    this->odeSystemSizeMinOne = odeSystemSize - 1;
 	
 }
 
@@ -79,21 +85,23 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 	// y' = z / tau
 	// z' = 1 / tau * ( az * (bz * (g - y) - z) + f); 
 	// x' = -ax / tau * x
-	for(int i = 0; i < (odeSystemSize - 1); i = i + 2) {
+    for(int i = 0; i < odeSystemSizeMinOne; i = i + 2) {
+
+        double yPlusOne = y[i + 1];
 		
 		int currentSystem = (int) (i / 2);
-		f[i + 0] = y[i + 1] / tau;
+        f[i] = yPlusOne * oneDivTau;
         double g = gs(currentSystem);
         arma::vec currentCoeffs = dmpCoeffs.at(currentSystem);
 		
-		if(t <= (duration + 0.2)) {
+        if(t <= durationThresh) {
 			
-            double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSize - 1], currentCoeffs);
-			f[i + 1] = 1 / tau * (az * (bz * (g - y[i + 0]) - y[i + 1]) + addTerm);
+            double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
+            f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm);
 			
 		} else {
 			cout << "(DMPExecutor) executing dmp over teaching duration" << endl;
-			f[i + 1] = 1 / tau * (az * (bz * (g - y[i + 0]) - y[i + 1]));
+            f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne));
 		}
 
 	}
@@ -114,14 +122,14 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 			corrector = 1.0 + ac * getExternalError();
 		}
 		
-		f[odeSystemSize - 1] = -ax / tau * y[odeSystemSize - 1] / corrector;
+        f[odeSystemSizeMinOne] = - axDivTau * y[odeSystemSizeMinOne] / corrector;
 
 	}
 	
 	else if(this->simulate == SIMULATE_DMP) {
 	
 		// progress as usual
-		f[odeSystemSize - 1] = -ax / tau * y[odeSystemSize - 1];
+        f[odeSystemSizeMinOne] = - axDivTau * y[odeSystemSizeMinOne];
 
 	}
 
@@ -160,8 +168,14 @@ t_executor_res DMPExecutor::simulateTrajectory(double tStart, double tEnd, doubl
 
 	this->simulate = SIMULATE_DMP;
 	this->controlQueue = NULL;
+    auto begin = std::chrono::high_resolution_clock::now();
 
-	return this->executeDMP(SIMULATE_DMP, tStart, tEnd, stepSize, tolAbsErr, tolRelErr);
+    t_executor_res ret = this->executeDMP(SIMULATE_DMP, tStart, tEnd, stepSize, tolAbsErr, tolRelErr);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::cout << "(DMPExecutor) the simulation took " << std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count() << " ns" << std::endl;
+
+    return ret;
 
 }
 
@@ -182,9 +196,11 @@ void DMPExecutor::initializeIntegration(double tStart, double stepSize, double t
 	double ys[odeSystemSize];
 	vecYs = vec(odeSystemSize);
 	
+    int iHalf;
 	for(int i = 0; i < (odeSystemSize - 1); i = i + 2) {
-		ys[i + 0] = y0s((int) (i / 2));
-		ys[i + 1] = tau * dy0s((int) (i / 2));
+        iHalf = (int) i / 2;
+        ys[i + 0] = y0s((int) iHalf);
+        ys[i + 1] = tau * dy0s((int) iHalf);
 	}
 	
 	ys[odeSystemSize - 1] = 1;
@@ -250,7 +266,9 @@ t_executor_res DMPExecutor::executeDMP(int simulate, double tStart, double tEnd,
 
 	}
 
-	for (int i = 0; i < (tEnd - tStart) / stepSize; ++i) {
+    int durationSteps = (tEnd - tStart) / stepSize;
+
+    for (int i = 0; i < durationSteps; ++i) {
 		
 		currentJoints = NULL;
 		if(this->simulate == EXECUTE_ROBOT) {
