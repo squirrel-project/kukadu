@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
     geometry_msgs
     message_generation
     message_runtime
-    iis_orocos
+    iis_kukie
 )
 
 ###################################
