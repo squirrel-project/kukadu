@@ -290,7 +290,7 @@ t_executor_res DMPExecutor::executeDMP(int simulate, double tStart, double tEnd,
 			}
 			
 			// synchronize to control queue (maximum one joint array has to be already in there --> needed for phase stopping such that DMPExecutor does not progress to fast)
-//            controlQueue->synchronizeToControlQueue(0);
+            controlQueue->synchronizeToControlQueue(0);
 			controlQueue->addJointsPosToQueue(moveJoints);
 
 		}

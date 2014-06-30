@@ -28,6 +28,7 @@
 #include "../src/trajectory/TrajectoryGenerator.h"
 #include "../src/trajectory/TrajectoryExecutor.h"
 #include "../src/learning/reinforcement_learning/CostComputer.h"
+#include "../src/learning/reinforcement_learning/GradientDescent.h"
 #include "../src/learning/reinforcement_learning/PoWER.h"
 #include "../src/learning/reinforcement_learning/DMPReinforcer.h"
 #include "../src/learning/reinforcement_learning/GenDMPReinforcer.h"

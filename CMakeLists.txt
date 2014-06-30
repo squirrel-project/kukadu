@@ -104,6 +104,7 @@ src/learning/reinforcement_learning/TrajectoryBasedReward.cpp
 src/learning/reinforcement_learning/SampleRewardComputer.cpp
 src/learning/reinforcement_learning/GaussianObstacleRewardComputer.cpp
 src/learning/reinforcement_learning/GeneralReinforcer.cpp
+src/learning/reinforcement_learning/GradientDescent.cpp
 src/trajectory/TrajectoryExecutor.cpp
 src/utils/CustomSet.cpp
 )

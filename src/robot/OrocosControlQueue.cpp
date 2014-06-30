@@ -3,53 +3,81 @@
 using namespace std;
 using namespace arma;
 
+void OrocosControlQueue::constructQueue(int argc, char** argv, int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
+                    std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
+                    std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, ros::NodeHandle node
+                ) {
+
+    currentTime = 0.0;
+    this->sleepTime= sleepTime;
+    this->commandTopic = commandTopic;
+    this->retJointPosTopic = retJointPosTopic;
+    this->switchModeTopic = switchModeTopic;
+    this->retCartPosTopic = retCartPosTopic;
+    this->stiffnessTopic = cartStiffnessTopic;
+    this->jntStiffnessTopic = jntStiffnessTopic;
+    this->ptpTopic = ptpTopic;
+    this->commandStateTopic = commandStateTopic;
+    this->ptpReachedTopic = ptpReachedTopic;
+    this->addLoadTopic = addLoadTopic;
+
+    monComMode = -1;
+    impMode = -1;
+    ptpReached = 0;
+
+    this->argc = argc;
+    this->argv = argv;
+
+    setInitValues();
+    startingJoints = NULL;
+
+//	ros::init(argc, argv, "kukadu");
+//	node = new ros::NodeHandle();
+    this->node = node;
+    loop_rate = new ros::Rate(1.0 / sleepTime * 1e+6);
+
+    cout << retJointPosTopic << endl;
+    subJntPos = node.subscribe(retJointPosTopic, 2, &OrocosControlQueue::robotJointPosCallback, this);
+    subCartPos = node.subscribe(retCartPosTopic, 2, &OrocosControlQueue::robotCartPosCallback, this);
+    subComState = node.subscribe(commandStateTopic, 2, &OrocosControlQueue::commandStateCallback, this);
+    subPtpReached = node.subscribe(ptpReachedTopic, 2, &OrocosControlQueue::phpReachedCallback, this);
+    cout << ptpReachedTopic << endl;
+
+    pub_set_cart_stiffness = node.advertise<iis_kukie::CartesianImpedance>(stiffnessTopic, 1);
+    pub_set_joint_stiffness = node.advertise<iis_kukie::FriJointImpedance>(jntStiffnessTopic, 1);
+
+    pubCommand = node.advertise<std_msgs::Float64MultiArray>(commandTopic, 10);
+    pubSwitchMode = node.advertise<std_msgs::Int32>(switchModeTopic, 1);
+    pubPtp = node.advertise<std_msgs::Float64MultiArray>(ptpTopic, 10);
+//	pubAddLoad = node.advertise<std_msgs::Float32MultiArray>(addLoadTopic, 1);
+
+    usleep(1e6);
+
+}
+
 OrocosControlQueue::OrocosControlQueue(int argc, char** argv, int sleepTime, string commandTopic, string retJointPosTopic, string switchModeTopic, string retCartPosTopic, string cartStiffnessTopic, string jntStiffnessTopic, string ptpTopic,
 	string commandStateTopic, string ptpReachedTopic, string addLoadTopic, ros::NodeHandle node) : ControlQueue(LBR_MNJ) {
 
-	currentTime = 0.0;
-	this->sleepTime= sleepTime;
-	this->commandTopic = commandTopic;
-	this->retJointPosTopic = retJointPosTopic;
-	this->switchModeTopic = switchModeTopic;
-	this->retCartPosTopic = retCartPosTopic;
-	this->stiffnessTopic = cartStiffnessTopic;
-	this->jntStiffnessTopic = jntStiffnessTopic;
-	this->ptpTopic = ptpTopic;
-	this->commandStateTopic = commandStateTopic;
-	this->ptpReachedTopic = ptpReachedTopic;
-	this->addLoadTopic = addLoadTopic;
-	
-	monComMode = -1;
-	impMode = -1;
-	ptpReached = 0;
-	
-	this->argc = argc;
-	this->argv = argv;
-	
-	setInitValues();
-	startingJoints = NULL;
-	
-//	ros::init(argc, argv, "kukadu");
-//	node = new ros::NodeHandle();
-	this->node = node;
-	loop_rate = new ros::Rate(1.0 / sleepTime * 1e+6);
-	
-	cout << retJointPosTopic << endl;
-	subJntPos = node.subscribe(retJointPosTopic, 2, &OrocosControlQueue::robotJointPosCallback, this);
-	subCartPos = node.subscribe(retCartPosTopic, 2, &OrocosControlQueue::robotCartPosCallback, this);
-	subComState = node.subscribe(commandStateTopic, 2, &OrocosControlQueue::commandStateCallback, this);
-	subPtpReached = node.subscribe(ptpReachedTopic, 2, &OrocosControlQueue::phpReachedCallback, this);
-    cout << ptpReachedTopic << endl;
-	
-    pub_set_cart_stiffness = node.advertise<iis_kukie::CartesianImpedance>(stiffnessTopic, 1);
-    pub_set_joint_stiffness = node.advertise<iis_kukie::FriJointImpedance>(jntStiffnessTopic, 1);
-	
-	pubCommand = node.advertise<motion_control_msgs::JointPositions>(commandTopic, 10);
-	pubSwitchMode = node.advertise<std_msgs::Int32>(switchModeTopic, 1);
-	pubPtp = node.advertise<std_msgs::Float64MultiArray>(ptpTopic, 10);
-//	pubAddLoad = node.advertise<std_msgs::Float32MultiArray>(addLoadTopic, 1);
-	
-	usleep(1e6);
+    constructQueue(argc, argv, sleepTime, commandTopic, retJointPosTopic, switchModeTopic, retCartPosTopic, cartStiffnessTopic,
+                   jntStiffnessTopic, ptpTopic, commandStateTopic, ptpReachedTopic, addLoadTopic, node);
+
+}
+
+OrocosControlQueue::OrocosControlQueue(int argc, char** argv, int sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node) : ControlQueue(LBR_MNJ) {
+
+    commandTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/move";
+    retJointPosTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/get_state";
+    switchModeTopic = "/" + deviceType + "/" + armPrefix + "/settings/switch_mode";
+    retCartPosTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/get_pose";
+    stiffnessTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/set_impedance";
+    jntStiffnessTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/set_impedance";
+    ptpTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/ptp";
+    commandStateTopic = "/" + deviceType + "/" + armPrefix + "/settings/get_command_state";
+    ptpReachedTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/ptp_reached";
+    addLoadTopic = "not supported yet";
+
+    constructQueue(argc, argv, sleepTime, commandTopic, retJointPosTopic, switchModeTopic, retCartPosTopic, stiffnessTopic,
+                   jntStiffnessTopic, ptpTopic, commandStateTopic, ptpReachedTopic, addLoadTopic, node);
 
 }
 
@@ -105,10 +133,17 @@ void OrocosControlQueue::run() {
 			movement = movementQueue.front();
 			movementQueue.pop();
 			
+            /*
 			motion_control_msgs::JointPositions nextCommand;
 			for(int i = 0; i < getMovementDegreesOfFreedom(); ++i) {
 				nextCommand.positions.push_back(movement[i]);
 			}
+            */
+
+            std_msgs::Float64MultiArray nextCommand;
+            for(int i = 0; i < getMovementDegreesOfFreedom(); ++i)
+                nextCommand.data.push_back(movement[i]);
+
 			pubCommand.publish(nextCommand);
 
 		} else {

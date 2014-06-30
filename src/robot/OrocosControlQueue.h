@@ -111,6 +111,13 @@ public:
 		std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
 		std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, ros::NodeHandle node
 	);
+
+    OrocosControlQueue(int argc, char** argv, int sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node);
+
+    void constructQueue(int argc, char** argv, int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
+                        std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
+                        std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, ros::NodeHandle node
+                    );
 	
 	void run();
 	void setFinish();
