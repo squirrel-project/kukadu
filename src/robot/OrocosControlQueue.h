@@ -20,7 +20,6 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 
-#include <motion_control_msgs/JointPositions.h>
 #include <sensor_msgs/JointState.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/Int32MultiArray.h>

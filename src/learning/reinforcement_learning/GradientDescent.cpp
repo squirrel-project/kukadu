@@ -91,19 +91,29 @@ std::vector<Trajectory*> GradientDescent::computeRolloutParamters() {
 }
 
 Trajectory* GradientDescent::updateStep() {
-    /*
 
     Trajectory* lastUp = getLastUpdate();
 
     vector<Trajectory*> lastDmps = getLastRolloutParameters();
     vector<double> lastRewards = getLastRolloutCost();
 
+    int minRewardIdx = 0;
+    float minReward = 1000000.0;
     // add rollouts to history
     for(int i = 0; i < lastRewards.size(); ++i) {
         pair <double, Trajectory*> p(lastRewards.at(i), lastDmps.at(i));
+        if(minReward > lastRewards.at(i)) {
+            //cout << lastRewards.at(i) << " ";
+            minReward = lastRewards.at(i);
+            minRewardIdx = i;
+        }
         sampleHistory.push_back(p);
     }
+    cout << minRewardIdx << " " << minReward << endl;
+    return lastDmps.at(minRewardIdx);
 
+
+    /*
     // sort by reward...
     sort(sampleHistory.begin(), sampleHistory.end(), rewardComparator);
 
