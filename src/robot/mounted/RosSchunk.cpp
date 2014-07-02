@@ -5,7 +5,8 @@ using namespace std;
 RosSchunk::RosSchunk(ros::NodeHandle node, string trajTopic, std::string stateTopic, string hand) {
 
     this->node = node;
-    trajPub = node.advertise<motion_control_msgs::JointPositions>(trajTopic, 1);
+    // trajPub = node.advertise<motion_control_msgs::JointPositions>(trajTopic, 1);
+    trajPub = node.advertise<std_msgs::Float64MultiArray>(trajTopic, 1);
 
     stateSub = node.subscribe(stateTopic, 1, &RosSchunk::stateCallback, this);
     previousCurrentPosQueueSize = 10;
@@ -214,6 +215,8 @@ void RosSchunk::safelyDestroy() {
 
 void RosSchunk::publishSdhJoints(std::vector<float> positions) {
 
+    throw "reimplement rosschunk";
+    /*
         motion_control_msgs::JointPositions newJoints;
         for(int i = 0; i < positions.size(); ++i)
             newJoints.positions.push_back(positions.at(i));
@@ -238,5 +241,5 @@ void RosSchunk::publishSdhJoints(std::vector<float> positions) {
 
         while(!targetReached)
             ros::spinOnce();
-
+*/
 }
