@@ -75,19 +75,16 @@ void DMPReinforcer::performRollout(int doSimulation, int doExecution) {
 	lastCost.clear();
 	dmpResult.clear();
 	
-	cout << "(DMPReinforcer) performing next rollout" << endl;
+//	cout << "(DMPReinforcer) performing next rollout" << endl;
 	for(int k = 0; k < rollout.size(); ++k) {
 		
 		DMPExecutor dmpsim(rollout.at(k));
 		
 		if(doSimulation) {
-			
-//			cout << "(DMPReinforcer) dmpcoeffs: " << rollout.at(k).getDmpCoeffs(0).t() << endl;
+
 			t_executor_res simRes = dmpsim.simulateTrajectory(0, rollout.at(k).getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
 			dmpResult.push_back(simRes);
 
-//			cout << rollout.at(k).getTmax() << endl;
-//			cout << simRes.y.at(0).t() << endl;
 /*
 			for(int plotTraj = 0; plotTraj < rollout.at(k).getDegreesOfFreedom(); ++plotTraj) {
 

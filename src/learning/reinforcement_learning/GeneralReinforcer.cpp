@@ -63,10 +63,10 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 	
 	for(int k = 0; k < rollout.size(); ++k) {
 
-        cout << "(DMPReinforcer) performing rollout " << k << endl;
+//        cout << "(DMPReinforcer) performing rollout " << k << endl;
 
 		if(doSimulation) {
-			
+
 			trajEx->setTrajectory(rollout.at(k));
 			t_executor_res simRes = trajEx->simulateTrajectory();
 			dmpResult.push_back(simRes);
@@ -153,8 +153,6 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
     isFirstIteration = false;
 	
     cout << "(DMPReinforcer) last update reward/cost: " << lastUpdateCost << endl;
-	cout << lastUpdateCost << endl;
-	cout << endl;
 
 }
 

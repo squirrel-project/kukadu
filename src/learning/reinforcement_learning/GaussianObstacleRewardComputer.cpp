@@ -14,7 +14,7 @@ GaussianObstacleRewardComputer::GaussianObstacleRewardComputer(double my, double
 double GaussianObstacleRewardComputer::computeFun(double t) {
 	
 	// y1 = c1 * exp(- (x - o) .^ 2 / s);
-	// return height * exp(- pow((t - my), 2) / sigma);
+//    return height * exp(- pow((t - my), 2) / sigma);
 	
 	double c2 = 0.2;
 	double c3 = 0.2;
@@ -23,7 +23,7 @@ double GaussianObstacleRewardComputer::computeFun(double t) {
 	//c3 = 0.2;
 	//y1 = c1 * exp(- (x - o) .^ 2 / s) + c2 * sin(10 * x) + c1 * c3 * x;
 //	return (height * exp(- pow((t - my), 2) / sigma) + c2 * sin(10.0 * t) + height * c3 * t);
-	return (height * exp(- pow((t - my), 2) / sigma) + height * c3 * t);
+    return (height * exp(- pow((t - my), 2) / sigma) + height * c3 * t);
 	
 	//y1 = c1 * exp(- (x - o) .^ 2 / s) + c2 * sin(10 * x) + c1 * o / 10.0 * x;
 //	return (height * exp(- pow((t - my), 2) / sigma) + height * c3 / 8.0 * t);
@@ -77,8 +77,8 @@ double GraspingRewardComputer::computeCost(t_executor_res results) {
 	vec distVec = (worldVec - pos).t() * (worldVec - pos);
 	double reward = 1 / exp( distVec(0) );
 	
-    cout << "world vector: " << worldVec.t() << endl;
-    cout << "ground truth: " << pos.t() << endl;
+//    cout << "world vector: " << worldVec.t() << endl;
+//    cout << "ground truth: " << pos.t() << endl;
 	
 	return reward;
 	

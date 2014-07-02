@@ -108,8 +108,8 @@ int main(int argc, char** args) {
 
 	if(argc < 2) {
 		cout << "using standard values" << endl;
-    //	inDir = "/home/shangl/iis_robot_sw/iis_catkin_ws/src/kukadu/movements/iros2014/2d_extended_gen/";
-        inDir = "/home/shangl/iis_robot_sw/iis_catkin_ws/src/kukadu/movements/iros2014/real_robot_2d_pickup/";
+        inDir = "/home/c7031109/iis_robot_sw/iis_catkin_ws/src/kukadu/movements/iros2014/2d_extended_gen/";
+    //    inDir = "/home/shangl/iis_robot_sw/iis_catkin_ws/src/kukadu/movements/iros2014/real_robot_2d_pickup/";
 	}
 	
 	if(!DOSIMULATION) {
@@ -141,8 +141,8 @@ int main(int argc, char** args) {
 		
 	}
 		
-    // testIROS();
-    testIROSGrasping();
+    testIROS();
+    // testIROSGrasping();
 	getch();
 
 	return 0;
@@ -306,7 +306,7 @@ void testIROS() {
 	ControlQueue* raQueue = NULL;
 	QuadraticKernel* kern = new QuadraticKernel();
 	
-	std::vector<double> irosmys = {0, 1, 2, 3, 4, 5};
+    std::vector<double> irosmys = {0, 1, 2, 3, 4, 5, 6, 7};
 	std::vector<double> irossigmas = {0.3, 0.8};
 	
 	//vector<double> rlExploreSigmas = {0.5, 0.5, 0.5, 0.5};
@@ -366,7 +366,7 @@ void testIROS() {
 	LinCombDmp* lastRollout = NULL;
 	vector<double> lastRewards;
 	
-	while( i < 8 ) {
+    while( i < 200 ) {
 
 		pow.performRollout(1, 0);
 		lastRollout = dynamic_cast<LinCombDmp*>(pow.getLastUpdate());

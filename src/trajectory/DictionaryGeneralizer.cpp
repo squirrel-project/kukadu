@@ -120,7 +120,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 	// if queue is defined, execute trajectory
 	if(this->queue) simulate = 0;
 	
-    cout << "(DictionaryGeneralizer) starting generalized execution" << endl;
+//    cout << "(DictionaryGeneralizer) starting generalized execution" << endl;
 
 	t_executor_res ret;
 	//vector<vector<double>> retY;
@@ -143,14 +143,9 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 	
 	mat Z = columnToSquareMatrix(dictTraj->getCoefficients().at(0));
 	Mahalanobis metric(Z.t() * Z);
-	
-//	cout << "current query: " << currentQuery << endl;
 
 	// execute dmps and compute linear combination
 	for(; currentTime < tEnd; currentTime += stepSize) {
-
-        if((currentTime - ((int) currentTime)) < 0.02)
-            cout << "(DictionaryGeneralizer) execution of trajectory (currentTime: " << currentTime << ")" << endl;
 		
 		vec distanceCoeffs(points);
 		vec nextJoints(degOfFreedom);
@@ -158,23 +153,22 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 		
 		// perform coefficient switching (mutex for the sake of thread safety)
 		switcherMutex.lock();
-		
-			// compute all distances
-			for(int i = 0; i < points; ++i) {
-                double currCoeff = metric.computeSquaredDistance(dictTraj->getQueryPoints().at(i).getQueryPoint(), currentQuery);
-                distanceCoeffs(i) = currCoeff;
-			}
-//			cout << distanceCoeffs.t() << endl;
-			
-			// compute average distance
-			double avgDist = 0.0;
-			for(int i = 0; i < points; ++i)
-				avgDist += distanceCoeffs(i);
-			
-			avgDist = avgDist / points;
 			
 			// if loop is executed first time, initialize everything
 			if(firstTime) {
+
+                // compute all distances
+                for(int i = 0; i < points; ++i) {
+                    double currCoeff = metric.computeSquaredDistance(dictTraj->getQueryPoints().at(i).getQueryPoint(), currentQuery);
+                    distanceCoeffs(i) = currCoeff;
+                }
+
+                // compute average distance
+                double avgDist = 0.0;
+                for(int i = 0; i < points; ++i)
+                    avgDist += distanceCoeffs(i);
+
+                avgDist = avgDist / points;
 				
 				dictTraj->setCurrentQueryPoint(currentQuery);
 				
@@ -200,6 +194,19 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 			
 			// if new query point has been set
 			if(newQpSwitch) {
+
+                // compute all distances
+                for(int i = 0; i < points; ++i) {
+                    double currCoeff = metric.computeSquaredDistance(dictTraj->getQueryPoints().at(i).getQueryPoint(), currentQuery);
+                    distanceCoeffs(i) = currCoeff;
+                }
+
+                // compute average distance
+                double avgDist = 0.0;
+                for(int i = 0; i < points; ++i)
+                    avgDist += distanceCoeffs(i);
+
+                avgDist = avgDist / points;
 				
 				newQpSwitch = 0;
 				
@@ -212,6 +219,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 						newCoefficients(i) = 0.0;
 				
 				oldCoefficients = currentCoefficients;
+                switchTime = 0.0000001;
 				
 			}
 
@@ -233,10 +241,11 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 			
 			switchTime += stepSize;
 			
-		switcherMutex.unlock();
+        switcherMutex.unlock();
 
-		for(int i = 0; i < points; ++i) {
-			
+        /**************actual computation of trajectory using coefficients***********/
+        for(int i = 0; i < points; ++i) {
+
 			vec currJoints(degOfFreedom);
 			currJoints.fill(0.0);
 			currJoints = execs.at(i)->doIntegrationStep(ac);
@@ -244,13 +253,6 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
             double currCoeff = currentCoefficients(i);
             nextJoints += currCoeff / norm * currJoints;
 
-            // query points not correct
-/*
-            if(currCoeff/norm > 0.5)
-                cout << "influental query point: " << dictTraj->getQueryPoints().at(i).getQueryPoint().t() << endl;
-            else
-                cout << "non-influental query point: " << dictTraj->getQueryPoints().at(i).getQueryPoint().t() << endl;
-*/
         }
 
         if(!simulate) {
@@ -263,7 +265,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
                 for(int i = 0; i < nextJoints.n_elem; ++i) startingJoints[i] = nextJoints(i);
                 queue->moveJoints(startingJoints);
                 isFirstIteration = 0;
-                cout << "(DictionaryGeneralizer) starting trajectory execution" << endl;
+            //    cout << "(DictionaryGeneralizer) starting trajectory execution" << endl;
 
             } else {
 
