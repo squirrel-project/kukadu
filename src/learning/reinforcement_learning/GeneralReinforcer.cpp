@@ -131,10 +131,10 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
     }
 	
 	lastUpdateCost = cost->computeCost(lastUpdateRes);
-	
-	// TODO: this is a hack!!!! repair it (power cannot directly be applied to metric learning) --> results can get worse instead of better
-//	if(lastUpdateCost < tmpCost) {
-    /*
+/*
+    // TODO: this is a hack!!!! repair it (power cannot directly be applied to metric learning) --> results can get worse instead of better
+    if(lastUpdateCost < tmpCost) {
+
 		lastUpdateCost = tmpCost;
 		lastUpdate = tmpUpdate;
 		lastUpdateRes = tmpRes;
@@ -147,9 +147,9 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 				lastUpdateRes = dmpResult.at(i);
 			}
 		}
-        */
-//	}
-	
+
+    }
+*/
 	this->lastUpdate = lastUpdate;
     isFirstIteration = false;
 	

@@ -141,8 +141,12 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 		
 	}
 	
+
 	mat Z = columnToSquareMatrix(dictTraj->getCoefficients().at(0));
 	Mahalanobis metric(Z.t() * Z);
+
+
+//    Mahalanobis metric(columnToSymmetricMatrix(dictTraj->getCoefficients().at(0)));
 
 	// execute dmps and compute linear combination
 	for(; currentTime < tEnd; currentTime += stepSize) {

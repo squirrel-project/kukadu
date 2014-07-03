@@ -96,27 +96,19 @@ void LinCombDmp::initializeMetric() {
 
 // returns metric coefficients
 std::vector<arma::vec> LinCombDmp::getCoefficients() {
-	
+
 	mat Z = metric.getDecomposition();
 	
 	vector<vec> ret;
-	vec zCoeffs = squareMatrixToColumn(Z);
+    vec zCoeffs = squareMatrixToColumn(Z);
 	ret.push_back(zCoeffs);
-	
+
+    /*
+    vector<vec> ret;
+    vec zCoeffs = symmetricMatrixToColumn(metric.getM());
+    ret.push_back(zCoeffs);
+    */
 	return ret;
-	
-	
-	/*
-	vector<arma::vec> ret;
-	vector<QueryPoint> qps = getQueryPoints();
-	vec coeffs(qps.size());
-	
-	for(int i = 0; i < qps.size(); ++i)
-		coeffs(i) = 1 / exp(metric.computeSquaredDistance(qps.at(i).getQueryPoint(), getCurrentQueryPoint()));
-	
-	ret.push_back(coeffs);
-	return ret;
-	*/
 	
 }
 
@@ -127,8 +119,13 @@ void LinCombDmp::setCoefficients(std::vector<arma::vec> coeffs) {
 	
 	// rest is ignored for now
 	vec coeffs0 = coeffs.at(0);
+
+
 	mat newM = columnToSquareMatrix(coeffs0);
 	newM = newM * newM.t();
+
+
+    //mat newM = columnToSymmetricMatrix(coeffs0);
 	
 	newM = 1 / newM(0,0) * newM;
 	

@@ -656,20 +656,21 @@ vector<double>* testGaussianRegressor() {
 
 arma::vec squareMatrixToColumn(arma::mat Z) {
 	
-	vec zCoeffs(Z.n_cols * Z.n_rows);
-	
-	int k = 0;
-	for(int i = 0; i < Z.n_cols; ++i) {
-		for(int j = 0; j < Z.n_rows; ++j) {
-			double currVal = Z(i, j);
-			zCoeffs(k) = currVal;
-			++k;
-		}
-	}
-	
-	return zCoeffs;
+    vec zCoeffs(Z.n_cols * Z.n_rows);
+
+    int k = 0;
+    for(int i = 0; i < Z.n_cols; ++i) {
+        for(int j = 0; j < Z.n_rows; ++j) {
+            double currVal = Z(i, j);
+            zCoeffs(k) = currVal;
+            ++k;
+        }
+    }
+
+    return zCoeffs;
 	
 }
+
 arma::mat columnToSquareMatrix(arma::vec c) {
 	
 	int dim = sqrt(c.n_elem);
@@ -684,4 +685,41 @@ arma::mat columnToSquareMatrix(arma::vec c) {
 	}
 	
 	return newM;
+}
+
+arma::vec symmetricMatrixToColumn(arma::mat Z) {
+
+    vec zCoeffs(Z.n_cols * (Z.n_cols + 1) / 2);
+
+    int k = 0;
+    for(int i = 0; i < Z.n_cols; ++i) {
+        for(int j = i; j < Z.n_rows; ++j) {
+            double currVal = Z(i, j);
+            zCoeffs(k) = currVal;
+            ++k;
+        }
+    }
+
+    return zCoeffs;
+}
+
+
+arma::mat columnToSymmetricMatrix(arma::vec c) {
+
+    int n = c.n_elem;
+    int dim = (sqrt(8 * n + 1) - 1) / 2;
+    arma::mat newM(dim, dim);
+
+    int k = 0;
+    for(int i = 0; i < dim; ++i) {
+        for(int j = i; j < dim; ++j) {
+            newM(i, j) = c(k);
+            if(i != j)
+                newM(j, i) = c(k);
+            ++k;
+        }
+    }
+
+    return newM;
+
 }

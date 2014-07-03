@@ -30,6 +30,7 @@ private:
     double explorationSigma;
     std::vector<Trajectory*> initDmp;
     TrajectoryExecutor* trajEx;
+    int updateNum;
 
 //	std::vector<Dmp> sampleHistory;
 //	std::vector<double> rewardHistory;

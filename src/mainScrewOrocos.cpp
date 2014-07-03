@@ -351,7 +351,7 @@ int main(int argc, char** args) {
 			usleep(0.5 * 1e4);
 			if(joints != NULL && lastTime != time) {
 				oFile << time;
-				for(int i = 0; i < columns - 1; ++i) { oFile << "\t" << joints[i]; }
+                for(int i = 0; i < columns - 1; ++i) { oFile << "\t" << joints[i]; }
 				oFile << endl;
 				lastTime = time;
  

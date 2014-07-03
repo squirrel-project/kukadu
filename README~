@@ -1,0 +1,9 @@
+requirements:
+	libgsl0-dev (gnu scientific library)
+	gnuplot (plots)
+	gnuplot-x11
+	armadillo-dev
+	libboost-all-dev
+	
+	kuka robot driver (copy the folder to src/robot/ and rename it to robotDriver, such that the following path is valid src/robot/robotDriver/src/friMain.h)
+	install the schunk sdh drive

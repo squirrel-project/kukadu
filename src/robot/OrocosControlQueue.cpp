@@ -11,7 +11,7 @@ void OrocosControlQueue::constructQueue(int argc, char** argv, int sleepTime, st
     currentTime = 0.0;
     this->sleepTime= sleepTime;
     this->commandTopic = commandTopic;
-    this->retJointPosTopic = retJointPosTopic;
+    this->retJointPosTopic = retPosTopic;
     this->switchModeTopic = switchModeTopic;
     this->retCartPosTopic = retCartPosTopic;
     this->stiffnessTopic = cartStiffnessTopic;
@@ -30,14 +30,11 @@ void OrocosControlQueue::constructQueue(int argc, char** argv, int sleepTime, st
 
     setInitValues();
     startingJoints = NULL;
-
-//	ros::init(argc, argv, "kukadu");
-//	node = new ros::NodeHandle();
     this->node = node;
     loop_rate = new ros::Rate(1.0 / sleepTime * 1e+6);
 
-    cout << retJointPosTopic << endl;
-    subJntPos = node.subscribe(retJointPosTopic, 2, &OrocosControlQueue::robotJointPosCallback, this);
+    cout << "pos topic: " << retPosTopic << endl;
+    subJntPos = node.subscribe(retPosTopic, 2, &OrocosControlQueue::robotJointPosCallback, this);
     subCartPos = node.subscribe(retCartPosTopic, 2, &OrocosControlQueue::robotCartPosCallback, this);
     subComState = node.subscribe(commandStateTopic, 2, &OrocosControlQueue::commandStateCallback, this);
     subPtpReached = node.subscribe(ptpReachedTopic, 2, &OrocosControlQueue::phpReachedCallback, this);

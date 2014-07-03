@@ -86,6 +86,9 @@ std::vector<double> constructDmpMys(arma::mat joints);
 arma::vec squareMatrixToColumn(arma::mat m);
 arma::mat columnToSquareMatrix(arma::vec c);
 
+arma::vec symmetricMatrixToColumn(arma::mat m);
+arma::mat columnToSymmetricMatrix(arma::vec c);
+
 t_executor_res executeDemo(ControlQueue* movementQu, std::string file, int doSimulation, double az, double bz, int plotResults);
 
 #endif

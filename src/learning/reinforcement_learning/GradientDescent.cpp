@@ -45,6 +45,7 @@ void GradientDescent::construct(std::vector<Trajectory*> initDmp, vector<double>
     this->sigmas = explorationSigmas;
     this->updatesPerRollout = updatesPerRollout;
     this->importanceSamplingCount = importanceSamplingCount;
+    this->updateNum = 0;
 
 }
 
@@ -92,69 +93,50 @@ std::vector<Trajectory*> GradientDescent::computeRolloutParamters() {
 
 Trajectory* GradientDescent::updateStep() {
 
+    ++updateNum;
     Trajectory* lastUp = getLastUpdate();
+    Trajectory* newUp = NULL;
 
     vector<Trajectory*> lastDmps = getLastRolloutParameters();
     vector<double> lastRewards = getLastRolloutCost();
 
-    int minRewardIdx = 0;
-    float minReward = 1000000.0;
+    vec lastEstimate = lastDmps.at(0)->getCoefficients().at(0);
+
+    if(lastDmps.size() > 1) {
+
     // add rollouts to history
     for(int i = 0; i < lastRewards.size(); ++i) {
         pair <double, Trajectory*> p(lastRewards.at(i), lastDmps.at(i));
-        if(minReward > lastRewards.at(i)) {
-            //cout << lastRewards.at(i) << " ";
-            minReward = lastRewards.at(i);
-            minRewardIdx = i;
-        }
         sampleHistory.push_back(p);
     }
-    cout << minRewardIdx << " " << minReward << endl;
-    return lastDmps.at(minRewardIdx);
 
-
-    /*
-    // sort by reward...
-    sort(sampleHistory.begin(), sampleHistory.end(), rewardComparator);
-
-    // ...and discard bad samples
-    int histSize = sampleHistory.size();
-    for(int i = (importanceSamplingCount - 1); i < histSize; ++i)
-        sampleHistory.pop_back();
-
-    double totalReward = 0.0;
-    for(int i = 0; i < sampleHistory.size(); ++i)
-        totalReward = totalReward + sampleHistory.at(i).first;
-
-    vector<vec> lastUpCoeffs = lastUp->getCoefficients();
-    vec newCoeffsJ(lastUpCoeffs.at(0).n_elem);
-    vector<vec> newCoeffs;
-
-    for(int i = 0; i < lastUp->getCoefficients().size(); ++i) {
-        vec v = lastUp->getCoefficients().at(i);
-        newCoeffs.push_back(v);
-    }
-
-    // for each degree of freedom
-    for(int i = 0; i < newCoeffs.size(); ++i) {
-
-        vec currentDegCoeffs = newCoeffs.at(i);
-
-        // go through all samples and weight rollouts
-        for(int j = 0; j < sampleHistory.size(); ++j) {
-            currentDegCoeffs += sampleHistory.at(j).first / totalReward * (sampleHistory.at(j).second->getCoefficients().at(i) - lastUpCoeffs.at(i));
+    double lastUpdateRew = getLastUpdateReward();
+    mat deltaTheta(lastDmps.at(0)->getCoefficients().at(0).n_elem, lastRewards.size());
+    vec deltaJ(lastRewards.size());
+    for(int i = 0; i < deltaTheta.n_cols; ++i) {
+        Trajectory* currDmp = lastDmps.at(i);
+        vector<vec> currCoeffs = currDmp->getCoefficients();
+        deltaJ(i) = lastRewards.at(i) - lastUpdateRew;
+        for(int j = 0; j < deltaTheta.n_rows; ++j) {
+            vec currCoeffsVec = currCoeffs.at(0);
+            deltaTheta(j, i) = currCoeffsVec(j);
         }
 
-        newCoeffs[i] = currentDegCoeffs;
-
     }
 
-    //Dmp newUp(lastUp);
-    Trajectory* newUp = lastUp->copy();
+    vec gradEstimate = inv(deltaTheta * deltaTheta.t()) * deltaTheta * deltaJ;
+    vec newEstimate = lastEstimate + gradEstimate / updateNum;
+    cout << "last estimate: " << lastEstimate.t();
+    cout << "gradient estimate" << gradEstimate.t() / updateNum << endl << endl;
+    vector<vec> newCoeffs = {newEstimate};
+
+    newUp = lastUp->copy();
     newUp->setCoefficients(newCoeffs);
 
-//	cout << newCoeffs.at(0).t() << endl;
+    } else {
+        newUp = lastDmps.at(0);
+    }
 
     return newUp;
-*/
+
 }

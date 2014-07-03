@@ -30,7 +30,8 @@ using namespace std;
 using namespace arma;
 
 void testPerformance(OrocosControlQueue* queue);
-void testIROSGrasping(OrocosControlQueue* queue);
+void testHumanoidsGrasping(OrocosControlQueue* queue);
+void testHumanoidsArtificialData(OrocosControlQueue* queue);
 std::string resolvePath(std::string path);
 
 Gnuplot* g1 = NULL;
@@ -71,7 +72,8 @@ int main(int argc, char** args) {
     queue->startQueueThread();
 
 //    testPerformance(queue);
-    testIROSGrasping(queue);
+//    testHumanoidsArtificialData(queue);
+    testHumanoidsGrasping(queue);
     getch();
 
 	return 0;
@@ -85,7 +87,160 @@ void testPerformance(OrocosControlQueue* queue) {
 
 }
 
-void testIROSGrasping(OrocosControlQueue* queue) {
+void testHumanoidsGrasping(OrocosControlQueue* queue) {
+
+    std::string inDir = resolvePath("$KUKADU_HOME/movements/humanoids_2014/reaching_on_grid/");
+
+    ControlQueue* raQueue = NULL;
+    QuadraticKernel* kern = new QuadraticKernel();
+
+    vector<double> irosmys = {0, 1, 2, 3, 4, 5};
+    vector<double> irossigmas = {0.3, 0.8};
+
+    //vector<double> rlExploreSigmas = {0.5, 0.5, 0.5, 0.5};
+    vector<double> rlExploreSigmas = {0.2, 0.2, 0.2, 0.2};
+    int rolloutsPerUpdate = 5;
+    int importanceSamplingCount = 3;
+
+    int columns = 8;
+
+    vec trajMetricWeights(7);
+    trajMetricWeights.fill(1.0);
+
+    tau = 5.0;
+    float tmp = 0.1;
+    double ax = -log(tmp) / tau / tau;
+    double relativeDistanceThresh = 1.0;
+
+    cout << "tau: " << tau << endl;
+    cout << "ax: " << ax << endl;
+
+    vec newQueryPoint(2);
+    newQueryPoint(0) = 8;
+    newQueryPoint(1) = 8;
+
+    // result for (8, 8)
+    vector<double> vectorNewQueryPoint = {-0.488059, 1.37839, -2.0144, -1.87255, -0.244649, -0.120394, 1.23313};
+
+    GraspingRewardComputer reward(vectorNewQueryPoint);
+//	t_executor_res opt = reward.getOptimalTraj(5.0);
+
+    cout << "execute ground truth for (8, 6) from file " << inDir + "traj_8-6.txt" << endl;
+    t_executor_res opt = executeDemo(queue, inDir + "traj_8-6.txt", 0, az, bz, 1);
+
+    // speedup testing process by inserting already learned metric result
+    mat m(2,2);
+    m(0, 0) = 1.0;
+    m(1, 0) = -1.3176;
+    m(0, 1) = -1.3176;
+    m(1, 1) = 3.2793;
+//	1.0000  -1.3176
+//  -1.3176   3.2793
+
+//	dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as);
+    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh);
+
+    std::vector<Trajectory*> initTraj;
+    initTraj.push_back(dmpGen->getTrajectory());
+
+    cout << newQueryPoint << endl;
+    cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
+
+    LinCombDmp* lastRollout = NULL;
+
+    PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
+
+    int plotTimes = 5;
+    g1 = new Gnuplot("PoWER demo");
+    int i = 0;
+
+    vec initT;
+    vector<vec> initY;
+
+    vector<double> lastRewards;
+//	while( lastRewards.size() < 3 || (lastRewards.at(0) != lastRewards.at(1) || lastRewards.at(1) != lastRewards.at(2) ) ) {
+    while( i < 50 ) {
+
+        pow.performRollout(1, 0);
+        lastRollout = dynamic_cast<LinCombDmp*>(pow.getLastUpdate());
+        lastRewards.push_back(pow.getLastUpdateReward());
+        if(lastRewards.size() > 3)
+            lastRewards.erase(lastRewards.begin());
+
+        cout << "(mainScrewOrocos) last update metric: " << lastRollout->getMetric().getM() << endl;
+//		cout << lastRollout->getMetric().getM() << endl << endl;
+
+        if(i == 0) {
+            initT = pow.getLastUpdateRes().t;
+            initY = pow.getLastUpdateRes().y;
+        }
+
+
+        if( (i % 1) == 0 ) {
+
+            cout << "(mainScrewOrocos) already done " << i << " iterations" << endl;
+
+            int plotNum = 1;
+            for(int plotTraj = 0; plotTraj < plotNum; ++plotTraj) {
+
+                ostringstream convert;   // stream used for the conversion
+                convert << plotTraj;
+
+                string title = string("fitted sensor data (joint") + convert.str() + string(")");
+                g1->set_style("lines").plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[plotTraj]), "optimal trajectoy");
+                g1->set_style("lines").plot_xy(armadilloToStdVec(initT), armadilloToStdVec(initY[plotTraj]), "initial trajectoy");
+                g1->set_style("lines").plot_xy(armadilloToStdVec(pow.getLastUpdateRes().t), armadilloToStdVec(pow.getLastUpdateRes().y[plotTraj]), "generalized trajectory");
+                g1->showonscreen();
+
+            }
+
+        }
+
+        g1->reset_plot();
+
+        if( (i % 20) == 19)
+            g1->remove_tmpfiles();
+
+        ++i;
+
+    }
+
+
+    cout << "(mainScrewOrocos) execution of trajectory at new position" << endl;
+
+    while( 1 ) {
+
+        cout << "(mainScrewOrocos) first coordinate: " << endl;
+        cin >> newQueryPoint(0);
+        cout << "(mainScrewOrocos) second coordinate: " << endl;
+        cin >> newQueryPoint(1);
+
+
+        lastRollout = ((LinCombDmp*) dmpGen->getTrajectory());
+        lastRollout->setCurrentQueryPoint(newQueryPoint);
+        dmpGen->switchQueryPoint(newQueryPoint);
+
+        initTraj.clear();
+        initTraj.push_back(lastRollout);
+
+        t_executor_res updateRes = dmpGen->simulateTrajectory();
+
+        g1 = new Gnuplot("PoWER demo2");
+        g1->set_style("points").plot_xy(armadilloToStdVec(updateRes.t), armadilloToStdVec(updateRes.y[0]), "generalized trajectory");
+    //	g1->set_style("lines").plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[0]), "optimal trajectory");
+        g1->showonscreen();
+
+        cout << "(mainScrewOrocos) press key to continue" << endl;
+        getchar();
+        getchar();
+
+        delete g1;
+
+    }
+
+}
+
+void testHumanoidsArtificialData(OrocosControlQueue* queue) {
 
     // for different trajectories, you have to change the reward computer (not the gaussian computer)
     std::string inDir = resolvePath("$KUKADU_HOME/movements/iros2014/2d_extended_gen/");
@@ -94,9 +249,9 @@ void testIROSGrasping(OrocosControlQueue* queue) {
     vector<double> irosmys = {0, 1, 2, 3, 4, 5, 6, 7};
     vector<double> irossigmas = {0.3, 0.8};
 
-    vector<double> rlExploreSigmas = {0.5, 0.5, 0.5, 0.5};
-    //vector<double> rlExploreSigmas = {0.2, 0.2, 0.2, 0.2};
-    int rolloutsPerUpdate = 20;
+    vector<double> rlExploreSigmas = {0.1, 0.1, 0.1, 0.1};
+    // 2 * number of parameters (http://www.scholarpedia.org/article/Policy_gradient_methods#Finite-difference_Methods)
+    int rolloutsPerUpdate = 2 * 4;
     int importanceSamplingCount = 5;
 
     int columns = 8;
@@ -148,7 +303,7 @@ void testIROSGrasping(OrocosControlQueue* queue) {
     vector<vec> initY;
 
     vector<double> lastRewards;
-    while( i < 50 ) {
+    while( i < 15 ) {
 
         pow.performRollout(1, 0);
         lastRollout = dynamic_cast<LinCombDmp*>(pow.getLastUpdate());
@@ -157,7 +312,6 @@ void testIROSGrasping(OrocosControlQueue* queue) {
             lastRewards.erase(lastRewards.begin());
 
         cout << "(mainScrewOrocos) last update metric: " << lastRollout->getMetric().getM() << endl;
-//		cout << lastRollout->getMetric().getM() << endl << endl;
 
         if(i == 0) {
             initT = pow.getLastUpdateRes().t;
@@ -212,9 +366,14 @@ void testIROSGrasping(OrocosControlQueue* queue) {
 
         t_executor_res updateRes = dmpGen->simulateTrajectory();
 
+        GaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1));
+
+        cout << "execute ground truth for (1.6, 7)" << endl;
+        t_executor_res opt = reward.getOptimalTraj(7.0);
+
         g1 = new Gnuplot("PoWER demo2");
         g1->set_style("points").plot_xy(armadilloToStdVec(updateRes.t), armadilloToStdVec(updateRes.y[0]), "generalized trajectory");
-    //	g1->set_style("lines").plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[0]), "optimal trajectory");
+        g1->set_style("lines").plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[0]), "optimal trajectory");
         g1->showonscreen();
 
         cout << "(mainScrewOrocos) press key to continue" << endl;
