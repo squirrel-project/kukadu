@@ -723,3 +723,38 @@ arma::mat columnToSymmetricMatrix(arma::vec c) {
     return newM;
 
 }
+
+std::string stringFromDouble(double d) {
+
+    std::stringstream s;
+    s << d;
+    return s.str();
+
+}
+
+arma::mat fillTrajectoryMatrix(arma::mat joints, double tMax) {
+
+    int prevMaxIdx = joints.n_rows;
+    double prevTMax = joints(joints.n_rows - 1, 0);
+
+    if(tMax > prevTMax) {
+        double tDiff = prevTMax - joints(joints.n_rows - 2, 0);
+
+        int insertSteps = (int) ((tMax - prevTMax) / tDiff);
+        joints.resize(joints.n_rows + insertSteps + 1, joints.n_cols);
+        for(int i = 0; i < insertSteps; ++i) {
+            for(int j = 1; j < joints.n_cols; ++j) {
+                joints(prevMaxIdx + i, j) = joints(prevMaxIdx - 1, j);
+            }
+            joints(prevMaxIdx + i, 0) = prevTMax + (i + 1) * tDiff;
+        }
+
+        for(int j = 1; j < joints.n_cols; ++j) {
+            joints(prevMaxIdx + insertSteps, j) = joints(prevMaxIdx - 1, j);
+        }
+        joints(prevMaxIdx + insertSteps, 0) = tMax;
+    }
+
+    return joints;
+
+}

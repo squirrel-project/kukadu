@@ -12,6 +12,7 @@ LinCombDmp::LinCombDmp(int queryDegOfFreedom, int degOfFreedom, std::string base
 	currentQueryPoint = getQueryPoints().at(0).getQueryPoint();
 	initializeMetric();
 	cout << "(LinCombDmp) constructor" << endl;
+
 }
 
 LinCombDmp::LinCombDmp(int queryDegOfFreedom, int degOfFreedom, std::string baseFolder, std::vector<DMPBase> baseDef, double az, double bz, double ax, double tau,
@@ -21,6 +22,7 @@ LinCombDmp::LinCombDmp(int queryDegOfFreedom, int degOfFreedom, std::string base
 	this->trajMetricWeights = trajMetricWeights;
 	currentQueryPoint = getQueryPoints().at(0).getQueryPoint();
 	cout << "(LinCombDmp) constructor" << endl;
+
 }
 
 /*

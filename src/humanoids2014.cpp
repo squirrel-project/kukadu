@@ -94,7 +94,7 @@ void testHumanoidsGrasping(OrocosControlQueue* queue) {
     ControlQueue* raQueue = NULL;
     QuadraticKernel* kern = new QuadraticKernel();
 
-    vector<double> irosmys = {0, 1, 2, 3, 4, 5};
+    vector<double> irosmys = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
     vector<double> irossigmas = {0.3, 0.8};
 
     //vector<double> rlExploreSigmas = {0.5, 0.5, 0.5, 0.5};
@@ -117,27 +117,29 @@ void testHumanoidsGrasping(OrocosControlQueue* queue) {
 
     vec newQueryPoint(2);
     newQueryPoint(0) = 8;
-    newQueryPoint(1) = 8;
+    newQueryPoint(1) = 5;
 
     // result for (8, 8)
-    vector<double> vectorNewQueryPoint = {-0.488059, 1.37839, -2.0144, -1.87255, -0.244649, -0.120394, 1.23313};
+    vector<double> vectorNewQueryPoint = {-0.387412, 1.56013, 1.05285, 1.17488, 0.182785, -0.819336, -0.0848888};
 
     GraspingRewardComputer reward(vectorNewQueryPoint);
-//	t_executor_res opt = reward.getOptimalTraj(5.0);
 
-    cout << "execute ground truth for (8, 6) from file " << inDir + "traj_8-6.txt" << endl;
-    t_executor_res opt = executeDemo(queue, inDir + "traj_8-6.txt", 0, az, bz, 1);
+    cout << "execute ground truth for (8, 6) from file " << inDir + "../traj_" + stringFromDouble(newQueryPoint(0)) + "-" + stringFromDouble(newQueryPoint(1)) + ".txt" << endl;
+    t_executor_res opt = executeDemo(queue, inDir + "../traj_" + stringFromDouble(newQueryPoint(0)) + "-" + stringFromDouble(newQueryPoint(1)) + ".txt", 0, az, bz, 1);
 
     // speedup testing process by inserting already learned metric result
     mat m(2,2);
     m(0, 0) = 1.0;
-    m(1, 0) = -1.3176;
-    m(0, 1) = -1.3176;
-    m(1, 1) = 3.2793;
-//	1.0000  -1.3176
-//  -1.3176   3.2793
+    m(1, 0) = -1.3435;
+    m(0, 1) = -1.3435;
+    m(1, 1) = 1.8495;
 
-//	dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as);
+    /*
+    1.0000  -1.3435
+    -1.3435   1.8495
+  */
+
+//    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as);
     DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh);
 
     std::vector<Trajectory*> initTraj;
@@ -145,6 +147,8 @@ void testHumanoidsGrasping(OrocosControlQueue* queue) {
 
     cout << newQueryPoint << endl;
     cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
+
+    /*
 
     LinCombDmp* lastRollout = NULL;
 
@@ -237,6 +241,7 @@ void testHumanoidsGrasping(OrocosControlQueue* queue) {
         delete g1;
 
     }
+    */
 
 }
 

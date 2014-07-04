@@ -65,6 +65,9 @@ float* copyJoints(const float* arr, int arrSize);
 double** createDoubleArrayFromMatrix(gsl_matrix* data);
 
 arma::vec stdToArmadilloVec(std::vector<double> stdVec);
+arma::mat fillTrajectoryMatrix(arma::mat joints, double tMax);
+
+std::string stringFromDouble(double d);
 
 std::vector<double> armadilloToStdVec(arma::vec armadilloVec);
 std::vector<double> computeDMPMys(std::vector<double> mys, double ax, double tau);

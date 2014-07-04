@@ -15,21 +15,35 @@ DictionaryTrajectory::DictionaryTrajectory(int degOfFreedom, std::string baseFol
 	
 	this->baseDef = baseDef;
 	
+    vector<mat> jointsVec;
+    double tMax = 0.0;
 	for(int i = 0; i < queryPoints.size(); ++i) {
-		
+
 		mat joints = readMovements((string(baseFolder) + string(queryPoints.at(i).getFileDataPath())).c_str(), degOfFreedom + 1);
 		queryPoints.at(i).setQueryPoint(readQuery(string(baseFolder) + string(queryPoints.at(i).getFileQueryPath())));
+        jointsVec.push_back(joints);
+        double currentTMax = joints(joints.n_rows - 1, 0);
 
-		dmpLearner = new TrajectoryDMPLearner(baseDef, tau, az, bz, ax, joints, degOfFreedom);
-		Dmp learnedDmps = dmpLearner->fitTrajectories();
-		queryPoints.at(i).setDmp(learnedDmps);
-		
-        cout << "(DMPGeneralizer) goals for query point [" << queryPoints.at(i).getQueryPoint().t() << "]" << endl << "\t [";
-        cout << queryPoints.at(i).getDmp().getG().t() << "]" << endl;
-		
-		delete dmpLearner;
+        if(tMax < currentTMax)
+                tMax = currentTMax;
 		
 	}
+
+    for(int i = 0; i < jointsVec.size(); ++i) {
+
+        mat joints = jointsVec.at(i);
+        int maxRows = joints.n_rows;
+        joints = fillTrajectoryMatrix(joints, tMax);
+        dmpLearner = new TrajectoryDMPLearner(baseDef, tau, az, bz, ax, joints, degOfFreedom);
+        Dmp learnedDmps = dmpLearner->fitTrajectories();
+        queryPoints.at(i).setDmp(learnedDmps);
+
+        cout << "(DMPGeneralizer) goals for query point [" << queryPoints.at(i).getQueryPoint().t() << "]" << endl << "\t [";
+        cout << queryPoints.at(i).getDmp().getG().t() << "]" << endl;
+
+        delete dmpLearner;
+
+    }
 	
 }
 

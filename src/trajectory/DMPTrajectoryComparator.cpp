@@ -30,7 +30,7 @@ double DMPTrajectoryComparator::computeDistance() {
 		cerr << "(DMPTrajectoryComparator) dimensions of weight vector and trajectory do not match" << endl;
 		throw "(DMPTrajectoryComparator) dimensions of weight vector and trajectory do not match";
 	}
-	
+
 	double tDiff = abs(dmp1Result.t(dmp1Result.t.n_elem - 1) - dmp2Result.t(dmp2Result.t.n_elem - 1));
 	if(tDiff > tTolerance) {
 		cerr << "(DMPTrajectoryComparator) trajectories do not have same duration" << endl;
@@ -89,12 +89,14 @@ t_executor_res DMPTrajectoryComparator::executeTrajectory(Dmp traj) {
 	
 	DMPExecutor dmpexec(traj);
 	
+    /*
 	if( abs(traj1.getTmax() - traj2.getTmax()) > tTolerance ) {
 		cerr << "(DMPTrajectoryComparator) trajectories do not have same duration" << endl;
 		throw "(DMPTrajectoryComparator) trajectories do not have same duration";
 	}
+    */
 	
-	return dmpexec.simulateTrajectory(0, min(traj1.getTmax(),traj2.getTmax()), integrationStep, tolAbsErr, tolRelErr);
+    return dmpexec.simulateTrajectory(0, max(traj1.getTmax(),traj2.getTmax()), integrationStep, tolAbsErr, tolRelErr);
 	
 }
 
