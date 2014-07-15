@@ -81,6 +81,7 @@ t_executor_res DictionaryGeneralizer::simulateTrajectory() {
 
 // TODO: implement execute trajectory
 t_executor_res DictionaryGeneralizer::executeTrajectory() {
+    return executeGen(currentQuery, tEnd, ac, as);
 }
 
 void DictionaryGeneralizer::setTrajectory(Trajectory* traj) {

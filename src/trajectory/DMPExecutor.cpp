@@ -80,8 +80,13 @@ double DMPExecutor::getExternalError() {
 	return externalError;
 }
 
+double DMPExecutor::addTerm(double t, const double* currentDesiredYs, int jointNumber, ControlQueue* queue) {
+    return 0.0;
+}
+
 int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 
+    // TODO: remove equation for z' and merge the first two equations
 	// y' = z / tau
 	// z' = 1 / tau * ( az * (bz * (g - y) - z) + f); 
 	// x' = -ax / tau * x
@@ -97,7 +102,7 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
         if(t <= durationThresh) {
 			
             double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
-            f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm);
+            f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm)  + this->addTerm(t, y, i / 2, controlQueue);
 			
 		} else {
 			cout << "(DMPExecutor) executing dmp over teaching duration" << endl;

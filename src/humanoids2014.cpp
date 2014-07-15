@@ -24,7 +24,7 @@
 #include "../include/kukadu.h"
 #include "../src/utils/gnuplot-cpp/gnuplot_i.hpp"
 
-#define DOSIMULATION 1
+#define DOSIMULATION 0
 
 using namespace std;
 using namespace arma;
@@ -68,8 +68,14 @@ std::string resolvePath(std::string path) {
 int main(int argc, char** args) {
 
     ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
-    OrocosControlQueue* queue = new OrocosControlQueue(argc, args, kukaStepWaitTime, "simulation", "right_arm", *node);
+    OrocosControlQueue* queue = NULL;
+    if(DOSIMULATION)
+        queue = new OrocosControlQueue(argc, args, kukaStepWaitTime, "simulation", "right_arm", *node);
+    else
+        queue = new OrocosControlQueue(argc, args, kukaStepWaitTime, "real", "right_arm", *node);
+
     queue->startQueueThread();
+    queue->switchMode(10);
 
 //    testPerformance(queue);
 //    testHumanoidsArtificialData(queue);
@@ -90,6 +96,7 @@ void testPerformance(OrocosControlQueue* queue) {
 void testHumanoidsGrasping(OrocosControlQueue* queue) {
 
     std::string inDir = resolvePath("$KUKADU_HOME/movements/humanoids_2014/reaching_on_grid/");
+    std::string resFile = resolvePath("$KUKADU_HOME/movements/humanoids_2014/eval_reaching.txt");
 
     ControlQueue* raQueue = NULL;
     QuadraticKernel* kern = new QuadraticKernel();
@@ -125,7 +132,8 @@ void testHumanoidsGrasping(OrocosControlQueue* queue) {
     GraspingRewardComputer reward(vectorNewQueryPoint);
 
     cout << "execute ground truth for (8, 6) from file " << inDir + "../traj_" + stringFromDouble(newQueryPoint(0)) + "-" + stringFromDouble(newQueryPoint(1)) + ".txt" << endl;
-    t_executor_res opt = executeDemo(queue, inDir + "../traj_" + stringFromDouble(newQueryPoint(0)) + "-" + stringFromDouble(newQueryPoint(1)) + ".txt", 0, az, bz, 1);
+    t_executor_res opt = executeDemo(NULL, inDir + "../traj_" + stringFromDouble(newQueryPoint(0)) + "-" + stringFromDouble(newQueryPoint(1)) + ".txt", 1, az, bz, 0);
+    // t_executor_res opt = executeDemo(queue, inDir + "../traj_" + stringFromDouble(newQueryPoint(0)) + "-" + stringFromDouble(newQueryPoint(1)) + ".txt", 0, az, bz, 1);
 
     // speedup testing process by inserting already learned metric result
     mat m(2,2);
@@ -140,7 +148,7 @@ void testHumanoidsGrasping(OrocosControlQueue* queue) {
   */
 
 //    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as);
-    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh);
+    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh);
 
     std::vector<Trajectory*> initTraj;
     initTraj.push_back(dmpGen->getTrajectory());
@@ -148,22 +156,23 @@ void testHumanoidsGrasping(OrocosControlQueue* queue) {
     cout << newQueryPoint << endl;
     cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
 
-    /*
-
     LinCombDmp* lastRollout = NULL;
 
-    PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
-
-    int plotTimes = 5;
+//    PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
+    GradientDescent pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
     g1 = new Gnuplot("PoWER demo");
+
+    /*
+    // commented out for testing
+    vector<double> lastRewards;
+
     int i = 0;
 
     vec initT;
     vector<vec> initY;
+    int plotTimes = 5;
 
-    vector<double> lastRewards;
-//	while( lastRewards.size() < 3 || (lastRewards.at(0) != lastRewards.at(1) || lastRewards.at(1) != lastRewards.at(2) ) ) {
-    while( i < 50 ) {
+    while( i < 8 ) {
 
         pow.performRollout(1, 0);
         lastRollout = dynamic_cast<LinCombDmp*>(pow.getLastUpdate());
@@ -208,14 +217,32 @@ void testHumanoidsGrasping(OrocosControlQueue* queue) {
         ++i;
 
     }
+*/
+    // new optimal metric:
+    m(0, 0) = 1.0;
+    m(1, 0) = -0.1698;
+    m(0, 1) = -0.1698;
+    m(1, 1) = 1.1672;
 
+    Mahalanobis metric(m);
+    vector<vec> metricCoeffs = {metric.getCoefficients()};
+    dmpGen->getTrajectory()->setCoefficients(metricCoeffs);
+
+    ofstream oFile;
+    oFile.open(resFile);
 
     cout << "(mainScrewOrocos) execution of trajectory at new position" << endl;
 
+    int count = 0;
+    double totalError = 0.0;
     while( 1 ) {
 
-        cout << "(mainScrewOrocos) first coordinate: " << endl;
+        cout << "(mainScrewOrocos) first coordinate (< 0 for exit): " << endl;
         cin >> newQueryPoint(0);
+
+        if(newQueryPoint(0) < 0)
+            break;
+
         cout << "(mainScrewOrocos) second coordinate: " << endl;
         cin >> newQueryPoint(1);
 
@@ -227,21 +254,31 @@ void testHumanoidsGrasping(OrocosControlQueue* queue) {
         initTraj.clear();
         initTraj.push_back(lastRollout);
 
-        t_executor_res updateRes = dmpGen->simulateTrajectory();
+        t_executor_res updateRes = dmpGen->executeTrajectory();
 
-        g1 = new Gnuplot("PoWER demo2");
-        g1->set_style("points").plot_xy(armadilloToStdVec(updateRes.t), armadilloToStdVec(updateRes.y[0]), "generalized trajectory");
-    //	g1->set_style("lines").plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[0]), "optimal trajectory");
-        g1->showonscreen();
+//        g1 = new Gnuplot("PoWER demo2");
+//        g1->set_style("points").plot_xy(armadilloToStdVec(updateRes.t), armadilloToStdVec(updateRes.y[0]), "generalized trajectory");
+//        g1->set_style("lines").plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[0]), "optimal trajectory");
+//        g1->showonscreen();
 
-        cout << "(mainScrewOrocos) press key to continue" << endl;
-        getchar();
-        getchar();
+        double mesError = 0.0;
+        cout << "(humanoids2014) please insert the measured error: ";
+        cin >> mesError;
 
-        delete g1;
+        totalError += mesError;
+        ++count;
+
+        oFile << "(" << newQueryPoint(0) << ", " << newQueryPoint(1) << "): " << mesError << endl;
+
+//        cout << "(mainScrewOrocos) press key to continue" << endl;
+//        getchar();
+//        getchar();
+
+//        delete g1;
 
     }
-    */
+
+    oFile << "average error: " << (totalError / count) << endl;
 
 }
 

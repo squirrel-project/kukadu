@@ -104,6 +104,7 @@ protected:
 
 	int func (double t, const double* y, double* f, void* params);
 	int jac(double t, const double* y, double *dfdy, double* dfdt, void* params);
+    double addTerm(double t, const double* currentDesiredYs, int jointNumber, ControlQueue* queue);
 
 public:
 
