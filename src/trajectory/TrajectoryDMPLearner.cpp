@@ -31,7 +31,7 @@ TrajectoryDMPLearner::TrajectoryDMPLearner(vector<double> mysDef, vector<double>
 Dmp TrajectoryDMPLearner::fitTrajectories() {
 
 //	t_learned_dmp retDmp;
-	int dataPointsNum = joints.n_rows;
+    int dataPointsNum = joints.n_rows;
 	
 	double tmax = joints(joints.n_rows - 1, 0);
 	
@@ -86,9 +86,9 @@ trajectory_learner_internal TrajectoryDMPLearner::fitTrajectory(vec time, vec y,
 
 	vec fity = tau * tau * ddy - az * (bz * (vec_g - y) - tau * dy);
 
-	DMPTrajectoryGenerator dmpTrajGen(dmpBase, ax, tau);
-	GeneralFitter dmpGenFit(time, fity, dataPointsNum, &dmpTrajGen);
-	mat designMatrix = dmpGenFit.computeDesignMatrix();
+    DMPTrajectoryGenerator dmpTrajGen(dmpBase, ax, tau);
+    GeneralFitter dmpGenFit(time, fity, dataPointsNum, &dmpTrajGen);
+    mat designMatrix = dmpGenFit.computeDesignMatrix();
 	vec dmpCoeff = dmpGenFit.computeLinFitCoefficients(designMatrix);
 
 	ret.fity = fity;

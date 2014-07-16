@@ -31,7 +31,6 @@ t_executor_res executeDemo(ControlQueue* movementQu, string file, int doSimulati
 	
 	// reading in file
 	mat joints = readMovements(file, columns);
-	
 	tmpmys = constructDmpMys(joints);
 	
 	double ax = -log((float)0.1) / joints(joints.n_rows - 1, 0) / tau;
@@ -156,10 +155,8 @@ std::vector<double>* getDoubleVectorFromArray(double* arr, int size) {
 
 vec computeDiscreteDerivatives(vec x, vec y) {
 	
-	double y0, y1, x0, x1, k;
-	
+    double y0, y1, x0, x1, k;
 	vec ret(x.n_elem);
-	
 	for(int i = 1; i < x.n_elem; ++i) {
 		
 		y0 = y(i - 1);
@@ -168,9 +165,10 @@ vec computeDiscreteDerivatives(vec x, vec y) {
 		x1 = x(i);
 		
 		k = (y1 - y0) / (x1 - x0);
+//        cout << (y1 - y0) << " " << (x1 - x0) << endl;
 		ret(i - 1) = k;
 	}
-	
+
 	ret(ret.n_elem - 1) = k;
 	
 	return ret;
@@ -749,10 +747,14 @@ arma::mat fillTrajectoryMatrix(arma::mat joints, double tMax) {
             joints(prevMaxIdx + i, 0) = prevTMax + (i + 1) * tDiff;
         }
 
-        for(int j = 1; j < joints.n_cols; ++j) {
-            joints(prevMaxIdx + insertSteps, j) = joints(prevMaxIdx - 1, j);
-        }
-        joints(prevMaxIdx + insertSteps, 0) = tMax;
+        if(joints(prevMaxIdx + insertSteps - 1, 0) != tMax) {
+            for(int j = 1; j < joints.n_cols; ++j) {
+                joints(prevMaxIdx + insertSteps, j) = joints(prevMaxIdx - 1, j);
+            }
+            joints(prevMaxIdx + insertSteps, 0) = tMax;
+        } else
+            joints.resize(joints.n_rows - 1, joints.n_cols);
+
     }
 
     return joints;

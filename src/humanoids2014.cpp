@@ -24,12 +24,13 @@
 #include "../include/kukadu.h"
 #include "../src/utils/gnuplot-cpp/gnuplot_i.hpp"
 
-#define DOSIMULATION 0
+#define DOSIMULATION 1
 
 using namespace std;
 using namespace arma;
 
 void testPerformance(OrocosControlQueue* queue);
+void testHumanoidsPouring(OrocosControlQueue* queue);
 void testHumanoidsGrasping(OrocosControlQueue* queue);
 void testHumanoidsArtificialData(OrocosControlQueue* queue);
 std::string resolvePath(std::string path);
@@ -67,19 +68,65 @@ std::string resolvePath(std::string path) {
 
 int main(int argc, char** args) {
 
-    ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
-    OrocosControlQueue* queue = NULL;
-    if(DOSIMULATION)
-        queue = new OrocosControlQueue(argc, args, kukaStepWaitTime, "simulation", "right_arm", *node);
-    else
-        queue = new OrocosControlQueue(argc, args, kukaStepWaitTime, "real", "right_arm", *node);
+    int mode = 4;
 
-    queue->startQueueThread();
-    queue->switchMode(10);
+    if(mode == 1) {
 
-//    testPerformance(queue);
-//    testHumanoidsArtificialData(queue);
-    testHumanoidsGrasping(queue);
+        ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
+        OrocosControlQueue* queue = NULL;
+        if(DOSIMULATION)
+            queue = new OrocosControlQueue(argc, args, kukaStepWaitTime, "simulation", "right_arm", *node);
+        else
+            queue = new OrocosControlQueue(argc, args, kukaStepWaitTime, "real", "right_arm", *node);
+
+        queue->startQueueThread();
+        queue->switchMode(10);
+
+        testPerformance(queue);
+
+    } else if (mode == 2) {
+
+        ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
+        OrocosControlQueue* queue = NULL;
+        if(DOSIMULATION)
+            queue = new OrocosControlQueue(argc, args, kukaStepWaitTime, "simulation", "right_arm", *node);
+        else
+            queue = new OrocosControlQueue(argc, args, kukaStepWaitTime, "real", "right_arm", *node);
+
+        queue->startQueueThread();
+        queue->switchMode(10);
+
+        testHumanoidsArtificialData(queue);
+
+    } else if (mode == 3) {
+
+        ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
+        OrocosControlQueue* queue = NULL;
+        if(DOSIMULATION)
+            queue = new OrocosControlQueue(argc, args, kukaStepWaitTime, "simulation", "right_arm", *node);
+        else
+            queue = new OrocosControlQueue(argc, args, kukaStepWaitTime, "real", "right_arm", *node);
+
+        queue->startQueueThread();
+        queue->switchMode(10);
+
+        testHumanoidsGrasping(queue);
+
+    } else if (mode == 4) {
+
+        ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
+        OrocosControlQueue* queue = NULL;
+        if(DOSIMULATION)
+            queue = new OrocosControlQueue(argc, args, kukaStepWaitTime, "simulation", "left_arm", *node);
+        else
+            queue = new OrocosControlQueue(argc, args, kukaStepWaitTime, "real", "left_arm", *node);
+
+        queue->startQueueThread();
+        queue->switchMode(10);
+
+        testHumanoidsPouring(queue);
+
+    }
     getch();
 
 	return 0;
@@ -88,8 +135,182 @@ int main(int argc, char** args) {
 
 void testPerformance(OrocosControlQueue* queue) {
 
-    t_executor_res demoRes = executeDemo(queue, resolvePath("$KUKADU_HOME/movements/iros2014/real_robot_2d_pickup/traj_10-5.txt"),
+    t_executor_res demoRes = executeDemo(queue, resolvePath("$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_9_144.txt"),
                                0, az, bz, 1);
+
+}
+
+void testHumanoidsPouring(OrocosControlQueue* queue) {
+
+    std::string inDir = resolvePath("$KUKADU_HOME/movements/humanoids_2014/pouring_gries/");
+    std::string resFile = resolvePath("$KUKADU_HOME/movements/humanoids_2014/eval_pouring_gries.txt");
+
+    ControlQueue* raQueue = NULL;
+    QuadraticKernel* kern = new QuadraticKernel();
+
+    vector<double> irosmys = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35};
+    vector<double> irossigmas = {0.3, 0.8};
+
+    //vector<double> rlExploreSigmas = {0.5, 0.5, 0.5, 0.5};
+    vector<double> rlExploreSigmas = {0.2, 0.2, 0.2, 0.2};
+    int rolloutsPerUpdate = 5;
+    int importanceSamplingCount = 3;
+
+    int columns = 8;
+
+    vec trajMetricWeights(7);
+    trajMetricWeights.fill(1.0);
+
+    float tmp = 0.1;
+    double relativeDistanceThresh = 1.0;
+
+    vec newQueryPoint(2);
+    newQueryPoint(0) = 12;
+    newQueryPoint(1) = 300;
+
+    CostComputer* reward = new TerminalCostComputer();
+
+    // speedup testing process by inserting already learned metric result
+    mat m(2,2);
+    m(0, 0) = 1.0;
+    m(1, 0) = -0.0281;
+    m(0, 1) = -0.0281;
+    m(1, 1) = 0.0009;
+
+    /*
+1.0000  -0.0281
+  -0.0281   0.0009
+  */
+
+//    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as);
+    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh);
+
+    std::vector<Trajectory*> initTraj;
+    initTraj.push_back(dmpGen->getTrajectory());
+
+    cout << newQueryPoint << endl;
+    cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
+
+    LinCombDmp* lastRollout = NULL;
+    GradientDescent pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, reward, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
+
+    g1 = new Gnuplot("PoWER demo");
+
+    /*
+    // commented out for testing
+    vector<double> lastRewards;
+
+    int i = 0;
+    vec initT;
+    vector<vec> initY;
+    int plotTimes = 5;
+
+    while( i < 8 ) {
+
+        pow.performRollout(1, 0);
+        lastRollout = dynamic_cast<LinCombDmp*>(pow.getLastUpdate());
+        lastRewards.push_back(pow.getLastUpdateReward());
+        if(lastRewards.size() > 3)
+            lastRewards.erase(lastRewards.begin());
+
+        cout << "(mainScrewOrocos) last update metric: " << lastRollout->getMetric().getM() << endl;
+//		cout << lastRollout->getMetric().getM() << endl << endl;
+
+        if(i == 0) {
+            initT = pow.getLastUpdateRes().t;
+            initY = pow.getLastUpdateRes().y;
+        }
+
+
+        if( (i % 1) == 0 ) {
+
+            cout << "(mainScrewOrocos) already done " << i << " iterations" << endl;
+
+            int plotNum = 1;
+            for(int plotTraj = 0; plotTraj < plotNum; ++plotTraj) {
+
+                ostringstream convert;   // stream used for the conversion
+                convert << plotTraj;
+
+                string title = string("fitted sensor data (joint") + convert.str() + string(")");
+                g1->set_style("lines").plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[plotTraj]), "optimal trajectoy");
+                g1->set_style("lines").plot_xy(armadilloToStdVec(initT), armadilloToStdVec(initY[plotTraj]), "initial trajectoy");
+                g1->set_style("lines").plot_xy(armadilloToStdVec(pow.getLastUpdateRes().t), armadilloToStdVec(pow.getLastUpdateRes().y[plotTraj]), "generalized trajectory");
+                g1->showonscreen();
+
+            }
+
+        }
+
+        g1->reset_plot();
+
+        if( (i % 20) == 19)
+            g1->remove_tmpfiles();
+
+        ++i;
+
+    }
+
+    // new optimal metric:
+    m(0, 0) = 1.0;
+    m(1, 0) = -0.1698;
+    m(0, 1) = -0.1698;
+    m(1, 1) = 1.1672;
+
+    */
+
+    Mahalanobis metric(m);
+    vector<vec> metricCoeffs = {metric.getCoefficients()};
+    dmpGen->getTrajectory()->setCoefficients(metricCoeffs);
+
+    ofstream oFile;
+    oFile.open(resFile);
+
+    cout << "(PouringExperiment) execution of trajectory at new position" << endl;
+
+    int count = 0;
+    double totalError = 0.0;
+    while( 1 ) {
+
+        cout << "(PouringExperiment) first coordinate (< 0 for exit): " << endl;
+        cin >> newQueryPoint(0);
+
+        if(newQueryPoint(0) < 0)
+            break;
+
+        cout << "(PouringExperiment) second coordinate: " << endl;
+        cin >> newQueryPoint(1);
+
+
+        lastRollout = ((LinCombDmp*) dmpGen->getTrajectory());
+        lastRollout->setCurrentQueryPoint(newQueryPoint);
+        dmpGen->switchQueryPoint(newQueryPoint);
+
+        initTraj.clear();
+        initTraj.push_back(lastRollout);
+
+        t_executor_res updateRes = dmpGen->executeTrajectory();
+
+        /*
+        double mesError = 0.0;
+        cout << "(humanoids2014) please insert the measured error: ";
+        cin >> mesError;
+
+        totalError += mesError;
+        ++count;
+
+        oFile << "(" << newQueryPoint(0) << ", " << newQueryPoint(1) << "): " << mesError << endl;
+
+//        cout << "(mainScrewOrocos) press key to continue" << endl;
+//        getchar();
+//        getchar();
+
+//        delete g1;
+*/
+
+    }
+
+    oFile << "average error: " << (totalError / count) << endl;
 
 }
 

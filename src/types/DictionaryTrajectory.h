@@ -23,6 +23,7 @@ private:
 	
 	std::vector<std::string> files;
 	std::vector<std::string> queryFiles;
+    std::vector<std::string> dmpFiles;
 	std::vector<std::string> trajFiles;
 	std::vector<QueryPoint> queryPoints;
 	std::vector<arma::vec> coefficients;
@@ -33,7 +34,7 @@ private:
 	
 public:
 	
-	DictionaryTrajectory(int degOfFreedom, std::string baseFolder, std::vector<DMPBase> baseDef, double az, double bz, double ax, double tau);
+    DictionaryTrajectory(int degOfFreedom, std::string baseFolder, std::vector<DMPBase> baseDef, double az, double bz);
 	DictionaryTrajectory(const DictionaryTrajectory& copy);
 	DictionaryTrajectory();
 	

@@ -55,7 +55,7 @@ public:
 	 * \param az dmp az parameter
 	 * \param bz dmp bz parameter
 	 */
-	DMPGeneralizer(std::string baseFolder, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz, double ax, double tau);
+    DMPGeneralizer(std::string baseFolder, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz);
 	
 	/**
 	 * \brief returns number of trajectory samples

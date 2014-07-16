@@ -9,7 +9,7 @@ DictionaryGeneralizer::DictionaryGeneralizer(arma::vec initQueryPoint, ControlQu
 					     double maxRelativeToMeanDistance, double as) {
 
 	vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
-	dictTraj = new LinCombDmp(initQueryPoint.n_elem, degOfFreedom, dictionaryPath, baseDef, az, bz, ax, tau, trajMetricWeights);
+    dictTraj = new LinCombDmp(initQueryPoint.n_elem, degOfFreedom, dictionaryPath, baseDef, az, bz, trajMetricWeights);
 
 	this->queue = queue;
 	this->stepSize = stepSize;
@@ -33,7 +33,7 @@ DictionaryGeneralizer::DictionaryGeneralizer(arma::vec initQueryPoint, ControlQu
 			      double stepSize, double tolAbsErr, double tolRelErr, double ax, double tau, double ac, double as, arma::mat metric, double maxRelativeToMeanDistance) {
 	
 	vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
-	dictTraj = new LinCombDmp(initQueryPoint.n_elem, degOfFreedom, dictionaryPath, baseDef, az, bz, ax, tau, metric);
+    dictTraj = new LinCombDmp(initQueryPoint.n_elem, degOfFreedom, dictionaryPath, baseDef, az, bz, metric);
 
 	this->queue = queue;
 	this->stepSize = stepSize;
@@ -253,7 +253,14 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 
 			vec currJoints(degOfFreedom);
 			currJoints.fill(0.0);
-			currJoints = execs.at(i)->doIntegrationStep(ac);
+
+            try {
+                currJoints = execs.at(i)->doIntegrationStep(ac);
+            } catch(char* s) {
+                puts(s);
+                cerr << ": stopped execution at time " << currentTime << endl;
+                return ret;
+            }
 
             double currCoeff = currentCoefficients(i);
             nextJoints += currCoeff / norm * currJoints;

@@ -3,7 +3,7 @@
 using namespace std;
 using namespace arma;
 
-DMPGeneralizer::DMPGeneralizer(string baseFolder, int degOfFreedom, vector<double> tmpmys, vector<double> tmpsigmas, double az, double bz, double ax, double tau) {
+DMPGeneralizer::DMPGeneralizer(string baseFolder, int degOfFreedom, vector<double> tmpmys, vector<double> tmpsigmas, double az, double bz) {
 	
 	this->degOfFreedom = degOfFreedom;
 	this->baseFolder = baseFolder;
@@ -13,7 +13,7 @@ DMPGeneralizer::DMPGeneralizer(string baseFolder, int degOfFreedom, vector<doubl
 	
 	vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
 	
-	dictTraj = new DictionaryTrajectory(degOfFreedom, baseFolder, baseDef, az, bz, ax, tau);
+    dictTraj = new DictionaryTrajectory(degOfFreedom, baseFolder, baseDef, az, bz);
 
 }
 

@@ -3,15 +3,17 @@
 using namespace std;
 using namespace arma;
 
-DictionaryTrajectory::DictionaryTrajectory(int degOfFreedom, std::string baseFolder, std::vector<DMPBase> baseDef, double az, double bz, double ax, double tau) : Trajectory() {
-	
+DictionaryTrajectory::DictionaryTrajectory(int degOfFreedom, std::string baseFolder, std::vector<DMPBase> baseDef, double az, double bz) : Trajectory() {
+
 	this->degOfFreedom = degOfFreedom;
 	this->baseFolder = baseFolder;
 	vector<string> files = getFilesInDirectory(baseFolder);
 	queryFiles = sortPrefix(files, "query");
 	trajFiles = sortPrefix(files, "traj");
+    dmpFiles = sortPrefix(files, "dmp");
+
 	queryPoints = mapFiles(queryFiles, trajFiles, "query", "traj");
-	TrajectoryDMPLearner* dmpLearner;
+    TrajectoryDMPLearner* dmpLearner;
 	
 	this->baseDef = baseDef;
 	
@@ -19,7 +21,7 @@ DictionaryTrajectory::DictionaryTrajectory(int degOfFreedom, std::string baseFol
     double tMax = 0.0;
 	for(int i = 0; i < queryPoints.size(); ++i) {
 
-		mat joints = readMovements((string(baseFolder) + string(queryPoints.at(i).getFileDataPath())).c_str(), degOfFreedom + 1);
+        mat joints = readMovements((string(baseFolder) + string(queryPoints.at(i).getFileDataPath())).c_str(), degOfFreedom + 1);
 		queryPoints.at(i).setQueryPoint(readQuery(string(baseFolder) + string(queryPoints.at(i).getFileQueryPath())));
         jointsVec.push_back(joints);
         double currentTMax = joints(joints.n_rows - 1, 0);
@@ -27,7 +29,11 @@ DictionaryTrajectory::DictionaryTrajectory(int degOfFreedom, std::string baseFol
         if(tMax < currentTMax)
                 tMax = currentTMax;
 		
-	}
+    }
+
+    mat joints = jointsVec.at(0);
+    double tau = 0.8;
+    double ax = -log((float) 0.1) / joints(joints.n_rows - 1, 0) / tau;
 
     for(int i = 0; i < jointsVec.size(); ++i) {
 
@@ -44,7 +50,7 @@ DictionaryTrajectory::DictionaryTrajectory(int degOfFreedom, std::string baseFol
         delete dmpLearner;
 
     }
-	
+
 }
 
 std::vector<arma::vec> DictionaryTrajectory::getCoefficients() {

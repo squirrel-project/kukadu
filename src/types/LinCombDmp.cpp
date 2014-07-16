@@ -3,10 +3,10 @@
 using namespace std;
 using namespace arma;
 
-LinCombDmp::LinCombDmp(int queryDegOfFreedom, int degOfFreedom, std::string baseFolder, std::vector<DMPBase> baseDef, double az, double bz, double ax, double tau,
+LinCombDmp::LinCombDmp(int queryDegOfFreedom, int degOfFreedom, std::string baseFolder, std::vector<DMPBase> baseDef, double az, double bz,
 			arma::vec trajMetricWeights
 ) :
-			DictionaryTrajectory(degOfFreedom, baseFolder, baseDef, az, bz, ax, tau), metric(queryDegOfFreedom) {
+            DictionaryTrajectory(degOfFreedom, baseFolder, baseDef, az, bz), metric(queryDegOfFreedom) {
 	
 	this->trajMetricWeights = trajMetricWeights;
 	currentQueryPoint = getQueryPoints().at(0).getQueryPoint();
@@ -15,9 +15,9 @@ LinCombDmp::LinCombDmp(int queryDegOfFreedom, int degOfFreedom, std::string base
 
 }
 
-LinCombDmp::LinCombDmp(int queryDegOfFreedom, int degOfFreedom, std::string baseFolder, std::vector<DMPBase> baseDef, double az, double bz, double ax, double tau,
+LinCombDmp::LinCombDmp(int queryDegOfFreedom, int degOfFreedom, std::string baseFolder, std::vector<DMPBase> baseDef, double az, double bz,
 		arma::mat metricM
-	) : DictionaryTrajectory(degOfFreedom, baseFolder, baseDef, az, bz, ax, tau), metric(metricM) {
+    ) : DictionaryTrajectory(degOfFreedom, baseFolder, baseDef, az, bz), metric(metricM) {
 	
 	this->trajMetricWeights = trajMetricWeights;
 	currentQueryPoint = getQueryPoints().at(0).getQueryPoint();
