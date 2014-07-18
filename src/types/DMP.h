@@ -3,6 +3,7 @@
 
 #include "SingleSampleTrajectory.h"
 #include "DMPBase.h"
+#include "../utils/conversion_utils.h"
 #include <vector>
 #include <armadillo>
 
@@ -41,11 +42,14 @@ public:
 
 	Dmp();
 	Dmp(const Dmp& copy);
+    Dmp(std::string dmpFile);
 	Dmp(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<arma::vec> fitYs, std::vector<arma::vec> dmpCoeffs, std::vector<DMPBase> dmpBase, std::vector<arma::mat> designMatrices,
 		double tau, double az, double bz, double ax, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
 	
 	Dmp(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<arma::vec> fitYs, std::vector<arma::vec> dmpCoeffs, std::vector<DMPBase> dmpBase, std::vector<arma::mat> designMatrices,
 		double tau, double az, double bz, double ax);
+
+    void serialize(std::string dmpFile);
 	
 	double getY0(int freedomIdx);
 	double getDy0(int freedomIdx);
@@ -67,6 +71,7 @@ public:
 		
 	arma::vec getDmpCoeffs(int freedomIdx);
 	arma::mat getDesignMatrix(int freedomIdx);
+    int getDesignMatrixCount();
 	std::vector<DMPBase> getDmpBase();
 	
 	double getTau();

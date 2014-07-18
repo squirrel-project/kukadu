@@ -380,21 +380,6 @@ gsl_matrix* invertSquareMatrix(gsl_matrix* mat) {
 }
 
 /*
- * parses a string and returns the floating point value of the represented number
- * 
- * returns: number parsed from the input string s, or 0 if parsing was not successful
- * input:
- * 	const std::string& s:	string to parse
-*/
-double string_to_double(const std::string& s) {
-	std::istringstream i(s);
-	double x;
-	if (!(i >> x))
-		return 0;
-	return x;
-} 
-
-/*
  * reads double numbers from file
  * 
  * returns: array of queues, where each queue stores a column

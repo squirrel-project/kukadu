@@ -102,7 +102,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 	double norm = 0.0;
 	currentTime = 0.0;
 	int points = getQueryPointCount();
-	int degOfFreedom = dictTraj->getDegreesOfFreedom();
+    int degOfFreedom = dictTraj->getDegreesOfFreedom();
 
 	vector<DMPExecutor*> execs;
 	currentQuery = query;
@@ -120,7 +120,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 	
 	// if queue is defined, execute trajectory
 	if(this->queue) simulate = 0;
-	
+
 //    cout << "(DictionaryGeneralizer) starting generalized execution" << endl;
 
 	t_executor_res ret;
@@ -130,13 +130,13 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 	
 	// create all executors
 	for(int i = 0; i < points; ++i) {
-		
-		QueryPoint currentQp = dictTraj->getQueryPoints().at(i);
-		DMPExecutor* currentExec = new DMPExecutor(currentQp.getDmp());
+
+        QueryPoint currentQp = dictTraj->getQueryPoints().at(i);
+        DMPExecutor* currentExec = new DMPExecutor(currentQp.getDmp());
 		currentExec->initializeIntegration(0, stepSize, tolAbsErr, tolRelErr);
-		
+
 		// if real execution use external error determination
-		if(simulate) currentExec->useExternalError(1);
+        if(simulate) currentExec->useExternalError(1);
 		
 		execs.push_back(currentExec);
 		
@@ -151,14 +151,14 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 
 	// execute dmps and compute linear combination
 	for(; currentTime < tEnd; currentTime += stepSize) {
-		
+
 		vec distanceCoeffs(points);
 		vec nextJoints(degOfFreedom);
 		nextJoints.fill(0.0);
 		
 		// perform coefficient switching (mutex for the sake of thread safety)
 		switcherMutex.lock();
-			
+
 			// if loop is executed first time, initialize everything
 			if(firstTime) {
 
@@ -245,7 +245,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 			}
 			
 			switchTime += stepSize;
-			
+
         switcherMutex.unlock();
 
         /**************actual computation of trajectory using coefficients***********/
@@ -256,7 +256,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 
             try {
                 currJoints = execs.at(i)->doIntegrationStep(ac);
-            } catch(char* s) {
+            } catch(const char* s) {
                 puts(s);
                 cerr << ": stopped execution at time " << currentTime << endl;
                 return ret;
@@ -300,7 +300,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 
             }
         }
-		
+
 		for(int i = 0; i < degOfFreedom; ++i)
 			retY[i].push_back(nextJoints(i));
 

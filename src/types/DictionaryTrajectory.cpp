@@ -12,42 +12,53 @@ DictionaryTrajectory::DictionaryTrajectory(int degOfFreedom, std::string baseFol
 	trajFiles = sortPrefix(files, "traj");
     dmpFiles = sortPrefix(files, "dmp");
 
-	queryPoints = mapFiles(queryFiles, trajFiles, "query", "traj");
-    TrajectoryDMPLearner* dmpLearner;
-	
-	this->baseDef = baseDef;
-	
-    vector<mat> jointsVec;
-    double tMax = 0.0;
-	for(int i = 0; i < queryPoints.size(); ++i) {
+    if(dmpFiles.size() == 0) {
 
-        mat joints = readMovements((string(baseFolder) + string(queryPoints.at(i).getFileDataPath())).c_str(), degOfFreedom + 1);
-		queryPoints.at(i).setQueryPoint(readQuery(string(baseFolder) + string(queryPoints.at(i).getFileQueryPath())));
-        jointsVec.push_back(joints);
-        double currentTMax = joints(joints.n_rows - 1, 0);
+        // learn dmps
+        queryPoints = mapFiles(queryFiles, trajFiles, "query", "traj");
+        TrajectoryDMPLearner* dmpLearner;
 
-        if(tMax < currentTMax)
-                tMax = currentTMax;
-		
-    }
+        this->baseDef = baseDef;
 
-    mat joints = jointsVec.at(0);
-    double tau = 0.8;
-    double ax = -log((float) 0.1) / joints(joints.n_rows - 1, 0) / tau;
+        vector<mat> jointsVec;
+        double tMax = 0.0;
+        for(int i = 0; i < queryPoints.size(); ++i) {
 
-    for(int i = 0; i < jointsVec.size(); ++i) {
+            mat joints = readMovements((string(baseFolder) + string(queryPoints.at(i).getFileDataPath())).c_str(), degOfFreedom + 1);
+            queryPoints.at(i).setQueryPoint(readQuery(string(baseFolder) + string(queryPoints.at(i).getFileQueryPath())));
+            jointsVec.push_back(joints);
+            double currentTMax = joints(joints.n_rows - 1, 0);
 
-        mat joints = jointsVec.at(i);
-        int maxRows = joints.n_rows;
-        joints = fillTrajectoryMatrix(joints, tMax);
-        dmpLearner = new TrajectoryDMPLearner(baseDef, tau, az, bz, ax, joints, degOfFreedom);
-        Dmp learnedDmps = dmpLearner->fitTrajectories();
-        queryPoints.at(i).setDmp(learnedDmps);
+            if(tMax < currentTMax)
+                    tMax = currentTMax;
 
-        cout << "(DMPGeneralizer) goals for query point [" << queryPoints.at(i).getQueryPoint().t() << "]" << endl << "\t [";
-        cout << queryPoints.at(i).getDmp().getG().t() << "]" << endl;
+        }
 
-        delete dmpLearner;
+        mat joints = jointsVec.at(0);
+        double tau = 0.8;
+        double ax = -log((float) 0.1) / joints(joints.n_rows - 1, 0) / tau;
+
+        for(int i = 0; i < jointsVec.size(); ++i) {
+
+            QueryPoint currentQueryPoint = queryPoints.at(i);
+            mat joints = jointsVec.at(i);
+            int maxRows = joints.n_rows;
+            joints = fillTrajectoryMatrix(joints, tMax);
+            dmpLearner = new TrajectoryDMPLearner(baseDef, tau, az, bz, ax, joints, degOfFreedom);
+            Dmp learnedDmps = dmpLearner->fitTrajectories();
+            learnedDmps.serialize(baseFolder + currentQueryPoint.getFileDmpPath());
+            queryPoints.at(i).setDmp(learnedDmps);
+
+            cout << "(DMPGeneralizer) goals for query point [" << currentQueryPoint.getQueryPoint().t() << "]" << endl << "\t [";
+            cout << currentQueryPoint.getDmp().getG().t() << "]" << endl;
+
+            delete dmpLearner;
+
+        }
+
+    } else {
+
+        queryPoints = mapFiles(queryFiles, trajFiles, dmpFiles, "query", "traj", "dmp");
 
     }
 
@@ -93,25 +104,61 @@ vector<QueryPoint> DictionaryTrajectory::mapFiles(vector<string> queryFiles, vec
 	vector<QueryPoint> ret;
 	
 	int prefix1Size = prefix1.size();
-	int prefix2Size = prefix2.size();
+    int prefix2Size = prefix2.size();
 	int querySize = queryFiles.size();
-	int trajSize = trajFiles.size();
+    int trajSize = trajFiles.size();
 	
 	for(int i = 0; i < querySize; ++i) {
 		string currentQueryFile = string(queryFiles.at(i));
 		string queryAppendix = currentQueryFile.substr(prefix1Size, currentQueryFile.size() - 1);
 		for(int j = 0; j < trajSize; ++j) {
 			string currentTrajFile = string(trajFiles.at(j));
-			string trajAppendix = currentTrajFile.substr(prefix2Size, currentTrajFile.size() - 1);
-			if(!queryAppendix.compare(trajAppendix)) {
-				QueryPoint toAdd(queryFiles.at(i), trajFiles.at(j), Dmp(), vec());
-				ret.push_back(toAdd);
-			}
+            string trajAppendix = currentTrajFile.substr(prefix2Size, currentTrajFile.size() - 1);
+            if(!queryAppendix.compare(trajAppendix)) {
+                QueryPoint toAdd(queryFiles.at(i), trajFiles.at(j), string("dmp") + trajAppendix, Dmp(), vec());
+                ret.push_back(toAdd);
+            }
 		}
 	}
 	
 	return ret;
 	
+}
+
+vector<QueryPoint> DictionaryTrajectory::mapFiles(vector<string> queryFiles, vector<string> trajFiles, vector<string> dmpFiles, string prefix1, string prefix2, string prefix3) {
+
+    vector<QueryPoint> ret;
+
+    int prefix1Size = prefix1.size();
+    int prefix2Size = prefix2.size();
+    int prefix3Size = prefix3.size();
+    int querySize = queryFiles.size();
+    int trajSize = trajFiles.size();
+    int dmpSize = dmpFiles.size();
+
+    for(int i = 0; i < querySize; ++i) {
+        string currentQueryFile = string(queryFiles.at(i));
+        string queryAppendix = currentQueryFile.substr(prefix1Size, currentQueryFile.size() - 1);
+        for(int j = 0; j < trajSize; ++j) {
+            string currentTrajFile = string(trajFiles.at(j));
+            string trajAppendix = currentTrajFile.substr(prefix2Size, currentTrajFile.size() - 1);
+            if(!queryAppendix.compare(trajAppendix)) {
+                for(int k = 0; k < dmpSize; ++k) {
+                    string currentDmpFile = string(dmpFiles.at(k));
+                    string dmpAppendix = currentDmpFile.substr(prefix3Size, currentDmpFile.size() - 1);
+                    if(!dmpAppendix.compare(queryAppendix)) {
+                        // load dmp from file
+                        QueryPoint toAdd(queryFiles.at(i), trajFiles.at(j), prefix3 + trajAppendix, Dmp(baseFolder + prefix3 + trajAppendix), vec());
+                        toAdd.setQueryPoint(readQuery(string(baseFolder) + string(toAdd.getFileQueryPath())));
+                        ret.push_back(toAdd);
+                    }
+                }
+            }
+        }
+    }
+
+    return ret;
+
 }
 
 double DictionaryTrajectory::getTmax() {

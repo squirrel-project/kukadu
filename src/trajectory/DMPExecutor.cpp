@@ -23,28 +23,28 @@ DMPExecutor::DMPExecutor(Trajectory* traj) {
 }
 
 void DMPExecutor::construct(Dmp traj, int suppressMessages) {
-	
+
 	this->dmp = traj;
-	
-	this->dmpCoeffs = traj.getDmpCoeffs();
+
+    this->dmpCoeffs = traj.getDmpCoeffs();
 	this->baseDef = traj.getDmpBase();
-	
-	this->tau = traj.getTau(); this->az = traj.getAz(); this->bz = traj.getBz(); this->ax = traj.getAx(); this->gs = traj.getG();
-	this->y0s = traj.getY0(); this->dy0s = traj.getDy0(); this->ddy0s = traj.getDdy0();
-	this->trajGen = new DMPTrajectoryGenerator(this->baseDef, ax, tau);
+
+    this->tau = traj.getTau(); this->az = traj.getAz(); this->bz = traj.getBz(); this->ax = traj.getAx(); this->gs = traj.getG();
+    this->y0s = traj.getY0(); this->dy0s = traj.getDy0(); this->ddy0s = traj.getDdy0();
+    this->trajGen = new DMPTrajectoryGenerator(this->baseDef, ax, tau);
 
     this->axDivTau = ax / tau;
     this->oneDivTau = 1 / tau;
-	
+
 	this->simulate = SIMULATE_DMP;
-	this->degofFreedom = y0s.n_elem;
+    this->degofFreedom = y0s.n_elem;
 	this->odeSystemSize = 2 * this->degofFreedom + 1;
 	this->suppressMessages = suppressMessages;
-	
+
 	previousDesiredJoints = new double[y0s.n_elem];
 	for(int i = 0; i < y0s.n_elem; ++i) previousDesiredJoints[i] = y0s(i);
-	
-	duration = traj.getTmax();
+
+    duration = traj.getTmax();
 	externalErrorUsing = 0;
 	externalError = 0.0;
 	t = 0.0;

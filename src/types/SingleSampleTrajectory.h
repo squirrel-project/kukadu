@@ -25,6 +25,9 @@ public:
 	
 	double getT(int ptIdx);
 	double getDataPoint(int freedomIdx, int ptIdx);
+
+    void setSupervisedTs(arma::vec supervisedTs);
+    void setSampleYs(std::vector<arma::vec> sampleYs);
 	
 	arma::vec getStartingPos();
 	arma::vec getSupervisedTs();

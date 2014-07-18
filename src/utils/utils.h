@@ -53,7 +53,6 @@ gsl_vector* createGslVectorFromStdVector(std::vector<double>* data);
 gsl_matrix* createMatrixFromQueueArray(std::queue<double>** data, int columns);
 gsl_matrix* invertSquareMatrix(gsl_matrix* mat);
 
-double string_to_double(const std::string& s);
 double* createDoubleArrayFromStdVector(std::vector<double>* data);
 double* createDoubleArrayFromArmaVector(arma::vec data);
 float* createFloatArrayFromStdVector(std::vector<float>* data);

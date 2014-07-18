@@ -18,6 +18,125 @@ Dmp::Dmp(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<ar
 	
 }
 
+Dmp::Dmp(std::string dmpFile) {
+
+    std::ifstream dmpFileStream(dmpFile, std::ifstream::in);
+    mat m = readMat(dmpFileStream);
+    int degreesOfFreedom = m(0,0);
+
+    m = readMat(dmpFileStream);
+    int baseTermCount = m(0,0);
+
+    m = readMat(dmpFileStream);
+    vec fileSuperVisedTs = m.col(0);
+
+    vector<vec> fileSampleYs;
+    for(int i = 0; i < 7; ++i) {
+        vec fileCurrentSampleY = readMat(dmpFileStream).col(0);
+        fileSampleYs.push_back(fileCurrentSampleY);
+    }
+
+    vector<vec> fileFitYs;
+    for(int i = 0; i < degreesOfFreedom; ++i) {
+        vec fileCurrentFitY = readMat(dmpFileStream).col(0);
+        fileFitYs.push_back(fileCurrentFitY);
+    }
+
+    vector<vec> fileDmpCoeffs;
+    for(int i = 0; i < degreesOfFreedom; ++i) {
+        vec fileCurrentCoeffs = readMat(dmpFileStream).col(0);
+        fileDmpCoeffs.push_back(fileCurrentCoeffs);
+    }
+
+    vector<DMPBase> fileDmpBases;
+    for(int i = 0; i < baseTermCount; ++i) {
+
+        mat fileCurrentMyMat = readMat(dmpFileStream);
+        double fileCurrentMy = fileCurrentMyMat(0,0);
+        vec fileCurrentSigmasVec = readMat(dmpFileStream).col(0);
+        vector<double> fileCurrentSigmas;
+        for(int j = 0; j < fileCurrentSigmasVec.n_elem; ++j)
+            fileCurrentSigmas.push_back(fileCurrentSigmasVec(j));
+        DMPBase currentBase(fileCurrentMy, fileCurrentSigmas);
+        fileDmpBases.push_back(currentBase);
+
+    }
+
+    vector<mat> fileDesignMatrices;
+    for(int i = 0; i < degreesOfFreedom; ++i) {
+        mat fileCurrentDesignMatrix = readMat(dmpFileStream);
+        fileDesignMatrices.push_back(fileCurrentDesignMatrix);
+    }
+
+    vec fileDmpConsts = readMat(dmpFileStream).row(0).t();
+
+    construct(fileSuperVisedTs, fileSampleYs, fileFitYs, fileDmpCoeffs, fileDmpBases, fileDesignMatrices,
+              fileDmpConsts(0), fileDmpConsts(1), fileDmpConsts(2), fileDmpConsts(3), fileDmpConsts(4),
+              fileDmpConsts(5), fileDmpConsts(6), fileDmpConsts(7));
+
+    this->setSupervisedTs(fileSuperVisedTs);
+    this->setSampleYs(fileSampleYs);
+
+    cout << "Dmp loaded from file" << endl;
+
+}
+
+void Dmp::serialize(string dmpFile) {
+
+    string baseString = "";
+
+    int i = 0;
+    for(i = 0; i < getDmpBase().size(); ++i) {
+
+        // serialize base
+        DMPBase currentBase = getDmpBase().at(i);
+        double currentMy = currentBase.getMy();
+
+        vector<double> currentSigmas = currentBase.getSigmas();
+        baseString += double_to_string(currentMy) + "\n\n" + "=" + "\n";
+        for(int j = 0; j < currentSigmas.size(); ++j)
+            baseString += double_to_string(currentSigmas.at(j)) + "\n\n";
+        baseString = baseString + "=" + "\n";
+
+    }
+
+    ofstream dmpFileStream;
+    dmpFileStream.open(dmpFile);
+
+    dmpFileStream << getDegreesOfFreedom() << endl;
+    dmpFileStream << "=" << endl;
+    dmpFileStream << i << endl << getDmpBase().at(0).getSigmas().size() << endl;
+    dmpFileStream << "=" << endl;
+
+    dmpFileStream << getSupervisedTs() << endl;
+    dmpFileStream << "=" << endl;
+
+    for(int i = 0; i < getSampleYs().size(); ++i) {
+        dmpFileStream << getSampleYByIndex(i) << endl;
+        dmpFileStream << "=" << endl;
+    }
+
+    for(int i = 0; i < getFitYs().size(); ++i) {
+        dmpFileStream << getFitYs().at(i) << endl;
+        dmpFileStream << "=" << endl;
+    }
+
+    for(int i = 0; i < getDmpCoeffs().size(); ++i) {
+        dmpFileStream << getDmpCoeffs().at(i) << endl;
+        dmpFileStream << "=" << endl;
+    }
+
+   dmpFileStream << baseString;
+
+    for(int i = 0; i < getDesignMatrixCount(); ++i) {
+        dmpFileStream << getDesignMatrix(i) << endl;
+        dmpFileStream << "=" << endl;
+    }
+
+    dmpFileStream << tau << " " << az << " " << bz << " " << ax << " " << ac << " " << dmpStepSize << " " << tolAbsErr << " " << tolRelErr << endl;
+
+}
+
 void Dmp::construct(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<arma::vec> fitYs, std::vector<arma::vec> dmpCoeffs, std::vector<DMPBase> dmpBase, std::vector<arma::mat> designMatrices,
 		double tau, double az, double bz, double ax, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) {
 	
@@ -89,6 +208,10 @@ arma::vec Dmp::getDdy0() {
 
 arma::vec Dmp::getG() {
 	return g;
+}
+
+int Dmp::getDesignMatrixCount() {
+    return designMatrices.size();
 }
 
 arma::mat Dmp::getDesignMatrix(int freedomIdx) {

@@ -96,7 +96,7 @@ vector<QueryPoint> DMPGeneralizer::mapFiles(vector<string> queryFiles, vector<st
 			string trajAppendix = currentTrajFile.substr(prefix2Size, currentTrajFile.size() - 1);
 			if(!queryAppendix.compare(trajAppendix)) {
 				// QueryPoint(std::string fileQueryPath, std::string fileDataPath, Dmp dmp, arma::vec queryPoint);
-				QueryPoint toAdd(queryFiles.at(i), trajFiles.at(j), Dmp(), vec());
+                QueryPoint toAdd(queryFiles.at(i), trajFiles.at(j), string("dmp_") + trajAppendix + string(".txt"), Dmp(), vec());
 				ret.push_back(toAdd);
 			}
 		}

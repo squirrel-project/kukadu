@@ -32,6 +32,14 @@ double SingleSampleTrajectory::getDataPoint(int freedomIdx, int ptIdx) {
 double SingleSampleTrajectory::getT(int ptIdx) {
 	return supervisedTs(ptIdx);
 }
+
+void SingleSampleTrajectory::setSupervisedTs(arma::vec supervisedTs) {
+    this->supervisedTs = supervisedTs;
+}
+
+void SingleSampleTrajectory::setSampleYs(std::vector<arma::vec> sampleYs) {
+    this->sampleYs = sampleYs;
+}
 	
 arma::vec SingleSampleTrajectory::getSupervisedTs() {
 	return supervisedTs;

@@ -11,6 +11,8 @@
 #include <vector>
 #include <string>
 #include <armadillo>
+#include <iostream>
+#include <fstream>
 
 class DictionaryTrajectory : public Trajectory {
 	
@@ -30,7 +32,8 @@ private:
 	
 	arma::vec startingPos;
 	
-	std::vector<QueryPoint> mapFiles(std::vector<std::string> queryFiles, std::vector<std::string> trajFiles, std::string prefix1, std::string prefix2);
+    std::vector<QueryPoint> mapFiles(std::vector<std::string> queryFiles, std::vector<std::string> trajFiles, std::string prefix1, std::string prefix2);
+    std::vector<QueryPoint> mapFiles(std::vector<std::string> queryFiles, std::vector<std::string> trajFiles, std::vector<std::string> dmpFiles, std::string prefix1, std::string prefix2, std::string prefix3);
 	
 public:
 	

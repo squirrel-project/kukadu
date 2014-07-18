@@ -38,8 +38,8 @@ std::string resolvePath(std::string path);
 Gnuplot* g1 = NULL;
 double as = 1.0;
 double handVelocity = 20.0;
-double tolAbsErr = 1e-3;
-double tolRelErr = 1e-3;
+double tolAbsErr = 1e-1;
+double tolRelErr = 1e-1;
 
 double ax = 0.1;
 double az = 48.0;
@@ -68,7 +68,7 @@ std::string resolvePath(std::string path) {
 
 int main(int argc, char** args) {
 
-    int mode = 4;
+    int mode = 1;
 
     if(mode == 1) {
 
@@ -135,8 +135,8 @@ int main(int argc, char** args) {
 
 void testPerformance(OrocosControlQueue* queue) {
 
-    t_executor_res demoRes = executeDemo(queue, resolvePath("$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_9_144.txt"),
-                               0, az, bz, 1);
+    string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_9_144.txt";
+    t_executor_res demoRes = executeDemo(queue, resolvePath(execFile), 0, az, bz, 1);
 
 }
 
