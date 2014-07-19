@@ -41,12 +41,12 @@ private:
 	
 	std::vector<double> sigmas;
 	
-	void construct(std::vector<Trajectory*> initDmp, std::vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* movementQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
+    void construct(std::vector<Trajectory*> initDmp, std::vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
 	
 public:
 
-	PoWER(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* movementQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
-	PoWER(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, std::vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* movementQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
+    PoWER(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
+    PoWER(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, std::vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
 	
 	std::vector<Trajectory*> getInitialRollout();
 	std::vector<Trajectory*> computeRolloutParamters();

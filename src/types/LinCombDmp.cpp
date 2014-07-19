@@ -30,7 +30,7 @@ Mahalanobis metric;
 	arma::vec currentQueryPoint;
 	arma::vec trajMetricWeights;
 */
-LinCombDmp::LinCombDmp(const LinCombDmp& copy) : metric(copy.metric) {
+LinCombDmp::LinCombDmp(const LinCombDmp& copy) : metric(copy.metric), DictionaryTrajectory(copy) {
 	this->currentQueryPoint = copy.currentQueryPoint;
 	this->trajMetricWeights = copy.trajMetricWeights;
 	this->metric = copy.metric;

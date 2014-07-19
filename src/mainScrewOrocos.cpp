@@ -607,6 +607,7 @@ void testIROSGrasping() {
 	
 	ControlQueue* raQueue = NULL;
 	QuadraticKernel* kern = new QuadraticKernel();
+    double alpham = 1.0;
 	
 	vector<double> irosmys = {0, 1, 2, 3, 4, 5};
 	vector<double> irossigmas = {0.3, 0.8};
@@ -652,7 +653,7 @@ void testIROSGrasping() {
 //  -1.3176   3.2793
 	
 //	dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as);
-	dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh);
+    dmpGen = new DictionaryGeneralizer(newQueryPoint, NULL, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
 	
 	std::vector<Trajectory*> initTraj;
 	initTraj.push_back(dmpGen->getTrajectory());
@@ -662,7 +663,7 @@ void testIROSGrasping() {
 	
 	LinCombDmp* lastRollout = NULL;
 	
-	PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
+    PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
 	
 	int plotTimes = 5;
 	g1 = new Gnuplot("PoWER demo");
@@ -758,6 +759,7 @@ void testIROS() {
 	
 	ControlQueue* raQueue = NULL;
 	QuadraticKernel* kern = new QuadraticKernel();
+    double alpham = 1.0;
 	
 	std::vector<double> irosmys = {0, 1, 2, 3, 4, 5};
 	std::vector<double> irossigmas = {0.3, 0.8};
@@ -804,7 +806,7 @@ void testIROS() {
 	
 	}
 	
-	dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as);
+    dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
 	
 	/*
 	switchThr = new std::thread(switchQueryPoint);
@@ -835,7 +837,7 @@ void testIROS() {
 	cout << newQueryPoint << endl;
 	cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
 	
-	PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
+    PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
 	
 	int plotTimes = 5;
 	g1 = new Gnuplot("PoWER demo");
@@ -972,6 +974,7 @@ void testDictionaryGen() {
 	
 	ControlQueue* raQueue = NULL;
 	QuadraticKernel* kern = new QuadraticKernel();
+    double alpham = 1.0;
 	
 	vec trajMetricWeights(7);
 	trajMetricWeights.fill(1.0);
@@ -1000,7 +1003,7 @@ void testDictionaryGen() {
 	
 	}
 	
-	dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, genTmpmys, tmpsigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, 0.2, as);
+    dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, NULL, inDir, columns - 1, genTmpmys, tmpsigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, 0.2, as, alpham);
 	
 	switchThr = new std::thread(switchQueryPoint);
 	t_executor_res genRes = dmpGen->simulateTrajectory();
@@ -1114,7 +1117,7 @@ void testPoWER() {
 	getchar();
 	
 	DMPExecutor exec(initialDmp);
-	PoWER pow(&exec, initDmp, exploreSigmas, updatesPerRollout, importanceSamplingCount, &rew, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
+    PoWER pow(&exec, initDmp, exploreSigmas, updatesPerRollout, importanceSamplingCount, &rew, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
 	
 	int plotTimes = 5;
 	g1 = new Gnuplot("PoWER demo");

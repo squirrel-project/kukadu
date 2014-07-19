@@ -6,11 +6,12 @@
 using namespace std;
 using namespace arma;
 
-GeneralReinforcer::GeneralReinforcer(TrajectoryExecutor* trajEx, CostComputer* cost, ControlQueue* movementQueue) {
+GeneralReinforcer::GeneralReinforcer(TrajectoryExecutor* trajEx, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue) {
 	
 	this->trajEx = trajEx;
 	this->cost = cost;
-	this->movementQueue = movementQueue;
+    this->simulationQueue = simulationQueue;
+    this->executionQueue = executionQueue;
 	this->isFirstIteration = true;
 	this->lastCost.push_back(-1.0);
 	this->lastUpdateCost = 0.0;
@@ -39,7 +40,7 @@ t_executor_res GeneralReinforcer::getLastUpdateRes() {
 
 void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 	
-	char cont = 'y';
+    char cont = 'n';
 	vector<Gnuplot*> gs;
 	Gnuplot* g1 = NULL;
 	
@@ -57,82 +58,146 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 		rollout = computeRolloutParamters();
 		
 	}
-	
+    cout << "isFirstIteration: " << isFirstIteration << endl;
+    cout << "rollout sizie: " << rollout.size() << endl;
 	lastCost.clear();
 	dmpResult.clear();
-	
-	for(int k = 0; k < rollout.size(); ++k) {
+
+    int degFreedom = rollout.at(0)->getDegreesOfFreedom();
+    float* startingJoints = new float[degFreedom];
+
+    for(int k = 0; k < rollout.size(); ++k) {
+
+        vec startingPos = rollout.at(k)->getStartingPos();
+        double* tmp = new double[degFreedom];
+        for(int i = 0; i < rollout.at(k)->getDegreesOfFreedom(); ++i)
+            tmp[i] = startingPos(i);
+
+        for(int i = 0; i < degFreedom; ++i) startingJoints[i] = tmp[i];
 
 //        cout << "(DMPReinforcer) performing rollout " << k << endl;
 
+        t_executor_res simRes;
 		if(doSimulation) {
+            cout << "(DMPReinforcer) simulating rollout" << endl;
+            simulationQueue->moveJoints(startingJoints);
+            trajEx->setTrajectory(rollout.at(k));
+            simRes = trajEx->simulateTrajectory();
 
-			trajEx->setTrajectory(rollout.at(k));
-			t_executor_res simRes = trajEx->simulateTrajectory();
-			dmpResult.push_back(simRes);
-
-            if(isFirstIteration)
-                lastUpdateRes = simRes;
+            if(!doExecution) {
+                dmpResult.push_back(simRes);
+                if(isFirstIteration)
+                    lastUpdateRes = simRes;
+            }
 
 		}
 
+        bool useRollout = true;
         if(doExecution) {
-
-            dmpResult.clear();
 			
 			cout << "(DMPReinforcer) do you want to execute this trajectory? (y/N) ";
 			cin >> cont;
 		
-			if(doExecution && (cont == 'y' || cont == 'Y')) {
+            if(cont == 'y' || cont == 'Y') {
 				
 				cout << "(DMPReinforcer) executing rollout" << endl;
 				
-				int degFreedom = rollout.at(k)->getDegreesOfFreedom();
-				vec startingPos = rollout.at(k)->getStartingPos();
-				double* tmp = new double[degFreedom];
-				for(int i = 0; i < rollout.at(k)->getDegreesOfFreedom(); ++i)
-					tmp[i] = startingPos(i);
-				
-				float* startingJoints = new float[degFreedom];
-				for(int i = 0; i < degFreedom; ++i) startingJoints[i] = tmp[i];
-				
-				movementQueue->setStartingJoints(startingJoints);
-				movementQueue->setStiffness(2200, 300, 1.0, 15000, 150, 2.0);
-				thread* thr = movementQueue->startQueueThread();
+                simulationQueue->moveJoints(startingJoints);
 				
 				trajEx->setTrajectory(rollout.at(k));
-				t_executor_res simRes = trajEx->executeTrajectory();
-				dmpResult.push_back(simRes);
+                simRes = trajEx->executeTrajectory();
+                useRollout = true;
 				
-				movementQueue->setFinish();
-				thr->join();
-				
-			}
+            } else {
+                useRollout = false;
+            }
 			
 		}
-		
-        t_executor_res resK = dmpResult.at(k);
-        double delta = cost->computeCost(resK);
-		lastCost.push_back(delta);
+
+        if(doSimulation || doExecution) {
+            dmpResult.push_back(simRes);
+            t_executor_res resK = simRes;
+            double delta = cost->computeCost(resK);
+            lastCost.push_back(delta);
+
+            if(isFirstIteration) {
+                lastUpdateRes = resK;
+                lastUpdateCost = delta;
+            }
+
+        }
+        /*
+        else {
+            cout << "(GeneralReinforcer) rollout number " << k << " rollout not used" << endl;
+        //    --k;
+        }
+        */
+
+        if(doSimulation)
+            simulationQueue->moveJoints(startingJoints);
+        if(doExecution)
+            executionQueue->moveJoints(startingJoints);
+
+        cout << "(GeneralReinforcer) press a key to perform next rollout (rollout number " << (k + 2) << ")" << endl;
+        getchar();
+        getchar();
 
 	}
-	
+
 	double tmpCost = lastUpdateCost;
-	Trajectory* tmpUpdate = lastUpdate;
+    Trajectory* tmpUpdate = lastUpdate->copy();
 	t_executor_res tmpRes = lastUpdateRes;
-	
 	lastUpdate = updateStep();
-	
 	trajEx->setTrajectory(lastUpdate);
+    vec startingPos = lastUpdate->getStartingPos();
+    double* tmp = new double[lastUpdate->getDegreesOfFreedom()];
+    for(int i = 0; i < lastUpdate->getDegreesOfFreedom(); ++i)
+        tmp[i] = startingPos(i);
+
 
     if(!isFirstIteration) {
         cout << "(GeneralReinforcer) performing newest update" << endl;
-        lastUpdateRes = trajEx->simulateTrajectory();
+
+        t_executor_res simRes;
+
+        if(doSimulation) {
+            cout << "(DMPReinforcer) simulating update" << endl;
+            simulationQueue->moveJoints(startingJoints);
+            simRes = trajEx->simulateTrajectory();
+
+            if(!doExecution) {
+                lastUpdateRes = simRes;
+            }
+        }
+
+        if(doExecution) {
+
+            cout << "(DMPReinforcer) do you want to execute this update? (y/N) ";
+            cin >> cont;
+
+            if(cont == 'y' || cont == 'Y') {
+
+                cout << "(DMPReinforcer) executing update" << endl;
+
+                simulationQueue->moveJoints(startingJoints);
+                simRes = trajEx->executeTrajectory();
+
+            } else {
+            //    throw "(GeneralReinforcer) update not usable (stopping reinforcement learning)";
+            }
+
+        }
+
+        if(doSimulation || ( doExecution && (cont == 'y' || cont == 'Y') )) {
+            lastUpdateRes = simRes;
+            lastUpdateCost = cost->computeCost(lastUpdateRes);
+        }
+
     }
-	
-	lastUpdateCost = cost->computeCost(lastUpdateRes);
 
     // TODO: this is a hack!!!! repair it (power cannot directly be applied to metric learning) --> results can get worse instead of better
+    cout << "last update: t " << lastUpdateCost << endl << ((LinCombDmp*)lastUpdate)->getMetric().getM() << "asdf" << endl;
+    cout << "tmp update: t " << tmpCost << endl << ((LinCombDmp*)tmpUpdate)->getMetric().getM() << "asdf" << endl;
     if(lastUpdateCost < tmpCost) {
 
 		lastUpdateCost = tmpCost;
@@ -150,7 +215,6 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 
     }
 
-	this->lastUpdate = lastUpdate;
     isFirstIteration = false;
 	
     cout << "(DMPReinforcer) last update reward/cost: " << lastUpdateCost << endl;

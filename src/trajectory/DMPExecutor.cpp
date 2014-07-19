@@ -49,7 +49,7 @@ void DMPExecutor::construct(Dmp traj, int suppressMessages) {
 	externalError = 0.0;
 	t = 0.0;
 
-    this->durationThresh = duration + 0.2;
+    this->durationThresh = duration;
     this->odeSystemSizeMinOne = odeSystemSize - 1;
 	
 }
@@ -99,13 +99,14 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
         double g = gs(currentSystem);
         arma::vec currentCoeffs = dmpCoeffs.at(currentSystem);
 		
-        if(t <= durationThresh) {
+        if(t <= (durationThresh - 1.0)) {
 			
             double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
             f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm)  + this->addTerm(t, y, i / 2, controlQueue);
 			
 		} else {
 			cout << "(DMPExecutor) executing dmp over teaching duration" << endl;
+            throw "stopped dmp execution";
             f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne));
 		}
 
@@ -230,12 +231,14 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
 	arma::vec retJoints(degofFreedom);
 	retJoints.fill(0.0);
 	
-	int s = gsl_odeiv2_driver_apply_fixed_step(d, &t, stepSize, 1, ys);
+    if(t < durationThresh) {
+        int s = gsl_odeiv2_driver_apply_fixed_step(d, &t, stepSize, 1, ys);
 	
-	if (s != GSL_SUCCESS) {
-		cout << "(DMPExecutor) error: driver returned " << s << endl;
-		throw "(DMPExecutor) error: driver returned " + s;
-	}
+        if (s != GSL_SUCCESS) {
+            cout << "(DMPExecutor) error: driver returned " << s << endl;
+            throw "(DMPExecutor) error: driver returned " + s;
+        }
+    }
 	
 	for(int i = 0; i < degofFreedom; ++i)
 		retJoints(i) = ys[2 * i];
@@ -295,7 +298,7 @@ t_executor_res DMPExecutor::executeDMP(int simulate, double tStart, double tEnd,
 			}
 			
 			// synchronize to control queue (maximum one joint array has to be already in there --> needed for phase stopping such that DMPExecutor does not progress to fast)
-            controlQueue->synchronizeToControlQueue(0);
+            controlQueue->synchronizeToControlQueue(1);
 			controlQueue->addJointsPosToQueue(moveJoints);
 
 		}

@@ -1,0 +1,16 @@
+alpham = 1.2
+relativeDistanceThresh = 0.4
+
+(10.5, 300): 287
+(12.5, 300): 242
+(12, 350): 345
+(11.5, 220): 156
+(11.5, 180): 135
+average error: 37
+
+nearest neighbour:
+for (10.5, 300) --> (11, 234): 227
+for (12.5, 300) --> (13, 266): 227
+for (12, 350) --> (13, 381): 186
+for (11.5, 220) --> (11, 234): 225 (--> näher dran, weil einiges danebengegangen ist)
+for (11.5, 180) --> (11, 157): 148

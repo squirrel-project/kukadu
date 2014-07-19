@@ -82,6 +82,7 @@ DictionaryTrajectory::DictionaryTrajectory(const DictionaryTrajectory& copy) : T
 	this->queryFiles = copy.queryFiles;
 	this->trajFiles = copy.trajFiles;
 	this->queryPoints = copy.queryPoints;
+    this->startingPos = copy.startingPos;
 	
 }
 
@@ -151,6 +152,8 @@ vector<QueryPoint> DictionaryTrajectory::mapFiles(vector<string> queryFiles, vec
                         QueryPoint toAdd(queryFiles.at(i), trajFiles.at(j), prefix3 + trajAppendix, Dmp(baseFolder + prefix3 + trajAppendix), vec());
                         toAdd.setQueryPoint(readQuery(string(baseFolder) + string(toAdd.getFileQueryPath())));
                         ret.push_back(toAdd);
+                        if(i == 0)
+                            startingPos = toAdd.getDmp().getY0();
                     }
                 }
             }

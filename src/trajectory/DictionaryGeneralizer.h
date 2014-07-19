@@ -33,6 +33,7 @@ private:
     int firstTime;
 	double as;
 	double switchTime;
+    double alpham;
 	arma::vec oldCoefficients;
 	arma::vec newCoefficients;
 	arma::vec currentCoefficients;
@@ -51,19 +52,20 @@ private:
 	
 	double maxRelativeToMeanDistance;
 	
-	ControlQueue* queue;
+    ControlQueue* simulationQueue;
+    ControlQueue* executionQueue;
 	
 	arma::vec currentQuery;
 	
-	t_executor_res executeGen(arma::vec query, double tEnd, double ac, double as);
+    t_executor_res executeGen(arma::vec query, double tEnd, double ac, double as, int simulate);
 
 public:
 	
-	DictionaryGeneralizer(arma::vec initQueryPoint, ControlQueue* queue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz,
-			      double stepSize, double tolAbsErr, double tolRelErr, double ax, double tau, double ac, arma::vec trajMetricWeights, double maxRelativeToMeanDistance, double as);
+    DictionaryGeneralizer(arma::vec initQueryPoint, ControlQueue* simulationQueue, ControlQueue* executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz,
+                  double stepSize, double tolAbsErr, double tolRelErr, double ax, double tau, double ac, arma::vec trajMetricWeights, double maxRelativeToMeanDistance, double as, double alpham);
 	
-	DictionaryGeneralizer(arma::vec initQueryPoint, ControlQueue* queue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz,
-			      double stepSize, double tolAbsErr, double tolRelErr, double ax, double tau, double ac, double as, arma::mat metric, double maxRelativeToMeanDistance);
+    DictionaryGeneralizer(arma::vec initQueryPoint, ControlQueue* simulationQueue, ControlQueue* executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz,
+                  double stepSize, double tolAbsErr, double tolRelErr, double ax, double tau, double ac, double as, arma::mat metric, double maxRelativeToMeanDistance, double alpham);
 	
 	t_executor_res simulateTrajectory();
 	t_executor_res executeTrajectory();

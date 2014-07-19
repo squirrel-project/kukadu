@@ -3,6 +3,23 @@
 using namespace std;
 using namespace arma;
 
+PouringRewardComputer::PouringRewardComputer(double targetWeight) {
+    this->targetWeight = targetWeight;
+}
+
+double PouringRewardComputer::computeCost(t_executor_res results) {
+
+    double weight = 0.0;
+    cout << "(PouringRewardComputer) Enter measured weight: ";
+    cin >> weight;
+
+    double delta = abs(weight - targetWeight);
+    double reward = 10 / delta;
+
+    return reward;
+
+}
+
 GaussianObstacleRewardComputer::GaussianObstacleRewardComputer(double my, double sigma, double height) {
 	
 	this->my = my;

@@ -5,7 +5,7 @@ using namespace std;
 
 bool rewardComparator (pair <double, Trajectory*> i, pair <double, Trajectory*> j) { return (i.first > j.first); }
 
-PoWER::PoWER(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* movementQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, movementQueue) {
+PoWER::PoWER(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
 	
 	vector<double> intSigmas;
 	
@@ -17,11 +17,11 @@ PoWER::PoWER(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, doubl
 		intSigmas.push_back(abs(explorationSigma));
 	}
 	
-	construct(initDmp, intSigmas, updatesPerRollout, importanceSamplingCount, cost, movementQueue, ac, dmpStepSize, tolAbsErr, tolRelErr);
+    construct(initDmp, intSigmas, updatesPerRollout, importanceSamplingCount, cost, simulationQueue, executionQueue, ac, dmpStepSize, tolAbsErr, tolRelErr);
 	
 }
 
-PoWER::PoWER(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* movementQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, movementQueue) {
+PoWER::PoWER(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
 	
 	// init sampler
 	for(int i = 0; i < initDmp.at(0)->getCoefficients().at(0).n_elem; ++i) {
@@ -32,11 +32,11 @@ PoWER::PoWER(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, vecto
 		
 	}
 	
-	construct(initDmp, explorationSigmas, updatesPerRollout, importanceSamplingCount, cost, movementQueue, ac, dmpStepSize, tolAbsErr, tolRelErr);
+    construct(initDmp, explorationSigmas, updatesPerRollout, importanceSamplingCount, cost, simulationQueue, executionQueue, ac, dmpStepSize, tolAbsErr, tolRelErr);
 	
 }
 
-void PoWER::construct(std::vector<Trajectory*> initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* movementQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) {
+void PoWER::construct(std::vector<Trajectory*> initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) {
 	
 	setLastUpdate(initDmp.at(0));
 	

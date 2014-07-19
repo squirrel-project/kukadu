@@ -11,6 +11,7 @@
 #include "../../trajectory/DMPExecutor.h"
 #include "../../robot/ControlQueue.h"
 #include "../../types/Trajectory.h"
+#include "../../types/LinCombDmp.h"
 
 /** \brief The GeneralReinforcer provides a general framework for reinforcement learning.
  * 
@@ -23,7 +24,8 @@ class GeneralReinforcer {
 private:
 	
 	CostComputer* cost;
-	ControlQueue* movementQueue;
+    ControlQueue* simulationQueue;
+    ControlQueue* executionQueue;
 	TrajectoryExecutor* trajEx;
 	
 	std::vector<Trajectory*> rollout;
@@ -53,7 +55,7 @@ public:
 	 * \param tolAbsErr absolute tolerated error for numerical approximation
 	 * \param tolRelErr relative tolerated error for numerical approximation
 	 */
-	GeneralReinforcer(TrajectoryExecutor* trajEx, CostComputer* cost, ControlQueue* movementQueue);
+    GeneralReinforcer(TrajectoryExecutor* trajEx, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue);
 	
 	/**
 	 * \brief returns the first rollout of the reinforcement learning algorithm

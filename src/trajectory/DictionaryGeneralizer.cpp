@@ -3,15 +3,16 @@
 using namespace std;
 using namespace arma;
 
-DictionaryGeneralizer::DictionaryGeneralizer(arma::vec initQueryPoint, ControlQueue* queue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys,
+DictionaryGeneralizer::DictionaryGeneralizer(arma::vec initQueryPoint, ControlQueue* simulationQueue, ControlQueue* executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys,
 						std::vector<double> tmpsigmas, double az, double bz, double stepSize,
 						double tolAbsErr, double tolRelErr, double ax, double tau, double ac, arma::vec trajMetricWeights,
-					     double maxRelativeToMeanDistance, double as) {
+                         double maxRelativeToMeanDistance, double as, double alpham) {
 
 	vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
     dictTraj = new LinCombDmp(initQueryPoint.n_elem, degOfFreedom, dictionaryPath, baseDef, az, bz, trajMetricWeights);
 
-	this->queue = queue;
+    this->simulationQueue = simulationQueue;
+    this->executionQueue = executionQueue;
 	this->stepSize = stepSize;
 	this->tolAbsErr = tolAbsErr;
 	this->tolRelErr = tolRelErr;
@@ -24,18 +25,20 @@ DictionaryGeneralizer::DictionaryGeneralizer(arma::vec initQueryPoint, ControlQu
 	this->tEnd = dictTraj->getTmax();
 	this->ac = ac;
     this->as = as;
+    this->alpham = alpham;
 	
 	this->maxRelativeToMeanDistance = maxRelativeToMeanDistance;
 
 }
 
-DictionaryGeneralizer::DictionaryGeneralizer(arma::vec initQueryPoint, ControlQueue* queue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz,
-			      double stepSize, double tolAbsErr, double tolRelErr, double ax, double tau, double ac, double as, arma::mat metric, double maxRelativeToMeanDistance) {
+DictionaryGeneralizer::DictionaryGeneralizer(arma::vec initQueryPoint, ControlQueue* simulationQueue, ControlQueue* executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz,
+                  double stepSize, double tolAbsErr, double tolRelErr, double ax, double tau, double ac, double as, arma::mat metric, double maxRelativeToMeanDistance, double alpham) {
 	
 	vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
     dictTraj = new LinCombDmp(initQueryPoint.n_elem, degOfFreedom, dictionaryPath, baseDef, az, bz, metric);
 
-	this->queue = queue;
+    this->simulationQueue = simulationQueue;
+    this->executionQueue = executionQueue;
 	this->stepSize = stepSize;
 	this->tolAbsErr = tolAbsErr;
 	this->tolRelErr = tolRelErr;
@@ -48,6 +51,7 @@ DictionaryGeneralizer::DictionaryGeneralizer(arma::vec initQueryPoint, ControlQu
 	this->tEnd = dictTraj->getTmax();
 	this->ac = ac;
 	this->as = as;
+    this->alpham = alpham;
 	
 	this->maxRelativeToMeanDistance = maxRelativeToMeanDistance;
 	
@@ -76,17 +80,18 @@ int DictionaryGeneralizer::getDegOfFreedom() {
 }
 
 t_executor_res DictionaryGeneralizer::simulateTrajectory() {
-	return executeGen(currentQuery, tEnd, ac, as);
+    return executeGen(currentQuery, tEnd, ac, as, 1);
 }
 
 // TODO: implement execute trajectory
 t_executor_res DictionaryGeneralizer::executeTrajectory() {
-    return executeGen(currentQuery, tEnd, ac, as);
+    return executeGen(currentQuery, tEnd, ac, as, 0);
 }
 
 void DictionaryGeneralizer::setTrajectory(Trajectory* traj) {
 	
 	// TODO: check problem that occurred here with just casting and assigning pointer
+    dictTraj = (LinCombDmp*) dictTraj->copy();
 	dictTraj->setMetric((dynamic_cast<LinCombDmp*>(traj))->getMetric());
 	
 }
@@ -96,7 +101,7 @@ double DictionaryGeneralizer::getCurrentTime() {
 }
 
 // TODO: find out why metric can produce negative distances after reinforcement learning
-t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, double ac, double as) {
+t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, double ac, double as, int simulate) {
 	
     int firstTime = 1;
 	double norm = 0.0;
@@ -112,14 +117,9 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 	newCoefficients = vec(points);
 	currentCoefficients = vec(points);
 	
-	// simulation is standard option
-	int simulate = 1;
     int isFirstIteration = 1;
 	
-	double alpham = 1.0;
-	
-	// if queue is defined, execute trajectory
-	if(this->queue) simulate = 0;
+//	double alpham = 1.0;
 
 //    cout << "(DictionaryGeneralizer) starting generalized execution" << endl;
 
@@ -141,10 +141,13 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 		execs.push_back(currentExec);
 		
 	}
-	
 
 	mat Z = columnToSquareMatrix(dictTraj->getCoefficients().at(0));
-	Mahalanobis metric(Z.t() * Z);
+    mat M = Z.t() * Z;
+    M = M / M(0,0);
+    Mahalanobis metric(M);
+
+    cout << "(DictionaryGeneralizer) using metric:" << endl << metric.getM() << endl;
 
 
 //    Mahalanobis metric(columnToSymmetricMatrix(dictTraj->getCoefficients().at(0)));
@@ -267,38 +270,41 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 
         }
 
-        if(!simulate) {
+        ControlQueue* queue = NULL;
+        if(simulate)
+            queue = simulationQueue;
+        else
+            queue = executionQueue;
 
-            // if real robot execution and first integration step --> move to initial position
-            if(isFirstIteration) {
+        // if real robot execution and first integration step --> move to initial position
+        if(isFirstIteration) {
 
-                cout << "(DictionaryGeneralizer) moving to initial execution position" << endl;
-                float* startingJoints = new float[nextJoints.n_elem];
-                for(int i = 0; i < nextJoints.n_elem; ++i) startingJoints[i] = nextJoints(i);
-                queue->moveJoints(startingJoints);
-                isFirstIteration = 0;
-            //    cout << "(DictionaryGeneralizer) starting trajectory execution" << endl;
+            cout << "(DictionaryGeneralizer) moving to initial execution position" << endl;
+            float* startingJoints = new float[nextJoints.n_elem];
+            for(int i = 0; i < nextJoints.n_elem; ++i) startingJoints[i] = nextJoints(i);
+            queue->moveJoints(startingJoints);
+            isFirstIteration = 0;
+        //    cout << "(DictionaryGeneralizer) starting trajectory execution" << endl;
 
-            } else {
+        } else {
 
-                // if not first integration step but real robot execution --> add new positions to queue
-                float* moveJoints = new float[nextJoints.n_elem];
+            // if not first integration step but real robot execution --> add new positions to queue
+            float* moveJoints = new float[nextJoints.n_elem];
 
-                // move to desired position
-                for(int i = 0; i < nextJoints.n_elem; ++i) {
-                    moveJoints[i] = nextJoints(i);
-                }
-
-                // synchronize to control queue (maximum one joint array has to be already in there --> needed for phase stopping such that DMPExecutor does not progress to fast)
-                queue->synchronizeToControlQueue(0);
-                queue->addJointsPosToQueue(moveJoints);
-
-                float* currentJoints = queue->getCurrentJoints().joints;
-                for(int i = 0; i < nextJoints.n_elem; ++i) {
-                    nextJoints(i) = currentJoints[i];
-                }
-
+            // move to desired position
+            for(int i = 0; i < nextJoints.n_elem; ++i) {
+                moveJoints[i] = nextJoints(i);
             }
+
+            // synchronize to control queue (maximum one joint array has to be already in there --> needed for phase stopping such that DMPExecutor does not progress to fast)
+            queue->synchronizeToControlQueue(0);
+            queue->addJointsPosToQueue(moveJoints);
+
+            float* currentJoints = queue->getCurrentJoints().joints;
+            for(int i = 0; i < nextJoints.n_elem; ++i) {
+                nextJoints(i) = currentJoints[i];
+            }
+
         }
 
 		for(int i = 0; i < degOfFreedom; ++i)

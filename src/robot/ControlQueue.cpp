@@ -3,8 +3,8 @@
 using namespace std;
 
 thread* ControlQueue::startQueueThread() {
-	thread* thr = new std::thread(&ControlQueue::run, this);
-	while(!this->isInitialized());
+    thread* thr = new std::thread(&ControlQueue::run, this);
+    while(!this->isInitialized());
 	return thr;
 }
 

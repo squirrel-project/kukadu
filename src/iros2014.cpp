@@ -199,7 +199,7 @@ void testIROSGrasping() {
 //  -1.3176   3.2793
 	
 //	dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as);
-	dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh);
+    dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, 1.0);
 	
 	std::vector<Trajectory*> initTraj;
 	initTraj.push_back(dmpGen->getTrajectory());
@@ -209,7 +209,7 @@ void testIROSGrasping() {
 	
 	LinCombDmp* lastRollout = NULL;
 	
-	PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
+    PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
 	
 	int plotTimes = 5;
 	g1 = new Gnuplot("PoWER demo");
@@ -339,7 +339,7 @@ void testIROS() {
 	GaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1));
 	t_executor_res opt = reward.getOptimalTraj(5.0);
 	
-	dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as);
+    dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, 1.0);
 	
 	/*
 	switchThr = new std::thread(switchQueryPoint);
@@ -354,7 +354,7 @@ void testIROS() {
 	cout << newQueryPoint << endl;
 	cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
 	
-	PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
+    PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
 	
 	int plotTimes = 5;
 	g1 = new Gnuplot("PoWER demo");

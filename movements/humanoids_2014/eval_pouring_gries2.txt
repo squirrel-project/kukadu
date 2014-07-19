@@ -1,0 +1,9 @@
+(10, 300): 269
+(12, 300): 232
+(10.5, 300): 280
+
+--> todo:
+- maybe change m(1,1) to 0.00075 or 0.0008?
+- other query points to compare with nearest neighbour
+- video!!!
+- improve paper

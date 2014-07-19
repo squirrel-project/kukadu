@@ -25,7 +25,6 @@ public:
 	
 };
 
-// TODO: move this to separate file
 class GraspingRewardComputer : public CostComputer{
 
 private:
@@ -41,6 +40,20 @@ public:
 
 	double computeCost(t_executor_res results);
 	
+};
+
+class PouringRewardComputer : public CostComputer{
+
+private:
+
+    double targetWeight;
+
+public:
+
+    PouringRewardComputer(double targetWeight);
+
+    double computeCost(t_executor_res results);
+
 };
 
 #endif

@@ -16,7 +16,7 @@ Mahalanobis::Mahalanobis(int dim) {
 }
 
 Mahalanobis::Mahalanobis(arma::mat M) {
-	setM(M);
+    setM(M / M(0,0));
 }
 
 Mahalanobis::Mahalanobis(const Mahalanobis& maha) {
@@ -64,10 +64,10 @@ arma::mat Mahalanobis::getDecomposition() {
 	mat U, V;
 	vec s;
 	
-	svd(U, s, V, M);
+    svd_econ(U, s, V, M);
 	
-	for(int i = 0; i < s.n_elem; ++i)
-		s(i) = sqrt(s(i));
+    for(int i = 0; i < s.n_elem; ++i)
+        s(i) = sqrt(s(i));
 	
 	mat matS = diagmat(s);
 	
