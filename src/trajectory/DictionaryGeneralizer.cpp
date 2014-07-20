@@ -183,6 +183,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
                 for(int i = 0; i < points; ++i) {
                     double currCoeff = 1 / exp(alpham * distanceCoeffs(i));
                     currentCoefficients(i) = currCoeff;
+                    cout << currCoeff << " is weight for qp: " << dictTraj->getQueryPoints().at(i).getQueryPoint().t() << endl;
                 }
 				
 				// drop trajectories that are too far away

@@ -118,6 +118,8 @@ vector<QueryPoint> DictionaryTrajectory::mapFiles(vector<string> queryFiles, vec
             if(!queryAppendix.compare(trajAppendix)) {
                 QueryPoint toAdd(queryFiles.at(i), trajFiles.at(j), string("dmp") + trajAppendix, Dmp(), vec());
                 ret.push_back(toAdd);
+                if(i == 0)
+                    startingPos = toAdd.getDmp().getY0();
             }
 		}
 	}

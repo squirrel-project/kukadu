@@ -24,7 +24,7 @@
 #include "../include/kukadu.h"
 #include "../src/utils/gnuplot-cpp/gnuplot_i.hpp"
 
-#define DOSIMULATION 0
+#define DOSIMULATION 1
 
 using namespace std;
 using namespace arma;
@@ -144,10 +144,10 @@ void testPerformance(OrocosControlQueue* queue) {
     //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_9_480.txt";
     //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_11_157.txt";
     //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_11_234.txt";
-    string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_11_370.txt";
+    //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_11_370.txt";
     //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_11_486.txt";
     //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_13_164.txt";
-    //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_13_266.txt";
+    string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_13_293.txt";
     //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_13_381.txt";
     //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_13_498.txt";
 
@@ -161,9 +161,9 @@ void testHumanoidsPouring(OrocosControlQueue* simulationQueue, OrocosControlQueu
 //    bz = (az - 1) / 4;
 
     std::string inDir = resolvePath("$KUKADU_HOME/movements/humanoids_2014/pouring_gries/");
-    std::string resFile = resolvePath("$KUKADU_HOME/movements/humanoids_2014/eval_pouring_gries2.txt");
+    std::string resFile = resolvePath("$KUKADU_HOME/movements/humanoids_2014/eval_pouring_gries3.txt");
 
-    double alpham = 1.2;
+    double alpham = 1.0;
 
     ControlQueue* raQueue = NULL;
     QuadraticKernel* kern = new QuadraticKernel();
@@ -182,7 +182,7 @@ void testHumanoidsPouring(OrocosControlQueue* simulationQueue, OrocosControlQueu
     trajMetricWeights.fill(1.0);
 
     float tmp = 0.1;
-    double relativeDistanceThresh = 0.4;
+    double relativeDistanceThresh = 0.6;
 
     vec newQueryPoint(2);
     newQueryPoint(0) = 10;
