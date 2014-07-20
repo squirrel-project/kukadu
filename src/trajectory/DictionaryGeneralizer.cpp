@@ -31,6 +31,10 @@ DictionaryGeneralizer::DictionaryGeneralizer(arma::vec initQueryPoint, ControlQu
 
 }
 
+void DictionaryGeneralizer::setAs(double as) {
+    this->as = as;
+}
+
 DictionaryGeneralizer::DictionaryGeneralizer(arma::vec initQueryPoint, ControlQueue* simulationQueue, ControlQueue* executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz,
                   double stepSize, double tolAbsErr, double tolRelErr, double ax, double tau, double ac, double as, arma::mat metric, double maxRelativeToMeanDistance, double alpham) {
 	
@@ -58,11 +62,52 @@ DictionaryGeneralizer::DictionaryGeneralizer(arma::vec initQueryPoint, ControlQu
 }
 
 void DictionaryGeneralizer::switchQueryPoint(vec query) {
+
+    int points = getQueryPointCount();
+    vec tmpNewCoefficients(points);
+    vec tmpCurrentCoefficients(points);
+
+    mat Z = columnToSquareMatrix(dictTraj->getCoefficients().at(0));
+    mat M = Z.t() * Z;
+    M = M / M(0,0);
+    Mahalanobis metric(M);
+
+    vec distanceCoeffs(points);
+
+    // compute all distances
+    for(int i = 0; i < points; ++i) {
+        double currCoeff = metric.computeSquaredDistance(dictTraj->getQueryPoints().at(i).getQueryPoint(), query);
+        distanceCoeffs(i) = currCoeff;
+    }
+
+    // compute average distance
+    double avgDist = 0.0;
+    for(int i = 0; i < points; ++i)
+        avgDist += distanceCoeffs(i);
+
+    avgDist = avgDist / points;
+
+    for(int i = 0; i < points; ++i)
+        tmpNewCoefficients(i) = 1 / exp(alpham * distanceCoeffs(i));
+
+    // drop trajectories that are too far away
+    double tolerableDistance = avgDist * maxRelativeToMeanDistance;
+    for(int i = 0; i < points; ++i) {
+        double currCoeff = distanceCoeffs(i);
+        if(currCoeff > tolerableDistance) {
+            tmpNewCoefficients(i) = 0.0;
+        }
+    }
 	
 	switcherMutex.lock();
-		currentQuery = query;
-		switchTime = 0.0;
-		newQpSwitch = 1;
+
+        currentQuery = query;
+        switchTime = 0.0;
+        newQpSwitch = 1;
+        oldCoefficients = currentCoefficients;
+        newCoefficients = tmpNewCoefficients;
+        switchTime = 0;
+
 	switcherMutex.unlock();
 	
 }
@@ -183,7 +228,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
                 for(int i = 0; i < points; ++i) {
                     double currCoeff = 1 / exp(alpham * distanceCoeffs(i));
                     currentCoefficients(i) = currCoeff;
-                    cout << currCoeff << " is weight for qp: " << dictTraj->getQueryPoints().at(i).getQueryPoint().t() << endl;
+                //    cout << currCoeff << " is the weight for qp: " << dictTraj->getQueryPoints().at(i).getQueryPoint().t() << endl;
                 }
 				
 				// drop trajectories that are too far away
@@ -200,46 +245,17 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 				firstTime = 0;
 				
 			}
-			
-			// if new query point has been set
-			if(newQpSwitch) {
-
-                // compute all distances
-                for(int i = 0; i < points; ++i) {
-                    double currCoeff = metric.computeSquaredDistance(dictTraj->getQueryPoints().at(i).getQueryPoint(), currentQuery);
-                    distanceCoeffs(i) = currCoeff;
-                }
-
-                // compute average distance
-                double avgDist = 0.0;
-                for(int i = 0; i < points; ++i)
-                    avgDist += distanceCoeffs(i);
-
-                avgDist = avgDist / points;
-				
-				newQpSwitch = 0;
-				
-				for(int i = 0; i < points; ++i)
-					newCoefficients(i) = 1 / exp(alpham * distanceCoeffs(i));
-				
-				// drop trajectories that are too far away
-				for(int i = 0; i < points; ++i)
-					if(distanceCoeffs(i) > (avgDist * maxRelativeToMeanDistance))
-						newCoefficients(i) = 0.0;
-				
-				oldCoefficients = currentCoefficients;
-                switchTime = 0.0000001;
-				
-			}
 
             if(dot(currentCoefficients, currentCoefficients) == 0.0) {
-                string errStr = "(DictionaryGeneralizer) all coefficients are 0, please recheck your settings";
+                string errStr = "(DictionaryGeneralizer) all coefficients are 0, please check your settings";
                 cerr << errStr << endl;
-                throw "(DictionaryGeneralizer) all coefficients are 0, please recheck your settings";
+                throw "(DictionaryGeneralizer) all coefficients are 0, please check your settings";
             }
 
 			// compute coefficient switching
-			currentCoefficients = (1 - exp(- as * switchTime)) * newCoefficients + oldCoefficients * exp(- as * switchTime);
+            double newCoeff = (1 - exp(- as * switchTime));
+            double oldCoeff = exp(- as * switchTime);
+            currentCoefficients =  newCoeff * newCoefficients + oldCoeff * oldCoefficients;
 			
 			// compute new normalization
 			norm = 0.0;

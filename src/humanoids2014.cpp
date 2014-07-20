@@ -24,11 +24,12 @@
 #include "../include/kukadu.h"
 #include "../src/utils/gnuplot-cpp/gnuplot_i.hpp"
 
-#define DOSIMULATION 1
+#define DOSIMULATION 0
 
 using namespace std;
 using namespace arma;
 
+void switch2dQueryPoint();
 void testPerformance(OrocosControlQueue* queue);
 void testHumanoidsGrasping(OrocosControlQueue* queue);
 void testHumanoidsArtificialData(OrocosControlQueue* queue);
@@ -36,10 +37,12 @@ void testHumanoidsPouring(OrocosControlQueue* simulationQueue, OrocosControlQueu
 std::string resolvePath(std::string path);
 
 Gnuplot* g1 = NULL;
-double as = 1.0;
+double as = 0.2;
 double handVelocity = 20.0;
 double tolAbsErr = 1e-1;
 double tolRelErr = 1e-1;
+DictionaryGeneralizer* dmpGen = NULL;
+thread* switchThr = NULL;
 
 double ax = 0.1;
 double az = 48.0;
@@ -119,13 +122,16 @@ int main(int argc, char** args) {
         OrocosControlQueue* executionQueue = NULL;
 
         simulationQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime, "simulation", "left_arm", *node);
+        //executionQueue == NULL;
         executionQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime, "real", "left_arm", *node);
 
         simulationQueue->startQueueThread();
         simulationQueue->switchMode(10);
 
-        executionQueue->startQueueThread();
-        executionQueue->switchMode(10);
+        if(executionQueue != NULL) {
+            executionQueue->startQueueThread();
+            executionQueue->switchMode(10);
+        }
 
         testHumanoidsPouring(simulationQueue, executionQueue);
 
@@ -138,7 +144,7 @@ int main(int argc, char** args) {
 
 void testPerformance(OrocosControlQueue* queue) {
 
-    //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_9_144.txt";
+    string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_9_144.txt";
     //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_9_228.txt";
     //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_9_364.txt";
     //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_9_480.txt";
@@ -147,11 +153,33 @@ void testPerformance(OrocosControlQueue* queue) {
     //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_11_370.txt";
     //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_11_486.txt";
     //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_13_164.txt";
-    string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_13_293.txt";
+    //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_13_293.txt";
     //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_13_381.txt";
     //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_13_498.txt";
 
     t_executor_res demoRes = executeDemo(queue, resolvePath(execFile), 0, az, bz, 0);
+
+}
+
+/* switch query point for pouring */
+void switch2dQueryPoint() {
+
+    vec qp(2);
+    qp(0) = 9;
+    qp(1) = 300;
+
+//    switchedTo = qp;
+
+    while(dmpGen->getCurrentTime() < 6.0) {}
+
+    for(int i = 0; i < 9; ++i) {
+
+        sleep(1);
+        qp(0) = qp(0) + 0.35;
+        cout << "switching execution to position " << qp(0) << endl;
+        dmpGen->switchQueryPoint(qp);
+
+    }
 
 }
 
@@ -161,7 +189,7 @@ void testHumanoidsPouring(OrocosControlQueue* simulationQueue, OrocosControlQueu
 //    bz = (az - 1) / 4;
 
     std::string inDir = resolvePath("$KUKADU_HOME/movements/humanoids_2014/pouring_gries/");
-    std::string resFile = resolvePath("$KUKADU_HOME/movements/humanoids_2014/eval_pouring_gries3.txt");
+    std::string resFile = resolvePath("$KUKADU_HOME/movements/humanoids_2014/eval_pouring_gries4.txt");
 
     double alpham = 1.0;
 
@@ -185,8 +213,14 @@ void testHumanoidsPouring(OrocosControlQueue* simulationQueue, OrocosControlQueu
     double relativeDistanceThresh = 0.6;
 
     vec newQueryPoint(2);
+    newQueryPoint(0) = 9;
+    newQueryPoint(1) = 300;
+
+    /* query point to reinforce the metric */
+    /*
     newQueryPoint(0) = 10;
     newQueryPoint(1) = 300;
+    */
 
     CostComputer* reward = new PouringRewardComputer(newQueryPoint(1));
 
@@ -213,7 +247,7 @@ void testHumanoidsPouring(OrocosControlQueue* simulationQueue, OrocosControlQueu
   */
 
 //    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as);
-    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, simulationQueue, executionQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
+    dmpGen = new DictionaryGeneralizer(newQueryPoint, simulationQueue, executionQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
 
     std::vector<Trajectory*> initTraj;
     initTraj.push_back(dmpGen->getTrajectory());
@@ -277,6 +311,11 @@ void testHumanoidsPouring(OrocosControlQueue* simulationQueue, OrocosControlQueu
         cout << "(PouringExperiment) second coordinate: " << endl;
         cin >> newQueryPoint(1);
 
+//        cout << "(PouringExperiment) insert new value for as: " << endl;
+//        cin >> as;
+
+        dmpGen->setAs(as);
+
         lastRollout = ((LinCombDmp*) dmpGen->getTrajectory());
         lastRollout->setCurrentQueryPoint(newQueryPoint);
         dmpGen->switchQueryPoint(newQueryPoint);
@@ -292,7 +331,9 @@ void testHumanoidsPouring(OrocosControlQueue* simulationQueue, OrocosControlQueu
         initTraj.push_back(lastRollout);
 
         simulationQueue->moveJoints(startingJoints);
+//        switchThr = new std::thread(switch2dQueryPoint);
         t_executor_res updateRes = dmpGen->simulateTrajectory();
+//        switchThr->join();
         simulationQueue->moveJoints(startingJoints);
 
         char cont = 'n';
@@ -303,34 +344,18 @@ void testHumanoidsPouring(OrocosControlQueue* simulationQueue, OrocosControlQueu
 
             cout << "(main) executing trial" << endl;
 
+            lastRollout = ((LinCombDmp*) dmpGen->getTrajectory());
+            lastRollout->setCurrentQueryPoint(newQueryPoint);
+            dmpGen->switchQueryPoint(newQueryPoint);
+
             executionQueue->moveJoints(startingJoints);
+//            switchThr = new std::thread(switch2dQueryPoint);
             dmpGen->executeTrajectory();
-            executionQueue->moveJoints(startingJoints);
-
-            double mesError = 0.0;
-            cout << "(main) please insert the measured weight: ";
-            cin >> mesError;
-
-            totalError += abs(mesError - newQueryPoint(1));
-            ++count;
-
-            oFile << "(" << newQueryPoint(0) << ", " << newQueryPoint(1) << "): " << mesError << endl;
+//            switchThr->join();
 
         }
 
-        /*
-
-
-//        cout << "(mainScrewOrocos) press key to continue" << endl;
-//        getchar();
-//        getchar();
-
-//        delete g1;
-*/
-
     }
-
-    oFile << "average error: " << (totalError / count) << endl;
 
 }
 

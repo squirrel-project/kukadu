@@ -78,6 +78,7 @@ public:
 	QueryPoint getQueryPointByIndex(int idx);
 	
 	void switchQueryPoint(arma::vec query);
+    void setAs(double as);
 
 	double getCurrentTime();
 	

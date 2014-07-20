@@ -13,3 +13,4 @@ relativeDistanceThresh = 0.4
 - video!!!
 - improve paper
 - test if trajectories on right side are correct (maybe also remove one or another from database)
+- maybe reinforce single policies when around it samples delivered bad reward?
