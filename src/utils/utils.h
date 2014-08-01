@@ -16,6 +16,7 @@
 #include <vector>
 #include <cstring>
 #include <armadillo>
+#include <wordexp.h>
 
 #include <dirent.h>
 #include <gsl/gsl_vector.h>
@@ -40,10 +41,11 @@ void printDoubleVector(std::vector<double>* data);
 void printDoubleVector(double* data, int size);
 void printDoubleMatrix(double** data, int rows, int columns);
 void freeDoubleArray(double** data, int columns);
+std::string resolvePath(std::string path);
 
 int getch();
 
-arma::mat readMovements(std::string file, int fileColumns);
+arma::mat readMovements(std::string file);
 
 arma::vec readQuery(std::string file);
 std::vector<double>* createStdVectorFromGslVector(gsl_vector* vec);

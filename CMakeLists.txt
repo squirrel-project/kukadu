@@ -106,8 +106,12 @@ src/learning/reinforcement_learning/GaussianObstacleRewardComputer.cpp
 src/learning/reinforcement_learning/GeneralReinforcer.cpp
 src/learning/reinforcement_learning/GradientDescent.cpp
 src/trajectory/TrajectoryExecutor.cpp
+src/robot/PlottingControlQueue.cpp
 src/utils/CustomSet.cpp
 )
+
+add_executable(testing src/testing.cpp)
+target_link_libraries(testing kukadulib ${catkin_LIBRARIES} gsl gslcblas SDHLibrary-CPP stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
 
 add_executable(kukadu src/mainScrewOrocos.cpp)
 target_link_libraries(kukadu kukadulib ${catkin_LIBRARIES} gsl gslcblas SDHLibrary-CPP stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})

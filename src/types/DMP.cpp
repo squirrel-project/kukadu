@@ -31,7 +31,7 @@ Dmp::Dmp(std::string dmpFile) {
     vec fileSuperVisedTs = m.col(0);
 
     vector<vec> fileSampleYs;
-    for(int i = 0; i < 7; ++i) {
+    for(int i = 0; i < degreesOfFreedom; ++i) {
         vec fileCurrentSampleY = readMat(dmpFileStream).col(0);
         fileSampleYs.push_back(fileCurrentSampleY);
     }
@@ -139,7 +139,7 @@ void Dmp::serialize(string dmpFile) {
 
 void Dmp::construct(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<arma::vec> fitYs, std::vector<arma::vec> dmpCoeffs, std::vector<DMPBase> dmpBase, std::vector<arma::mat> designMatrices,
 		double tau, double az, double bz, double ax, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) {
-	
+
 	this->dmpCoeffs = dmpCoeffs;
 	this->dmpBase = dmpBase;
 	this->designMatrices = designMatrices;
@@ -148,15 +148,15 @@ void Dmp::construct(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std
 	this->bz = bz;
 	this->ax = ax;
 	this->fitYs = fitYs;
-	
+
 	this->ac = ac;
 	this->dmpStepSize = dmpStepSize;
 	this->tolAbsErr = tolAbsErr;
 	this->tolRelErr = tolRelErr;
-	
-	initializeY0();
-	initializeDy0();
-	initializeDdy0();
+
+    initializeY0();
+    initializeDy0();
+    initializeDdy0();
 	initializeG();
 	
 }

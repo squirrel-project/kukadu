@@ -58,8 +58,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 		rollout = computeRolloutParamters();
 		
 	}
-    cout << "isFirstIteration: " << isFirstIteration << endl;
-    cout << "rollout sizie: " << rollout.size() << endl;
+
 	lastCost.clear();
 	dmpResult.clear();
 
@@ -79,7 +78,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 
         t_executor_res simRes;
 		if(doSimulation) {
-            cout << "(DMPReinforcer) simulating rollout" << endl;
+        //    cout << "(DMPReinforcer) simulating rollout" << endl;
             simulationQueue->moveJoints(startingJoints);
             trajEx->setTrajectory(rollout.at(k));
             simRes = trajEx->simulateTrajectory();
@@ -100,7 +99,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 		
             if(cont == 'y' || cont == 'Y') {
 				
-				cout << "(DMPReinforcer) executing rollout" << endl;
+                cout << "(DMPReinforcer) executing rollout" << endl;
 				
                 simulationQueue->moveJoints(startingJoints);
 				
@@ -138,9 +137,11 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
         if(doExecution)
             executionQueue->moveJoints(startingJoints);
 
-        cout << "(GeneralReinforcer) press a key to perform next rollout (rollout number " << (k + 2) << ")" << endl;
-        getchar();
-        getchar();
+        if(doExecution) {
+            cout << "(GeneralReinforcer) press a key to perform next rollout (rollout number " << (k + 2) << ")" << endl;
+            getchar();
+            getchar();
+        }
 
 	}
 
@@ -195,9 +196,8 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 
     }
 
+    /*
     // TODO: this is a hack!!!! repair it (power cannot directly be applied to metric learning) --> results can get worse instead of better
-    cout << "last update: t " << lastUpdateCost << endl << ((LinCombDmp*)lastUpdate)->getMetric().getM() << "asdf" << endl;
-    cout << "tmp update: t " << tmpCost << endl << ((LinCombDmp*)tmpUpdate)->getMetric().getM() << "asdf" << endl;
     if(lastUpdateCost < tmpCost) {
 
 		lastUpdateCost = tmpCost;
@@ -214,7 +214,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 		}
 
     }
-
+*/
     isFirstIteration = false;
 	
     cout << "(DMPReinforcer) last update reward/cost: " << lastUpdateCost << endl;

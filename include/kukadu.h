@@ -51,6 +51,7 @@
 #include "../src/utils/utils.h"
 #include "../src/utils/conversion_utils.h"
 #include "../src/learning/reinforcement_learning/TerminalCostComputer.h"
+#include "../src/robot/PlottingControlQueue.h"
 
 #ifdef ROS_SUPPORT
 #include "../src/robot/OrocosControlQueue.h"

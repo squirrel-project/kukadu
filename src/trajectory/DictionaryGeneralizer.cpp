@@ -192,13 +192,15 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
     M = M / M(0,0);
     Mahalanobis metric(M);
 
-    cout << "(DictionaryGeneralizer) using metric:" << endl << metric.getM() << endl;
+//    cout << "(DictionaryGeneralizer) using metric:" << endl << metric.getM() << endl;
 
 
 //    Mahalanobis metric(columnToSymmetricMatrix(dictTraj->getCoefficients().at(0)));
 
+    bool stopExecution = false;
+
 	// execute dmps and compute linear combination
-	for(; currentTime < tEnd; currentTime += stepSize) {
+    for(; currentTime < tEnd && !stopExecution; currentTime += stepSize) {
 
 		vec distanceCoeffs(points);
 		vec nextJoints(degOfFreedom);
@@ -279,7 +281,9 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
             } catch(const char* s) {
                 puts(s);
                 cerr << ": stopped execution at time " << currentTime << endl;
-                return ret;
+                stopExecution = true;
+            //    return ret;
+                break;
             }
 
             double currCoeff = currentCoefficients(i);
@@ -296,7 +300,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
         // if real robot execution and first integration step --> move to initial position
         if(isFirstIteration) {
 
-            cout << "(DictionaryGeneralizer) moving to initial execution position" << endl;
+        //    cout << "(DictionaryGeneralizer) moving to initial execution position" << endl;
             float* startingJoints = new float[nextJoints.n_elem];
             for(int i = 0; i < nextJoints.n_elem; ++i) startingJoints[i] = nextJoints(i);
             queue->moveJoints(startingJoints);
@@ -319,7 +323,6 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 
             float* currentJoints = queue->getCurrentJoints().joints;
             for(int i = 0; i < nextJoints.n_elem; ++i) {
-                nextJoints(i) = currentJoints[i];
             }
 
         }

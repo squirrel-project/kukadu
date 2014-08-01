@@ -53,7 +53,7 @@ public:
 	 * \param joints measured joints
 	 * \param degFreedom robots degrees of freedom
 	 */
-	TrajectoryDMPLearner(std::vector<DMPBase> dmpBase, double tau, double az, double bz, double ax, arma::mat joints, int degFreedom);
+    TrajectoryDMPLearner(std::vector<DMPBase> dmpBase, double tau, double az, double bz, double ax, arma::mat joints);
 	
 	/**
 	 * \brief constructor
@@ -65,7 +65,10 @@ public:
 	 * \param file file containing the measured joints
 	 * \param degFreedom robots degrees of freedom
 	 */
-	TrajectoryDMPLearner(std::vector<double> mysDef, std::vector<double> sigmasDef, double az, double bz, std::string file, int degFreedom);
+    TrajectoryDMPLearner(std::vector<double> mysDef, std::vector<double> sigmasDef, double az, double bz, std::string file);
+
+    TrajectoryDMPLearner(double az, double bz, std::string file);
+    TrajectoryDMPLearner(double az, double bz, arma::mat joints);
 	
 	/**
 	 * \brief fit the specified trajectories

@@ -10,22 +10,57 @@ void TrajectoryDMPLearner::construct(std::vector<DMPBase> dmpBase, double tau, d
 	this->degFreedom = degFreedom;
 }
 
-TrajectoryDMPLearner::TrajectoryDMPLearner(std::vector<DMPBase> dmpBase, double tau, double az, double bz, double ax, mat joints, int degFreedom) {
-	this->construct(dmpBase, tau, az, bz, ax, joints, degFreedom);
+TrajectoryDMPLearner::TrajectoryDMPLearner(std::vector<DMPBase> dmpBase, double tau, double az, double bz, double ax, mat joints) {
+    this->construct(dmpBase, tau, az, bz, ax, joints, joints.n_cols - 1);
 }
 
-TrajectoryDMPLearner::TrajectoryDMPLearner(vector<double> mysDef, vector<double> sigmasDef, double az, double bz, string file, int degFreedom) {
+TrajectoryDMPLearner::TrajectoryDMPLearner(vector<double> mysDef, vector<double> sigmasDef, double az, double bz, string file) {
 	
 	// reading in file
-	mat joints = readMovements(file, degFreedom + 1);
+    mat joints = readMovements(file);
 	
 	double tau = joints(joints.n_rows - 1, 0);
 	double ax = -log(0.1) / tau / tau;
+
+    int degFreedom = joints.n_cols - 1;
 	
 	vector<DMPBase> baseDef = buildDMPBase(mysDef, sigmasDef, ax, tau);
 	
 	this->construct(baseDef, tau, az, bz, ax, joints, degFreedom);
 	
+}
+
+TrajectoryDMPLearner::TrajectoryDMPLearner(double az, double bz, std::string file) {
+
+    vector<double> tmpmys;
+    vector<double> tmpsigmas = {0.2, 0.8};
+    mat joints = readMovements(file);
+    int degFreedom = joints.n_cols - 1;
+
+    tmpmys = constructDmpMys(joints);
+
+    double tau = joints(joints.n_rows - 1, 0);
+    double ax = -log(0.1) / tau / tau;
+
+    vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
+    this->construct(baseDef, tau, az, bz, ax, joints, degFreedom);
+
+}
+
+TrajectoryDMPLearner::TrajectoryDMPLearner(double az, double bz, arma::mat joints) {
+
+    vector<double> tmpmys;
+    vector<double> tmpsigmas = {0.2, 0.8};
+    int degFreedom = joints.n_cols - 1;
+
+    tmpmys = constructDmpMys(joints);
+
+    double tau = joints(joints.n_rows - 1, 0);
+    double ax = -log(0.1) / tau / tau;
+
+    vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
+    this->construct(baseDef, tau, az, bz, ax, joints, degFreedom);
+
 }
 
 Dmp TrajectoryDMPLearner::fitTrajectories() {

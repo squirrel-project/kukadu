@@ -7,6 +7,8 @@ using namespace std;
 
 GradientDescent::GradientDescent(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
 
+    throw "(GradientDescent) currently broken";
+
     vector<double> intSigmas;
 
     // init sampler
@@ -22,6 +24,8 @@ GradientDescent::GradientDescent(TrajectoryExecutor* trajEx, std::vector<Traject
 }
 
 GradientDescent::GradientDescent(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
+
+    throw "(GradientDescent) currently broken";
 
     // init sampler
     for(int i = 0; i < initDmp.at(0)->getCoefficients().at(0).n_elem; ++i) {

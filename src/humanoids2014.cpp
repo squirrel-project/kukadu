@@ -15,7 +15,6 @@
 #include <cmath>
 #include <vector>
 #include <wordexp.h>
-
 #include <RedundantKin.h>
 
 #include "ros/ros.h"
@@ -32,9 +31,8 @@ using namespace arma;
 void switch2dQueryPoint();
 void testPerformance(OrocosControlQueue* queue);
 void testHumanoidsGrasping(OrocosControlQueue* queue);
-void testHumanoidsArtificialData(OrocosControlQueue* queue);
+void testHumanoidsArtificialData(ControlQueue* queue);
 void testHumanoidsPouring(OrocosControlQueue* simulationQueue, OrocosControlQueue* executionQueue);
-std::string resolvePath(std::string path);
 
 Gnuplot* g1 = NULL;
 double as = 0.2;
@@ -55,23 +53,9 @@ double dmpStepSize = kukaStepWaitTime * 1e-6;
 // constant for phase stopping
 double ac = 10;
 
-// before exeuction in simulator: rostopic pub /simulation/right_arm/joint_control/set_velocity_limit std_msgs/Float32 100
-
-std::string resolvePath(std::string path) {
-
-    wordexp_t p;
-    wordexp(path.c_str(), &p, 0 );
-    char** w = p.we_wordv;
-    string ret = string(*w);
-    wordfree( &p );
-
-    return ret;
-
-}
-
 int main(int argc, char** args) {
 
-    int mode = 4;
+    int mode = 2;
 
     if(mode == 1) {
 
@@ -90,11 +74,8 @@ int main(int argc, char** args) {
     } else if (mode == 2) {
 
         ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
-        OrocosControlQueue* queue = NULL;
-        if(DOSIMULATION)
-            queue = new OrocosControlQueue(argc, args, kukaStepWaitTime, "simulation", "right_arm", *node);
-        else
-            queue = new OrocosControlQueue(argc, args, kukaStepWaitTime, "real", "right_arm", *node);
+        PlottingControlQueue* queue = NULL;
+        queue = new PlottingControlQueue(1, kukaStepWaitTime);
 
         queue->startQueueThread();
         queue->switchMode(10);
@@ -550,13 +531,12 @@ void testHumanoidsGrasping(OrocosControlQueue* queue) {
 
 }
 
-void testHumanoidsArtificialData(OrocosControlQueue* queue) {
+void testHumanoidsArtificialData(ControlQueue* queue) {
 
     // for different trajectories, you have to change the reward computer (not the gaussian computer)
     std::string inDir = resolvePath("$KUKADU_HOME/movements/iros2014/2d_extended_gen/");
-    QuadraticKernel* kern = new QuadraticKernel();
 
-    vector<double> irosmys = {0, 1, 2, 3, 4, 5, 6, 7};
+    vector<double> irosmys = {0, 1, 2, 3, 4, 5};
     vector<double> irossigmas = {0.3, 0.8};
 
     vector<double> rlExploreSigmas = {0.1, 0.1, 0.1, 0.1};
@@ -566,7 +546,7 @@ void testHumanoidsArtificialData(OrocosControlQueue* queue) {
 
     double alpham = 1.0;
 
-    int columns = 8;
+    int columns = 2;
 
     vec trajMetricWeights(7);
     trajMetricWeights.fill(1.0);
@@ -594,7 +574,7 @@ void testHumanoidsArtificialData(OrocosControlQueue* queue) {
     m(1, 1) = 0.0590;
 
 //    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
-    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, NULL, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
+    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
 
     std::vector<Trajectory*> initTraj;
     initTraj.push_back(dmpGen->getTrajectory());
@@ -604,8 +584,8 @@ void testHumanoidsArtificialData(OrocosControlQueue* queue) {
 
     LinCombDmp* lastRollout = NULL;
 
-//    PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
-    GradientDescent pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
+    PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, queue, queue, ac, dmpStepSize, tolAbsErr, tolRelErr);
+//    GradientDescent pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, queue, queue, ac, dmpStepSize, tolAbsErr, tolRelErr);
 
     int plotTimes = 5;
     g1 = new Gnuplot("PoWER demo");
@@ -615,13 +595,10 @@ void testHumanoidsArtificialData(OrocosControlQueue* queue) {
     vector<vec> initY;
 
     vector<double> lastRewards;
-    while( i < 15 ) {
+    while( i < 50 ) {
 
         pow.performRollout(1, 0);
         lastRollout = dynamic_cast<LinCombDmp*>(pow.getLastUpdate());
-        lastRewards.push_back(pow.getLastUpdateReward());
-        if(lastRewards.size() > 3)
-            lastRewards.erase(lastRewards.begin());
 
         cout << "(mainScrewOrocos) last update metric: " << lastRollout->getMetric().getM() << endl;
 

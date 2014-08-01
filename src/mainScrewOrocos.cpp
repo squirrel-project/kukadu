@@ -1108,7 +1108,7 @@ void testPoWER() {
 	vector<double> sigmas{0.3};
 	
 	vector<DMPBase> baseDef = buildDMPBase(mys, sigmas, ax, tau);
-	TrajectoryDMPLearner learner(baseDef, tau, az, bz, ax, sample, 1);
+    TrajectoryDMPLearner learner(baseDef, tau, az, bz, ax, sample);
 	Dmp initialDmp = learner.fitTrajectories();
 
 	vector<Trajectory*> initDmp;

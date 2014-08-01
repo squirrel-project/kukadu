@@ -3,6 +3,18 @@
 using namespace std;
 using namespace arma;
 
+std::string resolvePath(std::string path) {
+
+    wordexp_t p;
+    wordexp(path.c_str(), &p, 0 );
+    char** w = p.we_wordv;
+    string ret = string(*w);
+    wordfree( &p );
+
+    return ret;
+
+}
+
 t_executor_res executeDemo(ControlQueue* movementQu, string file, int doSimulation, double az, double bz, int plotResults) {
 	
 	Gnuplot* g1 = NULL;
@@ -30,7 +42,7 @@ t_executor_res executeDemo(ControlQueue* movementQu, string file, int doSimulati
 	vector<double> tmpsigmas{0.2, 0.8};
 	
 	// reading in file
-	mat joints = readMovements(file, columns);
+    mat joints = readMovements(file);
 	tmpmys = constructDmpMys(joints);
 	
 	double ax = -log((float)0.1) / joints(joints.n_rows - 1, 0) / tau;
@@ -42,7 +54,7 @@ t_executor_res executeDemo(ControlQueue* movementQu, string file, int doSimulati
 	float* jointValues = NULL;
 	float* currentJoints = NULL;
 
-	TrajectoryDMPLearner dmpLearner(baseDef, tau, az, bz, ax, joints, columns - 1);
+    TrajectoryDMPLearner dmpLearner(baseDef, tau, az, bz, ax, joints);
 	Dmp learnedDmps = dmpLearner.fitTrajectories();
 	vector<vec> dmpCoeffs = learnedDmps.getDmpCoeffs();
 
@@ -387,13 +399,16 @@ gsl_matrix* invertSquareMatrix(gsl_matrix* mat) {
  *	char* file:		complete path to input file
  *	int fileColumns:	count of columns to import
 */
-mat readMovements(string file, int fileColumns) {
+mat readMovements(string file) {
 	
-	mat joints(1, fileColumns);
+    mat joints;
 	string line;
 	string token;
 	double dn = 0.0;
 	double t0 = 0.0;
+    int fileColumns = 0;
+
+    bool firstIteration = true;
 	
 	ifstream inFile;
 	inFile.open (file, ios::in | ios::app | ios::binary);
@@ -403,6 +418,16 @@ mat readMovements(string file, int fileColumns) {
 		while(inFile.good()) {
 			getline(inFile, line);
 			Tokenizer tok(line);
+
+            if(firstIteration) {
+                int i = 0;
+                for(i = 0; tok.next() != ""; ++i);
+                fileColumns = i;
+                tok = Tokenizer(line);
+                firstIteration = false;
+                joints = mat(1, fileColumns);
+            }
+
 			for(int i = 0; (token = tok.next()) != "" && i < fileColumns; ++i) {
 				dn = string_to_double(token);
 				
