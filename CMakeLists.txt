@@ -107,6 +107,7 @@ src/learning/reinforcement_learning/GeneralReinforcer.cpp
 src/learning/reinforcement_learning/GradientDescent.cpp
 src/trajectory/TrajectoryExecutor.cpp
 src/robot/PlottingControlQueue.cpp
+src/trajectory/TimeDepDictionaryGeneralizer.cpp
 src/utils/CustomSet.cpp
 )
 
