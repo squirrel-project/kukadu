@@ -3,6 +3,18 @@
 using namespace std;
 using namespace arma;
 
+Mahalanobis::Mahalanobis() {
+
+    int dim = 1;
+    vec dia(dim);
+    dia.fill(1.0);
+
+    M = mat(dim, dim);
+    M.fill(0.0);
+    M.diag() = dia;
+
+}
+
 // delivers Euclidean metric
 Mahalanobis::Mahalanobis(int dim) {
 	

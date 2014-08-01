@@ -3,13 +3,13 @@
 using namespace std;
 using namespace arma;
 
-DictionaryGeneralizer::DictionaryGeneralizer(arma::vec initQueryPoint, ControlQueue* simulationQueue, ControlQueue* executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys,
+DictionaryGeneralizer::DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, ControlQueue* simulationQueue, ControlQueue* executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys,
 						std::vector<double> tmpsigmas, double az, double bz, double stepSize,
 						double tolAbsErr, double tolRelErr, double ax, double tau, double ac, arma::vec trajMetricWeights,
                          double maxRelativeToMeanDistance, double as, double alpham) {
 
-	vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
-    dictTraj = new LinCombDmp(initQueryPoint.n_elem, degOfFreedom, dictionaryPath, baseDef, az, bz, trajMetricWeights);
+    vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
+    dictTraj = new LinCombDmp(initQueryPoint.n_elem, degOfFreedom, dictionaryPath, baseDef, az, bz, trajMetricWeights, timeCenters);
 
     this->simulationQueue = simulationQueue;
     this->executionQueue = executionQueue;
@@ -35,11 +35,11 @@ void DictionaryGeneralizer::setAs(double as) {
     this->as = as;
 }
 
-DictionaryGeneralizer::DictionaryGeneralizer(arma::vec initQueryPoint, ControlQueue* simulationQueue, ControlQueue* executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz,
+DictionaryGeneralizer::DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, ControlQueue* simulationQueue, ControlQueue* executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz,
                   double stepSize, double tolAbsErr, double tolRelErr, double ax, double tau, double ac, double as, arma::mat metric, double maxRelativeToMeanDistance, double alpham) {
 	
-	vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
-    dictTraj = new LinCombDmp(initQueryPoint.n_elem, degOfFreedom, dictionaryPath, baseDef, az, bz, metric);
+    vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
+    dictTraj = new LinCombDmp(initQueryPoint.n_elem, degOfFreedom, dictionaryPath, baseDef, az, bz, metric, timeCenters);
 
     this->simulationQueue = simulationQueue;
     this->executionQueue = executionQueue;
@@ -57,7 +57,7 @@ DictionaryGeneralizer::DictionaryGeneralizer(arma::vec initQueryPoint, ControlQu
 	this->as = as;
     this->alpham = alpham;
 	
-	this->maxRelativeToMeanDistance = maxRelativeToMeanDistance;
+    this->maxRelativeToMeanDistance = maxRelativeToMeanDistance;
 	
 }
 
@@ -187,10 +187,16 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 		
 	}
 
-	mat Z = columnToSquareMatrix(dictTraj->getCoefficients().at(0));
+/*
+    mat Z = columnToSquareMatrix(dictTraj->getCoefficients().at(0));
     mat M = Z.t() * Z;
     M = M / M(0,0);
     Mahalanobis metric(M);
+    */
+
+    vector<Mahalanobis> metrics = dictTraj->getMetric();
+//    cout << "blub" << metrics.size() << endl;
+//    cout << metrics.at(0).getM() << endl << endl;
 
 //    cout << "(DictionaryGeneralizer) using metric:" << endl << metric.getM() << endl;
 
@@ -214,7 +220,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 
                 // compute all distances
                 for(int i = 0; i < points; ++i) {
-                    double currCoeff = metric.computeSquaredDistance(dictTraj->getQueryPoints().at(i).getQueryPoint(), currentQuery);
+                    double currCoeff = metrics.at(0).computeSquaredDistance(dictTraj->getQueryPoints().at(i).getQueryPoint(), currentQuery);
                     distanceCoeffs(i) = currCoeff;
                 }
 
@@ -344,7 +350,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 		execs.at(i)->destroyIntegration();
 		delete execs.at(i);
 	}
-	
+
 	currentTime = 0.0;
 
 	return ret;

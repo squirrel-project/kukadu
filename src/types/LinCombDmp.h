@@ -15,18 +15,19 @@ class LinCombDmp : public DictionaryTrajectory {
 	
 private:
 	
-	Mahalanobis metric;
+    std::vector<Mahalanobis> metric;
 	arma::vec currentQueryPoint;
 	arma::vec trajMetricWeights;
+    arma::vec timeCenters;
 	
 public:
 	
     LinCombDmp(int queryDegOfFreedom, int degOfFreedom, std::string baseFolder, std::vector<DMPBase> baseDef, double az, double bz,
-		arma::vec trajMetricWeights
+        arma::vec trajMetricWeights, arma::vec timeCenters
 	);
 	
     LinCombDmp(int queryDegOfFreedom, int degOfFreedom, std::string baseFolder, std::vector<DMPBase> baseDef, double az, double bz,
-		arma::mat metricM
+        arma::mat metricM, arma::vec timeCenters
 	);
 	
 	LinCombDmp(const LinCombDmp& copy);
@@ -42,8 +43,9 @@ public:
 	
 	int getQueryDegreesOfFreedom() const;
 	
-	Mahalanobis getMetric();
-	void setMetric(Mahalanobis metric);
+    std::vector<Mahalanobis> getMetric();
+    void setMetric(Mahalanobis metric);
+    void setMetric(std::vector<Mahalanobis> metric);
 	
 	int operator==(LinCombDmp const& comp) const;
 	

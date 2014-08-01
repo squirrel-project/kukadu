@@ -147,9 +147,9 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 
 	double tmpCost = lastUpdateCost;
     Trajectory* tmpUpdate = lastUpdate->copy();
-	t_executor_res tmpRes = lastUpdateRes;
-	lastUpdate = updateStep();
-	trajEx->setTrajectory(lastUpdate);
+    t_executor_res tmpRes = lastUpdateRes;
+    lastUpdate = updateStep();
+    trajEx->setTrajectory(lastUpdate);
     vec startingPos = lastUpdate->getStartingPos();
     double* tmp = new double[lastUpdate->getDegreesOfFreedom()];
     for(int i = 0; i < lastUpdate->getDegreesOfFreedom(); ++i)

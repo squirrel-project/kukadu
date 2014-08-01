@@ -22,18 +22,18 @@ PoWER::PoWER(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, doubl
 }
 
 PoWER::PoWER(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
-	
+
 	// init sampler
 	for(int i = 0; i < initDmp.at(0)->getCoefficients().at(0).n_elem; ++i) {
-		
+
 		vec currCoeff = initDmp.at(0)->getCoefficients().at(0);
 		normal_distribution<double> normal(0, explorationSigmas.at(i));
 		normals.push_back(normal);
-		
+
 	}
-	
+
     construct(initDmp, explorationSigmas, updatesPerRollout, importanceSamplingCount, cost, simulationQueue, executionQueue, ac, dmpStepSize, tolAbsErr, tolRelErr);
-	
+
 }
 
 void PoWER::construct(std::vector<Trajectory*> initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) {
@@ -78,9 +78,9 @@ std::vector<Trajectory*> PoWER::computeRolloutParamters() {
 			dmpCoeffs[i] = currCoeff;
 			
 		}
-		
+
 		Trajectory* nextUp = lastUp->copy();
-		nextUp->setCoefficients(dmpCoeffs);
+        nextUp->setCoefficients(dmpCoeffs);
 		
 		nextCoeffs.push_back(nextUp);
 
@@ -91,9 +91,9 @@ std::vector<Trajectory*> PoWER::computeRolloutParamters() {
 }
 
 Trajectory* PoWER::updateStep() {
-	
+
 	Trajectory* lastUp = getLastUpdate();
-	
+
 	vector<Trajectory*> lastDmps = getLastRolloutParameters();
 	vector<double> lastRewards = getLastRolloutCost();
 	
@@ -102,7 +102,7 @@ Trajectory* PoWER::updateStep() {
 		pair <double, Trajectory*> p(lastRewards.at(i), lastDmps.at(i));
 		sampleHistory.push_back(p);
 	}
-	
+
 	// sort by reward...
 	sort(sampleHistory.begin(), sampleHistory.end(), rewardComparator);
 	
@@ -114,7 +114,7 @@ Trajectory* PoWER::updateStep() {
 	double totalReward = 0.0;
 	for(int i = 0; i < sampleHistory.size(); ++i)
 		totalReward = totalReward + sampleHistory.at(i).first;
-	
+
 	vector<vec> lastUpCoeffs = lastUp->getCoefficients();
 	vec newCoeffsJ(lastUpCoeffs.at(0).n_elem);
 	vector<vec> newCoeffs;
@@ -134,14 +134,14 @@ Trajectory* PoWER::updateStep() {
 			currentDegCoeffs += sampleHistory.at(j).first / totalReward * (sampleHistory.at(j).second->getCoefficients().at(i) - lastUpCoeffs.at(i));
 		}
 		
-		newCoeffs[i] = currentDegCoeffs;
+        newCoeffs[i] = currentDegCoeffs;
 		
 	}
-	
+
 	//Dmp newUp(lastUp);
-	Trajectory* newUp = lastUp->copy();
+    Trajectory* newUp = lastUp->copy();
 	newUp->setCoefficients(newCoeffs);
-	
+
 //	cout << newCoeffs.at(0).t() << endl;
 	
 	return newUp;

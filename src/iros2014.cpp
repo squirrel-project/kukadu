@@ -197,15 +197,18 @@ void testIROSGrasping() {
 	m(1, 1) = 3.2793;
 //	1.0000  -1.3176
 //  -1.3176   3.2793
+
+    vec timeCenters(1);
+    timeCenters(0) = 2.5;
 	
 //	dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as);
-    dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, 1.0);
+    dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, raQueue, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, 1.0);
 	
 	std::vector<Trajectory*> initTraj;
 	initTraj.push_back(dmpGen->getTrajectory());
 	
 	cout << newQueryPoint << endl;
-	cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
+//	cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
 	
 	LinCombDmp* lastRollout = NULL;
 	
@@ -228,7 +231,7 @@ void testIROSGrasping() {
 		if(lastRewards.size() > 3)
 			lastRewards.erase(lastRewards.begin());
 		
-		cout << "(mainScrewOrocos) last update metric: " << lastRollout->getMetric().getM() << endl;
+//		cout << "(mainScrewOrocos) last update metric: " << lastRollout->getMetric().getM() << endl;
 //		cout << lastRollout->getMetric().getM() << endl << endl;
 		
 		if(i == 0) {
@@ -335,11 +338,14 @@ void testIROS() {
 	
 //	newQueryPoint(0) = 1.2;
 //	newQueryPoint(1) = 6.9;
+
+    vec timeCenters(1);
+    timeCenters(0) = 2.5;
 	
 	GaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1));
 	t_executor_res opt = reward.getOptimalTraj(5.0);
 	
-    dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, 1.0);
+    dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, raQueue, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, 1.0);
 	
 	/*
 	switchThr = new std::thread(switchQueryPoint);
@@ -352,7 +358,7 @@ void testIROS() {
 	initTraj.push_back(dmpGen->getTrajectory());
 	
 	cout << newQueryPoint << endl;
-	cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
+//	cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
 	
     PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
 	
@@ -374,7 +380,7 @@ void testIROS() {
 		if(lastRewards.size() > 3)
 			lastRewards.erase(lastRewards.begin());
 		
-		cout << "(mainScrewOrocos) last update metric: " << lastRollout->getMetric().getM() << endl << endl;
+//		cout << "(mainScrewOrocos) last update metric: " << lastRollout->getMetric().getM() << endl << endl;
 		
 		if(i == 0) {
 			initT = pow.getLastUpdateRes().t;

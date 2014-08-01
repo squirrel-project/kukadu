@@ -611,6 +611,9 @@ void testIROSGrasping() {
 	
 	vector<double> irosmys = {0, 1, 2, 3, 4, 5};
 	vector<double> irossigmas = {0.3, 0.8};
+
+    vec timeCenters(1);
+    timeCenters(0) = 2.5;
 	
 	//vector<double> rlExploreSigmas = {0.5, 0.5, 0.5, 0.5};
 	vector<double> rlExploreSigmas = {0.2, 0.2, 0.2, 0.2};
@@ -653,13 +656,13 @@ void testIROSGrasping() {
 //  -1.3176   3.2793
 	
 //	dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as);
-    dmpGen = new DictionaryGeneralizer(newQueryPoint, NULL, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
+    dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, NULL, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
 	
 	std::vector<Trajectory*> initTraj;
 	initTraj.push_back(dmpGen->getTrajectory());
 	
 	cout << newQueryPoint << endl;
-	cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
+//	cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
 	
 	LinCombDmp* lastRollout = NULL;
 	
@@ -682,8 +685,8 @@ void testIROSGrasping() {
 		if(lastRewards.size() > 3)
 			lastRewards.erase(lastRewards.begin());
 		
-		cout << "(mainScrewOrocos) last update metric: " << lastRollout->getMetric().getM() << endl;
-		cout << lastRollout->getMetric().getM() << endl << endl;
+//		cout << "(mainScrewOrocos) last update metric: " << lastRollout->getMetric().getM() << endl;
+//		cout << lastRollout->getMetric().getM() << endl << endl;
 		
 		if(i == 0) {
 			initT = pow.getLastUpdateRes().t;
@@ -760,6 +763,9 @@ void testIROS() {
 	ControlQueue* raQueue = NULL;
 	QuadraticKernel* kern = new QuadraticKernel();
     double alpham = 1.0;
+
+    vec timeCenters(1);
+    timeCenters(0) = 2.5;
 	
 	std::vector<double> irosmys = {0, 1, 2, 3, 4, 5};
 	std::vector<double> irossigmas = {0.3, 0.8};
@@ -806,7 +812,7 @@ void testIROS() {
 	
 	}
 	
-    dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
+    dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, raQueue, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
 	
 	/*
 	switchThr = new std::thread(switchQueryPoint);
@@ -835,7 +841,7 @@ void testIROS() {
 	initTraj.push_back(dmpGen->getTrajectory());
 	
 	cout << newQueryPoint << endl;
-	cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
+//	cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
 	
     PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
 	
@@ -858,7 +864,7 @@ void testIROS() {
 			lastRewards.erase(lastRewards.begin());
 		
 	//	cout << "(mainScrewOrocos) last update metric: " << lastRollout->getMetric().getM() << endl;
-		cout << lastRollout->getMetric().getM() << endl << endl;
+//		cout << lastRollout->getMetric().getM() << endl << endl;
 		
 		if(i == 0) {
 			initT = pow.getLastUpdateRes().t;
@@ -978,6 +984,9 @@ void testDictionaryGen() {
 	
 	vec trajMetricWeights(7);
 	trajMetricWeights.fill(1.0);
+
+    vec timeCenters(1);
+    timeCenters(0) = 2.5;
 	
 	tau = 15;
 	double ax = -log((float)0.1) / tau / tau;
@@ -1003,7 +1012,7 @@ void testDictionaryGen() {
 	
 	}
 	
-    dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, NULL, inDir, columns - 1, genTmpmys, tmpsigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, 0.2, as, alpham);
+    dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, raQueue, NULL, inDir, columns - 1, genTmpmys, tmpsigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, 0.2, as, alpham);
 	
 	switchThr = new std::thread(switchQueryPoint);
 	t_executor_res genRes = dmpGen->simulateTrajectory();

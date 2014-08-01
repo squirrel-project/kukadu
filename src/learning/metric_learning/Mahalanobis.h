@@ -1,5 +1,5 @@
-#ifndef MALANOBIS
-#define MALANOBIS
+#ifndef MAHALANOBIS
+#define MAHALANOBIS
 
 #include <math.h>
 #include <armadillo>
@@ -12,6 +12,7 @@ private:
 	
 public:
 	
+    Mahalanobis();
 	Mahalanobis(int dim);
 	Mahalanobis(arma::mat M);
 	Mahalanobis(const Mahalanobis& maha);

@@ -222,19 +222,22 @@ void testHumanoidsPouring(OrocosControlQueue* simulationQueue, OrocosControlQueu
     m(0, 1) = 0;
     m(1, 1) = 0.0007;
 
+    vec timeCenters(1);
+    timeCenters(0) = 2.5;
+
     /*
 1.0000  -0.0281
   -0.0281   0.0009
   */
 
 //    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as);
-    dmpGen = new DictionaryGeneralizer(newQueryPoint, simulationQueue, executionQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
+    dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
 
     std::vector<Trajectory*> initTraj;
     initTraj.push_back(dmpGen->getTrajectory());
 
     cout << newQueryPoint << endl;
-    cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
+    //cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
 
     LinCombDmp* lastRollout = NULL;
     GradientDescent pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, reward, simulationQueue, executionQueue, ac, dmpStepSize, tolAbsErr, tolRelErr);
@@ -270,7 +273,7 @@ void testHumanoidsPouring(OrocosControlQueue* simulationQueue, OrocosControlQueu
     */
 
 
-    cout << "reached metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
+    //cout << "reached metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
 
     ofstream oFile;
     oFile.open(resFile);
@@ -395,15 +398,17 @@ void testHumanoidsGrasping(OrocosControlQueue* queue) {
     1.0000  -1.3435
     -1.3435   1.8495
   */
+    vec timeCenters(1);
+    timeCenters(0) = 2.5;
 
 //    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
-    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, queue, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
+    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
 
     std::vector<Trajectory*> initTraj;
     initTraj.push_back(dmpGen->getTrajectory());
 
     cout << newQueryPoint << endl;
-    cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
+    //cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
 
     LinCombDmp* lastRollout = NULL;
 
@@ -539,6 +544,9 @@ void testHumanoidsArtificialData(ControlQueue* queue) {
     vector<double> irosmys = {0, 1, 2, 3, 4, 5};
     vector<double> irossigmas = {0.3, 0.8};
 
+    vec timeCenters(1);
+    timeCenters(0) = 2.5;
+
     vector<double> rlExploreSigmas = {0.1, 0.1, 0.1, 0.1};
     // 2 * number of parameters (http://www.scholarpedia.org/article/Policy_gradient_methods#Finite-difference_Methods)
     int rolloutsPerUpdate = 2 * 4;
@@ -574,16 +582,15 @@ void testHumanoidsArtificialData(ControlQueue* queue) {
     m(1, 1) = 0.0590;
 
 //    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
-    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
+    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
 
     std::vector<Trajectory*> initTraj;
     initTraj.push_back(dmpGen->getTrajectory());
 
     cout << newQueryPoint << endl;
-    cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
+    //cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
 
     LinCombDmp* lastRollout = NULL;
-
     PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, queue, queue, ac, dmpStepSize, tolAbsErr, tolRelErr);
 //    GradientDescent pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, queue, queue, ac, dmpStepSize, tolAbsErr, tolRelErr);
 
@@ -600,7 +607,7 @@ void testHumanoidsArtificialData(ControlQueue* queue) {
         pow.performRollout(1, 0);
         lastRollout = dynamic_cast<LinCombDmp*>(pow.getLastUpdate());
 
-        cout << "(mainScrewOrocos) last update metric: " << lastRollout->getMetric().getM() << endl;
+        //cout << "(mainScrewOrocos) last update metric: " << lastRollout->getMetric().getM() << endl;
 
         if(i == 0) {
             initT = pow.getLastUpdateRes().t;

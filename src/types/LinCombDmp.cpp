@@ -4,24 +4,33 @@ using namespace std;
 using namespace arma;
 
 LinCombDmp::LinCombDmp(int queryDegOfFreedom, int degOfFreedom, std::string baseFolder, std::vector<DMPBase> baseDef, double az, double bz,
-			arma::vec trajMetricWeights
+            arma::vec trajMetricWeights, arma::vec timeCenters
 ) :
-            DictionaryTrajectory(degOfFreedom, baseFolder, baseDef, az, bz), metric(queryDegOfFreedom) {
+            DictionaryTrajectory(degOfFreedom, baseFolder, baseDef, az, bz) {
+
+    for(int i = 0; i < timeCenters.n_elem; ++i)
+        metric.push_back(Mahalanobis(queryDegOfFreedom));
 	
 	this->trajMetricWeights = trajMetricWeights;
 	currentQueryPoint = getQueryPoints().at(0).getQueryPoint();
+    this->timeCenters = timeCenters;
 	initializeMetric();
 	cout << "(LinCombDmp) constructor" << endl;
 
 }
 
 LinCombDmp::LinCombDmp(int queryDegOfFreedom, int degOfFreedom, std::string baseFolder, std::vector<DMPBase> baseDef, double az, double bz,
-		arma::mat metricM
-    ) : DictionaryTrajectory(degOfFreedom, baseFolder, baseDef, az, bz), metric(metricM) {
-	
+        arma::mat metricM, arma::vec timeCenters
+    ) : DictionaryTrajectory(degOfFreedom, baseFolder, baseDef, az, bz) {
+
+    for(int i = 0; i < timeCenters.n_elem; ++i) {
+        metric.push_back(metricM);
+    }
+
 	this->trajMetricWeights = trajMetricWeights;
+    this->timeCenters = timeCenters;
 	currentQueryPoint = getQueryPoints().at(0).getQueryPoint();
-	cout << "(LinCombDmp) constructor" << endl;
+    cout << "(LinCombDmp) constructor" << endl;
 
 }
 
@@ -34,6 +43,7 @@ LinCombDmp::LinCombDmp(const LinCombDmp& copy) : metric(copy.metric), Dictionary
 	this->currentQueryPoint = copy.currentQueryPoint;
 	this->trajMetricWeights = copy.trajMetricWeights;
 	this->metric = copy.metric;
+    this->timeCenters = copy.timeCenters;
 //	cout << "(LinCombDmp) copy constructor" << endl;
 }
 
@@ -41,8 +51,18 @@ LinCombDmp::LinCombDmp() : metric(0) {
 //	cout << "(LinCombDmp) dummy constructor" << endl;
 }
 
+/*
 void LinCombDmp::setMetric(Mahalanobis metric) {
-	this->metric = metric;
+
+    this->metric.clear();
+    for(int i = 0; i < timeCenters.n_elem; ++i)
+        this->metric.push_back(metric);
+
+}
+*/
+
+void LinCombDmp::setMetric(std::vector<Mahalanobis> metric) {
+    this->metric = metric;
 }
 
 // TODO: usage of trajectory metric
@@ -89,8 +109,12 @@ void LinCombDmp::initializeMetric() {
 
 	cout << "(LinCombDmp) learning metric" << endl;
 	TogersonMetricLearner learner(x1s, x2s, distances);
-	metric = learner.learnMetric();
-	cout << "metric: " << metric.getM() << endl;
+    Mahalanobis newM = learner.learnMetric();
+
+    for(int i = 0; i < timeCenters.n_elem; ++i)
+        metric.push_back(newM);
+
+    cout << "metric: " << newM.getM() << endl;
 	
 	cout << "(LinCombDmp) metric initialization done" << endl;
 	
@@ -99,17 +123,29 @@ void LinCombDmp::initializeMetric() {
 // returns metric coefficients
 std::vector<arma::vec> LinCombDmp::getCoefficients() {
 
-	mat Z = metric.getDecomposition();
-	
-	vector<vec> ret;
-    vec zCoeffs = squareMatrixToColumn(Z);
-	ret.push_back(zCoeffs);
+    int singleCoeffCount = getQueryDegreesOfFreedom() * getQueryDegreesOfFreedom();
 
-    /*
     vector<vec> ret;
-    vec zCoeffs = symmetricMatrixToColumn(metric.getM());
-    ret.push_back(zCoeffs);
-    */
+    vec retVec(timeCenters.n_elem * singleCoeffCount);
+
+    for(int i = 0; i < timeCenters.n_elem; ++i) {
+
+        mat Z = metric.at(0).getDecomposition();
+
+        vec zCoeffs = squareMatrixToColumn(Z);
+
+        for(int j = 0; j < zCoeffs.n_elem; ++j)
+            retVec(i * singleCoeffCount + j) = zCoeffs(j);
+
+        /*
+        vector<vec> ret;
+        vec zCoeffs = symmetricMatrixToColumn(metric.getM());
+        ret.push_back(zCoeffs);
+        */
+
+    }
+
+    ret.push_back(retVec);
 	return ret;
 	
 }
@@ -118,21 +154,32 @@ std::vector<arma::vec> LinCombDmp::getCoefficients() {
 void LinCombDmp::setCoefficients(std::vector<arma::vec> coeffs) {
 	
 	int k = 0;
-	
+    int singleCoeffCount = getQueryDegreesOfFreedom() * getQueryDegreesOfFreedom();
+
 	// rest is ignored for now
-	vec coeffs0 = coeffs.at(0);
+    vec allCeffs0 = coeffs.at(0);
+    vec coeffs0(singleCoeffCount);
+
+    metric.clear();
+    for(int i = 0; i < timeCenters.n_elem; ++i) {
+
+        for(int j = 0; j < singleCoeffCount; ++j)
+            coeffs0(j) = allCeffs0(i * singleCoeffCount + j);
 
 
-	mat newM = columnToSquareMatrix(coeffs0);
-	newM = newM * newM.t();
+        mat newM = columnToSquareMatrix(coeffs0);
+        newM = newM * newM.t();
 
 
-    //mat newM = columnToSymmetricMatrix(coeffs0);
-	
-	newM = 1 / newM(0,0) * newM;
-	
-	metric.setM(newM);
-	
+        //mat newM = columnToSymmetricMatrix(coeffs0);
+
+        newM = 1 / newM(0,0) * newM;
+        Mahalanobis mahaNewM(newM);
+
+        metric.push_back(mahaNewM);
+
+    }
+
 }
 
 // TODO: write comparator
@@ -144,12 +191,12 @@ Trajectory* LinCombDmp::copy() {
 	return new LinCombDmp(*this);
 }
 
-Mahalanobis LinCombDmp::getMetric() {
+std::vector<Mahalanobis> LinCombDmp::getMetric() {
 	return metric;
 }
 
 int LinCombDmp::getQueryDegreesOfFreedom() const {
-	return metric.getM().n_cols;
+    return metric.at(0).getM().n_cols;
 }
 
 void LinCombDmp::setCurrentQueryPoint(arma::vec currQuery) {
