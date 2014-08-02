@@ -30,6 +30,7 @@ using namespace std;
 using namespace arma;
 
 std::string resolvePath(std::string path);
+void testPower(ros::NodeHandle* node);
 
 Gnuplot* g1 = NULL;
 double as = 0.2;
@@ -48,11 +49,34 @@ double ac = 10.0;
 
 int main(int argc, char** args) {
 
+    ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
+
+    // testPower();
+    for(double height = 3; height < 12; height += 2) {
+
+        for(double slope = 1; slope < 4; ++slope) {
+
+            SegmentationTestingRewardComputer comp(height, slope);
+            string heightString = double_to_string(height);
+            string slopeString = double_to_string(slope);
+            comp.writeToFile("/home/c7031109/newTrajs/traj_" + heightString + "_" + slopeString + ".txt", 0, 5, 0.001);
+
+            ofstream outFile;
+            outFile.open("/home/c7031109/newTrajs/query_" + heightString + "_" + slopeString + ".txt");
+
+            outFile << heightString << "\t" << slopeString << endl;
+            outFile.close();
+
+        }
+    }
+
+}
+
+void testPower(ros::NodeHandle* node) {
+
     int rolloutsPerUpdate = 15;
     int importanceSamplingCount = 4;
     vector<double> rlExploreSigmas = {50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50};
-
-    ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
 
     GaussianObstacleRewardComputer reward(2, 2.0, 3);
     t_executor_res opt = reward.getOptimalTraj(5.0);

@@ -124,14 +124,14 @@ void LinCombDmp::initializeMetric() {
 std::vector<arma::vec> LinCombDmp::getCoefficients() {
 
     int singleCoeffCount = getQueryDegreesOfFreedom() * getQueryDegreesOfFreedom();
+    int queryDegOfFreedom = getQueryDegreesOfFreedom();
 
     vector<vec> ret;
     vec retVec(timeCenters.n_elem * singleCoeffCount);
 
     for(int i = 0; i < timeCenters.n_elem; ++i) {
 
-        mat Z = metric.at(0).getDecomposition();
-
+        mat Z = metric.at(i).getDecomposition();
         vec zCoeffs = squareMatrixToColumn(Z);
 
         for(int j = 0; j < zCoeffs.n_elem; ++j)
@@ -150,9 +150,13 @@ std::vector<arma::vec> LinCombDmp::getCoefficients() {
 	
 }
 
+arma::vec LinCombDmp::getTimeCenters() {
+    return timeCenters;
+}
+
 // sets metric coefficients
 void LinCombDmp::setCoefficients(std::vector<arma::vec> coeffs) {
-	
+
 	int k = 0;
     int singleCoeffCount = getQueryDegreesOfFreedom() * getQueryDegreesOfFreedom();
 

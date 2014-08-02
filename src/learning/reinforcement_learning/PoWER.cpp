@@ -11,7 +11,6 @@ PoWER::PoWER(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, doubl
 	
 	// init sampler
 	for(int i = 0; i < initDmp.at(0)->getCoefficients().at(0).n_elem; ++i) {
-		vec currCoeff = initDmp.at(0)->getCoefficients().at(0);
 		normal_distribution<double> normal(0, explorationSigma);
 		normals.push_back(normal);
 		intSigmas.push_back(abs(explorationSigma));
@@ -24,9 +23,14 @@ PoWER::PoWER(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, doubl
 PoWER::PoWER(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
 
 	// init sampler
+
+    if(explorationSigmas.size() < initDmp.at(0)->getCoefficients().at(0).n_elem) {
+        cerr << "you defined too less exploration sigmas" << endl;
+        throw "you defined too less exploration sigmas";
+    }
+
 	for(int i = 0; i < initDmp.at(0)->getCoefficients().at(0).n_elem; ++i) {
 
-		vec currCoeff = initDmp.at(0)->getCoefficients().at(0);
 		normal_distribution<double> normal(0, explorationSigmas.at(i));
 		normals.push_back(normal);
 
@@ -62,9 +66,10 @@ std::vector<Trajectory*> PoWER::computeRolloutParamters() {
 	
 	for(int k = 0; k < updatesPerRollout; ++k) {
 	
+        vec currCoeff;
 		for(int i = 0; i < dmpCoeffs.size(); ++i) {
 			
-			vec currCoeff = dmpCoeffs.at(i);
+            currCoeff = dmpCoeffs.at(i);
 			
 			for(int j = 0; j < currCoeff.n_elem; ++j) {
 			
@@ -79,8 +84,12 @@ std::vector<Trajectory*> PoWER::computeRolloutParamters() {
 			
 		}
 
+        //TODO: blew1 und blew2 do not deliver same result if there are more time centers (maybe not decompose whole extended M but single submatrices
+
+//        cout << "blew1: " << dmpCoeffs.at(0).t() << endl;
 		Trajectory* nextUp = lastUp->copy();
         nextUp->setCoefficients(dmpCoeffs);
+//        cout << "blew2: " << nextUp->getCoefficients().at(0).t() << endl;
 		
 		nextCoeffs.push_back(nextUp);
 
@@ -123,6 +132,7 @@ Trajectory* PoWER::updateStep() {
 		vec v = lastUp->getCoefficients().at(i);
 		newCoeffs.push_back(v);
 	}
+    cout << "====================" << endl;
 	
 	// for each degree of freedom
 	for(int i = 0; i < newCoeffs.size(); ++i) {

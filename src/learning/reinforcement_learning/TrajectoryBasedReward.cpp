@@ -24,6 +24,20 @@ double TrajectoryBasedReward::computeCost(t_executor_res results) {
 
 }
 
+void TrajectoryBasedReward::writeToFile(std::string file, double tStart, double tEnd, double stepSize) {
+
+    ofstream outFile;
+    outFile.open(file);
+
+    for(; tStart < tEnd; tStart += stepSize) {
+        double currentY = computeFun(tStart);
+        outFile << tStart << "\t" << currentY << endl;
+    }
+
+    outFile.close();
+
+}
+
 t_executor_res TrajectoryBasedReward::getOptimalTraj(double tmax) {
 	
 	t_executor_res ret;

@@ -3,6 +3,24 @@
 using namespace std;
 using namespace arma;
 
+SegmentationTestingRewardComputer::SegmentationTestingRewardComputer(double height, double slope) {
+    this->height = height;
+    this->slope = slope;
+}
+
+double SegmentationTestingRewardComputer::computeFun(double t) {
+
+    double center = 1.0;
+    double width = 1.2;
+    double endGaussian = 3.0;
+
+    if(t > endGaussian)
+        return (height * exp(- pow((t - center), 2) / width) + 0.1 * height * slope * (t - endGaussian));
+    else
+        return height * exp(- pow((t - center), 2) / width);
+
+}
+
 PouringRewardComputer::PouringRewardComputer(double targetWeight) {
     this->targetWeight = targetWeight;
 }

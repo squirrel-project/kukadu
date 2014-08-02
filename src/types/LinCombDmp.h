@@ -35,6 +35,7 @@ public:
 	
 	void setCurrentQueryPoint(arma::vec currQuery);
 	arma::vec getCurrentQueryPoint();
+    arma::vec getTimeCenters();
 	
 	
 	std::vector<arma::vec> getCoefficients();

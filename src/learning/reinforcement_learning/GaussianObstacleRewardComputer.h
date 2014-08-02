@@ -25,7 +25,7 @@ public:
 	
 };
 
-class GraspingRewardComputer : public CostComputer{
+class GraspingRewardComputer : public CostComputer {
 
 private:
 	
@@ -53,6 +53,20 @@ public:
     PouringRewardComputer(double targetWeight);
 
     double computeCost(t_executor_res results);
+
+};
+
+class SegmentationTestingRewardComputer : public TrajectoryBasedReward {
+
+private:
+
+    double height;
+    double slope;
+
+public:
+
+    SegmentationTestingRewardComputer(double height, double slope);
+    double computeFun(double t);
 
 };
 

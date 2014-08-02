@@ -145,6 +145,22 @@ double DictionaryGeneralizer::getCurrentTime() {
 	return currentTime;
 }
 
+int DictionaryGeneralizer::computeClosestT(double t, arma::vec times) {
+
+    double currentDist = abs(times(0) - t);
+    int currentT = 0;
+
+    for(int i = 0; i < times.n_elem; ++i) {
+        if(currentDist > abs(times(i) - t)) {
+            currentDist = abs(times(i) - t);
+            currentT = i;
+        }
+    }
+
+    return currentT;
+
+}
+
 // TODO: find out why metric can produce negative distances after reinforcement learning
 t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, double ac, double as, int simulate) {
 	
@@ -153,6 +169,14 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 	currentTime = 0.0;
 	int points = getQueryPointCount();
     int degOfFreedom = dictTraj->getDegreesOfFreedom();
+
+
+    vec timeCenters = dictTraj->getTimeCenters();
+    int centersCount = timeCenters.n_elem;
+    int querySize = query.n_elem;
+    vec extendedQuery(centersCount * querySize);
+    vec extendedCurrentDatabaseQuery(centersCount * querySize);
+    vec extendedCurrentQuery(centersCount * querySize);
 
 	vector<DMPExecutor*> execs;
 	currentQuery = query;
@@ -187,26 +211,57 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 		
 	}
 
-/*
-    mat Z = columnToSquareMatrix(dictTraj->getCoefficients().at(0));
-    mat M = Z.t() * Z;
-    M = M / M(0,0);
-    Mahalanobis metric(M);
-    */
-
     vector<Mahalanobis> metrics = dictTraj->getMetric();
-//    cout << "blub" << metrics.size() << endl;
-//    cout << metrics.at(0).getM() << endl << endl;
-
-//    cout << "(DictionaryGeneralizer) using metric:" << endl << metric.getM() << endl;
-
-
-//    Mahalanobis metric(columnToSymmetricMatrix(dictTraj->getCoefficients().at(0)));
-
     bool stopExecution = false;
 
+    int extendedMetricSize = querySize * centersCount;
+    mat extendedMetricMat(extendedMetricSize, extendedMetricSize);
+    extendedMetricMat.fill(0.0);
+
+    for(int i = 0; i < centersCount; ++i) {
+        mat currentMetric = metrics.at(i).getM();
+        for(int j = 0; j < querySize; ++j) {
+            for(int k = 0; k < querySize; ++k) {
+                extendedMetricMat(i * querySize + j, i * querySize + k) = currentMetric(j, k);
+            }
+        }
+    }
+
+    int correspondingIdx = -1;
+    int oldCorrespondingIdx = -1;
+    extendedQuery.fill(0.0);
+    Mahalanobis extendedMetric(extendedMetricMat);
+//    cout << extendedMetricMat << endl;
+//    cout << extendedMetric.getM() << endl;
+//    cout << "==============" << endl;
 	// execute dmps and compute linear combination
     for(; currentTime < tEnd && !stopExecution; currentTime += stepSize) {
+
+        oldCorrespondingIdx = correspondingIdx;
+        correspondingIdx = computeClosestT(currentTime, timeCenters);
+
+        if(oldCorrespondingIdx != correspondingIdx) {
+
+            for(int i = 0; i < centersCount; ++i) {
+                double currentQueryWeight = 0.0;
+    //            double currentSigma = 1.0;
+    //            currentQueryWeight = exp(-pow(currentTime - timeCenters(i), 2) / currentSigma);
+
+                if(i == correspondingIdx) {
+                    currentQueryWeight = 1.0;
+                } else {
+                    currentQueryWeight = 0.0;
+                }
+
+                for(int j = 0; j < querySize; ++j) {
+                    extendedQuery(i * querySize + j) = currentQuery(j) * currentQueryWeight;
+                }
+
+            }
+
+            firstTime = true;
+
+        }
 
 		vec distanceCoeffs(points);
 		vec nextJoints(degOfFreedom);
@@ -216,12 +271,33 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 		switcherMutex.lock();
 
 			// if loop is executed first time, initialize everything
-			if(firstTime) {
+            if(firstTime) {
 
                 // compute all distances
                 for(int i = 0; i < points; ++i) {
-                    double currCoeff = metrics.at(0).computeSquaredDistance(dictTraj->getQueryPoints().at(i).getQueryPoint(), currentQuery);
+
+                    extendedCurrentDatabaseQuery.fill(0.0);
+                    vec currentDatabaseQuery = dictTraj->getQueryPoints().at(i).getQueryPoint();
+                    for(int k = 0; k < centersCount; ++k) {
+                        for(int l = 0; l < querySize; ++l) {
+
+                            double currentQueryWeight = 0.0;
+                            if(k == correspondingIdx) {
+                                currentQueryWeight = 1.0;
+                            } else {
+                                currentQueryWeight = 0.0;
+                            }
+
+                            extendedCurrentDatabaseQuery(k * querySize + l) = currentDatabaseQuery(l) * currentQueryWeight;
+                        }
+                    }
+
+                    double currCoeff = extendedMetric.computeSquaredDistance(extendedCurrentDatabaseQuery, extendedQuery);
                     distanceCoeffs(i) = currCoeff;
+
+                    // normalize distances TODO: improve this
+                    distanceCoeffs(i) = distanceCoeffs(i) / distanceCoeffs(0);
+
                 }
 
                 // compute average distance
@@ -238,21 +314,26 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
                     currentCoefficients(i) = currCoeff;
                 //    cout << currCoeff << " is the weight for qp: " << dictTraj->getQueryPoints().at(i).getQueryPoint().t() << endl;
                 }
-				
+
+           //     cout << distanceCoeffs.t();
+           //     cout << currentCoefficients.t();
+
 				// drop trajectories that are too far away
                 double tolerableDistance = avgDist * maxRelativeToMeanDistance;
+           //     cout << avgDist << " " << tolerableDistance << endl;
                 for(int i = 0; i < points; ++i) {
                     double currCoeff = distanceCoeffs(i);
                     if(currCoeff > tolerableDistance) {
 						currentCoefficients(i) = 0.0;
                     }
                 }
+            //    cout << currentCoefficients.t() << endl << endl << endl << endl;
 
 				oldCoefficients = newCoefficients = currentCoefficients;
 				
 				firstTime = 0;
 				
-			}
+            }
 
             if(dot(currentCoefficients, currentCoefficients) == 0.0) {
                 string errStr = "(DictionaryGeneralizer) all coefficients are 0, please check your settings";
@@ -339,7 +420,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 		retT.push_back(currentTime);
 		
 	}
-	
+
 	for(int i = 0; i < degOfFreedom; ++i)
 		ret.y.push_back(stdToArmadilloVec(retY[i]));
 	

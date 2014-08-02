@@ -1,5 +1,5 @@
-#ifndef DICTIONARYGENERALIZER
-#define DICTIONARYGENERALIZER
+#ifndef TIMEDEPDICTIONARYGENERALIZER
+#define TIMEDEPDICTIONARYGENERALIZER
 
 #include <armadillo>
 #include <vector>
@@ -19,55 +19,31 @@
 #include "../robot/ControlQueue.h"
 #include "DMPExecutor.h"
 #include "DMPGeneralizer.h"
+#include "DictionaryGeneralizer.h"
 
 /** \brief 
  * 
  * 
  * \ingroup ControlPolicyFramework
  */
-class DictionaryGeneralizer : public TrajectoryExecutor {
+class TimeDepDictionaryGeneralizer : public DictionaryGeneralizer {
 
 private:
-	
-	int newQpSwitch;
-    int firstTime;
-	double as;
-	double switchTime;
-    double alpham;
-	arma::vec oldCoefficients;
-	arma::vec newCoefficients;
-	arma::vec currentCoefficients;
-	
-	std::mutex switcherMutex;
-	
-	LinCombDmp* dictTraj;
-	
-	double stepSize;
-	double tolAbsErr;
-	double tolRelErr;
-	double tEnd;
-	double ac;
-	
-	double currentTime;
-	
-	double maxRelativeToMeanDistance;
-	
-    ControlQueue* simulationQueue;
-    ControlQueue* executionQueue;
-	
-	arma::vec currentQuery;
+
+    std::vector<double> timeCenters;
 	
     t_executor_res executeGen(arma::vec query, double tEnd, double ac, double as, int simulate);
-    int computeClosestT(double t, arma::vec times);
 
 public:
-	
-    DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, ControlQueue* simulationQueue, ControlQueue* executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz,
+    /*
+    TimeDepDictionaryGeneralizer(std::vector<double> timeCenters, arma::vec initQueryPoint, ControlQueue* simulationQueue, ControlQueue* executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz,
                   double stepSize, double tolAbsErr, double tolRelErr, double ax, double tau, double ac, arma::vec trajMetricWeights, double maxRelativeToMeanDistance, double as, double alpham);
 	
-    DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, ControlQueue* simulationQueue, ControlQueue* executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz,
+    TimeDepDictionaryGeneralizer(std::vector<double> timeCenters, arma::vec initQueryPoint, ControlQueue* simulationQueue, ControlQueue* executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz,
                   double stepSize, double tolAbsErr, double tolRelErr, double ax, double tau, double ac, double as, arma::mat metric, double maxRelativeToMeanDistance, double alpham);
 	
+                  */
+    /*
 	t_executor_res simulateTrajectory();
 	t_executor_res executeTrajectory();
 	
@@ -82,6 +58,7 @@ public:
     void setAs(double as);
 
 	double getCurrentTime();
+    */
 	
 };
 

@@ -59,6 +59,11 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 		
 	}
 
+    /*
+    for(int m = 0; m < rollout.size(); ++m)
+        cout << "blau: " << rollout.at(m)->getCoefficients().at(0).t() << endl;
+    */
+
 	lastCost.clear();
 	dmpResult.clear();
 
@@ -84,7 +89,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
             simRes = trajEx->simulateTrajectory();
 
             if(!doExecution) {
-                dmpResult.push_back(simRes);
+            //    dmpResult.push_back(simRes);
                 if(isFirstIteration)
                     lastUpdateRes = simRes;
             }
@@ -149,6 +154,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
     Trajectory* tmpUpdate = lastUpdate->copy();
     t_executor_res tmpRes = lastUpdateRes;
     lastUpdate = updateStep();
+
     trajEx->setTrajectory(lastUpdate);
     vec startingPos = lastUpdate->getStartingPos();
     double* tmp = new double[lastUpdate->getDegreesOfFreedom()];
@@ -196,7 +202,6 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 
     }
 
-    /*
     // TODO: this is a hack!!!! repair it (power cannot directly be applied to metric learning) --> results can get worse instead of better
     if(lastUpdateCost < tmpCost) {
 
@@ -206,15 +211,15 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 		
 		// get best reward
 		for(int i = 0; i < lastCost.size(); ++i) {
-			if(lastCost.at(i) > tmpCost) {
+            if(lastCost.at(i) > tmpCost) {
 				lastUpdateCost = lastCost.at(i);
 				lastUpdate = rollout.at(i);
 				lastUpdateRes = dmpResult.at(i);
-			}
+            }
 		}
 
     }
-*/
+
     isFirstIteration = false;
 	
     cout << "(DMPReinforcer) last update reward/cost: " << lastUpdateCost << endl;

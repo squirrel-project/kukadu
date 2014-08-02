@@ -4,6 +4,8 @@
 #include <armadillo>
 #include <vector>
 #include <cmath>
+#include <iostream>
+#include <fstream>
 
 #include "CostComputer.h"
 #include "../../utils/types.h"
@@ -22,6 +24,7 @@ public:
 	
 	t_executor_res getOptimalTraj(double tmax);
 	arma::vec computeFun(arma::vec t);
+    void writeToFile(std::string file, double tStart, double tEnd, double stepSize);
 	
 	virtual double computeFun(double t) = 0;
 	
