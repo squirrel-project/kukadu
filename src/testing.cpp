@@ -59,10 +59,10 @@ int main(int argc, char** args) {
             SegmentationTestingRewardComputer comp(height, slope);
             string heightString = double_to_string(height);
             string slopeString = double_to_string(slope);
-            comp.writeToFile("/home/c7031109/newTrajs/traj_" + heightString + "_" + slopeString + ".txt", 0, 5, 0.001);
+            comp.writeToFile(resolvePath("$KUKADU_HOME/movements/iros2014/artificial_part2/traj_" + heightString + "_" + slopeString + ".txt"), 1.5, 3, 0.001);
 
             ofstream outFile;
-            outFile.open("/home/c7031109/newTrajs/query_" + heightString + "_" + slopeString + ".txt");
+            outFile.open(resolvePath("$KUKADU_HOME/movements/iros2014/artificial_part2/query_" + heightString + "_" + slopeString + ".txt"));
 
             outFile << heightString << "\t" << slopeString << endl;
             outFile.close();

@@ -23,7 +23,7 @@
 #include "../include/kukadu.h"
 #include "../src/utils/gnuplot-cpp/gnuplot_i.hpp"
 
-#define DOSIMULATION 0
+#define DOSIMULATION 1
 
 using namespace std;
 using namespace arma;
@@ -56,7 +56,7 @@ double ac = 10;
 
 int main(int argc, char** args) {
 
-    int mode = 2;
+    int mode = 4;
 
     if(mode == 1) {
 
@@ -97,7 +97,7 @@ int main(int argc, char** args) {
 
         testHumanoidsGrasping(queue);
 
-    } else if (mode == 4) {
+    } else if(mode == 4) {
 
         ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
         OrocosControlQueue* simulationQueue = NULL;
@@ -105,7 +105,7 @@ int main(int argc, char** args) {
 
         simulationQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime, "simulation", "left_arm", *node);
         //executionQueue == NULL;
-        executionQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime, "real", "left_arm", *node);
+        executionQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime, "simulation", "left_arm", *node);
 
         simulationQueue->startQueueThread();
         simulationQueue->switchMode(10);
@@ -116,6 +116,17 @@ int main(int argc, char** args) {
         }
 
         testHumanoidsPouring(simulationQueue, executionQueue);
+
+    } else if(mode == 5) {
+
+        ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
+        PlottingControlQueue* queue = NULL;
+        queue = new PlottingControlQueue(1, kukaStepWaitTime);
+
+        queue->startQueueThread();
+        queue->switchMode(10);
+
+        testSegmentationArtificialData(queue);
 
     }
     getch();
@@ -169,13 +180,14 @@ void testHumanoidsArtificialData(ControlQueue* queue) {
 
     // for different trajectories, you have to change the reward computer (not the gaussian computer)
     std::string inDir = resolvePath("$KUKADU_HOME/movements/iros2014/2d_extended_gen/");
+//    std::string inDir = resolvePath("$KUKADU_HOME/movements/iros2014/artificial_complete/");
 
     vector<double> irosmys = {0, 1, 2, 3, 4, 5};
     vector<double> irossigmas = {0.3, 0.8};
 
-    //vec timeCenters(1); timeCenters(0) = 2.0;
+    vec timeCenters(1); timeCenters(0) = 2.0;
     //vec timeCenters(2); timeCenters(0) = 2.0; timeCenters(1) = 5.0;
-    vec timeCenters(3); timeCenters(0) = 1.0; timeCenters(1) = 2.0; timeCenters(1) = 5.0;
+    //vec timeCenters(3); timeCenters(0) = 1.0; timeCenters(1) = 2.0; timeCenters(1) = 5.0;
 
     vector<double> rlExploreSigmas = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
     // 2 * number of parameters (http://www.scholarpedia.org/article/Policy_gradient_methods#Finite-difference_Methods)
@@ -186,7 +198,7 @@ void testHumanoidsArtificialData(ControlQueue* queue) {
 
     int columns = 2;
 
-    vec trajMetricWeights(7);
+    vec trajMetricWeights(1);
     trajMetricWeights.fill(1.0);
 
     tau = 5.0;
@@ -211,8 +223,8 @@ void testHumanoidsArtificialData(ControlQueue* queue) {
     m(0, 1) = -0.2093;
     m(1, 1) = 0.0590;
 
-//    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
-    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
+    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
+//    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
 
     std::vector<Trajectory*> initTraj;
     initTraj.push_back(dmpGen->getTrajectory());
@@ -344,7 +356,7 @@ void testHumanoidsPouring(OrocosControlQueue* simulationQueue, OrocosControlQueu
     trajMetricWeights.fill(1.0);
 
     float tmp = 0.1;
-    double relativeDistanceThresh = 0.6;
+    double relativeDistanceThresh = 0.4;
 
     vec newQueryPoint(2);
     newQueryPoint(0) = 9;
@@ -392,8 +404,9 @@ void testHumanoidsPouring(OrocosControlQueue* simulationQueue, OrocosControlQueu
     cout << newQueryPoint << endl;
     //cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
 
+
     LinCombDmp* lastRollout = NULL;
-    GradientDescent pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, reward, simulationQueue, executionQueue, ac, dmpStepSize, tolAbsErr, tolRelErr);
+    PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, reward, simulationQueue, executionQueue, ac, dmpStepSize, tolAbsErr, tolRelErr);
 
     g1 = new Gnuplot("PoWER demo");
 
@@ -693,21 +706,21 @@ void testSegmentationArtificialData(ControlQueue* queue) {
 
     // for different trajectories, you have to change the reward computer (not the gaussian computer)
     // std::string inDir = resolvePath("$KUKADU_HOME/movements/iros2014/2d_extended_gen/");
-    std::string inDir = resolvePath("/home/c7031109/newTrajs/");
+    std::string inDir = resolvePath("$KUKADU_HOME/movements/iros2014/artificial_complete/");
 
-    vector<double> irosmys = {0, 1, 2, 3, 4, 5};
+    vector<double> irosmys = {0, 1};
     vector<double> irossigmas = {0.3, 0.8};
 
-    vec timeCenters(2);
-    timeCenters(0) = 1.0;
-    timeCenters(1) = 4.0;
+    //vec timeCenters(1); timeCenters(0) = 1.0;
+    vec timeCenters(2); timeCenters(0) = 1.0; timeCenters(1) = 5.0;
+    //vec timeCenters(3); timeCenters(1) = 1.0; timeCenters(1) = 2.5; timeCenters(2) = 4.0;
 
-    vector<double> rlExploreSigmas = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+    vector<double> rlExploreSigmas = {0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05};
     // 2 * number of parameters (http://www.scholarpedia.org/article/Policy_gradient_methods#Finite-difference_Methods)
     int rolloutsPerUpdate = 2 * 4 * timeCenters.n_elem;
     int importanceSamplingCount = 5;
 
-    double alpham = 1;
+    double alpham = 1.0;
 
     int columns = 2;
 
@@ -717,28 +730,26 @@ void testSegmentationArtificialData(ControlQueue* queue) {
     tau = 5.0;
     float tmp = 0.1;
     double ax = -log(tmp) / tau / tau;
-    double relativeDistanceThresh = 0.4;
+    double relativeDistanceThresh = 0.6;
 
     vec newQueryPoint(2);
     newQueryPoint(0) = 1.6;
     newQueryPoint(1) = 6.5;
 
-    // wrong reward computer for real robot trajectory!!!!!!!!!!!!!!
-    //GaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1));
     SegmentationTestingRewardComputer reward(6, 2.5);
 
-    cout << "execute ground truth for (1.6, 7)" << endl;
-    t_executor_res opt = reward.getOptimalTraj(5.0);
+    cout << "execute ground truth for (6, 2.5)" << endl;
+    t_executor_res opt = reward.getOptimalTraj(0, 5);
 
     // speedup testing process by inserting already learned metric result
     mat m(2,2);
     m(0, 0) = 1.0;
-    m(1, 0) = 0.1538;
-    m(0, 1) = 0.1538;
-    m(1, 1) = 1.9964;
+    m(1, 0) = 0;
+    m(0, 1) = 0;
+    m(1, 1) = 1;
 
-    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
-//    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
+//    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
+    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
 
     std::vector<Trajectory*> initTraj;
     initTraj.push_back(dmpGen->getTrajectory());
@@ -747,6 +758,7 @@ void testSegmentationArtificialData(ControlQueue* queue) {
     //cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
 
     LinCombDmp* lastRollout = NULL;
+
     PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, queue, queue, ac, dmpStepSize, tolAbsErr, tolRelErr);
 //    GradientDescent pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, queue, queue, ac, dmpStepSize, tolAbsErr, tolRelErr);
 
@@ -758,17 +770,17 @@ void testSegmentationArtificialData(ControlQueue* queue) {
     vector<vec> initY;
 
     vector<double> lastRewards;
-    while( true ) {
+    while( i < 50 ) {
 
         pow.performRollout(1, 0);
         lastRollout = dynamic_cast<LinCombDmp*>(pow.getLastUpdate());
         vector<Mahalanobis> metrics = lastRollout->getMetric();
 
+        //cout << "(mainScrewOrocos) last update metric: " << lastRollout->getMetric().getM() << endl;
+
         cout << "used metrics: " << endl;
         for(int i = 0; i < metrics.size(); ++i)
             cout << metrics.at(i).getM() << endl;
-
-        //cout << "(mainScrewOrocos) last update metric: " << lastRollout->getMetric().getM() << endl;
 
         if(i == 0) {
             initT = pow.getLastUpdateRes().t;
@@ -784,10 +796,12 @@ void testSegmentationArtificialData(ControlQueue* queue) {
                 ostringstream convert;   // stream used for the conversion
                 convert << plotTraj;
 
+                g1->set_xlabel("time");
+                g1->set_ylabel("y");
                 string title = string("fitted sensor data (joint") + convert.str() + string(")");
-                g1->set_style("lines").plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[plotTraj]), "optimal trajectoy");
-                g1->set_style("lines").plot_xy(armadilloToStdVec(initT), armadilloToStdVec(initY[plotTraj]), "initial trajectoy");
-                g1->set_style("lines").plot_xy(armadilloToStdVec(pow.getLastUpdateRes().t), armadilloToStdVec(pow.getLastUpdateRes().y[plotTraj]), "generalized trajectory");
+                g1->set_style("lines lw 3").plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[plotTraj]), "optimal trajectoy");
+                g1->set_style("lines lw 3").plot_xy(armadilloToStdVec(initT), armadilloToStdVec(initY[plotTraj]), "initial trajectoy");
+                g1->set_style("lines lw 3").plot_xy(armadilloToStdVec(pow.getLastUpdateRes().t), armadilloToStdVec(pow.getLastUpdateRes().y[plotTraj]), "generalized trajectory");
                 g1->showonscreen();
 
             }
@@ -840,5 +854,6 @@ void testSegmentationArtificialData(ControlQueue* queue) {
         delete g1;
 
     }
+
 
 }

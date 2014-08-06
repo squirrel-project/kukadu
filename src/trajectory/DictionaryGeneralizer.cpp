@@ -65,39 +65,12 @@ void DictionaryGeneralizer::switchQueryPoint(vec query) {
 
     int points = getQueryPointCount();
     vec tmpNewCoefficients(points);
-    vec tmpCurrentCoefficients(points);
 
-    mat Z = columnToSquareMatrix(dictTraj->getCoefficients().at(0));
-    mat M = Z.t() * Z;
-    M = M / M(0,0);
-    Mahalanobis metric(M);
+    int correspondingIdx = computeClosestT(currentTime, dictTraj->getTimeCenters());
 
-    vec distanceCoeffs(points);
-
-    // compute all distances
-    for(int i = 0; i < points; ++i) {
-        double currCoeff = metric.computeSquaredDistance(dictTraj->getQueryPoints().at(i).getQueryPoint(), query);
-        distanceCoeffs(i) = currCoeff;
-    }
-
-    // compute average distance
-    double avgDist = 0.0;
-    for(int i = 0; i < points; ++i)
-        avgDist += distanceCoeffs(i);
-
-    avgDist = avgDist / points;
-
-    for(int i = 0; i < points; ++i)
-        tmpNewCoefficients(i) = 1 / exp(alpham * distanceCoeffs(i));
-
-    // drop trajectories that are too far away
-    double tolerableDistance = avgDist * maxRelativeToMeanDistance;
-    for(int i = 0; i < points; ++i) {
-        double currCoeff = distanceCoeffs(i);
-        if(currCoeff > tolerableDistance) {
-            tmpNewCoefficients(i) = 0.0;
-        }
-    }
+    currentQuery = query;
+    extendedQuery = computeExtendedQuery(currentTime, correspondingIdx, query);
+    tmpNewCoefficients = computeNewCoefficients(dictTraj->getMetric().at(0), correspondingIdx, extendedQuery);
 	
 	switcherMutex.lock();
 
@@ -161,6 +134,88 @@ int DictionaryGeneralizer::computeClosestT(double t, arma::vec times) {
 
 }
 
+arma::vec DictionaryGeneralizer::computeNewCoefficients(Mahalanobis metric, int correspondingIdx, arma::vec query) {
+
+    int points = getQueryPointCount();
+    vec distanceCoeffs(points);
+    vec weightCoeffs(points);
+
+    vec extendedCurrentDatabaseQuery(query.n_elem);
+
+    // compute all distances
+    for(int i = 0; i < points; ++i) {
+
+        extendedCurrentDatabaseQuery.fill(0.0);
+        extendedCurrentDatabaseQuery = computeExtendedQuery(currentTime, correspondingIdx, dictTraj->getQueryPoints().at(i).getQueryPoint());
+
+        double currCoeff = metric.computeSquaredDistance(extendedCurrentDatabaseQuery, extendedQuery);
+        distanceCoeffs(i) = currCoeff;
+
+    }
+
+    // normalize distances TODO: improve this
+    distanceCoeffs = distanceCoeffs / distanceCoeffs.max();
+
+    // compute average distance
+    double avgDist = 0.0;
+    for(int i = 0; i < points; ++i)
+        avgDist += distanceCoeffs(i);
+
+    avgDist = avgDist / points;
+
+    dictTraj->setCurrentQueryPoint(currentQuery);
+
+    for(int i = 0; i < points; ++i) {
+        double currCoeff = 1 / exp(alpham * distanceCoeffs(i));
+        weightCoeffs(i) = currCoeff;
+    }
+
+    // drop trajectories that are too far away
+    double tolerableDistance = avgDist * maxRelativeToMeanDistance;
+
+    for(int i = 0; i < points; ++i) {
+        double currCoeff = distanceCoeffs(i);
+        if(currCoeff > tolerableDistance) {
+            weightCoeffs(i) = 0.0;
+        }
+    }
+
+    return distanceCoeffs;
+
+}
+
+arma::vec DictionaryGeneralizer::computeExtendedQuery(double time, arma::vec query) {
+    int correspondingIdx = computeClosestT(time, dictTraj->getTimeCenters());
+    return computeExtendedQuery(time, correspondingIdx, query);
+}
+
+arma::vec DictionaryGeneralizer::computeExtendedQuery(double time, int correspondingIdx, arma::vec query) {
+
+    vec timeCenters = dictTraj->getTimeCenters();
+    int centersCount = timeCenters.n_elem;
+    int querySize = query.n_elem;
+    vec extendedQuery(centersCount * querySize);
+
+    for(int i = 0; i < centersCount; ++i) {
+
+        double currentQueryWeight = 0.0;
+
+        if(i == correspondingIdx) {
+            currentQueryWeight = 1.0;
+        } else {
+            currentQueryWeight = 0.0;
+        }
+
+        for(int j = 0; j < querySize; ++j) {
+            extendedQuery(i * querySize + j) = query(j) * currentQueryWeight;
+        }
+
+    }
+
+    return extendedQuery;
+
+}
+
 // TODO: find out why metric can produce negative distances after reinforcement learning
 t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, double ac, double as, int simulate) {
 	
@@ -170,13 +225,9 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 	int points = getQueryPointCount();
     int degOfFreedom = dictTraj->getDegreesOfFreedom();
 
-
     vec timeCenters = dictTraj->getTimeCenters();
     int centersCount = timeCenters.n_elem;
     int querySize = query.n_elem;
-    vec extendedQuery(centersCount * querySize);
-    vec extendedCurrentDatabaseQuery(centersCount * querySize);
-    vec extendedCurrentQuery(centersCount * querySize);
 
 	vector<DMPExecutor*> execs;
 	currentQuery = query;
@@ -209,7 +260,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 		
 		execs.push_back(currentExec);
 		
-	}
+    }
 
     vector<Mahalanobis> metrics = dictTraj->getMetric();
     bool stopExecution = false;
@@ -227,13 +278,25 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
         }
     }
 
+    //extendedMetricMat(0,0) = 1.0; extendedMetricMat(0,1) = 1.0; extendedMetricMat(1,0) = 1.0; extendedMetricMat(1,1) = 1.0;
+
+    // for segmentation test
+//    extendedMetricMat(0,0) = 1.0; extendedMetricMat(0,1) = 0.9589; extendedMetricMat(1,0) = 0.9589; extendedMetricMat(1,1) = 0.9449;
+//    extendedMetricMat(2,2) = 1.0; extendedMetricMat(2,3) = 0.7364; extendedMetricMat(3,2) = 0.7364; extendedMetricMat(3,3) = 4.1484;
+
+
+    // erste matrix (beginn), zweite matrix (ende)
+    /*
+    extendedMetricMat(0,0) = 1.0; extendedMetricMat(0,1) = 1.0; extendedMetricMat(1,0) = 1.0; extendedMetricMat(1,1) = 1.0;
+    extendedMetricMat(2,2) = 1.0; extendedMetricMat(2,3) = 1.0; extendedMetricMat(3,2) = 1.0; extendedMetricMat(3,3) = 1.0;
+    extendedMetricMat(4,4) = 1.0; extendedMetricMat(4,5) = 1.4333; extendedMetricMat(5,4) = 1.4333; extendedMetricMat(5, 5) = 2.0938;
+    */
+
     int correspondingIdx = -1;
     int oldCorrespondingIdx = -1;
     extendedQuery.fill(0.0);
     Mahalanobis extendedMetric(extendedMetricMat);
-//    cout << extendedMetricMat << endl;
-//    cout << extendedMetric.getM() << endl;
-//    cout << "==============" << endl;
+
 	// execute dmps and compute linear combination
     for(; currentTime < tEnd && !stopExecution; currentTime += stepSize) {
 
@@ -242,23 +305,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 
         if(oldCorrespondingIdx != correspondingIdx) {
 
-            for(int i = 0; i < centersCount; ++i) {
-                double currentQueryWeight = 0.0;
-    //            double currentSigma = 1.0;
-    //            currentQueryWeight = exp(-pow(currentTime - timeCenters(i), 2) / currentSigma);
-
-                if(i == correspondingIdx) {
-                    currentQueryWeight = 1.0;
-                } else {
-                    currentQueryWeight = 0.0;
-                }
-
-                for(int j = 0; j < querySize; ++j) {
-                    extendedQuery(i * querySize + j) = currentQuery(j) * currentQueryWeight;
-                }
-
-            }
-
+            extendedQuery = computeExtendedQuery(currentTime, correspondingIdx, currentQuery);
             firstTime = true;
 
         }
@@ -273,64 +320,9 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 			// if loop is executed first time, initialize everything
             if(firstTime) {
 
-                // compute all distances
-                for(int i = 0; i < points; ++i) {
-
-                    extendedCurrentDatabaseQuery.fill(0.0);
-                    vec currentDatabaseQuery = dictTraj->getQueryPoints().at(i).getQueryPoint();
-                    for(int k = 0; k < centersCount; ++k) {
-                        for(int l = 0; l < querySize; ++l) {
-
-                            double currentQueryWeight = 0.0;
-                            if(k == correspondingIdx) {
-                                currentQueryWeight = 1.0;
-                            } else {
-                                currentQueryWeight = 0.0;
-                            }
-
-                            extendedCurrentDatabaseQuery(k * querySize + l) = currentDatabaseQuery(l) * currentQueryWeight;
-                        }
-                    }
-
-                    double currCoeff = extendedMetric.computeSquaredDistance(extendedCurrentDatabaseQuery, extendedQuery);
-                    distanceCoeffs(i) = currCoeff;
-
-                    // normalize distances TODO: improve this
-                    distanceCoeffs(i) = distanceCoeffs(i) / distanceCoeffs(0);
-
-                }
-
-                // compute average distance
-                double avgDist = 0.0;
-                for(int i = 0; i < points; ++i)
-                    avgDist += distanceCoeffs(i);
-
-                avgDist = avgDist / points;
-				
-				dictTraj->setCurrentQueryPoint(currentQuery);
-				
-                for(int i = 0; i < points; ++i) {
-                    double currCoeff = 1 / exp(alpham * distanceCoeffs(i));
-                    currentCoefficients(i) = currCoeff;
-                //    cout << currCoeff << " is the weight for qp: " << dictTraj->getQueryPoints().at(i).getQueryPoint().t() << endl;
-                }
-
-           //     cout << distanceCoeffs.t();
-           //     cout << currentCoefficients.t();
-
-				// drop trajectories that are too far away
-                double tolerableDistance = avgDist * maxRelativeToMeanDistance;
-           //     cout << avgDist << " " << tolerableDistance << endl;
-                for(int i = 0; i < points; ++i) {
-                    double currCoeff = distanceCoeffs(i);
-                    if(currCoeff > tolerableDistance) {
-						currentCoefficients(i) = 0.0;
-                    }
-                }
-            //    cout << currentCoefficients.t() << endl << endl << endl << endl;
-
+                currentCoefficients = computeNewCoefficients(extendedMetric, correspondingIdx, extendedQuery);
 				oldCoefficients = newCoefficients = currentCoefficients;
-				
+
 				firstTime = 0;
 				
             }

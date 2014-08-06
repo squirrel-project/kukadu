@@ -22,7 +22,8 @@ public:
 	TrajectoryBasedReward();
 	double computeCost(t_executor_res results);
 	
-	t_executor_res getOptimalTraj(double tmax);
+    t_executor_res getOptimalTraj(double tmax);
+    t_executor_res getOptimalTraj(double tmin, double tmax);
 	arma::vec computeFun(arma::vec t);
     void writeToFile(std::string file, double tStart, double tEnd, double stepSize);
 	

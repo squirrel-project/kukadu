@@ -39,18 +39,22 @@ void TrajectoryBasedReward::writeToFile(std::string file, double tStart, double 
 }
 
 t_executor_res TrajectoryBasedReward::getOptimalTraj(double tmax) {
+    return getOptimalTraj(0, tmax);
+}
+
+t_executor_res TrajectoryBasedReward::getOptimalTraj(double tmin, double tmax) {
 	
 	t_executor_res ret;
 	double step = 0.1;
 	this->tmax = tmax;
 	
-	int size = (int) ( (double) tmax / (double) step);
+    int size = (int) ( (double) (tmax - tmin) / (double) step);
 	
 	vec ys = vec(size);
 	ret.t = vec(size);
 	int i = 0;
-	for(double t = 0.0; i < size; t = t + step, ++i) {
-		 ret.t(i) = t;
+    for(double t = tmin; i < size; t = t + step, ++i) {
+         ret.t(i) = t - tmin;
 		 ys(i) = computeFun(t);
 	}
 	ret.y.push_back(ys);

@@ -7,6 +7,9 @@ bool rewardComparator (pair <double, Trajectory*> i, pair <double, Trajectory*> 
 
 PoWER::PoWER(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
 	
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    generator = std::default_random_engine(seed);
+
 	vector<double> intSigmas;
 	
 	// init sampler

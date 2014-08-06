@@ -99,7 +99,7 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
         double g = gs(currentSystem);
         arma::vec currentCoeffs = dmpCoeffs.at(currentSystem);
 		
-        if(t <= durationThresh) {
+        if(t <= (durationThresh - 1)) {
 			
             double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
             f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm)  + this->addTerm(t, y, i / 2, controlQueue);

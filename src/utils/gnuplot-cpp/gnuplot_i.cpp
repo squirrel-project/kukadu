@@ -1055,7 +1055,6 @@ Gnuplot& Gnuplot::cmd(const std::string &cmdstr)
     // flushed.  The stream remains open after this call.
     fflush(gnucmd);
 
-
     if( cmdstr.find("replot") != std::string::npos )
     {
         return *this;

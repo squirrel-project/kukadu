@@ -202,6 +202,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 
     }
 
+    /*
     // TODO: this is a hack!!!! repair it (power cannot directly be applied to metric learning) --> results can get worse instead of better
     if(lastUpdateCost < tmpCost) {
 
@@ -219,6 +220,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 		}
 
     }
+    */
 
     isFirstIteration = false;
 	

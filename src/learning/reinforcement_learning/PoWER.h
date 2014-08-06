@@ -36,7 +36,7 @@ private:
 	
 	std::vector<std::pair <double, Trajectory*>> sampleHistory;
 	
-	std::mt19937 generator;
+    std::default_random_engine generator;
 	std::vector<std::normal_distribution<double>> normals;
 	
 	std::vector<double> sigmas;

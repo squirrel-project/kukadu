@@ -56,9 +56,15 @@ private:
     ControlQueue* executionQueue;
 	
 	arma::vec currentQuery;
+    arma::vec extendedQuery;
 	
     t_executor_res executeGen(arma::vec query, double tEnd, double ac, double as, int simulate);
     int computeClosestT(double t, arma::vec times);
+
+    arma::vec computeExtendedQuery(double time, int correspondingIdx, arma::vec query);
+    arma::vec computeExtendedQuery(double time, arma::vec query);
+
+    arma::vec computeNewCoefficients(Mahalanobis metric, int correspondingIdx, arma::vec query);
 
 public:
 	
