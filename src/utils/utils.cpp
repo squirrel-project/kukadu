@@ -15,7 +15,7 @@ std::string resolvePath(std::string path) {
 
 }
 
-t_executor_res executeDemo(ControlQueue* movementQu, string file, int doSimulation, double az, double bz, int plotResults) {
+t_executor_res executeDemo(shared_ptr<ControlQueue> movementQu, string file, int doSimulation, double az, double bz, int plotResults) {
 
     return executeDemo(movementQu, file, doSimulation, az, bz, plotResults, 1.3 * 1e-2);
 
@@ -28,7 +28,7 @@ arma::vec createArmaVecFromDoubleArray(double* data, int n) {
     return ret;
 }
 
-t_executor_res executeDemo(ControlQueue* movementQu, string file, int doSimulation, double az, double bz, int plotResults, double dmpStepSize) {
+t_executor_res executeDemo(shared_ptr<ControlQueue> movementQu, string file, int doSimulation, double az, double bz, int plotResults, double dmpStepSize) {
 	
 	Gnuplot* g1 = NULL;
 	

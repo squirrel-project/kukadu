@@ -6,7 +6,7 @@
 using namespace std;
 using namespace arma;
 
-GenDMPReinforcer::GenDMPReinforcer(vec initialQueryPoint, CostComputer* cost, DMPGeneralizer* dmpGen, GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, ControlQueue* movementQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : DMPReinforcer(cost, movementQueue, ac, dmpStepSize, tolAbsErr, tolRelErr) {
+GenDMPReinforcer::GenDMPReinforcer(vec initialQueryPoint, CostComputer* cost, DMPGeneralizer* dmpGen, GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, std::shared_ptr<ControlQueue> movementQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : DMPReinforcer(cost, movementQueue, ac, dmpStepSize, tolAbsErr, tolRelErr) {
 	this->dmpGen = dmpGen;
 	this->trajectoryKernel = trajectoryKernel;
 	this->parameterKernel = parameterKernel;

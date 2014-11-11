@@ -4,6 +4,7 @@
 #include <armadillo>
 #include <vector>
 #include <cfloat>
+#include <memory>
 
 #include "../../trajectory/DMPExecutor.h"
 #include "CostComputer.h"
@@ -58,7 +59,7 @@ public:
 	 * \param tolAbsErr absolute tolerated error for numerical approximation
 	 * \param tolRelErr relative tolerated error for numerical approximation
 	 */
-	GenDMPReinforcer(arma::vec initialQueryPoint, CostComputer* cost, DMPGeneralizer* dmpGen, GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, ControlQueue* movementQueue,
+    GenDMPReinforcer(arma::vec initialQueryPoint, CostComputer* cost, DMPGeneralizer* dmpGen, GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, std::shared_ptr<ControlQueue> movementQueue,
 			 double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
 	
 	std::vector<Dmp> getInitialRollout();

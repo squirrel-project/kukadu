@@ -3,9 +3,9 @@
 using namespace arma;
 using namespace std;
 
-bool rewardComparator (pair <double, Trajectory*> i, pair <double, Trajectory*> j) { return (i.first > j.first); }
+bool rewardComparator (pair <double, std::shared_ptr<Trajectory>> i, pair <double, std::shared_ptr<Trajectory>> j) { return (i.first > j.first); }
 
-PoWER::PoWER(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
+PoWER::PoWER(TrajectoryExecutor* trajEx, std::vector<std::shared_ptr<Trajectory>> initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
 	
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     generator = std::default_random_engine(seed);
@@ -23,7 +23,7 @@ PoWER::PoWER(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, doubl
 	
 }
 
-PoWER::PoWER(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
+PoWER::PoWER(TrajectoryExecutor* trajEx, std::vector<std::shared_ptr<Trajectory>> initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
 
 	// init sampler
 
@@ -43,7 +43,7 @@ PoWER::PoWER(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, vecto
 
 }
 
-void PoWER::construct(std::vector<Trajectory*> initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) {
+void PoWER::construct(std::vector<std::shared_ptr<Trajectory>> initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) {
 	
 	setLastUpdate(initDmp.at(0));
 	
@@ -55,17 +55,17 @@ void PoWER::construct(std::vector<Trajectory*> initDmp, vector<double> explorati
 	
 }
 
-std::vector<Trajectory*> PoWER::getInitialRollout() {
-	vector<Trajectory*> ret;
+std::vector<std::shared_ptr<Trajectory>> PoWER::getInitialRollout() {
+    vector<std::shared_ptr<Trajectory>> ret;
 	ret.push_back(initDmp.at(0));
 	return ret;
 }
 
-std::vector<Trajectory*> PoWER::computeRolloutParamters() {
+std::vector<std::shared_ptr<Trajectory>> PoWER::computeRolloutParamters() {
 	
-	Trajectory* lastUp = getLastUpdate();
+    std::shared_ptr<Trajectory> lastUp = getLastUpdate();
 	vector<vec> dmpCoeffs = lastUp->getCoefficients();
-	vector<Trajectory*> nextCoeffs;
+    vector<std::shared_ptr<Trajectory>> nextCoeffs;
 	
 	for(int k = 0; k < updatesPerRollout; ++k) {
 	
@@ -90,7 +90,7 @@ std::vector<Trajectory*> PoWER::computeRolloutParamters() {
         //TODO: blew1 und blew2 do not deliver same result if there are more time centers (maybe not decompose whole extended M but single submatrices
 
 //        cout << "blew1: " << dmpCoeffs.at(0).t() << endl;
-		Trajectory* nextUp = lastUp->copy();
+        std::shared_ptr<Trajectory> nextUp = lastUp->copy();
         nextUp->setCoefficients(dmpCoeffs);
 //        cout << "blew2: " << nextUp->getCoefficients().at(0).t() << endl;
 		
@@ -102,19 +102,19 @@ std::vector<Trajectory*> PoWER::computeRolloutParamters() {
 	
 }
 
-Trajectory* PoWER::updateStep() {
+std::shared_ptr<Trajectory> PoWER::updateStep() {
 
-	Trajectory* lastUp = getLastUpdate();
+    std::shared_ptr<Trajectory> lastUp = getLastUpdate();
 
-	vector<Trajectory*> lastDmps = getLastRolloutParameters();
+    vector<std::shared_ptr<Trajectory>> lastDmps = getLastRolloutParameters();
 	vector<double> lastRewards = getLastRolloutCost();
-	
+
 	// add rollouts to history
 	for(int i = 0; i < lastRewards.size(); ++i) {
-		pair <double, Trajectory*> p(lastRewards.at(i), lastDmps.at(i));
-		sampleHistory.push_back(p);
+        pair <double, std::shared_ptr<Trajectory>> p(lastRewards.at(i), lastDmps.at(i));
+        sampleHistory.push_back(p);
 	}
-
+/*
 	// sort by reward...
 	sort(sampleHistory.begin(), sampleHistory.end(), rewardComparator);
 	
@@ -152,11 +152,12 @@ Trajectory* PoWER::updateStep() {
 	}
 
 	//Dmp newUp(lastUp);
-    Trajectory* newUp = lastUp->copy();
+    std::shared_ptr<Trajectory> newUp = lastUp->copy();
 	newUp->setCoefficients(newCoeffs);
 
 //	cout << newCoeffs.at(0).t() << endl;
 	
 	return newUp;
-	
+    */
 }
+

@@ -43,7 +43,7 @@ include_directories(
     $ENV{IIS_INCLUDE_PATH}/external_rosmake_ws/motion_control/motion_control_msgs/msg_gen/cpp/include
 )
 
-set(CMAKE_BUILD_TYPE RELEASE)
+set(CMAKE_BUILD_TYPE Debug)
 add_definitions(-DOSNAME_LINUX=1)
 add_definitions(-w)
 add_definitions(-std=c++0x)

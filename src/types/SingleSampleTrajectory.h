@@ -39,7 +39,7 @@ public:
 	
 	int operator==(SingleSampleTrajectory const& comp) const;
 	
-	virtual Trajectory* copy() = 0;
+    virtual std::shared_ptr<Trajectory> copy() = 0;
 	
 };
 

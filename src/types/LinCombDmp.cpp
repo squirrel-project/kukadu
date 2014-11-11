@@ -191,8 +191,8 @@ int LinCombDmp::operator==(LinCombDmp const& comp) const {
 	return 0;
 }
 
-Trajectory* LinCombDmp::copy() {
-	return new LinCombDmp(*this);
+std::shared_ptr<Trajectory> LinCombDmp::copy() {
+    return std::shared_ptr<Trajectory>(new LinCombDmp(*this));
 }
 
 std::vector<Mahalanobis> LinCombDmp::getMetric() {

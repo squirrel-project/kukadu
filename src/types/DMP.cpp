@@ -363,7 +363,7 @@ int Dmp::operator==(Dmp const& comp) const {
 	
 }
 
-Trajectory* Dmp::copy() {
-	return new Dmp(*this);
+std::shared_ptr<Trajectory> Dmp::copy() {
+    return std::shared_ptr<Trajectory>(new Dmp(*this));
 }
 

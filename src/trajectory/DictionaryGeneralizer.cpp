@@ -3,13 +3,13 @@
 using namespace std;
 using namespace arma;
 
-DictionaryGeneralizer::DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, ControlQueue* simulationQueue, ControlQueue* executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys,
+DictionaryGeneralizer::DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys,
 						std::vector<double> tmpsigmas, double az, double bz, double stepSize,
 						double tolAbsErr, double tolRelErr, double ax, double tau, double ac, arma::vec trajMetricWeights,
                          double maxRelativeToMeanDistance, double as, double alpham) {
 
     vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
-    dictTraj = new LinCombDmp(initQueryPoint.n_elem, degOfFreedom, dictionaryPath, baseDef, az, bz, trajMetricWeights, timeCenters);
+    dictTraj = std::shared_ptr<LinCombDmp>(new LinCombDmp(initQueryPoint.n_elem, degOfFreedom, dictionaryPath, baseDef, az, bz, trajMetricWeights, timeCenters));
 
     this->simulationQueue = simulationQueue;
     this->executionQueue = executionQueue;
@@ -22,7 +22,7 @@ DictionaryGeneralizer::DictionaryGeneralizer(arma::vec timeCenters, arma::vec in
 	this->newQpSwitch = 1;
 	
 	this->currentQuery = initQueryPoint;
-	this->tEnd = dictTraj->getTmax();
+    this->tEnd = dictTraj->getTmax();
 	this->ac = ac;
     this->as = as;
     this->alpham = alpham;
@@ -35,11 +35,12 @@ void DictionaryGeneralizer::setAs(double as) {
     this->as = as;
 }
 
-DictionaryGeneralizer::DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, ControlQueue* simulationQueue, ControlQueue* executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz,
+DictionaryGeneralizer::DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz,
                   double stepSize, double tolAbsErr, double tolRelErr, double ax, double tau, double ac, double as, arma::mat metric, double maxRelativeToMeanDistance, double alpham) {
 	
     vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
-    dictTraj = new LinCombDmp(initQueryPoint.n_elem, degOfFreedom, dictionaryPath, baseDef, az, bz, metric, timeCenters);
+
+    dictTraj = std::shared_ptr<LinCombDmp>(new LinCombDmp(initQueryPoint.n_elem, degOfFreedom, dictionaryPath, baseDef, az, bz, metric, timeCenters));
 
     this->simulationQueue = simulationQueue;
     this->executionQueue = executionQueue;
@@ -52,7 +53,7 @@ DictionaryGeneralizer::DictionaryGeneralizer(arma::vec timeCenters, arma::vec in
 	this->newQpSwitch = 1;
 	
 	this->currentQuery = initQueryPoint;
-	this->tEnd = dictTraj->getTmax();
+    this->tEnd = dictTraj->getTmax();
 	this->ac = ac;
 	this->as = as;
     this->alpham = alpham;
@@ -86,11 +87,11 @@ void DictionaryGeneralizer::switchQueryPoint(vec query) {
 }
 
 int DictionaryGeneralizer::getQueryPointCount() {
-	return dictTraj->getQueryPoints().size();
+    return dictTraj->getQueryPoints().size();
 }
 
 QueryPoint DictionaryGeneralizer::getQueryPointByIndex(int idx) {
-	return dictTraj->getQueryPoints().at(idx);
+    return dictTraj->getQueryPoints().at(idx);
 }
 
 int DictionaryGeneralizer::getDegOfFreedom() {
@@ -106,11 +107,11 @@ t_executor_res DictionaryGeneralizer::executeTrajectory() {
     return executeGen(currentQuery, tEnd, ac, as, 0);
 }
 
-void DictionaryGeneralizer::setTrajectory(Trajectory* traj) {
+void DictionaryGeneralizer::setTrajectory(std::shared_ptr<Trajectory> traj) {
 	
 	// TODO: check problem that occurred here with just casting and assigning pointer
-    dictTraj = (LinCombDmp*) dictTraj->copy();
-	dictTraj->setMetric((dynamic_cast<LinCombDmp*>(traj))->getMetric());
+    dictTraj = std::dynamic_pointer_cast<LinCombDmp>(dictTraj->copy());
+    dictTraj->setMetric(std::dynamic_pointer_cast<LinCombDmp>(traj)->getMetric());
 	
 }
 
@@ -284,14 +285,6 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 //    extendedMetricMat(0,0) = 1.0; extendedMetricMat(0,1) = 0.9589; extendedMetricMat(1,0) = 0.9589; extendedMetricMat(1,1) = 0.9449;
 //    extendedMetricMat(2,2) = 1.0; extendedMetricMat(2,3) = 0.7364; extendedMetricMat(3,2) = 0.7364; extendedMetricMat(3,3) = 4.1484;
 
-
-    // erste matrix (beginn), zweite matrix (ende)
-    /*
-    extendedMetricMat(0,0) = 1.0; extendedMetricMat(0,1) = 1.0; extendedMetricMat(1,0) = 1.0; extendedMetricMat(1,1) = 1.0;
-    extendedMetricMat(2,2) = 1.0; extendedMetricMat(2,3) = 1.0; extendedMetricMat(3,2) = 1.0; extendedMetricMat(3,3) = 1.0;
-    extendedMetricMat(4,4) = 1.0; extendedMetricMat(4,5) = 1.4333; extendedMetricMat(5,4) = 1.4333; extendedMetricMat(5, 5) = 2.0938;
-    */
-
     int correspondingIdx = -1;
     int oldCorrespondingIdx = -1;
     extendedQuery.fill(0.0);
@@ -349,7 +342,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 
         switcherMutex.unlock();
 
-        /**************actual computation of trajectory using coefficients***********/
+        // actual computation of trajectory using coefficients
         for(int i = 0; i < points; ++i) {
 
 			vec currJoints(degOfFreedom);
@@ -370,7 +363,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 
         }
 
-        ControlQueue* queue = NULL;
+        std::shared_ptr<ControlQueue> queue = NULL;
         if(simulate)
             queue = simulationQueue;
         else
@@ -416,6 +409,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 
 }
 
-Trajectory* DictionaryGeneralizer::getTrajectory() {
-	return dictTraj;
+std::shared_ptr<Trajectory> DictionaryGeneralizer::getTrajectory() {
+    return dictTraj;
 }
+

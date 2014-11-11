@@ -6,7 +6,7 @@
 using namespace std;
 using namespace arma;
 
-GeneralReinforcer::GeneralReinforcer(TrajectoryExecutor* trajEx, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue) {
+GeneralReinforcer::GeneralReinforcer(TrajectoryExecutor* trajEx, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue) {
 	
 	this->trajEx = trajEx;
 	this->cost = cost;
@@ -26,7 +26,7 @@ std::vector<double> GeneralReinforcer::getLastRolloutCost() {
 	return lastCost;
 }
 
-std::vector<Trajectory*> GeneralReinforcer::getLastRolloutParameters() {
+std::vector<std::shared_ptr<Trajectory>> GeneralReinforcer::getLastRolloutParameters() {
 	return rollout;
 }
 
@@ -147,7 +147,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 	}
 
 	double tmpCost = lastUpdateCost;
-    Trajectory* tmpUpdate = lastUpdate->copy();
+    std::shared_ptr<Trajectory> tmpUpdate = lastUpdate->copy();
     t_executor_res tmpRes = lastUpdateRes;
     lastUpdate = updateStep();
 
@@ -228,12 +228,12 @@ double GeneralReinforcer::getLastUpdateReward() {
 	return lastUpdateCost;
 }
 
-Trajectory* GeneralReinforcer::getLastUpdate() {
+std::shared_ptr<Trajectory> GeneralReinforcer::getLastUpdate() {
 	
 	return lastUpdate;
 	
 }
 
-void GeneralReinforcer::setLastUpdate(Trajectory* lastUpdate) {
+void GeneralReinforcer::setLastUpdate(std::shared_ptr<Trajectory> lastUpdate) {
 	this->lastUpdate = lastUpdate;
 }

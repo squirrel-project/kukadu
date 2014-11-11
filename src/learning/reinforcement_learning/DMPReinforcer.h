@@ -22,7 +22,7 @@ class DMPReinforcer {
 private:
 	
 	CostComputer* cost;
-	ControlQueue* movementQueue;
+    std::shared_ptr<ControlQueue> movementQueue;
 	
 	std::vector<Dmp> rollout;
 	std::vector<t_executor_res> dmpResult;
@@ -50,7 +50,7 @@ public:
 	 * \param tolAbsErr absolute tolerated error for numerical approximation
 	 * \param tolRelErr relative tolerated error for numerical approximation
 	 */
-	DMPReinforcer(CostComputer* cost, ControlQueue* movementQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
+    DMPReinforcer(CostComputer* cost, std::shared_ptr<ControlQueue> movementQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
 	
 	/**
 	 * \brief returns the first rollout of the reinforcement learning algorithm

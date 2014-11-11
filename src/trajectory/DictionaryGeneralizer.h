@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <mutex>
+#include <memory>
 
 #include "../utils/types.h"
 #include "../utils/utils.h"
@@ -40,7 +41,7 @@ private:
 	
 	std::mutex switcherMutex;
 	
-	LinCombDmp* dictTraj;
+    std::shared_ptr<LinCombDmp> dictTraj;
 	
 	double stepSize;
 	double tolAbsErr;
@@ -52,8 +53,8 @@ private:
 	
 	double maxRelativeToMeanDistance;
 	
-    ControlQueue* simulationQueue;
-    ControlQueue* executionQueue;
+    std::shared_ptr<ControlQueue> simulationQueue;
+    std::shared_ptr<ControlQueue> executionQueue;
 	
 	arma::vec currentQuery;
     arma::vec extendedQuery;
@@ -68,17 +69,17 @@ private:
 
 public:
 	
-    DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, ControlQueue* simulationQueue, ControlQueue* executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz,
+    DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz,
                   double stepSize, double tolAbsErr, double tolRelErr, double ax, double tau, double ac, arma::vec trajMetricWeights, double maxRelativeToMeanDistance, double as, double alpham);
 	
-    DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, ControlQueue* simulationQueue, ControlQueue* executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz,
+    DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz,
                   double stepSize, double tolAbsErr, double tolRelErr, double ax, double tau, double ac, double as, arma::mat metric, double maxRelativeToMeanDistance, double alpham);
 	
 	t_executor_res simulateTrajectory();
 	t_executor_res executeTrajectory();
 	
-	void setTrajectory(Trajectory* traj);
-	Trajectory* getTrajectory();
+    void setTrajectory(std::shared_ptr<Trajectory> traj);
+    std::shared_ptr<Trajectory> getTrajectory();
 	
 	int getQueryPointCount();
 	int getDegOfFreedom();

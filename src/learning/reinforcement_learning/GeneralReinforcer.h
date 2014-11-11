@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <thread>
+#include <memory>
 
 #include "CostComputer.h"
 #include "../../trajectory/TrajectoryExecutor.h"
@@ -23,12 +24,12 @@ class GeneralReinforcer {
 
 private:
 	
-	CostComputer* cost;
-    ControlQueue* simulationQueue;
-    ControlQueue* executionQueue;
+    std::shared_ptr<CostComputer> cost;
+    std::shared_ptr<ControlQueue> simulationQueue;
+    std::shared_ptr<ControlQueue> executionQueue;
 	TrajectoryExecutor* trajEx;
 	
-	std::vector<Trajectory*> rollout;
+    std::vector<std::shared_ptr<Trajectory>> rollout;
 	std::vector<t_executor_res> dmpResult;
 	
 	t_executor_res lastUpdateRes;
@@ -42,7 +43,7 @@ private:
 	double lastUpdateCost;
 	
 	std::vector<double> lastCost;
-	Trajectory* lastUpdate;
+    std::shared_ptr<Trajectory> lastUpdate;
 
 public:
 
@@ -55,24 +56,24 @@ public:
 	 * \param tolAbsErr absolute tolerated error for numerical approximation
 	 * \param tolRelErr relative tolerated error for numerical approximation
 	 */
-    GeneralReinforcer(TrajectoryExecutor* trajEx, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue);
+    GeneralReinforcer(TrajectoryExecutor* trajEx, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue);
 	
 	/**
 	 * \brief returns the first rollout of the reinforcement learning algorithm
 	 */
-	virtual std::vector<Trajectory*> getInitialRollout() = 0;
+    virtual std::vector<std::shared_ptr<Trajectory>> getInitialRollout() = 0;
 	
-	virtual Trajectory* updateStep() = 0;
+    virtual std::shared_ptr<Trajectory> updateStep() = 0;
 	
-	Trajectory* getLastUpdate();
-	void setLastUpdate(Trajectory* lastUpdate);
+    std::shared_ptr<Trajectory> getLastUpdate();
+    void setLastUpdate(std::shared_ptr<Trajectory> lastUpdate);
 	
 	/**
 	 * \brief computes the dmp parameters for the next rollout
 	 */
-	virtual std::vector<Trajectory*> computeRolloutParamters() = 0;
+    virtual std::vector<std::shared_ptr<Trajectory>> computeRolloutParamters() = 0;
 	
-	std::vector<Trajectory*> getLastRolloutParameters();
+    std::vector<std::shared_ptr<Trajectory>> getLastRolloutParameters();
 	std::vector<t_executor_res> getLastExecutionResults();
 	t_executor_res getLastUpdateRes();
 	double getLastUpdateReward();

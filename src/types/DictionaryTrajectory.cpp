@@ -188,6 +188,6 @@ arma::vec DictionaryTrajectory::getStartingPos() {
 		
 }
 
-Trajectory* DictionaryTrajectory::copy() {
-	return new DictionaryTrajectory(*this);
+std::shared_ptr<Trajectory> DictionaryTrajectory::copy() {
+    return std::shared_ptr<Trajectory>(new DictionaryTrajectory(*this));
 }

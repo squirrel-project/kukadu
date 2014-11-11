@@ -78,11 +78,10 @@ void testPower(ros::NodeHandle* node) {
     int importanceSamplingCount = 4;
     vector<double> rlExploreSigmas = {50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50};
 
-    GaussianObstacleRewardComputer reward(2, 2.0, 3);
-    t_executor_res opt = reward.getOptimalTraj(5.0, 0);
+    shared_ptr<GaussianObstacleRewardComputer> reward(new GaussianObstacleRewardComputer(2, 2.0, 3));
+    t_executor_res opt = reward->getOptimalTraj(5.0, 0);
 
-    PlottingControlQueue* queue = NULL;
-    queue = new PlottingControlQueue(1, kukaStepWaitTime);
+    std::shared_ptr<ControlQueue> queue = std::shared_ptr<ControlQueue>(new PlottingControlQueue(1, kukaStepWaitTime));
 
 
     string execFile = "$KUKADU_HOME/movements/iros2014/2d_extended_gen/traj_0.5_3.txt";
@@ -90,10 +89,10 @@ void testPower(ros::NodeHandle* node) {
     Dmp learnedDmp = learner.fitTrajectories();
     DMPExecutor learnedExec(learnedDmp);
 
-    std::vector<Trajectory*> initTraj;
-    initTraj.push_back(&learnedDmp);
+    std::vector<std::shared_ptr<Trajectory>> initTraj;
+    initTraj.push_back(std::shared_ptr<Dmp>(&learnedDmp));
 
-    PoWER pow(&learnedExec, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, queue, queue, ac, dmpStepSize, tolAbsErr, tolRelErr);
+    PoWER pow(&learnedExec, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, reward, queue, queue, ac, dmpStepSize, tolAbsErr, tolRelErr);
 //    GradientDescent pow(&learnedExec, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, queue, queue, ac, dmpStepSize, tolAbsErr, tolRelErr);
 
     int i = 0;
@@ -103,7 +102,7 @@ void testPower(ros::NodeHandle* node) {
     while(true) {
 
         pow.performRollout(1, 0);
-        Dmp* lastRollout = dynamic_cast<Dmp*>(pow.getLastUpdate());
+        std::shared_ptr<Dmp> lastRollout = std::dynamic_pointer_cast<Dmp>(pow.getLastUpdate());
 
         if(i == 0) {
             initT = pow.getLastUpdateRes().t;

@@ -83,8 +83,8 @@ int main(int argc, char** args) {
 
     ros::NodeHandle* node = NULL;
 
-    ControlQueue* leQueue = NULL;
-    ControlQueue* raQueue = NULL;
+    std::shared_ptr<ControlQueue> leQueue = std::shared_ptr<ControlQueue>(nullptr);
+    std::shared_ptr<ControlQueue> raQueue = std::shared_ptr<ControlQueue>(nullptr);
 
     thread* raThr = NULL;
 
@@ -122,7 +122,7 @@ int main(int argc, char** args) {
 
 
         if(doLeftOperation)
-            raQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime,
+            raQueue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime,
                                          "/" + deviceType + "/" + right_prefix + "/joint_control/move",
                                          "/" + deviceType + "/" + right_prefix + "/joint_control/get_state",
                                          "/" + deviceType + "/" + right_prefix + "/settings/switch_mode",
@@ -133,10 +133,10 @@ int main(int argc, char** args) {
                                          "/" + deviceType + "/" + right_prefix + "/settings/get_command_state",
                                          "/" + deviceType + "/" + right_prefix + "/joint_control/ptp_reached",
                                          "not supported yet",
-                                         *node);
+                                         *node));
 
         if(doRightOperation)
-            leQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime,
+            leQueue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime,
                                          "/" + deviceType + "/" + left_prefix + "/joint_control/move",
                                          "/" + deviceType + "/" + left_prefix + "/joint_control/get_state",
                                          "/" + deviceType + "/" + left_prefix + "/settings/switch_mode",
@@ -147,9 +147,9 @@ int main(int argc, char** args) {
                                          "/" + deviceType + "/" + left_prefix + "/settings/get_command_state",
                                          "/" + deviceType + "/" + left_prefix + "/joint_control/ptp_reached",
                                          "not supported yet",
-                                         *node);
+                                         *node));
 
-        ControlQueue* tmp2;
+        std::shared_ptr<ControlQueue> tmp2 = std::shared_ptr<ControlQueue>(nullptr);
         tmp2 = raQueue;
         raQueue = leQueue;
         leQueue = tmp2;

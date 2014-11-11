@@ -152,7 +152,7 @@ int main(int argc, char** args) {
 // TODO: something has been changed such that it is not working anymore (maybe data files?)
 void testIROSGrasping() {
 	
-	ControlQueue* raQueue = NULL;
+    std::shared_ptr<ControlQueue> raQueue = std::shared_ptr<ControlQueue>(nullptr);
 	QuadraticKernel* kern = new QuadraticKernel();
 	
 	vector<double> irosmys = {0, 1, 2, 3, 4, 5};
@@ -182,8 +182,7 @@ void testIROSGrasping() {
 	
 	// result for (8, 8)
 	vector<double> vectorNewQueryPoint = {-0.488059, 1.37839, -2.0144, -1.87255, -0.244649, -0.120394, 1.23313};
-	
-	GraspingRewardComputer reward(vectorNewQueryPoint);
+    shared_ptr<GraspingRewardComputer> reward(new GraspingRewardComputer(vectorNewQueryPoint));
 //	t_executor_res opt = reward.getOptimalTraj(5.0);
 	
 	cout << "execute ground truth for (8, 8)" << endl;
@@ -202,17 +201,17 @@ void testIROSGrasping() {
     timeCenters(0) = 2.5;
 	
 //	dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as);
-    dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, raQueue, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, 1.0);
+    dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, raQueue, std::shared_ptr<ControlQueue>(nullptr), inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, 1.0);
 	
-	std::vector<Trajectory*> initTraj;
+    std::vector<std::shared_ptr<Trajectory>> initTraj;
 	initTraj.push_back(dmpGen->getTrajectory());
 	
 	cout << newQueryPoint << endl;
 //	cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
 	
-	LinCombDmp* lastRollout = NULL;
+    std::shared_ptr<LinCombDmp> lastRollout = std::shared_ptr<LinCombDmp>(nullptr);
 	
-    PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
+    PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, reward, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
 	
 	int plotTimes = 5;
 	g1 = new Gnuplot("PoWER demo");
@@ -226,7 +225,7 @@ void testIROSGrasping() {
     while( i < 50 ) {
 
 		pow.performRollout(1, 0);
-		lastRollout = dynamic_cast<LinCombDmp*>(pow.getLastUpdate());
+        lastRollout = std::dynamic_pointer_cast<LinCombDmp>(pow.getLastUpdate());
 		lastRewards.push_back(pow.getLastUpdateReward());
 		if(lastRewards.size() > 3)
 			lastRewards.erase(lastRewards.begin());
@@ -280,7 +279,7 @@ void testIROSGrasping() {
 		cin >> newQueryPoint(1);
 		
 		
-		lastRollout = ((LinCombDmp*) dmpGen->getTrajectory());
+        lastRollout = std::dynamic_pointer_cast<LinCombDmp>(dmpGen->getTrajectory());
 		lastRollout->setCurrentQueryPoint(newQueryPoint);
 		dmpGen->switchQueryPoint(newQueryPoint);
 		
@@ -306,7 +305,7 @@ void testIROSGrasping() {
 
 void testIROS() {
 	
-	ControlQueue* raQueue = NULL;
+    std::shared_ptr<ControlQueue> raQueue = std::shared_ptr<ControlQueue>(nullptr);
 	QuadraticKernel* kern = new QuadraticKernel();
 	
     std::vector<double> irosmys = {0, 1, 2, 3, 4, 5, 6, 7};
@@ -342,8 +341,8 @@ void testIROS() {
     vec timeCenters(1);
     timeCenters(0) = 2.5;
 	
-	GaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1));
-    t_executor_res opt = reward.getOptimalTraj(5.0, 0);
+    shared_ptr<GaussianObstacleRewardComputer> reward(new GaussianObstacleRewardComputer(newQueryPoint(0), 2.0, newQueryPoint(1)));
+    t_executor_res opt = reward->getOptimalTraj(5.0, 0);
 	
     dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, raQueue, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, 1.0);
 	
@@ -354,13 +353,13 @@ void testIROS() {
 	switchThr->join();
 	*/
 	
-	std::vector<Trajectory*> initTraj;
+    std::vector<std::shared_ptr<Trajectory>> initTraj;
 	initTraj.push_back(dmpGen->getTrajectory());
 	
 	cout << newQueryPoint << endl;
 //	cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
 	
-    PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
+    PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, reward, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
 	
 	int plotTimes = 5;
 	g1 = new Gnuplot("PoWER demo");
@@ -369,13 +368,13 @@ void testIROS() {
 	vec initT;
 	vector<vec> initY;
 	
-	LinCombDmp* lastRollout = NULL;
+    std::shared_ptr<LinCombDmp> lastRollout = std::shared_ptr<LinCombDmp>(nullptr);
 	vector<double> lastRewards;
 	
     while( i < 200 ) {
 
 		pow.performRollout(1, 0);
-		lastRollout = dynamic_cast<LinCombDmp*>(pow.getLastUpdate());
+        lastRollout = std::dynamic_pointer_cast<LinCombDmp>(pow.getLastUpdate());
 		lastRewards.push_back(pow.getLastUpdateReward());
 		if(lastRewards.size() > 3)
 			lastRewards.erase(lastRewards.begin());

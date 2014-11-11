@@ -5,7 +5,7 @@ using namespace std;
 
 //bool rewardComparator(pair <double, Trajectory*> i, pair <double, Trajectory*> j) { return (i.first > j.first); }
 
-GradientDescent::GradientDescent(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
+GradientDescent::GradientDescent(TrajectoryExecutor* trajEx, std::vector<std::shared_ptr<Trajectory>> initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
 
     throw "(GradientDescent) currently broken";
 
@@ -23,7 +23,7 @@ GradientDescent::GradientDescent(TrajectoryExecutor* trajEx, std::vector<Traject
 
 }
 
-GradientDescent::GradientDescent(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
+GradientDescent::GradientDescent(TrajectoryExecutor* trajEx, std::vector<std::shared_ptr<Trajectory>> initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
 
     throw "(GradientDescent) currently broken";
 
@@ -40,7 +40,7 @@ GradientDescent::GradientDescent(TrajectoryExecutor* trajEx, std::vector<Traject
 
 }
 
-void GradientDescent::construct(std::vector<Trajectory*> initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) {
+void GradientDescent::construct(std::vector<std::shared_ptr<Trajectory>> initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) {
 
     setLastUpdate(initDmp.at(0));
 
@@ -53,17 +53,17 @@ void GradientDescent::construct(std::vector<Trajectory*> initDmp, vector<double>
 
 }
 
-std::vector<Trajectory*> GradientDescent::getInitialRollout() {
-    vector<Trajectory*> ret;
+std::vector<std::shared_ptr<Trajectory>> GradientDescent::getInitialRollout() {
+    vector<std::shared_ptr<Trajectory>> ret;
     ret.push_back(initDmp.at(0));
     return ret;
 }
 
-std::vector<Trajectory*> GradientDescent::computeRolloutParamters() {
+std::vector<std::shared_ptr<Trajectory>> GradientDescent::computeRolloutParamters() {
 
-    Trajectory* lastUp = getLastUpdate();
+    std::shared_ptr<Trajectory> lastUp = getLastUpdate();
     vector<vec> dmpCoeffs = lastUp->getCoefficients();
-    vector<Trajectory*> nextCoeffs;
+    vector<std::shared_ptr<Trajectory>> nextCoeffs;
 
     for(int k = 0; k < updatesPerRollout; ++k) {
 
@@ -84,7 +84,7 @@ std::vector<Trajectory*> GradientDescent::computeRolloutParamters() {
 
         }
 
-        Trajectory* nextUp = lastUp->copy();
+        std::shared_ptr<Trajectory> nextUp = lastUp->copy();
         nextUp->setCoefficients(dmpCoeffs);
 
         nextCoeffs.push_back(nextUp);
@@ -95,13 +95,13 @@ std::vector<Trajectory*> GradientDescent::computeRolloutParamters() {
 
 }
 
-Trajectory* GradientDescent::updateStep() {
+std::shared_ptr<Trajectory> GradientDescent::updateStep() {
 
     ++updateNum;
-    Trajectory* lastUp = getLastUpdate();
-    Trajectory* newUp = NULL;
+    std::shared_ptr<Trajectory> lastUp = getLastUpdate();
+    std::shared_ptr<Trajectory> newUp = std::shared_ptr<Trajectory>(nullptr);
 
-    vector<Trajectory*> lastDmps = getLastRolloutParameters();
+    vector<std::shared_ptr<Trajectory>> lastDmps = getLastRolloutParameters();
     vector<double> lastRewards = getLastRolloutCost();
 
     vec lastEstimate = lastDmps.at(0)->getCoefficients().at(0);
@@ -110,7 +110,7 @@ Trajectory* GradientDescent::updateStep() {
 
     // add rollouts to history
     for(int i = 0; i < lastRewards.size(); ++i) {
-        pair <double, Trajectory*> p(lastRewards.at(i), lastDmps.at(i));
+        pair <double, std::shared_ptr<Trajectory>> p(lastRewards.at(i), lastDmps.at(i));
         sampleHistory.push_back(p);
     }
 
@@ -118,7 +118,7 @@ Trajectory* GradientDescent::updateStep() {
     mat deltaTheta(lastDmps.at(0)->getCoefficients().at(0).n_elem, lastRewards.size());
     vec deltaJ(lastRewards.size());
     for(int i = 0; i < deltaTheta.n_cols; ++i) {
-        Trajectory* currDmp = lastDmps.at(i);
+        std::shared_ptr<Trajectory> currDmp = lastDmps.at(i);
         vector<vec> currCoeffs = currDmp->getCoefficients();
         deltaJ(i) = lastRewards.at(i) - lastUpdateRew;
         for(int j = 0; j < deltaTheta.n_rows; ++j) {

@@ -64,9 +64,9 @@ void DMPExecutor::construct(Dmp traj, int suppressMessages) {
 	
 }
 
-void DMPExecutor::setTrajectory(Trajectory* traj) {
+void DMPExecutor::setTrajectory(std::shared_ptr<Trajectory> traj) {
 	
-	Dmp dmp = *((Dmp*) traj);
+    Dmp dmp = *(std::dynamic_pointer_cast<Dmp>(traj));
 	construct(dmp, suppressMessages);
 	
 	vec_t.clear();
@@ -90,7 +90,7 @@ double DMPExecutor::getExternalError() {
 	return externalError;
 }
 
-double DMPExecutor::addTerm(double t, const double* currentDesiredYs, int jointNumber, ControlQueue* queue) {
+double DMPExecutor::addTerm(double t, const double* currentDesiredYs, int jointNumber, std::shared_ptr<ControlQueue> queue) {
     return 0.0;
 }
 
@@ -176,7 +176,7 @@ int DMPExecutor::jac(double t, const double* y, double *dfdy, double* dfdt, void
 	
 }
 
-t_executor_res DMPExecutor::executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr, ControlQueue* controlQueue) {
+t_executor_res DMPExecutor::executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr, std::shared_ptr<ControlQueue> controlQueue) {
 
 	this->ac = ac;
 	this->simulate = EXECUTE_ROBOT;

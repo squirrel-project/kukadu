@@ -10,6 +10,7 @@
 #include "../utils/conversion_utils.h"
 #include <vector>
 #include <armadillo>
+#include <memory>
 
 class LinCombDmp : public DictionaryTrajectory {
 	
@@ -50,7 +51,7 @@ public:
 	
 	int operator==(LinCombDmp const& comp) const;
 	
-	Trajectory* copy();
+    std::shared_ptr<Trajectory> copy();
 	
 };
 

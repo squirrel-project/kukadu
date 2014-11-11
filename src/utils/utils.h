@@ -17,6 +17,7 @@
 #include <cstring>
 #include <armadillo>
 #include <wordexp.h>
+#include <memory>
 
 #include <dirent.h>
 #include <gsl/gsl_vector.h>
@@ -95,7 +96,7 @@ arma::mat columnToSquareMatrix(arma::vec c);
 arma::vec symmetricMatrixToColumn(arma::mat m);
 arma::mat columnToSymmetricMatrix(arma::vec c);
 
-t_executor_res executeDemo(ControlQueue* movementQu, std::string file, int doSimulation, double az, double bz, int plotResults);
-t_executor_res executeDemo(ControlQueue* movementQu, std::string file, int doSimulation, double az, double bz, int plotResults, double dmpStepSize);
+t_executor_res executeDemo(std::shared_ptr<ControlQueue> movementQu, std::string file, int doSimulation, double az, double bz, int plotResults);
+t_executor_res executeDemo(std::shared_ptr<ControlQueue> movementQu, std::string file, int doSimulation, double az, double bz, int plotResults, double dmpStepSize);
 
 #endif

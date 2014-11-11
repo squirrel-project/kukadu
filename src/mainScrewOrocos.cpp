@@ -70,8 +70,8 @@ double dmpStepSize = kukaStepWaitTime * 1e-6;
 
 ros::NodeHandle* node = NULL;
 
-ControlQueue* raQueue = NULL;
-ControlQueue* laQueue = NULL;
+std::shared_ptr<ControlQueue> raQueue = NULL;
+std::shared_ptr<ControlQueue> laQueue = NULL;
 thread* raThr = NULL;
 vec switchedTo;
 
@@ -197,7 +197,7 @@ int main(int argc, char** args) {
 		usleep(1e6);
 		
 		// execute guided measurement
-		raQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime,
+        raQueue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime,
 				prefix + "/" + hardware + "/" + "joint_control" + "/" + moveTopic,
 				prefix + "/" + hardware + "/" + "joint_control" + "/" + jntPosTopic,
 				prefix + "/" + hardware + "/" + "settings" + "/" + switchTopic,
@@ -209,7 +209,7 @@ int main(int argc, char** args) {
 				prefix + "/" + hardware + "/" + "sensoring" + "/" + ptpReachedTopic,
 				prefix + "/" + hardware + "/" + "settings" + "/" + setAddLoadTopic,
 			*node
-		);
+        ));
 		
 	}
 	
@@ -221,14 +221,14 @@ int main(int argc, char** args) {
 		raHand = new SchunkHand(handPort);
 		
 		string prefix = "Left";
-		raQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime, prefix + string("MoveJoints"), prefix + string("PosJoints"), prefix + string("SwitchMode"),
+        raQueue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, prefix + string("MoveJoints"), prefix + string("PosJoints"), prefix + string("SwitchMode"),
 						prefix + string("PosCartesian"), prefix + string("SetCartImpedance"), prefix + string("SetJointImpedance"),
-						string("/joint_control/") + prefix + ("_arm/JointPtp"), prefix + string("GetCommandState"), string("/joint_control/") + prefix + ("_arm/PtpReached"), prefix + string("SetAdditionalLoad"), *node);
+                        string("/joint_control/") + prefix + ("_arm/JointPtp"), prefix + string("GetCommandState"), string("/joint_control/") + prefix + ("_arm/PtpReached"), prefix + string("SetAdditionalLoad"), *node));
 		
 		prefix = "Right";
-		laQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime, prefix + string("MoveJoints"), prefix + string("PosJoints"), prefix + string("SwitchMode"),
+        laQueue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, prefix + string("MoveJoints"), prefix + string("PosJoints"), prefix + string("SwitchMode"),
 						prefix + string("PosCartesian"), prefix + string("SetCartImpedance"), prefix + string("SetJointImpedance"),
-						string("/joint_control/") + prefix + ("_arm/JointPtp"), prefix + string("GetCommandState"), string("/joint_control/") + prefix + ("_arm/PtpReached"), prefix + string("SetAdditionalLoad"), *node);
+                        string("/joint_control/") + prefix + ("_arm/JointPtp"), prefix + string("GetCommandState"), string("/joint_control/") + prefix + ("_arm/PtpReached"), prefix + string("SetAdditionalLoad"), *node));
 		
 		/*
 		float initJoints[7] = {-0.5295850038528442, 0.6593417525291443, -0.06263750791549683, -0.6409034132957458, -0.016871731728315353, 0.6311647891998291, 0.035879798233509064};
@@ -439,7 +439,7 @@ int main(int argc, char** args) {
 			thread* raThr = NULL;
 			
 			// execute guided measurement
-            raQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime,
+            raQueue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime,
                                              prefix + "/" + hardware + "/" + "joint_control" + "/" + moveTopic,
                                              prefix + "/" + hardware + "/" + "joint_control" + "/" + jntPosTopic,
                                              prefix + "/" + hardware + "/" + "settings" + "/" + switchTopic,
@@ -453,7 +453,7 @@ int main(int argc, char** args) {
                                              prefix + "/" + hardware + "/" + "joint_control" + "/" + "ptp_reached",
                                              prefix + "/" + hardware + "/" + "settings" + "/" + setAddLoadTopic,
                                         *node
-                                       );
+                                       ));
 			
 			raQueue->stopCurrentMode();
 			raThr = raQueue->startQueueThread();
@@ -472,13 +472,13 @@ int main(int argc, char** args) {
 	
 	} else if(mode == 4) {
 		
-		ControlQueue* raQueue = NULL;
+        std::shared_ptr<ControlQueue> raQueue = std::shared_ptr<ControlQueue>(nullptr);
 		if(!doSimulation) {
 			
 			thread* raThr = NULL;
 			
 			// execute guided measurement
-            raQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime,
+            raQueue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime,
                                              prefix + "/" + hardware + "/" + "joint_control" + "/" + moveTopic,
                                              prefix + "/" + hardware + "/" + "joint_control" + "/" + jntPosTopic,
                                              prefix + "/" + hardware + "/" + "settings" + "/" + switchTopic,
@@ -492,7 +492,7 @@ int main(int argc, char** args) {
                                              prefix + "/" + hardware + "/" + "joint_control" + "/" + "ptp_reached",
                                              prefix + "/" + hardware + "/" + "settings" + "/" + setAddLoadTopic,
                                         *node
-                                       );
+                                       ));
 			
 			raQueue->stopCurrentMode();
 			raThr = raQueue->startQueueThread();
@@ -523,11 +523,11 @@ int main(int argc, char** args) {
 		
 	} else if(mode == 5) {
 		
-		ControlQueue* laQueue = NULL;
+        std::shared_ptr<ControlQueue> laQueue = std::shared_ptr<ControlQueue>(nullptr);
 		thread* raThr = NULL;
 		
 		// execute guided measurement
-        laQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime,
+        laQueue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime,
                                          prefix + "/" + hardware + "/" + "joint_control" + "/" + moveTopic,
                                          prefix + "/" + hardware + "/" + "joint_control" + "/" + jntPosTopic,
                                          prefix + "/" + hardware + "/" + "settings" + "/" + switchTopic,
@@ -541,7 +541,7 @@ int main(int argc, char** args) {
                                          prefix + "/" + hardware + "/" + "joint_control" + "/" + "ptp_reached",
                                          prefix + "/" + hardware + "/" + "settings" + "/" + setAddLoadTopic,
                                     *node
-                                   );
+                                   ));
 		
 //		prefix = "Right";
 //		laQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime, prefix + string("MoveJoints"), prefix + string("PosJoints"), prefix + string("SwitchMode"),
@@ -610,7 +610,7 @@ int main(int argc, char** args) {
 // TODO: something has been changed such that it is not working anymore (maybe data files?)
 void testIROSGrasping() {
 	
-	ControlQueue* raQueue = NULL;
+    std::shared_ptr<ControlQueue> raQueue = std::shared_ptr<ControlQueue>(nullptr);
 	QuadraticKernel* kern = new QuadraticKernel();
     double alpham = 1.0;
 	
@@ -645,7 +645,7 @@ void testIROSGrasping() {
 	// result for (8, 8)
 	vector<double> vectorNewQueryPoint = {-0.488059, 1.37839, -2.0144, -1.87255, -0.244649, -0.120394, 1.23313};
 	
-	GraspingRewardComputer reward(vectorNewQueryPoint);
+    shared_ptr<GraspingRewardComputer> reward(new GraspingRewardComputer(vectorNewQueryPoint));
 //	t_executor_res opt = reward.getOptimalTraj(5.0);
 	
 	cout << "execute ground truth for (8, 8)" << endl;
@@ -663,15 +663,15 @@ void testIROSGrasping() {
 //	dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as);
     dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, NULL, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
 	
-	std::vector<Trajectory*> initTraj;
+    std::vector<std::shared_ptr<Trajectory>> initTraj;
 	initTraj.push_back(dmpGen->getTrajectory());
 	
 	cout << newQueryPoint << endl;
 //	cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
 	
-	LinCombDmp* lastRollout = NULL;
+    std::shared_ptr<LinCombDmp> lastRollout = NULL;
 	
-    PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
+    PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, reward, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
 	
 	int plotTimes = 5;
 	g1 = new Gnuplot("PoWER demo");
@@ -685,7 +685,7 @@ void testIROSGrasping() {
 	while( i < 8 ) {
 
 		pow.performRollout(1, 0);
-		lastRollout = dynamic_cast<LinCombDmp*>(pow.getLastUpdate());
+        lastRollout = std::dynamic_pointer_cast<LinCombDmp>(pow.getLastUpdate());
 		lastRewards.push_back(pow.getLastUpdateReward());
 		if(lastRewards.size() > 3)
 			lastRewards.erase(lastRewards.begin());
@@ -739,7 +739,7 @@ void testIROSGrasping() {
 		cin >> newQueryPoint(1);
 		
 		
-		lastRollout = ((LinCombDmp*) dmpGen->getTrajectory());
+        lastRollout = std::dynamic_pointer_cast<LinCombDmp>(dmpGen->getTrajectory());
 		lastRollout->setCurrentQueryPoint(newQueryPoint);
 		dmpGen->switchQueryPoint(newQueryPoint);
 		
@@ -765,7 +765,7 @@ void testIROSGrasping() {
 
 void testIROS() {
 	
-	ControlQueue* raQueue = NULL;
+    std::shared_ptr<ControlQueue> raQueue = std::shared_ptr<ControlQueue>(nullptr);
 	QuadraticKernel* kern = new QuadraticKernel();
     double alpham = 1.0;
 
@@ -802,8 +802,8 @@ void testIROS() {
 //	newQueryPoint(0) = 1.2;
 //	newQueryPoint(1) = 6.9;
 	
-	GaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1));
-    t_executor_res opt = reward.getOptimalTraj(5.0, 0);
+    shared_ptr<GaussianObstacleRewardComputer> reward(new GaussianObstacleRewardComputer(newQueryPoint(0), 2.0, newQueryPoint(1)));
+    t_executor_res opt = reward->getOptimalTraj(5.0, 0);
 	
 	if(!doSimulation) {
 
@@ -842,13 +842,13 @@ void testIROS() {
 	}
 	*/
 	
-	std::vector<Trajectory*> initTraj;
+    std::vector<std::shared_ptr<Trajectory>> initTraj;
 	initTraj.push_back(dmpGen->getTrajectory());
 	
 	cout << newQueryPoint << endl;
 //	cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
 	
-    PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
+    PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, reward, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
 	
 	int plotTimes = 5;
 	g1 = new Gnuplot("PoWER demo");
@@ -857,13 +857,13 @@ void testIROS() {
 	vec initT;
 	vector<vec> initY;
 	
-	LinCombDmp* lastRollout = NULL;
+    std::shared_ptr<LinCombDmp> lastRollout = NULL;
 	vector<double> lastRewards;
 //	while( lastRewards.size() < 3 || (lastRewards.at(0) != lastRewards.at(1) || lastRewards.at(1) != lastRewards.at(2) ) ) {
 	while( i < 8 ) {
 
 		pow.performRollout(1, 0);
-		lastRollout = dynamic_cast<LinCombDmp*>(pow.getLastUpdate());
+        lastRollout = std::dynamic_pointer_cast<LinCombDmp>(pow.getLastUpdate());
 		lastRewards.push_back(pow.getLastUpdateReward());
 		if(lastRewards.size() > 3)
 			lastRewards.erase(lastRewards.begin());
@@ -983,7 +983,7 @@ void testIROS() {
 
 void testDictionaryGen() {
 	
-	ControlQueue* raQueue = NULL;
+    std::shared_ptr<ControlQueue> raQueue = std::shared_ptr<ControlQueue>(nullptr);
 	QuadraticKernel* kern = new QuadraticKernel();
     double alpham = 1.0;
 	
@@ -1100,8 +1100,8 @@ void testPoWER() {
 	int importanceSamplingCount = 3;
 	double t_max = 7;
 	
-    SampleRewardComputer rew(0.1, 1);
-    t_executor_res opt = rew.getOptimalTraj(t_max, 0);
+    shared_ptr<SampleRewardComputer> rew(new SampleRewardComputer(0.1, 1));
+    t_executor_res opt = rew->getOptimalTraj(t_max, 0);
 	double deltaT = 0.05;
 	int tCount = opt.t.n_elem;
 	mat sample(tCount, 2);
@@ -1125,13 +1125,13 @@ void testPoWER() {
     TrajectoryDMPLearner learner(baseDef, tau, az, bz, ax, sample);
 	Dmp initialDmp = learner.fitTrajectories();
 
-	vector<Trajectory*> initDmp;
-	initDmp.push_back(&initialDmp);
+    vector<std::shared_ptr<Trajectory>> initDmp;
+    initDmp.push_back(std::shared_ptr<Trajectory>(&initialDmp));
 	
 	getchar();
 	
 	DMPExecutor exec(initialDmp);
-    PoWER pow(&exec, initDmp, exploreSigmas, updatesPerRollout, importanceSamplingCount, &rew, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
+    PoWER pow(&exec, initDmp, exploreSigmas, updatesPerRollout, importanceSamplingCount, rew, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
 	
 	int plotTimes = 5;
 	g1 = new Gnuplot("PoWER demo");
@@ -1139,7 +1139,7 @@ void testPoWER() {
 	while( 1 ) {
 
 		pow.performRollout(1, 0);
-		Trajectory* lastRollout = pow.getLastUpdate();
+        std::shared_ptr<Trajectory> lastRollout = pow.getLastUpdate();
 		
 		if( (i % 1) == 0 ) {
 			

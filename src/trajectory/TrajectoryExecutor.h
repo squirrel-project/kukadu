@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <cstdlib>
+#include <memory>
 
 #include "../utils/types.h"
 #include "../types/Trajectory.h"
@@ -21,7 +22,7 @@ public:
 	virtual t_executor_res simulateTrajectory() = 0;
 	virtual t_executor_res executeTrajectory() = 0;
 	
-	virtual void setTrajectory(Trajectory* traj) = 0;
+    virtual void setTrajectory(std::shared_ptr<Trajectory> traj) = 0;
 
 };
 

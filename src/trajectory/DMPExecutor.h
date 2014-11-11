@@ -11,7 +11,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <chrono>
-
+#include <memory>
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_matrix.h>
@@ -72,7 +72,7 @@ private:
 	
 	std::vector<DMPBase> baseDef;
 
-	ControlQueue* controlQueue;
+    std::shared_ptr<ControlQueue> controlQueue;
 	DMPTrajectoryGenerator* trajGen;
 	
 	std::vector<double> internalClock;
@@ -103,7 +103,7 @@ protected:
 
 	int func (double t, const double* y, double* f, void* params);
 	int jac(double t, const double* y, double *dfdy, double* dfdt, void* params);
-    double addTerm(double t, const double* currentDesiredYs, int jointNumber, ControlQueue* queue);
+    double addTerm(double t, const double* currentDesiredYs, int jointNumber, std::shared_ptr<ControlQueue> queue);
 
 public:
 
@@ -118,10 +118,10 @@ public:
 	
 	void construct(Dmp dmp, int suppressMessages);
 	
-	void setTrajectory(Trajectory* traj);
+    void setTrajectory(std::shared_ptr<Trajectory> traj);
 	
 	t_executor_res simulateTrajectory(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr);
-	t_executor_res executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr, ControlQueue* controlQueue);
+    t_executor_res executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr, std::shared_ptr<ControlQueue> controlQueue);
 	
 	t_executor_res simulateTrajectory();
 	t_executor_res executeTrajectory();

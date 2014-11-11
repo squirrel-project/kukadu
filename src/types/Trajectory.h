@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <armadillo>
+#include <memory>
 
 #include "../utils/conversion_utils.h"
 
@@ -23,7 +24,7 @@ public:
 	
 	int operator==(Trajectory const& comp) const;
 	
-	virtual Trajectory* copy() = 0;
+    virtual std::shared_ptr<Trajectory> copy() = 0;
 	
 };
 

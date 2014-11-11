@@ -29,30 +29,30 @@ private:
     int importanceSamplingCount;
     int updatesPerRollout;
     double explorationSigma;
-    std::vector<Trajectory*> initDmp;
+    std::vector<std::shared_ptr<Trajectory>> initDmp;
     TrajectoryExecutor* trajEx;
     int updateNum;
 
 //	std::vector<Dmp> sampleHistory;
 //	std::vector<double> rewardHistory;
 
-    std::vector<std::pair <double, Trajectory*>> sampleHistory;
+    std::vector<std::pair <double, std::shared_ptr<Trajectory>>> sampleHistory;
 
     std::mt19937 generator;
     std::vector<std::normal_distribution<double>> normals;
 
     std::vector<double> sigmas;
 
-    void construct(std::vector<Trajectory*> initDmp, std::vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
+    void construct(std::vector<std::shared_ptr<Trajectory>> initDmp, std::vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
 
 public:
 
-    GradientDescent(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
-    GradientDescent(TrajectoryExecutor* trajEx, std::vector<Trajectory*> initDmp, std::vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, CostComputer* cost, ControlQueue* simulationQueue, ControlQueue* executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
+    GradientDescent(TrajectoryExecutor* trajEx, std::vector<std::shared_ptr<Trajectory>> initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
+    GradientDescent(TrajectoryExecutor* trajEx, std::vector<std::shared_ptr<Trajectory>> initDmp, std::vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
 
-    std::vector<Trajectory*> getInitialRollout();
-    std::vector<Trajectory*> computeRolloutParamters();
-    Trajectory* updateStep();
+    std::vector<std::shared_ptr<Trajectory>> getInitialRollout();
+    std::vector<std::shared_ptr<Trajectory>> computeRolloutParamters();
+    std::shared_ptr<Trajectory> updateStep();
 
 };
 

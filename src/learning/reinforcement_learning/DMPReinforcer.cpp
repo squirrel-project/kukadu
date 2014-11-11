@@ -4,7 +4,7 @@
 using namespace std;
 using namespace arma;
 
-DMPReinforcer::DMPReinforcer(CostComputer* cost, ControlQueue* movementQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) {
+DMPReinforcer::DMPReinforcer(CostComputer* cost, std::shared_ptr<ControlQueue> movementQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) {
 	
 	this->cost = cost;
 	this->movementQueue = movementQueue;

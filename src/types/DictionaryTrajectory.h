@@ -53,7 +53,7 @@ public:
 	
 	int operator==(DictionaryTrajectory const& comp) const;
 	
-	Trajectory* copy();
+    std::shared_ptr<Trajectory> copy();
 	
 };
 

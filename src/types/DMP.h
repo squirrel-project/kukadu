@@ -86,7 +86,7 @@ public:
 	double getTmax();
 	
 	int operator==(Dmp const& comp) const;
-	Trajectory* copy();
+    std::shared_ptr<Trajectory> copy();
 
 };
 
