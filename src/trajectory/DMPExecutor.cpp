@@ -23,14 +23,25 @@ DMPExecutor::DMPExecutor(Trajectory* traj) {
 }
 
 void DMPExecutor::construct(Dmp traj, int suppressMessages) {
+    /*
+
+
+    ControlQueue* controlQueue;
+
+    std::vector<double>* vec_y;
+
+    */
 
 	this->dmp = traj;
+    this->ac = 0.0;
+    this->vecYs = arma::vec(1);
+    this->stepSize = 0.014;
 
     this->dmpCoeffs = traj.getDmpCoeffs();
 	this->baseDef = traj.getDmpBase();
 
     this->tau = traj.getTau(); this->az = traj.getAz(); this->bz = traj.getBz(); this->ax = traj.getAx(); this->gs = traj.getG();
-    this->y0s = traj.getY0(); this->dy0s = traj.getDy0(); this->ddy0s = traj.getDdy0();
+    this->y0s = this->currentJoints = traj.getY0(); this->dy0s = traj.getDy0(); this->ddy0s = traj.getDdy0();
     this->trajGen = new DMPTrajectoryGenerator(this->baseDef, ax, tau);
 
     this->axDivTau = ax / tau;
@@ -59,7 +70,7 @@ void DMPExecutor::setTrajectory(Trajectory* traj) {
 	construct(dmp, suppressMessages);
 	
 	vec_t.clear();
-	vec_y = new std::vector<double>();
+    vec_y.clear();
 	
 }
 
@@ -109,34 +120,35 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
             f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne));
 		}
 
-	}
-	if(this->simulate == EXECUTE_ROBOT) {
+    }
 
-		currentJoints = controlQueue->getCurrentJoints().joints;
-		double corrector = 0.0;
-		
-		if(!usesExternalError()) {
-			
-			// include original  phase stopping
-			for(int i = 0; i < degofFreedom; ++i) previousDesiredJoints[i] =  y[2 * i];
-			double dist = computeDistance(previousDesiredJoints, currentJoints);
-			
-			corrector = 1.0 + ac * dist;
-			
-		} else {
-			corrector = 1.0 + ac * getExternalError();
-		}
-		
+    if(this->simulate == EXECUTE_ROBOT) {
+
+        currentJoints = controlQueue->getCurrentJoints().joints;
+        double corrector = 0.0;
+
+        if(!usesExternalError()) {
+
+            // include original  phase stopping
+            for(int i = 0; i < degofFreedom; ++i) previousDesiredJoints[i] =  y[2 * i];
+            double dist = computeDistance(previousDesiredJoints, currentJoints);
+
+            corrector = 1.0 + ac * dist;
+
+        } else {
+            corrector = 1.0 + ac * getExternalError();
+        }
+
         f[odeSystemSizeMinOne] = - axDivTau * y[odeSystemSizeMinOne] / corrector;
 
-	}
-	
-	else if(this->simulate == SIMULATE_DMP) {
-	
-		// progress as usual
+    }
+
+    else if(this->simulate == SIMULATE_DMP) {
+
+        // progress as usual
         f[odeSystemSizeMinOne] = - axDivTau * y[odeSystemSizeMinOne];
 
-	}
+    }
 
 	return GSL_SUCCESS;
 
@@ -152,7 +164,7 @@ double DMPExecutor::computeDistance(const arma::vec yDes, arma::vec yCurr) {
     return dist;
     */
 
-    arma::vec tmp = yDes.t() * yCurr;
+    arma::vec tmp = (yDes - yCurr).t() * (yDes - yCurr);
     return tmp(0);
 
 }
@@ -201,7 +213,7 @@ t_executor_res DMPExecutor::executeTrajectory() {
 void DMPExecutor::initializeIntegration(double tStart, double stepSize, double tolAbsErr, double tolRelErr) {
 
 	t = tStart;
-	vec_y = new vector<double>[degofFreedom];
+    vec_y.clear();
 	double ys[odeSystemSize];
 	vecYs = vec(odeSystemSize);
 	
@@ -235,19 +247,24 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
 	retJoints.fill(0.0);
 	
     if(t < durationThresh) {
+
         int s = gsl_odeiv2_driver_apply_fixed_step(d, &t, stepSize, 1, ys);
+
+//        cout << t << " " << ys[0] << endl;
+//        getchar();
 	
         if (s != GSL_SUCCESS) {
             cout << "(DMPExecutor) error: driver returned " << s << endl;
             throw "(DMPExecutor) error: driver returned " + s;
         }
+
     }
 	
 	for(int i = 0; i < degofFreedom; ++i)
 		retJoints(i) = ys[2 * i];
 	
 	for(int i = 0; i < odeSystemSize; ++i)
-		vecYs(i) = ys[i];
+        vecYs(i) = ys[i];
 	
 	return retJoints;
 	
@@ -262,51 +279,73 @@ void DMPExecutor::destroyIntegration() {
 
 t_executor_res DMPExecutor::executeDMP(int simulate, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
 
-	t_executor_res result;
-	
-	initializeIntegration(tStart, stepSize, tolAbsErr, tolRelErr);
+    double currentTime = 0.0;
 
-	if(simulate == SIMULATE_DMP) {
+    t_executor_res ret;
+    //vector<vector<double>> retY;
+    vector<double>* retY = new vector<double>[degofFreedom];
+    vector<double> retT;
 
-		if(!suppressMessages)
-			cout << "(DMPExecutor) starting simulation" << endl;
+//    DMPExecutor* exec = new DMPExecutor(dmp);
+    DMPExecutor* exec = this;
 
-	} else if(simulate == EXECUTE_ROBOT) {
+    exec->initializeIntegration(0, stepSize, tolAbsErr, tolRelErr);
 
-		cout << "(DMPExecutor) starting robot execution" << endl;
+    // execute dmps and compute linear combination
+    for(; currentTime < tEnd; currentTime += stepSize) {
 
-	}
 
-    int durationSteps = (tEnd - tStart) / stepSize;
+        vec nextJoints(degofFreedom);
+        nextJoints.fill(0.0);
 
-    for (int i = 0; i < durationSteps; ++i) {
-		
-		vec newJoints = doIntegrationStep(ac);
+        /**************actual computation of trajectory using coefficients***********/
+        for(int i = 0; i < 1; ++i) {
 
-        // synchronize to control queue (maximum one joint array has to be already in there --> needed for phase stopping such that DMPExecutor does not progress to fast)
-        controlQueue->synchronizeToControlQueue(1);
-        controlQueue->addJointsPosToQueue(newJoints);
+            vec currJoints(degofFreedom);
+            currJoints.fill(0.0);
 
-        currentJoints = controlQueue->getCurrentJoints().joints;
-		for(int i = 0; i < degofFreedom; ++i) 
-			vec_y[i].push_back(currentJoints[i]);
-		
-		vec_t.push_back(t);
-		internalClock.push_back(vecYs[odeSystemSize - 1]);
-		
+            try {
+                currJoints = exec->doIntegrationStep(ac);
+            } catch(const char* s) {
+                puts(s);
+                cerr << ": stopped execution at time " << currentTime << endl;
+                break;
+            }
 
-	}
-	
-	destroyIntegration();
-	
-	result.t = stdToArmadilloVec(vec_t);
-	
-	// this can be done much more efficient!!!
-	for(int i = 0; i < degofFreedom; ++i)
-		result.y.push_back(stdToArmadilloVec(vec_y[i]));
-	
-	result.internalClock = stdToArmadilloVec(internalClock);
-	return result;
+            nextJoints = currJoints;
+
+        }
+/*
+
+        // if real robot execution and first integration step --> move to initial position
+        if(isFirstIteration) {
+
+        //    cout << "(DictionaryGeneralizer) moving to initial execution position" << endl;
+            queue->moveJoints(nextJoints);
+            isFirstIteration = 0;
+        //    cout << "(DictionaryGeneralizer) starting trajectory execution" << endl;
+
+        } else {
+
+            // synchronize to control queue (maximum one joint array has to be already in there --> needed for phase stopping such that DMPExecutor does not progress to fast)
+            queue->synchronizeToControlQueue(0);
+            queue->addJointsPosToQueue(nextJoints);
+
+        }
+*/
+        for(int i = 0; i < degofFreedom; ++i)
+            retY[i].push_back(nextJoints(i));
+
+        retT.push_back(currentTime);
+
+    }
+
+    for(int i = 0; i < degofFreedom; ++i)
+        ret.y.push_back(stdToArmadilloVec(retY[i]));
+
+    ret.t = stdToArmadilloVec(retT);
+
+    return ret;
 
 }
 

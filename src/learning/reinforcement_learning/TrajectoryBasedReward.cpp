@@ -65,7 +65,7 @@ t_executor_res TrajectoryBasedReward::getOptimalTraj(double tmax, int freedomIdx
 t_executor_res TrajectoryBasedReward::getOptimalTraj(double tmin, double tmax, int freedomIdx) {
 	
 	t_executor_res ret;
-	double step = 0.1;
+    double step = 0.1;
 	this->tmax = tmax;
 	
     int size = (int) ( (double) (tmax - tmin) / (double) step);

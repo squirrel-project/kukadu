@@ -80,9 +80,11 @@ t_executor_res executeDemo(ControlQueue* movementQu, string file, int doSimulati
     cout << "tmax: " << learnedDmps.getTmax() << endl;
 	DMPExecutor dmpexec(learnedDmps);
 	t_executor_res dmpResult;
-	if(doSimulation) dmpResult = dmpexec.simulateTrajectory(tStart, learnedDmps.getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+
+    // TODO: execution fails with doSimulation = 1; because there is no control queue attached to dmpexecutor
+    if(doSimulation) dmpResult = dmpexec.simulateTrajectory(tStart, learnedDmps.getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
 	else {
-		
+
         dmpResult = dmpexec.executeTrajectory(ac, tStart, learnedDmps.getTmax() - 1.1, dmpStepSize, tolAbsErr, tolRelErr, movementQu);
 		
     //	movementQu->switchMode(10);

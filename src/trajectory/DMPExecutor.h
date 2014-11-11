@@ -52,14 +52,13 @@ private:
 	double duration;
 	
 	int simulate;
-	int odeSystemSize;
+    int odeSystemSize;
 	int degofFreedom;
 	
 	int externalErrorUsing;
 	int suppressMessages;
 
 	double externalError;
-	double g, y0, dy0;
 	
     arma::vec currentJoints;
     arma::vec previousDesiredJoints;
@@ -79,7 +78,7 @@ private:
 	std::vector<double> internalClock;
 	std::vector<double> vec_t;
 
-	std::vector<double>* vec_y;
+    std::vector<double> vec_y;
 	
 	gsl_odeiv2_system sys;
 	gsl_odeiv2_driver* d;

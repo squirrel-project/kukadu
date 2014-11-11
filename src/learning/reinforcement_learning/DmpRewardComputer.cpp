@@ -35,6 +35,7 @@ arma::vec DmpRewardComputer::computeFun(double t) {
                 retVec(i) = executionResult.y.at(i)(time.n_elem - 1);
 
     } else {
+
         int tIdx = binaryTimeSearch(time, t);
         double firstT = time(tIdx);
         double secondT = time(tIdx + 1);

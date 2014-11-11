@@ -190,6 +190,7 @@ void testHumanoidsArtificialData(ControlQueue* queue) {
 
     // for different trajectories, you have to change the reward computer (not the gaussian computer)
     std::string inDir = resolvePath("$KUKADU_HOME/movements/humanoids_2014/pouring_gries/");
+    string cfFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries_eval_traj/traj_11_234.txt";
 
     vector<double> irosmys = {0, 1, 2, 3, 4, 5};
     vector<double> irossigmas = {0.3, 0.8};
@@ -222,26 +223,24 @@ void testHumanoidsArtificialData(ControlQueue* queue) {
     // wrong reward computer for real robot trajectory!!!!!!!!!!!!!!
 //    GaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1));
 
-    string cfFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries_eval_traj/traj_11_234.txt";
     DmpRewardComputer reward(resolvePath(cfFile), az, bz, dmpStepSize, 7);
 
-    cout << "execute ground truth for (1.6, 7)" << endl;
+    cout << "execute ground truth for (11, 234)" << endl;
     t_executor_res opt = reward.getOptimalTraj(0, 28.0, 0);
+    cout << opt.y.at(0).t() << endl;
     cout << "execution done" << endl;
 
     // speedup testing process by inserting already learned metric result
     mat m(2,2);
-    /*
     m(0, 0) = 1.0;
-    m(1, 0) = -0.2093;
-    m(0, 1) = -0.2093;
-    m(1, 1) = 0.0590;
-    */
+    m(1, 0) = -0.0268;
+    m(0, 1) = -0.0268;
+    m(1, 1) = 0.0008;
 
     cout << "(main) creating dictionary generalizer object" << endl;
-    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
+//    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
+    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
     cout << "(main) done" << endl;
-//    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
 
     cout << "(main) initializing trajectory" << endl;
     std::vector<Trajectory*> initTraj;
