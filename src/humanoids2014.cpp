@@ -56,7 +56,7 @@ double ac = 10;
 
 int main(int argc, char** args) {
 
-    int mode = 4;
+    int mode = 2;
 
     if(mode == 1) {
 
@@ -74,7 +74,7 @@ int main(int argc, char** args) {
 
     } else if (mode == 2) {
 
-        ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
+//        ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
         PlottingControlQueue* queue = NULL;
         queue = new PlottingControlQueue(1, kukaStepWaitTime);
 
@@ -128,6 +128,16 @@ int main(int argc, char** args) {
 
         testSegmentationArtificialData(queue);
 
+    } else if(mode == 6) {
+
+        string cfFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries_eval_traj/traj_11_234.txt";
+        string cf2File = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_9_144.txt";
+        DmpRewardComputer rwc(resolvePath(cfFile), az, bz, dmpStepSize, 7);
+
+        t_executor_res res = executeDemo(new PlottingControlQueue(7, dmpStepSize), resolvePath(cf2File), 0, az, bz, 0, dmpStepSize);
+        double cost = rwc.computeCost(res);
+        cout << "(humanoids2014) cost for comparing same trajectory: " << cost << endl;
+
     }
     getch();
 
@@ -179,8 +189,7 @@ void switch2dQueryPoint() {
 void testHumanoidsArtificialData(ControlQueue* queue) {
 
     // for different trajectories, you have to change the reward computer (not the gaussian computer)
-    std::string inDir = resolvePath("$KUKADU_HOME/movements/iros2014/2d_extended_gen/");
-//    std::string inDir = resolvePath("$KUKADU_HOME/movements/iros2014/artificial_complete/");
+    std::string inDir = resolvePath("$KUKADU_HOME/movements/humanoids_2014/pouring_gries/");
 
     vector<double> irosmys = {0, 1, 2, 3, 4, 5};
     vector<double> irossigmas = {0.3, 0.8};
@@ -196,9 +205,9 @@ void testHumanoidsArtificialData(ControlQueue* queue) {
 
     double alpham = 1.0;
 
-    int columns = 2;
+    int columns = 8;
 
-    vec trajMetricWeights(1);
+    vec trajMetricWeights(7);
     trajMetricWeights.fill(1.0);
 
     tau = 5.0;
@@ -207,33 +216,46 @@ void testHumanoidsArtificialData(ControlQueue* queue) {
     double relativeDistanceThresh = 0.4;
 
     vec newQueryPoint(2);
-    newQueryPoint(0) = 1.6;
-    newQueryPoint(1) = 6.5;
+    newQueryPoint(0) = 11.0;
+    newQueryPoint(1) = 234.0;
 
     // wrong reward computer for real robot trajectory!!!!!!!!!!!!!!
-    GaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1));
+//    GaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1));
+
+    string cfFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries_eval_traj/traj_11_234.txt";
+    DmpRewardComputer reward(resolvePath(cfFile), az, bz, dmpStepSize, 7);
 
     cout << "execute ground truth for (1.6, 7)" << endl;
-    t_executor_res opt = reward.getOptimalTraj(7.0);
+    t_executor_res opt = reward.getOptimalTraj(0, 28.0, 0);
+    cout << "execution done" << endl;
 
     // speedup testing process by inserting already learned metric result
     mat m(2,2);
+    /*
     m(0, 0) = 1.0;
     m(1, 0) = -0.2093;
     m(0, 1) = -0.2093;
     m(1, 1) = 0.0590;
+    */
 
+    cout << "(main) creating dictionary generalizer object" << endl;
     DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
+    cout << "(main) done" << endl;
 //    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
 
+    cout << "(main) initializing trajectory" << endl;
     std::vector<Trajectory*> initTraj;
     initTraj.push_back(dmpGen->getTrajectory());
+    cout << "(main) done" << endl;
 
-    cout << newQueryPoint << endl;
+    cout << "(main) query point to maximize is: " << newQueryPoint << endl;
     //cout << "(mainScrewOrocos) first metric: " << ((LinCombDmp*) dmpGen->getTrajectory())->getMetric().getM() << endl;
 
     LinCombDmp* lastRollout = NULL;
+
+    cout << "(main) creating reinforcement learning environment" << endl;
     PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, queue, queue, ac, dmpStepSize, tolAbsErr, tolRelErr);
+    cout << "(main) done" << endl;
 //    GradientDescent pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, queue, queue, ac, dmpStepSize, tolAbsErr, tolRelErr);
 
     int plotTimes = 5;
@@ -246,8 +268,11 @@ void testHumanoidsArtificialData(ControlQueue* queue) {
     vector<double> lastRewards;
     while( i < 50 ) {
 
+        cout << "(main) performing rollout" << endl;
         pow.performRollout(1, 0);
+//        cout << "(main) done" << endl;
         lastRollout = dynamic_cast<LinCombDmp*>(pow.getLastUpdate());
+        cout << "(main) retrieving last metric" << endl;
         vector<Mahalanobis> metrics = lastRollout->getMetric();
 
         //cout << "(mainScrewOrocos) last update metric: " << lastRollout->getMetric().getM() << endl;
@@ -312,7 +337,7 @@ void testHumanoidsArtificialData(ControlQueue* queue) {
         GaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1));
 
         cout << "execute ground truth for (1.6, 7)" << endl;
-        t_executor_res opt = reward.getOptimalTraj(7.0);
+        t_executor_res opt = reward.getOptimalTraj(7.0, 0);
 
         g1 = new Gnuplot("PoWER demo2");
         g1->set_style("points").plot_xy(armadilloToStdVec(updateRes.t), armadilloToStdVec(updateRes.y[0]), "generalized trajectory");
@@ -449,7 +474,7 @@ void testHumanoidsPouring(OrocosControlQueue* simulationQueue, OrocosControlQueu
     int count = 0;
     double totalError = 0.0;
     int degFreedom = dmpGen->getTrajectory()->getDegreesOfFreedom();
-    float* startingJoints = new float[degFreedom];
+    arma::vec startingJoints(1);
     while( 1 ) {
 
         cout << "(PouringExperiment) first coordinate (< 0 for exit): " << endl;
@@ -471,11 +496,7 @@ void testHumanoidsPouring(OrocosControlQueue* simulationQueue, OrocosControlQueu
         dmpGen->switchQueryPoint(newQueryPoint);
 
         vec startingPos = dmpGen->getTrajectory()->getStartingPos();
-        double* tmp = new double[degFreedom];
-        for(int i = 0; i < degFreedom; ++i)
-            tmp[i] = startingPos(i);
-
-        for(int i = 0; i < degFreedom; ++i) startingJoints[i] = tmp[i];
+        startingJoints = startingPos;
 
         initTraj.clear();
         initTraj.push_back(lastRollout);
@@ -736,7 +757,7 @@ void testSegmentationArtificialData(ControlQueue* queue) {
     newQueryPoint(0) = 1.6;
     newQueryPoint(1) = 6.5;
 
-    SegmentationTestingRewardComputer reward(6, 2.5);
+    SegmentationTestingRewardComputer reward(6, 2.5, 1);
 
     cout << "execute ground truth for (6, 2.5)" << endl;
     t_executor_res opt = reward.getOptimalTraj(0, 5);
@@ -840,7 +861,7 @@ void testSegmentationArtificialData(ControlQueue* queue) {
         GaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1));
 
         cout << "execute ground truth for (1.6, 7)" << endl;
-        t_executor_res opt = reward.getOptimalTraj(7.0);
+        t_executor_res opt = reward.getOptimalTraj(7.0, 0);
 
         g1 = new Gnuplot("PoWER demo2");
         g1->set_style("points").plot_xy(armadilloToStdVec(updateRes.t), armadilloToStdVec(updateRes.y[0]), "generalized trajectory");

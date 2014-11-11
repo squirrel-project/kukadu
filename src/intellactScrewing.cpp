@@ -42,31 +42,46 @@ int main(int argc, char** args) {
 
     int kukaStepWaitTime = 1.8 * 1e4;
 
-    float pendInitJoints[7] = {1.79281, -1.3077, -1.36712, -0.847933, -0.254344, 1.23292, 2.18119};
+    double pendInitJointsTmp[7] = {1.79281, -1.3077, -1.36712, -0.847933, -0.254344, 1.23292, 2.18119};
+
 
     // with foam
     // float pendGraspJoints[7] = {2.83388, -1.81583, -1.2572, -0.556379, 0.0867394, 1.13701, 1.01905};
 
     // without foam
-    float pendGraspJoints[7] = {2.75685, -1.52887, -1.51049, -0.783576, 0.360113, 1.0022, 1.07122};
+    double pendGraspJointsTmp[7] = {2.75685, -1.52887, -1.51049, -0.783576, 0.360113, 1.0022, 1.07122};
 
-    float pendIntermedJoints[7] = {2.15394, -1.72848, -1.43927, -1.40072, -0.342002, 0.603178, 1.73683};
+
+    double pendIntermedJointsTmp[7] = {2.15394, -1.72848, -1.43927, -1.40072, -0.342002, 0.603178, 1.73683};
+
 
     // with foam
     // float pendHoldJoints[7] = {2.70941, -1.12971, -1.87052, -0.796686, -0.460548, 1.02672, 2.47593};
 
     // without foam
-    float pendHoldJoints[7] = {2.883692741394043, -1.4105281829833984, -1.712611198425293, -0.6825535297393799, -1.0014642477035522, 0.8458623886108398, 2.6116816997528076};
+    double pendHoldJointsTmp[7] = {2.883692741394043, -1.4105281829833984, -1.712611198425293, -0.6825535297393799, -1.0014642477035522, 0.8458623886108398, 2.6116816997528076};
 
-    float headInitJoints[7] = {0.864292, 1.54993, 0.872115, 1.77397, -2.81503, 0.464614, -1.73203};
+
+    double headInitJointsTmp[7] = {0.864292, 1.54993, 0.872115, 1.77397, -2.81503, 0.464614, -1.73203};
+
 
     // with foam
     // float headGraspJoints[7] = {-0.127053, 1.03195, 1.1036, 1.0663, -0.276566, -0.886426, 1.43944};
 
     // without foam
-    float headGraspJoints[7] = {-0.639902, 0.901709, 0.641415, 0.382029, -2.51635, 1.13727, -1.72087};
+    double headGraspJointsTmp[7] = {-0.639902, 0.901709, 0.641415, 0.382029, -2.51635, 1.13727, -1.72087};
 
-    float headIntermedJoints[7] = {0.71328, 1.25731, 1.14691, 2.00651, -2.65152, 0.192659, -1.92759};
+
+    double headIntermedJointsTmp[7] = {0.71328, 1.25731, 1.14691, 2.00651, -2.65152, 0.192659, -1.92759};
+
+
+    arma::vec pendInitJoints = createArmaVecFromDoubleArray(pendInitJointsTmp, 7);
+    arma::vec pendGraspJoints = createArmaVecFromDoubleArray(pendGraspJointsTmp, 7);
+    arma::vec pendIntermedJoints = createArmaVecFromDoubleArray(pendIntermedJointsTmp, 7);
+    arma::vec pendHoldJoints = createArmaVecFromDoubleArray(pendHoldJointsTmp, 7);
+    arma::vec headInitJoints = createArmaVecFromDoubleArray(headInitJointsTmp, 7);
+    arma::vec headGraspJoints = createArmaVecFromDoubleArray(headGraspJointsTmp, 7);
+    arma::vec headIntermedJoints = createArmaVecFromDoubleArray(headIntermedJointsTmp, 7);
 
     // has to be replaced
 //    float headScrewJoints[7] = {0.16576188802719116, 1.3929321765899658, 1.319714069366455, 1.9400454759597778, -2.738997459411621, -0.0808953121304512, -1.830229640007019};
@@ -75,7 +90,8 @@ int main(int argc, char** args) {
     // float screwStart[7] = {0.287568, 1.66721, 1.46937, 2.08513, -2.8281, -0.0255578, -1.7752};
 
     // without foam
-    float screwStart[7] = {0.3357972502708435, 1.236600399017334, 1.2974035739898682, 2.049152374267578, -2.7408792972564697, -0.10395102202892303, -1.8124815225601196};
+    double screwStartTmp[7] = {0.3357972502708435, 1.236600399017334, 1.2974035739898682, 2.049152374267578, -2.7408792972564697, -0.10395102202892303, -1.8124815225601196};
+    arma::vec screwStart = createArmaVecFromDoubleArray(screwStartTmp, 7);
 
     ros::NodeHandle* node = NULL;
 

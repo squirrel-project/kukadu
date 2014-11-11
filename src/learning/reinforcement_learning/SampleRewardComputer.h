@@ -17,9 +17,9 @@ private:
 
 public:
 
-	SampleRewardComputer(double slope);
+    SampleRewardComputer(double slope, int degOfFreedom);
 	
-	double computeFun(double t);
+    arma::vec computeFun(double t);
 	
 };
 

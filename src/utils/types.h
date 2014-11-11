@@ -7,7 +7,7 @@
 
 struct mes_result {
 	double time;
-	float* joints;
+    arma::vec joints;
 };
 
 struct t_executor_res {

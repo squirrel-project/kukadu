@@ -166,7 +166,7 @@ int main(int argc, char** args) {
 
     double time = 0.0;
     double lastTime = -1.0;
-    float* joints;
+    arma::vec joints;
 
     std::thread* inputThr = NULL;
     inputThr = new std::thread(consoleInputter);
@@ -179,7 +179,7 @@ int main(int argc, char** args) {
         joints = mesRes.joints;
 
         usleep(0.5 * 1e4);
-        if(joints != NULL && lastTime != time) {
+        if(joints.n_elem > 1 && lastTime != time) {
 
             oFile << time;
             for(int i = 0; i < columns - 1; ++i) { oFile << "\t" << joints[i]; }

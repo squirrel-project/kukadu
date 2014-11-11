@@ -55,6 +55,8 @@ gsl_vector* createGslVectorFromStdVector(std::vector<double>* data);
 gsl_matrix* createMatrixFromQueueArray(std::queue<double>** data, int columns);
 gsl_matrix* invertSquareMatrix(gsl_matrix* mat);
 
+arma::vec createArmaVecFromDoubleArray(double* data, int n);
+
 double* createDoubleArrayFromStdVector(std::vector<double>* data);
 double* createDoubleArrayFromArmaVector(arma::vec data);
 float* createFloatArrayFromStdVector(std::vector<float>* data);
@@ -94,5 +96,6 @@ arma::vec symmetricMatrixToColumn(arma::mat m);
 arma::mat columnToSymmetricMatrix(arma::vec c);
 
 t_executor_res executeDemo(ControlQueue* movementQu, std::string file, int doSimulation, double az, double bz, int plotResults);
+t_executor_res executeDemo(ControlQueue* movementQu, std::string file, int doSimulation, double az, double bz, int plotResults, double dmpStepSize);
 
 #endif

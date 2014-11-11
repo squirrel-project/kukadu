@@ -20,7 +20,6 @@
 #include "../src/robot/mounted/SchunkHand.h"
 #include "../src/robot/mounted/RosSchunk.h"
 #include "../src/robot/ControlQueue.h"
-#include "../src/robot/KukaControlQueue.h"
 #include "../src/trajectory/DMPExecutor.h"
 #include "../src/trajectory/DMPTrajectoryGenerator.h"
 #include "../src/trajectory/PolyTrajectoryGenerator.h"
@@ -51,6 +50,7 @@
 #include "../src/utils/utils.h"
 #include "../src/utils/conversion_utils.h"
 #include "../src/learning/reinforcement_learning/TerminalCostComputer.h"
+#include "../src/learning/reinforcement_learning/DmpRewardComputer.h"
 #include "../src/robot/PlottingControlQueue.h"
 #include "../src/trajectory/TimeDepDictionaryGeneralizer.h"
 

@@ -16,6 +16,19 @@ std::string resolvePath(std::string path) {
 }
 
 t_executor_res executeDemo(ControlQueue* movementQu, string file, int doSimulation, double az, double bz, int plotResults) {
+
+    return executeDemo(movementQu, file, doSimulation, az, bz, plotResults, 1.3 * 1e-2);
+
+}
+
+arma::vec createArmaVecFromDoubleArray(double* data, int n) {
+    arma::vec ret(n);
+    for(int i = 0; i < n; ++i)
+        ret(i) = data[i];
+    return ret;
+}
+
+t_executor_res executeDemo(ControlQueue* movementQu, string file, int doSimulation, double az, double bz, int plotResults, double dmpStepSize) {
 	
 	Gnuplot* g1 = NULL;
 	
@@ -28,9 +41,6 @@ t_executor_res executeDemo(ControlQueue* movementQu, string file, int doSimulati
 
 	double tolAbsErr = 1e-1;
 	double tolRelErr = 1e-1;
-
-	int kukaStepWaitTime = 1.3 * 1e4;
-	double dmpStepSize = kukaStepWaitTime * 1e-6;
 	
 	// with current implementation tStart has to be 0.0
 	double tStart = 0.0;
@@ -51,8 +61,8 @@ t_executor_res executeDemo(ControlQueue* movementQu, string file, int doSimulati
 	vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
 
 	float timeCounter = 0.0;
-	float* jointValues = NULL;
-	float* currentJoints = NULL;
+    arma::vec jointValues;
+    arma::vec currentJoints;
 
     TrajectoryDMPLearner dmpLearner(baseDef, tau, az, bz, ax, joints);
 	Dmp learnedDmps = dmpLearner.fitTrajectories();
@@ -60,10 +70,7 @@ t_executor_res executeDemo(ControlQueue* movementQu, string file, int doSimulati
 
 	if(!doSimulation) {
 		
-		double* tmp = createDoubleArrayFromArmaVector(learnedDmps.getY0());
-		float* startingJoints = new float[columns - 1];
-		for(int i = 0; i < (columns - 1); ++i) startingJoints[i] = tmp[i];
-		movementQu->moveJoints(startingJoints);
+        movementQu->moveJoints(learnedDmps.getY0());
 		
 		currentJoints = movementQu->getCurrentJoints().joints;
 		printf("(main) begin joint [%f,%f,%f,%f,%f,%f,%f]\n", currentJoints[0], currentJoints[1], currentJoints[2], currentJoints[3], currentJoints[4], currentJoints[5], currentJoints[6]);

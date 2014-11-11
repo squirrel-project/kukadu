@@ -56,7 +56,7 @@ int main(int argc, char** args) {
 
         for(double slope = 1; slope < 4; ++slope) {
 
-            SegmentationTestingRewardComputer comp(height, slope);
+            SegmentationTestingRewardComputer comp(height, slope, 1);
             string heightString = double_to_string(height);
             string slopeString = double_to_string(slope);
             comp.writeToFile(resolvePath("$KUKADU_HOME/movements/iros2014/artificial_part2/traj_" + heightString + "_" + slopeString + ".txt"), 1.5, 3, 0.001);
@@ -79,7 +79,7 @@ void testPower(ros::NodeHandle* node) {
     vector<double> rlExploreSigmas = {50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50};
 
     GaussianObstacleRewardComputer reward(2, 2.0, 3);
-    t_executor_res opt = reward.getOptimalTraj(5.0);
+    t_executor_res opt = reward.getOptimalTraj(5.0, 0);
 
     PlottingControlQueue* queue = NULL;
     queue = new PlottingControlQueue(1, kukaStepWaitTime);

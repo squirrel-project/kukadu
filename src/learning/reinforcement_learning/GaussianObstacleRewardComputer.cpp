@@ -3,21 +3,24 @@
 using namespace std;
 using namespace arma;
 
-SegmentationTestingRewardComputer::SegmentationTestingRewardComputer(double height, double slope) {
+SegmentationTestingRewardComputer::SegmentationTestingRewardComputer(double height, double slope, int degOfFreedom) : TrajectoryBasedReward(degOfFreedom) {
     this->height = height;
     this->slope = slope;
 }
 
-double SegmentationTestingRewardComputer::computeFun(double t) {
+arma::vec SegmentationTestingRewardComputer::computeFun(double t) {
 
+    arma::vec retVec(1);
     double center = 1.0;
     double width = 1.2;
     double endGaussian = 3.0;
 
     if(t > endGaussian)
-        return (height * exp(- pow((t - center), 2) / width) + 0.1 * height * slope * (t - endGaussian));
+        retVec(0) = (height * exp(- pow((t - center), 2) / width) + 0.1 * height * slope * (t - endGaussian));
     else
-        return height * exp(- pow((t - center), 2) / width);
+        retVec(0) = height * exp(- pow((t - center), 2) / width);
+
+    return retVec;
 
 }
 
@@ -38,7 +41,7 @@ double PouringRewardComputer::computeCost(t_executor_res results) {
 
 }
 
-GaussianObstacleRewardComputer::GaussianObstacleRewardComputer(double my, double sigma, double height) {
+GaussianObstacleRewardComputer::GaussianObstacleRewardComputer(double my, double sigma, double height) : TrajectoryBasedReward(0) {
 	
 	this->my = my;
 	this->sigma = sigma;
@@ -46,8 +49,10 @@ GaussianObstacleRewardComputer::GaussianObstacleRewardComputer(double my, double
 	
 }
 
-double GaussianObstacleRewardComputer::computeFun(double t) {
+arma::vec GaussianObstacleRewardComputer::computeFun(double t) {
 	
+    vec retVec(1);
+
 	// y1 = c1 * exp(- (x - o) .^ 2 / s);
 //    return height * exp(- pow((t - my), 2) / sigma);
 	
@@ -58,7 +63,8 @@ double GaussianObstacleRewardComputer::computeFun(double t) {
 	//c3 = 0.2;
 	//y1 = c1 * exp(- (x - o) .^ 2 / s) + c2 * sin(10 * x) + c1 * c3 * x;
 //	return (height * exp(- pow((t - my), 2) / sigma) + c2 * sin(10.0 * t) + height * c3 * t);
-    return (height * exp(- pow((t - my), 2) / sigma) + height * c3 * t);
+    retVec(0) = (height * exp(- pow((t - my), 2) / sigma) + height * c3 * t);
+    return retVec;
 	
 	//y1 = c1 * exp(- (x - o) .^ 2 / s) + c2 * sin(10 * x) + c1 * o / 10.0 * x;
 //	return (height * exp(- pow((t - my), 2) / sigma) + height * c3 / 8.0 * t);

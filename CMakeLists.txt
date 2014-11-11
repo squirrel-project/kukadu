@@ -55,7 +55,6 @@ add_library(kukadulib src/robot/robotDriver/src/kuka/friRemote.cpp
 src/robot/robotDriver/src/kuka/friUdp.cpp
 src/robot/robotDriver/src/friMain.cpp
 src/robot/robotDriver/src/friMisc.cpp
-src/robot/KukaControlQueue.cpp
 src/utils/utils.cpp
 src/utils/conversion_utils.cpp
 src/utils/Tokenizer.cpp
@@ -105,6 +104,7 @@ src/learning/reinforcement_learning/SampleRewardComputer.cpp
 src/learning/reinforcement_learning/GaussianObstacleRewardComputer.cpp
 src/learning/reinforcement_learning/GeneralReinforcer.cpp
 src/learning/reinforcement_learning/GradientDescent.cpp
+src/learning/reinforcement_learning/DmpRewardComputer.cpp
 src/trajectory/TrajectoryExecutor.cpp
 src/robot/PlottingControlQueue.cpp
 src/trajectory/TimeDepDictionaryGeneralizer.cpp

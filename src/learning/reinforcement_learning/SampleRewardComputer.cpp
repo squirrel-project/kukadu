@@ -3,15 +3,16 @@
 using namespace std;
 using namespace arma;
 
-SampleRewardComputer::SampleRewardComputer(double slope) {
+SampleRewardComputer::SampleRewardComputer(double slope, int degOfFreedom) : TrajectoryBasedReward(degOfFreedom) {
 	this->slope = slope;
 }
 
-double SampleRewardComputer::computeFun(double t) {
+arma::vec SampleRewardComputer::computeFun(double t) {
 	
+    arma::vec retVec(1);
 	double val = 0.0;
 
-	val = sin(t * 1.5);
-	return val;
+    retVec(0) = val = sin(t * 1.5);
+    return retVec;
 	
 }

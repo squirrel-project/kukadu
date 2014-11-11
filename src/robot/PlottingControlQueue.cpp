@@ -13,8 +13,8 @@ void PlottingControlQueue::setInitValues() {
 	isInit = false;
 	finish = 0;
 	
-	currentJoints = new float[getMovementDegreesOfFreedom()];
-	currentCarts = new float[6];
+    currentJoints = arma::vec(1);
+    currentCarts = arma::vec(1);
 
 }
 
@@ -33,10 +33,10 @@ void PlottingControlQueue::run() {
 
 void PlottingControlQueue::setFinish() {
 	finish = 1;
-	startingJoints = NULL;
+    startingJoints = arma::vec(1);
 }
 
-void PlottingControlQueue::addJointsPosToQueue(float* joints) {
+void PlottingControlQueue::addJointsPosToQueue(arma::vec joints) {
     currentJoints = joints;
     currentTime += sleepTime * 1e-6;
 }
@@ -51,12 +51,12 @@ void PlottingControlQueue::stopCurrentMode() {
 void PlottingControlQueue::synchronizeToControlQueue(int maxNumJointsInQueue) {
 }
 
-void PlottingControlQueue::setStartingJoints(float* joints) {
+void PlottingControlQueue::setStartingJoints(arma::vec joints) {
     currentJoints = joints;
     startingJoints = joints;
 }
 
-void PlottingControlQueue::moveJoints(float* joints) {
+void PlottingControlQueue::moveJoints(arma::vec joints) {
     currentJoints = joints;
 }
 
@@ -66,16 +66,16 @@ void PlottingControlQueue::setAdditionalLoad(float loadMass, float loadPos) {
 void PlottingControlQueue::setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq) {
 }
 
-float* PlottingControlQueue::getCartesianPos() {
+arma::vec PlottingControlQueue::getCartesianPos() {
 //	return currentCarts;
     throw "not supported yet";
 }
 
-float* PlottingControlQueue::getStartingJoints() {
+arma::vec PlottingControlQueue::getStartingJoints() {
 	return startingJoints;
 }
 
-float* PlottingControlQueue::retrieveJointsFromRobot() {
+arma::vec PlottingControlQueue::retrieveJointsFromRobot() {
 	return currentJoints;
 }
 

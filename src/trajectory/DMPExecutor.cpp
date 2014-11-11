@@ -41,8 +41,7 @@ void DMPExecutor::construct(Dmp traj, int suppressMessages) {
 	this->odeSystemSize = 2 * this->degofFreedom + 1;
 	this->suppressMessages = suppressMessages;
 
-	previousDesiredJoints = new double[y0s.n_elem];
-	for(int i = 0; i < y0s.n_elem; ++i) previousDesiredJoints[i] = y0s(i);
+    previousDesiredJoints = y0s;
 
     duration = traj.getTmax();
 	externalErrorUsing = 0;
@@ -143,14 +142,18 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 
 }
 
-double DMPExecutor::computeDistance(const double* yDes, float* yCurr) {
+double DMPExecutor::computeDistance(const arma::vec yDes, arma::vec yCurr) {
 
+    /*
 	double dist = 0.0;
 	for(int i = 0; i < degofFreedom; ++i) {
 		dist += pow( yDes[i] - yCurr[i]  , 2);
 	}
+    return dist;
+    */
 
-	return dist;
+    arma::vec tmp = yDes.t() * yCurr;
+    return tmp(0);
 
 }
      
@@ -278,37 +281,13 @@ t_executor_res DMPExecutor::executeDMP(int simulate, double tStart, double tEnd,
 
     for (int i = 0; i < durationSteps; ++i) {
 		
-		currentJoints = NULL;
-		if(this->simulate == EXECUTE_ROBOT) {
-			
-			currentJoints = controlQueue->getCurrentJoints().joints;
-
-		}
-		
 		vec newJoints = doIntegrationStep(ac);
 
-		if(this->simulate == EXECUTE_ROBOT)  {
+        // synchronize to control queue (maximum one joint array has to be already in there --> needed for phase stopping such that DMPExecutor does not progress to fast)
+        controlQueue->synchronizeToControlQueue(1);
+        controlQueue->addJointsPosToQueue(newJoints);
 
-			float* moveJoints = NULL;
-			moveJoints = copyJoints(currentJoints, controlQueue->getMovementDegreesOfFreedom());
-			
-			// move to desired position
-			for(int i = 0; i < degofFreedom; ++i) {
-				moveJoints[i] = newJoints(i);
-			}
-			
-			// synchronize to control queue (maximum one joint array has to be already in there --> needed for phase stopping such that DMPExecutor does not progress to fast)
-            controlQueue->synchronizeToControlQueue(1);
-			controlQueue->addJointsPosToQueue(moveJoints);
-
-		}
-		
-		// simulate perfect movement
-		if(this->simulate == SIMULATE_DMP) {
-			currentJoints = new float[degofFreedom];
-			for(int i = 0; i < degofFreedom; ++i) currentJoints[i] = newJoints.at(i);
-		}
-
+        currentJoints = controlQueue->getCurrentJoints().joints;
 		for(int i = 0; i < degofFreedom; ++i) 
 			vec_y[i].push_back(currentJoints[i]);
 		

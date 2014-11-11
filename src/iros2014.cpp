@@ -343,7 +343,7 @@ void testIROS() {
     timeCenters(0) = 2.5;
 	
 	GaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1));
-	t_executor_res opt = reward.getOptimalTraj(5.0);
+    t_executor_res opt = reward.getOptimalTraj(5.0, 0);
 	
     dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, raQueue, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, 1.0);
 	
@@ -431,7 +431,7 @@ void testIROS() {
 		dmpGen->switchQueryPoint(newQueryPoint);
 		
 		GaussianObstacleRewardComputer reward2(newQueryPoint(0), 2.0, newQueryPoint(1));
-		t_executor_res opt2 = reward2.getOptimalTraj(5.0);
+        t_executor_res opt2 = reward2.getOptimalTraj(5.0, 0);
 		
 		initTraj.clear();
 		initTraj.push_back(lastRollout);
@@ -447,7 +447,7 @@ void testIROS() {
 		switchThr->join();
 		
 		GaussianObstacleRewardComputer reward3(switchedTo(0), 2.0, switchedTo(1));
-		t_executor_res opt3 = reward3.getOptimalTraj(5.0);
+        t_executor_res opt3 = reward3.getOptimalTraj(5.0, 0);
 		
 		g1 = new Gnuplot("PoWER demo2");
 		g1->set_style("points").plot_xy(armadilloToStdVec(updateRes.t), armadilloToStdVec(updateRes.y[0]), "generalized trajectory");

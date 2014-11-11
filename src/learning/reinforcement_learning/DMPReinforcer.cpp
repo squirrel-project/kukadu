@@ -117,9 +117,7 @@ void DMPReinforcer::performRollout(int doSimulation, int doExecution) {
 				
 				cout << "(DMPReinforcer) executing rollout" << endl;
 				
-				double* tmp = createDoubleArrayFromArmaVector(rollout.at(k).getY0());
-				float* startingJoints = new float[rollout.at(k).getDegreesOfFreedom()];
-				for(int i = 0; i < rollout.at(k).getDegreesOfFreedom(); ++i) startingJoints[i] = tmp[i];
+                arma::vec startingJoints = rollout.at(k).getY0();
 				
 				movementQueue->setStartingJoints(startingJoints);
 				movementQueue->setStiffness(2200, 300, 1.0, 15000, 150, 2.0);

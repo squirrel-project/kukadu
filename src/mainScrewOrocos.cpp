@@ -236,10 +236,15 @@ int main(int argc, char** args) {
 		float prepareJoints[7] = {0.34165704250335693, 1.6997754573822021, -1.5356805324554443, -1.9555771350860596, -2.319523572921753, -0.0016413599951192737, 0.33485254645347595};
 		*/
 		
-		float initJoints[7] = {-1.8570010662078857, 1.223028540611267, 1.8580671548843384, -1.699626088142395, -1.1439096927642822, -0.0016839634627103806, -0.0720016211271286};
-		float pickupJoints[7] = {-0.9376608729362488, 1.210081696510315, 2.0494399070739746, -1.2310117483139038, -2.8832123279571533, -0.8106216788291931, -0.018600357696413994};
-		float prepareJoints[7] = {-1.434193730354309, 1.2308440208435059, 1.542385458946228, -1.9307560920715332, -2.5853400230407715, -0.06925068795681, -1.7760529518127441};
-		float leaveJoints[7] = {-1.5658361911773682, 1.4227105379104614, 1.4938398599624634, -1.8213244676589966, 1.4891080856323242, 0.12021292001008987, 1.5366511344909668};
+        double initJointsTmp[7] = {-1.8570010662078857, 1.223028540611267, 1.8580671548843384, -1.699626088142395, -1.1439096927642822, -0.0016839634627103806, -0.0720016211271286};
+        double pickupJointsTmp[7] = {-0.9376608729362488, 1.210081696510315, 2.0494399070739746, -1.2310117483139038, -2.8832123279571533, -0.8106216788291931, -0.018600357696413994};
+        double prepareJointsTmp[7] = {-1.434193730354309, 1.2308440208435059, 1.542385458946228, -1.9307560920715332, -2.5853400230407715, -0.06925068795681, -1.7760529518127441};
+        double leaveJointsTmp[7] = {-1.5658361911773682, 1.4227105379104614, 1.4938398599624634, -1.8213244676589966, 1.4891080856323242, 0.12021292001008987, 1.5366511344909668};
+
+        arma::vec initJoints = createArmaVecFromDoubleArray(initJointsTmp, 7);
+        arma::vec pickupJoints = createArmaVecFromDoubleArray(pickupJointsTmp, 7);
+        arma::vec prepareJoints = createArmaVecFromDoubleArray(prepareJointsTmp, 7);
+        arma::vec leaveJoints = createArmaVecFromDoubleArray(leaveJointsTmp, 7);
 		
 		raHand->connectHand();
 		
@@ -336,7 +341,7 @@ int main(int argc, char** args) {
  
 		double time = 0.0;
 		double lastTime = -1.0;
-		float* joints;
+        arma::vec joints;
  
 		std::thread* inputThr = NULL;
 		inputThr = new std::thread(consoleInputter);
@@ -349,7 +354,7 @@ int main(int argc, char** args) {
 			joints = mesRes.joints;
 			//cout << joints << " " << lastTime << " " << time << endl;
 			usleep(0.5 * 1e4);
-			if(joints != NULL && lastTime != time) {
+            if(joints.n_elem > 1 && lastTime != time) {
 				oFile << time;
                 for(int i = 0; i < columns - 1; ++i) { oFile << "\t" << joints[i]; }
 				oFile << endl;
@@ -554,7 +559,7 @@ int main(int argc, char** args) {
 		
 		double time = 0.0;
 		double lastTime = -1.0;
-		float* joints;
+        arma::vec joints;
 		
 		char input = ' ';
 		
@@ -568,7 +573,7 @@ int main(int argc, char** args) {
 			time = mesRes.time;
 			joints = mesRes.joints;
 
-			if(joints != NULL && lastTime != time) {
+            if(joints.n_elem > 1 && lastTime != time) {
 				oFile << time;
 				for(int i = 0; i < columns - 1; ++i) { oFile << "\t" << joints[i]; }
 				oFile << endl;
@@ -798,7 +803,7 @@ void testIROS() {
 //	newQueryPoint(1) = 6.9;
 	
 	GaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1));
-	t_executor_res opt = reward.getOptimalTraj(5.0);
+    t_executor_res opt = reward.getOptimalTraj(5.0, 0);
 	
 	if(!doSimulation) {
 
@@ -915,7 +920,7 @@ void testIROS() {
 		dmpGen->switchQueryPoint(newQueryPoint);
 		
 		GaussianObstacleRewardComputer reward2(newQueryPoint(0), 2.0, newQueryPoint(1));
-		t_executor_res opt2 = reward2.getOptimalTraj(5.0);
+        t_executor_res opt2 = reward2.getOptimalTraj(5.0, 0);
 		
 		initTraj.clear();
 		initTraj.push_back(lastRollout);
@@ -931,7 +936,7 @@ void testIROS() {
 		switchThr->join();
 		
 		GaussianObstacleRewardComputer reward3(switchedTo(0), 2.0, switchedTo(1));
-		t_executor_res opt3 = reward3.getOptimalTraj(5.0);
+        t_executor_res opt3 = reward3.getOptimalTraj(5.0, 0);
 		
 		g1 = new Gnuplot("PoWER demo2");
 		g1->set_style("points").plot_xy(armadilloToStdVec(updateRes.t), armadilloToStdVec(updateRes.y[0]), "generalized trajectory");
@@ -1095,8 +1100,8 @@ void testPoWER() {
 	int importanceSamplingCount = 3;
 	double t_max = 7;
 	
-	SampleRewardComputer rew(0.1);
-	t_executor_res opt = rew.getOptimalTraj(t_max);
+    SampleRewardComputer rew(0.1, 1);
+    t_executor_res opt = rew.getOptimalTraj(t_max, 0);
 	double deltaT = 0.05;
 	int tCount = opt.t.n_elem;
 	mat sample(tCount, 2);

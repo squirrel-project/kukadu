@@ -61,8 +61,8 @@ private:
 	double externalError;
 	double g, y0, dy0;
 	
-	float* currentJoints;
-	double* previousDesiredJoints;
+    arma::vec currentJoints;
+    arma::vec previousDesiredJoints;
 
 	arma::vec y0s;
 	arma::vec dy0s;
@@ -92,7 +92,7 @@ private:
 	double t;
 	double stepSize;
 
-	double computeDistance(const double* yDes, float* yCurr);
+    double computeDistance(const arma::vec yDes, arma::vec yCurr);
 	
 	// needed for workaround (see here http://stackoverflow.com/questions/10687397/static-virtual-workaround-in-gsl)
 	static int static_func(double t, const double y[], double f[], void *params);

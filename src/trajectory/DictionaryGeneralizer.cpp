@@ -232,13 +232,13 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 	vector<DMPExecutor*> execs;
 	currentQuery = query;
 	newQpSwitch = 1;
-	
+
 	oldCoefficients = vec(points);
 	newCoefficients = vec(points);
 	currentCoefficients = vec(points);
 	
     int isFirstIteration = 1;
-	
+
 //	double alpham = 1.0;
 
 //    cout << "(DictionaryGeneralizer) starting generalized execution" << endl;
@@ -247,7 +247,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 	//vector<vector<double>> retY;
 	vector<double>* retY = new vector<double>[degOfFreedom];
 	vector<double> retT;
-	
+
 	// create all executors
 	for(int i = 0; i < points; ++i) {
 
@@ -257,9 +257,9 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 
 		// if real execution use external error determination
         if(simulate) currentExec->useExternalError(1);
-		
+
 		execs.push_back(currentExec);
-		
+
     }
 
     vector<Mahalanobis> metrics = dictTraj->getMetric();
@@ -313,7 +313,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 		vec distanceCoeffs(points);
 		vec nextJoints(degOfFreedom);
 		nextJoints.fill(0.0);
-		
+
 		// perform coefficient switching (mutex for the sake of thread safety)
 		switcherMutex.lock();
 
@@ -380,29 +380,15 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
         if(isFirstIteration) {
 
         //    cout << "(DictionaryGeneralizer) moving to initial execution position" << endl;
-            float* startingJoints = new float[nextJoints.n_elem];
-            for(int i = 0; i < nextJoints.n_elem; ++i) startingJoints[i] = nextJoints(i);
-            queue->moveJoints(startingJoints);
+            queue->moveJoints(nextJoints);
             isFirstIteration = 0;
         //    cout << "(DictionaryGeneralizer) starting trajectory execution" << endl;
 
         } else {
 
-            // if not first integration step but real robot execution --> add new positions to queue
-            float* moveJoints = new float[nextJoints.n_elem];
-
-            // move to desired position
-            for(int i = 0; i < nextJoints.n_elem; ++i) {
-                moveJoints[i] = nextJoints(i);
-            }
-
             // synchronize to control queue (maximum one joint array has to be already in there --> needed for phase stopping such that DMPExecutor does not progress to fast)
             queue->synchronizeToControlQueue(0);
-            queue->addJointsPosToQueue(moveJoints);
-
-            float* currentJoints = queue->getCurrentJoints().joints;
-            for(int i = 0; i < nextJoints.n_elem; ++i) {
-            }
+            queue->addJointsPosToQueue(nextJoints);
 
         }
 

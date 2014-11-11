@@ -5,6 +5,7 @@
 
 #include "../utils/DestroyableObject.h"
 #include "../utils/types.h"
+#include <armadillo>
 
 #define COMMAND_NOT_SET -100
 
@@ -55,7 +56,7 @@ public:
 	 * \brief Adds next joint position to queue
 	 * \param joints joints to add
 	 */
-	virtual void addJointsPosToQueue(float* joints) = 0;
+    virtual void addJointsPosToQueue(arma::vec joints) = 0;
 	
 	/**
 	 * \brief Switches robot modes. A state might be a real time command mode or an monitoring mode
@@ -78,13 +79,13 @@ public:
 	 * \brief Sets joints in which the should be in before robot enters command mode
 	 * \param joints array of joint positions
 	 */
-	virtual void setStartingJoints(float* joints) = 0;
+    virtual void setStartingJoints(arma::vec joints) = 0;
 	
 	/**
 	 * \brief Implements simple point to point movement in joint space
 	 * \param joints array of joint positions
 	 */
-	virtual void moveJoints(float* joints) = 0;
+    virtual void moveJoints(arma::vec joints) = 0;
 	
 	/**
 	 * \brief Changes the load data of the robot (e.g. needs to be used whenever robot picks up an object)
@@ -107,17 +108,17 @@ public:
 	/**
 	 * \brief Returns current robot position in cartesian space
 	 */
-	virtual float* getCartesianPos() = 0;
+    virtual arma::vec getCartesianPos() = 0;
 	
 	/**
 	 * \brief Returns the robot joints the robot has been directly before starting command mode
 	 */
-	virtual float* getStartingJoints() = 0;
+    virtual arma::vec getStartingJoints() = 0;
 	
 	/**
 	 * \brief Returns joints if the robot is in monitor mode
 	 */
-	virtual float* retrieveJointsFromRobot() = 0;
+    virtual arma::vec retrieveJointsFromRobot() = 0;
 	
 	/**
 	 * \brief Returns joints if the robot is in command mode

@@ -14,20 +14,25 @@ class TrajectoryBasedReward : public CostComputer {
 
 private:
 	
+    int degOfFreedom;
 	double tmax;
 	double slope;
 
+    arma::vec rewardsWeights;
+
 public:
 
-	TrajectoryBasedReward();
+    TrajectoryBasedReward(int degOfFreedom);
+    TrajectoryBasedReward(int degOfFreedom, arma::vec rewardsWeights);
+
 	double computeCost(t_executor_res results);
 	
-    t_executor_res getOptimalTraj(double tmax);
-    t_executor_res getOptimalTraj(double tmin, double tmax);
-	arma::vec computeFun(arma::vec t);
+    t_executor_res getOptimalTraj(double tmax, int freedomIdx);
+    t_executor_res getOptimalTraj(double tmin, double tmax, int freedomIdx);
+    std::vector<arma::vec> computeFun(arma::vec t);
     void writeToFile(std::string file, double tStart, double tEnd, double stepSize);
 	
-	virtual double computeFun(double t) = 0;
+    virtual arma::vec computeFun(double t) = 0;
 	
 };
 

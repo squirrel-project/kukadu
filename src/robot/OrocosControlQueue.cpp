@@ -29,7 +29,7 @@ void OrocosControlQueue::constructQueue(int argc, char** argv, int sleepTime, st
     this->argv = argv;
 
     setInitValues();
-    startingJoints = NULL;
+    startingJoints = arma::vec(1);
     this->node = node;
     loop_rate = new ros::Rate(1.0 / sleepTime * 1e+6);
 
@@ -81,8 +81,8 @@ OrocosControlQueue::OrocosControlQueue(int argc, char** argv, int sleepTime, std
 void OrocosControlQueue::robotJointPosCallback(const sensor_msgs::JointState& msg) {
 
 	currentJointsMutex.lock();
-		currentJoints = new float[msg.position.size()];
-		for(int i = 0; i < msg.position.size(); ++i) currentJoints[i] = msg.position.at(i);
+        currentJoints = arma::vec(msg.position.size());
+        for(int i = 0; i < msg.position.size(); ++i) currentJoints(i) = msg.position.at(i);
 	currentJointsMutex.unlock();
 
 }
@@ -90,13 +90,13 @@ void OrocosControlQueue::robotJointPosCallback(const sensor_msgs::JointState& ms
 void OrocosControlQueue::robotCartPosCallback(const geometry_msgs::Pose& msg) {
 
 	currentCartsMutex.lock();
-		currentCarts = new float[6];
-		currentCarts[0] = msg.position.x;
-		currentCarts[1] = msg.position.y;
-		currentCarts[2] = msg.position.z;
-		currentCarts[3] = msg.orientation.x;
-		currentCarts[4] = msg.orientation.y;
-		currentCarts[5] = msg.orientation.z;
+        currentCarts = arma::vec(6);
+        currentCarts(0) = msg.position.x;
+        currentCarts(1) = msg.position.y;
+        currentCarts(2) = msg.position.z;
+        currentCarts(3) = msg.orientation.x;
+        currentCarts(4) = msg.orientation.y;
+        currentCarts(5) = msg.orientation.z;
 	currentCartsMutex.unlock();
 
 }
@@ -114,10 +114,10 @@ void OrocosControlQueue::run() {
 
 	setInitValues();
 
-	float* movement = NULL;
+    arma::vec movement = arma::vec(1);
 
 	cout << "start moving to start position" << endl;
-	if(startingJoints != NULL) moveJoints(startingJoints);
+    if(startingJoints.n_elem > 1) moveJoints(startingJoints);
 	cout << "finished moving to start position" << endl;
 	
 	isInit = true;
@@ -161,8 +161,8 @@ void OrocosControlQueue::setInitValues() {
 	isInit = false;
 	finish = 0;
 	
-	currentJoints = new float[getMovementDegreesOfFreedom()];
-	currentCarts = new float[6];
+    currentJoints = arma::vec(1);
+    currentCarts = arma::vec(1);
 	
 	while(!movementQueue.empty()) movementQueue.pop();
 
@@ -170,10 +170,10 @@ void OrocosControlQueue::setInitValues() {
 
 void OrocosControlQueue::setFinish() {
 	finish = 1;
-	startingJoints = NULL;
+    startingJoints = arma::vec(1);
 }
 
-void OrocosControlQueue::addJointsPosToQueue(float* joints) {
+void OrocosControlQueue::addJointsPosToQueue(arma::vec joints) {
 	movementQueue.push(joints);
 }
 
@@ -203,11 +203,11 @@ void OrocosControlQueue::synchronizeToControlQueue(int maxNumJointsInQueue) {
 	while(movementQueue.size() > maxNumJointsInQueue);
 }
 
-void OrocosControlQueue::setStartingJoints(float* joints) {
+void OrocosControlQueue::setStartingJoints(arma::vec joints) {
 	startingJoints = joints;
 }
 
-void OrocosControlQueue::moveJoints(float* joints) {
+void OrocosControlQueue::moveJoints(arma::vec joints) {
 	
 	ptpReached = 0;
 	
@@ -293,15 +293,15 @@ void OrocosControlQueue::setStiffness(float cpstiffnessxyz, float cpstiffnessabc
 
 }
 
-float* OrocosControlQueue::getCartesianPos() {
+arma::vec OrocosControlQueue::getCartesianPos() {
 	return currentCarts;
 }
 
-float* OrocosControlQueue::getStartingJoints() {
+arma::vec OrocosControlQueue::getStartingJoints() {
 	return startingJoints;
 }
 
-float* OrocosControlQueue::retrieveJointsFromRobot() {
+arma::vec OrocosControlQueue::retrieveJointsFromRobot() {
 	return currentJoints;
 }
 

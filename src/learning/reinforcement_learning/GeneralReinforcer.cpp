@@ -42,12 +42,12 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 	
     char cont = 'n';
 	vector<Gnuplot*> gs;
-	Gnuplot* g1 = NULL;
+    Gnuplot* g1 = NULL;
 	
 	if(isFirstIteration) {
 		
 		rollout = getInitialRollout();
-		
+
     //	trajEx->setTrajectory(rollout.at(0));
     //	lastUpdateRes = trajEx->simulateTrajectory();
 		
@@ -56,7 +56,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 	else {
 		
 		rollout = computeRolloutParamters();
-		
+
 	}
 
     /*
@@ -68,21 +68,17 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 	dmpResult.clear();
 
     int degFreedom = rollout.at(0)->getDegreesOfFreedom();
-    float* startingJoints = new float[degFreedom];
+    arma::vec startingJoints = arma::vec(degFreedom);
 
     for(int k = 0; k < rollout.size(); ++k) {
 
         vec startingPos = rollout.at(k)->getStartingPos();
-        double* tmp = new double[degFreedom];
-        for(int i = 0; i < rollout.at(k)->getDegreesOfFreedom(); ++i)
-            tmp[i] = startingPos(i);
-
-        for(int i = 0; i < degFreedom; ++i) startingJoints[i] = tmp[i];
+        startingJoints = startingPos;
 
 //        cout << "(DMPReinforcer) performing rollout " << k << endl;
 
         t_executor_res simRes;
-		if(doSimulation) {
+        if(doSimulation) {
         //    cout << "(DMPReinforcer) simulating rollout" << endl;
             simulationQueue->moveJoints(startingJoints);
             trajEx->setTrajectory(rollout.at(k));
@@ -202,7 +198,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 
     }
 
-    /*
+
     // TODO: this is a hack!!!! repair it (power cannot directly be applied to metric learning) --> results can get worse instead of better
     if(lastUpdateCost < tmpCost) {
 
@@ -220,7 +216,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 		}
 
     }
-    */
+
 
     isFirstIteration = false;
 	

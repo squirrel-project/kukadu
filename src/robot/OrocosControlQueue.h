@@ -60,13 +60,13 @@ private:
 	
 	char** argv;
 	
-	float* startingJoints;
-	float* currentJoints;
-	float* currentCarts;
+    arma::vec startingJoints;
+    arma::vec currentJoints;
+    arma::vec currentCarts;
 	
 	double currentTime;
 	
-	std::queue<float*> movementQueue;
+    std::queue<arma::vec> movementQueue;
 	std::mutex currentJointsMutex;
 	std::mutex currentCartsMutex;
 	
@@ -120,19 +120,19 @@ public:
 	
 	void run();
 	void setFinish();
-	void addJointsPosToQueue(float* joints);
+    void addJointsPosToQueue(arma::vec joints);
 	void switchMode(int mode);
 	void stopCurrentMode();
 	void synchronizeToControlQueue(int maxNumJointsInQueue);
-	void setStartingJoints(float* joints);
-	void moveJoints(float* joints);
+    void setStartingJoints(arma::vec joints);
+    void moveJoints(arma::vec joints);
 	
 	void setAdditionalLoad(float loadMass, float loadPos);
 	void setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq);
 	
-	float* getCartesianPos();
-	float* getStartingJoints();
-	float* retrieveJointsFromRobot();
+    arma::vec getCartesianPos();
+    arma::vec getStartingJoints();
+    arma::vec retrieveJointsFromRobot();
 	
 	mes_result getCurrentJoints();
 	bool isInitialized();
