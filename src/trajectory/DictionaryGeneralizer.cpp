@@ -111,7 +111,9 @@ void DictionaryGeneralizer::setTrajectory(std::shared_ptr<Trajectory> traj) {
 	
 	// TODO: check problem that occurred here with just casting and assigning pointer
     dictTraj = std::dynamic_pointer_cast<LinCombDmp>(dictTraj->copy());
-    dictTraj->setMetric(std::dynamic_pointer_cast<LinCombDmp>(traj)->getMetric());
+    std::shared_ptr<LinCombDmp> castedTraj = std::dynamic_pointer_cast<LinCombDmp>(traj);
+    vector<Mahalanobis> trajMetric = castedTraj->getMetric();
+    dictTraj->setMetric(trajMetric);
 	
 }
 

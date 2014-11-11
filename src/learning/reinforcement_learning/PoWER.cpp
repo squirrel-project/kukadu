@@ -114,7 +114,7 @@ std::shared_ptr<Trajectory> PoWER::updateStep() {
         pair <double, std::shared_ptr<Trajectory>> p(lastRewards.at(i), lastDmps.at(i));
         sampleHistory.push_back(p);
 	}
-/*
+
 	// sort by reward...
 	sort(sampleHistory.begin(), sampleHistory.end(), rewardComparator);
 	
@@ -158,6 +158,6 @@ std::shared_ptr<Trajectory> PoWER::updateStep() {
 //	cout << newCoeffs.at(0).t() << endl;
 	
 	return newUp;
-    */
+
 }
 
