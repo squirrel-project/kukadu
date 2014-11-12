@@ -134,7 +134,7 @@ int main(int argc, char** args) {
         cout << "(humanoids2014) cost for comparing same trajectory: " << cost << endl;
 
     }
-    getch();
+//    getch();
 
 	return 0;
 
@@ -194,7 +194,7 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> queue) {
     //vec timeCenters(2); timeCenters(0) = 2.0; timeCenters(1) = 5.0;
     //vec timeCenters(3); timeCenters(0) = 1.0; timeCenters(1) = 2.0; timeCenters(1) = 5.0;
 
-    vector<double> rlExploreSigmas = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+    vector<double> rlExploreSigmas = {0.02, 0.02, 0.01, 0.02};
     // 2 * number of parameters (http://www.scholarpedia.org/article/Policy_gradient_methods#Finite-difference_Methods)
     int rolloutsPerUpdate = 2 * 4 * timeCenters.n_elem;
     int importanceSamplingCount = 5;
@@ -226,10 +226,19 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> queue) {
 
     // speedup testing process by inserting already learned metric result
     mat m(2,2);
+    /*
+    // values after initialization
     m(0, 0) = 1.0;
     m(1, 0) = -0.0274;
     m(0, 1) = -0.0274;
     m(1, 1) = 0.0008;
+    */
+
+    // values after 50 iterations
+    m(0, 0) = 1.0;
+    m(1, 0) = 4.6554e-04;
+    m(0, 1) = 4.6554e-04;
+    m(1, 1) = 4.6554e-04;
 
     cout << "(main) creating dictionary generalizer object" << endl;
 //    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
@@ -282,7 +291,7 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> queue) {
 
         if( (i % 1) == 0 ) {
 
-            int plotNum = 1;
+            int plotNum = columns - 1;
             for(int plotTraj = 0; plotTraj < plotNum; ++plotTraj) {
 
                 ostringstream convert;   // stream used for the conversion
@@ -304,6 +313,7 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> queue) {
             g1->remove_tmpfiles();
 
         ++i;
+        getchar();
 
     }
 
