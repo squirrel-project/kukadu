@@ -157,7 +157,7 @@ arma::vec DictionaryGeneralizer::computeNewCoefficients(Mahalanobis metric, int 
     }
 
     // normalize distances TODO: improve this
-    distanceCoeffs = distanceCoeffs / distanceCoeffs.max();
+//    distanceCoeffs = distanceCoeffs / distanceCoeffs.max();
 
     // compute average distance
     double avgDist = 0.0;
@@ -183,7 +183,7 @@ arma::vec DictionaryGeneralizer::computeNewCoefficients(Mahalanobis metric, int 
         }
     }
 
-    return distanceCoeffs;
+    return weightCoeffs;
 
 }
 

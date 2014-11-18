@@ -36,7 +36,7 @@ void testHumanoidsPouring(std::shared_ptr<ControlQueue> simulationQueue, std::sh
 void testSegmentationArtificialData(std::shared_ptr<ControlQueue> queue);
 void automaticSwitchQueryPoint(const std_msgs::Float64MultiArray& arr);
 
-Gnuplot* g1 = NULL;
+std::shared_ptr<Gnuplot> g1 = std::shared_ptr<Gnuplot>(nullptr);
 double as = 0.1;
 double handVelocity = 20.0;
 double tolAbsErr = 1e-1;
@@ -304,9 +304,9 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
 //    GradientDescent pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, queue, queue, ac, dmpStepSize, tolAbsErr, tolRelErr);
 
     int plotTimes = 5;
-    vector<Gnuplot*> gs;
+    vector<std::shared_ptr<Gnuplot>> gs;
     for(int i = 0; i < (columns - 1); ++i)
-        gs.push_back(new Gnuplot("PoWER demo"));
+        gs.push_back(std::shared_ptr<Gnuplot>(new Gnuplot("PoWER demo")));
 
     int i = 0;
     vec initT;
@@ -359,6 +359,8 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
             g1->remove_tmpfiles();
 
         ++i;
+
+        getchar();
 
     }
 
@@ -503,7 +505,7 @@ void testHumanoidsPouring(std::shared_ptr<ControlQueue> simulationQueue, std::sh
     std::shared_ptr<LinCombDmp> lastRollout = std::shared_ptr<LinCombDmp>(nullptr);
     PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, reward, simulationQueue, executionQueue, ac, dmpStepSize, tolAbsErr, tolRelErr);
 
-    g1 = new Gnuplot("PoWER demo");
+    g1 = std::shared_ptr<Gnuplot>(new Gnuplot("PoWER demo"));
 
     // commented out for testing
     vector<double> lastRewards;
@@ -670,7 +672,7 @@ void testHumanoidsGrasping(std::shared_ptr<ControlQueue> queue) {
 
 //    PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
     GradientDescent pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, reward, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
-    g1 = new Gnuplot("PoWER demo");
+    g1 = std::shared_ptr<Gnuplot>(new Gnuplot("PoWER demo"));
 
     /*
     // commented out for testing
@@ -853,7 +855,7 @@ void testSegmentationArtificialData(std::shared_ptr<ControlQueue> queue) {
 //    GradientDescent pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, queue, queue, ac, dmpStepSize, tolAbsErr, tolRelErr);
 
     int plotTimes = 5;
-    g1 = new Gnuplot("PoWER demo");
+    g1 = std::shared_ptr<Gnuplot>(new Gnuplot("PoWER demo"));
     int i = 0;
 
     vec initT;
@@ -932,7 +934,7 @@ void testSegmentationArtificialData(std::shared_ptr<ControlQueue> queue) {
         cout << "execute ground truth for (1.6, 7)" << endl;
         t_executor_res opt = reward.getOptimalTraj(7.0, 0);
 
-        g1 = new Gnuplot("PoWER demo2");
+        g1 = std::shared_ptr<Gnuplot>(new Gnuplot("PoWER demo2"));
         g1->set_style("points").plot_xy(armadilloToStdVec(updateRes.t), armadilloToStdVec(updateRes.y[0]), "generalized trajectory");
         g1->set_style("lines").plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[0]), "optimal trajectory");
         g1->showonscreen();
@@ -941,7 +943,7 @@ void testSegmentationArtificialData(std::shared_ptr<ControlQueue> queue) {
         getchar();
         getchar();
 
-        delete g1;
+        g1 = std::shared_ptr<Gnuplot>(nullptr);
 
     }
 
