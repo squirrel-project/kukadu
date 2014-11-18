@@ -30,7 +30,7 @@ private:
 	int updatesPerRollout;
 	double explorationSigma;
     std::vector<std::shared_ptr<Trajectory>> initDmp;
-	TrajectoryExecutor* trajEx;
+    std::shared_ptr<TrajectoryExecutor> trajEx;
 	
 //	std::vector<Dmp> sampleHistory;
 //	std::vector<double> rewardHistory;
@@ -46,8 +46,8 @@ private:
 	
 public:
 
-    PoWER(TrajectoryExecutor* trajEx, std::vector<std::shared_ptr<Trajectory>> initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
-    PoWER(TrajectoryExecutor* trajEx, std::vector<std::shared_ptr<Trajectory>> initDmp, std::vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
+    PoWER(std::shared_ptr<TrajectoryExecutor> trajEx, std::vector<std::shared_ptr<Trajectory>> initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
+    PoWER(std::shared_ptr<TrajectoryExecutor> trajEx, std::vector<std::shared_ptr<Trajectory>> initDmp, std::vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
 	
     std::vector<std::shared_ptr<Trajectory>> getInitialRollout();
     std::vector<std::shared_ptr<Trajectory>> computeRolloutParamters();

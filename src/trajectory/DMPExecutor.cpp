@@ -181,7 +181,7 @@ t_executor_res DMPExecutor::executeTrajectory(double ac, double tStart, double t
 	this->ac = ac;
 	this->simulate = EXECUTE_ROBOT;
 	this->controlQueue = controlQueue;
-	return this->executeDMP(EXECUTE_ROBOT, tStart, tEnd, stepSize, tolAbsErr, tolRelErr);
+    return this->executeDMP(EXECUTE_ROBOT, tStart, tEnd, stepSize, tolAbsErr, tolRelErr);
 	
 }
 
@@ -227,7 +227,7 @@ void DMPExecutor::initializeIntegration(double tStart, double stepSize, double t
 	ys[odeSystemSize - 1] = 1;
 	
 	sys = {static_func, NULL, odeSystemSize, this};
-	d = gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rkf45, stepSize, tolAbsErr, tolRelErr);
+    d = std::shared_ptr<gsl_odeiv2_driver>(gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rkf45, stepSize, tolAbsErr, tolRelErr), gsl_delete_expression());
 	
 	this->stepSize = stepSize;
 	
@@ -248,7 +248,7 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
 	
     if(t < durationThresh) {
 
-        int s = gsl_odeiv2_driver_apply_fixed_step(d, &t, stepSize, 1, ys);
+        int s = gsl_odeiv2_driver_apply_fixed_step(d.get(), &t, stepSize, 1, ys);
 
 //        cout << t << " " << ys[0] << endl;
 //        getchar();
@@ -272,76 +272,48 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
 
 void DMPExecutor::destroyIntegration() {
 	
-	gsl_odeiv2_driver_free(d);
-	d = NULL;
+    d = std::shared_ptr<gsl_odeiv2_driver>(nullptr);
 
 }
 
 t_executor_res DMPExecutor::executeDMP(int simulate, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
 
+    int stepCount = (tEnd - tStart) / stepSize;
     double currentTime = 0.0;
 
     t_executor_res ret;
-    //vector<vector<double>> retY;
-    vector<double>* retY = new vector<double>[degofFreedom];
+    for(int i = 0; i < degofFreedom; ++i)
+        ret.y.push_back(arma::vec(stepCount));
+
     vector<double> retT;
 
-//    DMPExecutor* exec = new DMPExecutor(dmp);
-    DMPExecutor* exec = this;
+    initializeIntegration(0, stepSize, tolAbsErr, tolRelErr);
 
-    exec->initializeIntegration(0, stepSize, tolAbsErr, tolRelErr);
+    vec nextJoints(degofFreedom);
+    nextJoints.fill(0.0);
 
     // execute dmps and compute linear combination
-    for(; currentTime < tEnd; currentTime += stepSize) {
-
-
-        vec nextJoints(degofFreedom);
-        nextJoints.fill(0.0);
+    for(int j = 0; j < stepCount; ++j, currentTime += stepSize) {
 
         /**************actual computation of trajectory using coefficients***********/
         for(int i = 0; i < 1; ++i) {
 
-            vec currJoints(degofFreedom);
-            currJoints.fill(0.0);
-
             try {
-                currJoints = exec->doIntegrationStep(ac);
+                nextJoints = doIntegrationStep(ac);
             } catch(const char* s) {
                 puts(s);
                 cerr << ": stopped execution at time " << currentTime << endl;
                 break;
             }
 
-            nextJoints = currJoints;
-
         }
-/*
 
-        // if real robot execution and first integration step --> move to initial position
-        if(isFirstIteration) {
-
-        //    cout << "(DictionaryGeneralizer) moving to initial execution position" << endl;
-            queue->moveJoints(nextJoints);
-            isFirstIteration = 0;
-        //    cout << "(DictionaryGeneralizer) starting trajectory execution" << endl;
-
-        } else {
-
-            // synchronize to control queue (maximum one joint array has to be already in there --> needed for phase stopping such that DMPExecutor does not progress to fast)
-            queue->synchronizeToControlQueue(0);
-            queue->addJointsPosToQueue(nextJoints);
-
-        }
-*/
         for(int i = 0; i < degofFreedom; ++i)
-            retY[i].push_back(nextJoints(i));
+            ret.y.at(i)(j) = nextJoints(i);
 
         retT.push_back(currentTime);
 
     }
-
-    for(int i = 0; i < degofFreedom; ++i)
-        ret.y.push_back(stdToArmadilloVec(retY[i]));
 
     ret.t = stdToArmadilloVec(retT);
 

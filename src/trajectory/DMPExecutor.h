@@ -27,6 +27,12 @@
 #include "../robot/ControlQueue.h"
 #include "../trajectory/TrajectoryDMPLearner.h"
 
+struct gsl_delete_expression {
+    void operator()(gsl_odeiv2_driver* p) const {
+        gsl_odeiv2_driver_free(p);
+    }
+};
+
 /** \brief This class is responsible for dmp execution
  * 
  * The DMPExecutor computes the evolution of the dynmic movement primitives by using a numerical differential equation solver. It provides execution and simulation mode.
@@ -81,7 +87,8 @@ private:
     std::vector<double> vec_y;
 	
 	gsl_odeiv2_system sys;
-	gsl_odeiv2_driver* d;
+
+    std::shared_ptr<gsl_odeiv2_driver> d;
 	
 	arma::vec vecYs;
 	

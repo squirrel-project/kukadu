@@ -27,7 +27,7 @@ private:
     std::shared_ptr<CostComputer> cost;
     std::shared_ptr<ControlQueue> simulationQueue;
     std::shared_ptr<ControlQueue> executionQueue;
-	TrajectoryExecutor* trajEx;
+    std::shared_ptr<TrajectoryExecutor> trajEx;
 	
     std::vector<std::shared_ptr<Trajectory>> rollout;
 	std::vector<t_executor_res> dmpResult;
@@ -56,7 +56,7 @@ public:
 	 * \param tolAbsErr absolute tolerated error for numerical approximation
 	 * \param tolRelErr relative tolerated error for numerical approximation
 	 */
-    GeneralReinforcer(TrajectoryExecutor* trajEx, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue);
+    GeneralReinforcer(std::shared_ptr<TrajectoryExecutor> trajEx, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue);
 	
 	/**
 	 * \brief returns the first rollout of the reinforcement learning algorithm

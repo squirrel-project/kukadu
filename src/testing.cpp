@@ -87,12 +87,12 @@ void testPower(ros::NodeHandle* node) {
     string execFile = "$KUKADU_HOME/movements/iros2014/2d_extended_gen/traj_0.5_3.txt";
     TrajectoryDMPLearner learner(az, bz, resolvePath(execFile));
     Dmp learnedDmp = learner.fitTrajectories();
-    DMPExecutor learnedExec(learnedDmp);
+    std::shared_ptr<DMPExecutor> learnedExec = std::shared_ptr<DMPExecutor>(new DMPExecutor(learnedDmp));
 
     std::vector<std::shared_ptr<Trajectory>> initTraj;
     initTraj.push_back(std::shared_ptr<Dmp>(&learnedDmp));
 
-    PoWER pow(&learnedExec, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, reward, queue, queue, ac, dmpStepSize, tolAbsErr, tolRelErr);
+    PoWER pow(learnedExec, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, reward, queue, queue, ac, dmpStepSize, tolAbsErr, tolRelErr);
 //    GradientDescent pow(&learnedExec, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, queue, queue, ac, dmpStepSize, tolAbsErr, tolRelErr);
 
     int i = 0;

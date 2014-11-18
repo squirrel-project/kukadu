@@ -32,7 +32,7 @@ Gnuplot* g1 = NULL;
 
 int doSimulation = DOSIMULATION;
 
-DictionaryGeneralizer* dmpGen = NULL;
+std::shared_ptr<DictionaryGeneralizer> dmpGen = std::shared_ptr<DictionaryGeneralizer>(nullptr);
 thread* switchThr = NULL;
 void switchQueryPoint();
 void switch2dQueryPoint();
@@ -72,7 +72,7 @@ ros::NodeHandle* node = NULL;
 
 std::shared_ptr<ControlQueue> raQueue = NULL;
 std::shared_ptr<ControlQueue> laQueue = NULL;
-thread* raThr = NULL;
+std::shared_ptr<std::thread> raThr = std::shared_ptr<std::thread>(nullptr);
 vec switchedTo;
 
 int mode = -1;
@@ -306,7 +306,7 @@ int main(int argc, char** args) {
 	} else if(mode == 1) {
  
 		ControlQueue* laQueue = NULL;
-		thread* raThr = NULL;
+        std::shared_ptr<std::thread> raThr = std::shared_ptr<std::thread>(nullptr);
  
 		// execute guided measurement
 		laQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime,
@@ -436,7 +436,7 @@ int main(int argc, char** args) {
 
 		if(!doSimulation) {
 			
-			thread* raThr = NULL;
+            std::shared_ptr<std::thread> raThr = std::shared_ptr<std::thread>(nullptr);
 			
 			// execute guided measurement
             raQueue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime,
@@ -475,7 +475,7 @@ int main(int argc, char** args) {
         std::shared_ptr<ControlQueue> raQueue = std::shared_ptr<ControlQueue>(nullptr);
 		if(!doSimulation) {
 			
-			thread* raThr = NULL;
+            std::shared_ptr<std::thread> raThr = std::shared_ptr<std::thread>(nullptr);
 			
 			// execute guided measurement
             raQueue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime,
@@ -524,7 +524,7 @@ int main(int argc, char** args) {
 	} else if(mode == 5) {
 		
         std::shared_ptr<ControlQueue> laQueue = std::shared_ptr<ControlQueue>(nullptr);
-		thread* raThr = NULL;
+        std::shared_ptr<std::thread> raThr = std::shared_ptr<std::thread>(nullptr);
 		
 		// execute guided measurement
         laQueue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime,
@@ -661,7 +661,7 @@ void testIROSGrasping() {
 //  -1.3176   3.2793
 	
 //	dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as);
-    dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, NULL, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
+    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, NULL, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham));
 	
     std::vector<std::shared_ptr<Trajectory>> initTraj;
 	initTraj.push_back(dmpGen->getTrajectory());
@@ -807,7 +807,7 @@ void testIROS() {
 	
 	if(!doSimulation) {
 
-		thread* raThr = NULL;
+        std::shared_ptr<std::thread> raThr = std::shared_ptr<std::thread>(nullptr);
 		
 		raQueue->stopCurrentMode();
 		raThr = raQueue->startQueueThread();
@@ -817,7 +817,7 @@ void testIROS() {
 	
 	}
 	
-    dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, raQueue, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
+    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, raQueue, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham));
 	
 	/*
 	switchThr = new std::thread(switchQueryPoint);
@@ -1007,7 +1007,7 @@ void testDictionaryGen() {
 	
 	if(!doSimulation) {
 		
-		thread* raThr = NULL;
+        std::shared_ptr<std::thread> raThr = std::shared_ptr<std::thread>(nullptr);
 		
 		raQueue->stopCurrentMode();
 		raThr = raQueue->startQueueThread();
@@ -1017,7 +1017,7 @@ void testDictionaryGen() {
 	
 	}
 	
-    dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, raQueue, NULL, inDir, columns - 1, genTmpmys, tmpsigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, 0.2, as, alpham);
+    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, raQueue, NULL, inDir, columns - 1, genTmpmys, tmpsigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, 0.2, as, alpham));
 	
 	switchThr = new std::thread(switchQueryPoint);
 	t_executor_res genRes = dmpGen->simulateTrajectory();
@@ -1130,8 +1130,8 @@ void testPoWER() {
 	
 	getchar();
 	
-	DMPExecutor exec(initialDmp);
-    PoWER pow(&exec, initDmp, exploreSigmas, updatesPerRollout, importanceSamplingCount, rew, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
+    std::shared_ptr<DMPExecutor> exec = std::shared_ptr<DMPExecutor>( new DMPExecutor(initialDmp));
+    PoWER pow(exec, initDmp, exploreSigmas, updatesPerRollout, importanceSamplingCount, rew, NULL, NULL, ac, dmpStepSize, tolAbsErr, tolRelErr);
 	
 	int plotTimes = 5;
 	g1 = new Gnuplot("PoWER demo");

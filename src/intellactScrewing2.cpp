@@ -86,7 +86,7 @@ int main(int argc, char** args) {
     std::shared_ptr<ControlQueue> leQueue = std::shared_ptr<ControlQueue>(nullptr);
     std::shared_ptr<ControlQueue> raQueue = std::shared_ptr<ControlQueue>(nullptr);
 
-    thread* raThr = NULL;
+    std::shared_ptr<thread> raThr = std::shared_ptr<thread>(nullptr);
 
     ros::init(argc, args, "kukadu"); node = new ros::NodeHandle(); usleep(1e6);
 

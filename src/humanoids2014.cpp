@@ -41,7 +41,7 @@ double as = 0.1;
 double handVelocity = 20.0;
 double tolAbsErr = 1e-1;
 double tolRelErr = 1e-1;
-DictionaryGeneralizer* dmpGen = NULL;
+std::shared_ptr<DictionaryGeneralizer> dmpGen = std::shared_ptr<DictionaryGeneralizer>(nullptr);
 thread* switchThr = NULL;
 
 bool stopThread = false;
@@ -80,12 +80,13 @@ int main(int argc, char** args) {
 
     } else if (mode == 2) {
 
-        ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
-//        std::shared_ptr<ControlQueue> queue = shared_ptr<ControlQueue>(new PlottingControlQueue(1, kukaStepWaitTime));
-        std::shared_ptr<ControlQueue> queue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, "simulation", "left_arm", *node));
-        ros::Subscriber sub = node->subscribe("simulation/right_arm/cartesian_control/get_pose_dir_wf", 1, automaticSwitchQueryPoint);
+//        ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
+        std::shared_ptr<ControlQueue> queue = shared_ptr<ControlQueue>(new PlottingControlQueue(1, kukaStepWaitTime));
+//        std::shared_ptr<ControlQueue> queue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, "simulation", "left_arm", *node));
+//        ros::Subscriber sub = node->subscribe("simulation/right_arm/cartesian_control/get_pose_dir_wf", 1, automaticSwitchQueryPoint);
 
-        queue->startQueueThread();
+        std::shared_ptr<std::thread> queueThread(queue->startQueueThread());
+
         queue->switchMode(10);
 
         testHumanoidsArtificialData(queue, queue);
@@ -284,7 +285,7 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
 
     cout << "(main) creating dictionary generalizer object" << endl;
 //    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
-    dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
+    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham));
     cout << "(main) done" << endl;
 
     cout << "(main) initializing trajectory" << endl;
@@ -311,9 +312,8 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
     vec initT;
     vector<vec> initY;
 
-    /*
     vector<double> lastRewards;
-    while( i < 50 ) {
+    while( i < 2 ) {
 
         cout << "(main) performing rollout" << endl;
         pow.performRollout(1, 0);
@@ -359,17 +359,11 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
             g1->remove_tmpfiles();
 
         ++i;
-        getchar();
 
     }
-    */
 
     cout << "(PouringExperiment) execution of trajectory at new position" << endl;
 
-    int count = 0;
-    double totalError = 0.0;
-    int degFreedom = dmpGen->getTrajectory()->getDegreesOfFreedom();
-    float* startingJoints = new float[degFreedom];
     while( 1 ) {
 
         cout << "(PouringExperiment) first coordinate (< 0 for exit): " << endl;
@@ -497,7 +491,7 @@ void testHumanoidsPouring(std::shared_ptr<ControlQueue> simulationQueue, std::sh
   */
 
 //    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as);
-    dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
+    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham));
 
     std::vector<std::shared_ptr<Trajectory>> initTraj;
     initTraj.push_back(dmpGen->getTrajectory());
@@ -664,7 +658,7 @@ void testHumanoidsGrasping(std::shared_ptr<ControlQueue> queue) {
     timeCenters(0) = 2.5;
 
 //    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
-    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
+    std::shared_ptr<DictionaryGeneralizer> dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham));
 
     std::vector<std::shared_ptr<Trajectory>> initTraj;
     initTraj.push_back(dmpGen->getTrajectory());
@@ -845,7 +839,7 @@ void testSegmentationArtificialData(std::shared_ptr<ControlQueue> queue) {
     m(1, 1) = 1;
 
 //    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
-    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham);
+    std::shared_ptr<DictionaryGeneralizer> dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham));
 
     std::vector<std::shared_ptr<Trajectory>> initTraj;
     initTraj.push_back(dmpGen->getTrajectory());

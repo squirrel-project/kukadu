@@ -1,11 +1,11 @@
 #ifndef CONTROLQUEUE
 #define CONTROLQUEUE
 
-#include <thread>
-
 #include "../utils/DestroyableObject.h"
 #include "../utils/types.h"
 #include <armadillo>
+#include <memory>
+#include <thread>
 
 #define COMMAND_NOT_SET -100
 
@@ -25,6 +25,7 @@ class ControlQueue : public DestroyableObject {
 private:
 	
 	int degOfFreedom;
+    std::shared_ptr<std::thread> thr;
 
 public:
 	/** \brief Constructor taking the robot dependent degrees of freedom
@@ -40,7 +41,7 @@ public:
 	/**
 	 * \brief Starts new thread to control the robot with real time capability
 	 */
-	std::thread* startQueueThread();
+    std::shared_ptr<std::thread> startQueueThread();
 	
 	/**
 	 * \brief This method is started in a new thread by startQueue

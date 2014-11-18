@@ -6,7 +6,7 @@
 using namespace std;
 using namespace arma;
 
-GeneralReinforcer::GeneralReinforcer(TrajectoryExecutor* trajEx, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue) {
+GeneralReinforcer::GeneralReinforcer(std::shared_ptr<TrajectoryExecutor> trajEx, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue) {
 	
 	this->trajEx = trajEx;
 	this->cost = cost;
@@ -41,16 +41,10 @@ t_executor_res GeneralReinforcer::getLastUpdateRes() {
 void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 	
     char cont = 'n';
-	vector<Gnuplot*> gs;
-    Gnuplot* g1 = NULL;
 	
 	if(isFirstIteration) {
 		
 		rollout = getInitialRollout();
-
-    //	trajEx->setTrajectory(rollout.at(0));
-    //	lastUpdateRes = trajEx->simulateTrajectory();
-		
 		
 	}
 	else {
@@ -58,11 +52,6 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 		rollout = computeRolloutParamters();
 
 	}
-
-    /*
-    for(int m = 0; m < rollout.size(); ++m)
-        cout << "blau: " << rollout.at(m)->getCoefficients().at(0).t() << endl;
-    */
 
 	lastCost.clear();
 	dmpResult.clear();
@@ -152,11 +141,6 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
     lastUpdate = updateStep();
 
     trajEx->setTrajectory(lastUpdate);
-    vec startingPos = lastUpdate->getStartingPos();
-    double* tmp = new double[lastUpdate->getDegreesOfFreedom()];
-    for(int i = 0; i < lastUpdate->getDegreesOfFreedom(); ++i)
-        tmp[i] = startingPos(i);
-
 
     if(!isFirstIteration) {
         cout << "(GeneralReinforcer) performing newest update" << endl;

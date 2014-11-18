@@ -137,11 +137,11 @@ int main(int argc, char** args) {
     outFile = args[2];
     cout << "outfile: " << outFile << endl;
 
-    ControlQueue* laQueue = NULL;
-    thread* raThr = NULL;
+    std::shared_ptr<OrocosControlQueue> laQueue = std::shared_ptr<OrocosControlQueue>(nullptr);
+    std::shared_ptr<std::thread> raThr = std::shared_ptr<std::thread>(nullptr);
 
     // execute guided measurement
-    laQueue = new OrocosControlQueue(argc, args, kukaStepWaitTime,
+    laQueue = std::shared_ptr<OrocosControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime,
                     prefix + "/" + hardware + "/" + "joint_control" + "/" + moveTopic,
                     prefix + "/" + hardware + "/" + "joint_control" + "/" + jntPosTopic,
                     prefix + "/" + hardware + "/" + "settings" + "/" + switchTopic,
@@ -153,7 +153,7 @@ int main(int argc, char** args) {
                     prefix + "/" + hardware + "/" + "joint_control" + "/" + "ptp_reached",
                     prefix + "/" + hardware + "/" + "settings" + "/" + setAddLoadTopic,
                *node
-              );
+              ));
 
     laQueue->stopCurrentMode();
     raThr = laQueue->startQueueThread();

@@ -222,6 +222,8 @@ arma::vec DictionaryGeneralizer::computeExtendedQuery(double time, int correspon
 // TODO: find out why metric can produce negative distances after reinforcement learning
 t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, double ac, double as, int simulate) {
 	
+    double tStart = 0.0;
+    int stepCount = (tEnd - tStart) / stepSize;
     int firstTime = 1;
 	double norm = 0.0;
 	currentTime = 0.0;
@@ -232,7 +234,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
     int centersCount = timeCenters.n_elem;
     int querySize = query.n_elem;
 
-	vector<DMPExecutor*> execs;
+    vector<std::shared_ptr<DMPExecutor>> execs;
 	currentQuery = query;
 	newQpSwitch = 1;
 
@@ -243,19 +245,19 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
     int isFirstIteration = 1;
 
 //	double alpham = 1.0;
-
-//    cout << "(DictionaryGeneralizer) starting generalized execution" << endl;
+//  cout << "(DictionaryGeneralizer) starting generalized execution" << endl;
 
 	t_executor_res ret;
-	//vector<vector<double>> retY;
-	vector<double>* retY = new vector<double>[degOfFreedom];
+    for(int i = 0; i < degOfFreedom; ++i)
+        ret.y.push_back(arma::vec(stepCount));
+
 	vector<double> retT;
 
 	// create all executors
 	for(int i = 0; i < points; ++i) {
 
         QueryPoint currentQp = dictTraj->getQueryPoints().at(i);
-        DMPExecutor* currentExec = new DMPExecutor(currentQp.getDmp());
+        std::shared_ptr<DMPExecutor> currentExec = std::shared_ptr<DMPExecutor>(new DMPExecutor(currentQp.getDmp()));
 		currentExec->initializeIntegration(0, stepSize, tolAbsErr, tolRelErr);
 
 		// if real execution use external error determination
@@ -293,7 +295,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
     Mahalanobis extendedMetric(extendedMetricMat);
 
 	// execute dmps and compute linear combination
-    for(; currentTime < tEnd && !stopExecution; currentTime += stepSize) {
+    for(int j = 0; j < stepCount && !stopExecution; ++j, currentTime += stepSize) {
 
         oldCorrespondingIdx = correspondingIdx;
         correspondingIdx = computeClosestT(currentTime, timeCenters);
@@ -305,7 +307,6 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 
         }
 
-		vec distanceCoeffs(points);
 		vec nextJoints(degOfFreedom);
 		nextJoints.fill(0.0);
 
@@ -388,22 +389,20 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
         }
 
 		for(int i = 0; i < degOfFreedom; ++i)
-			retY[i].push_back(nextJoints(i));
+            ret.y.at(i)(j) = nextJoints(i);
 
 		retT.push_back(currentTime);
 		
 	}
-
-	for(int i = 0; i < degOfFreedom; ++i)
-		ret.y.push_back(stdToArmadilloVec(retY[i]));
 	
 	ret.t = stdToArmadilloVec(retT);
 	
 	// clean up
-	for(int i = 0; i < points; ++i) {
-		execs.at(i)->destroyIntegration();
-		delete execs.at(i);
-	}
+    for(int i = 0; i < points; ++i)
+        execs.at(i)->destroyIntegration();
+
+    // should delete all stuff because of shared pointers
+    execs.clear();
 
 	currentTime = 0.0;
 

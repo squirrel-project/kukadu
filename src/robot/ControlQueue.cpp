@@ -2,10 +2,10 @@
 
 using namespace std;
 
-thread* ControlQueue::startQueueThread() {
-    thread* thr = new std::thread(&ControlQueue::run, this);
+std::shared_ptr<std::thread> ControlQueue::startQueueThread() {
+    thr = std::shared_ptr<std::thread>(new std::thread(&ControlQueue::run, this));
     while(!this->isInitialized());
-	return thr;
+    return thr;
 }
 
 ControlQueue::ControlQueue(int degOfFreedom) {

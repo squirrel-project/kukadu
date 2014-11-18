@@ -17,7 +17,6 @@ int GeneralFitter::getSampleCount() {
 vec GeneralFitter::computeLinFitCoefficients(mat desMat) {
 	
 	int basisFunctionCount = trajGen->getBasisFunctionCount();
-	double* coeff = new double[basisFunctionCount];
 	vec t(sampleCount);
 	
 	for(int i = 0; i < sampleCount; ++i)
