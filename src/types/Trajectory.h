@@ -25,6 +25,8 @@ public:
 	int operator==(Trajectory const& comp) const;
 	
     virtual std::shared_ptr<Trajectory> copy() = 0;
+
+    virtual double getTmax() = 0;
 	
 };
 

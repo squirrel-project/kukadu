@@ -21,8 +21,6 @@ private:
 	int degOfFreedom;
 	std::string baseFolder;
 	
-	std::vector<DMPBase> baseDef;
-	
 	std::vector<std::string> files;
 	std::vector<std::string> queryFiles;
     std::vector<std::string> dmpFiles;
@@ -37,14 +35,14 @@ private:
 	
 public:
 	
-    DictionaryTrajectory(int degOfFreedom, std::string baseFolder, std::vector<DMPBase> baseDef, double az, double bz);
+    DictionaryTrajectory(std::string baseFolder, double az, double bz);
 	DictionaryTrajectory(const DictionaryTrajectory& copy);
 	DictionaryTrajectory();
 	
 	int getDegreesOfFreedom() const;
 	arma::vec getStartingPos();
 	
-	double getTmax();
+    double getTmax();
 	
 	std::vector<QueryPoint> getQueryPoints();
 	

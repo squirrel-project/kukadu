@@ -136,9 +136,9 @@ int main(int argc, char** args) {
 
         string cfFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries_eval_traj/traj_11_234.txt";
         string cf2File = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_9_144.txt";
-        DmpRewardComputer rwc(resolvePath(cfFile), az, bz, dmpStepSize, 7);
 
         t_executor_res res = executeDemo(std::shared_ptr<ControlQueue>(new PlottingControlQueue(7, dmpStepSize)), resolvePath(cf2File), 0, az, bz, 0, dmpStepSize);
+        DmpRewardComputer rwc(resolvePath(cfFile), az, bz, dmpStepSize, res.y.size(), res.t(res.t.n_elem - 1));
         double cost = rwc.computeCost(res);
         cout << "(humanoids2014) cost for comparing same trajectory: " << cost << endl;
 
@@ -251,15 +251,6 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
     newQueryPoint(0) = 11.0;
     newQueryPoint(1) = 234.0;
 
-    // wrong reward computer for real robot trajectory!!!!!!!!!!!!!!
-//    GaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1));
-
-    std::shared_ptr<DmpRewardComputer> reward = std::shared_ptr<DmpRewardComputer>(new DmpRewardComputer(resolvePath(cfFile), az, bz, dmpStepSize, 7));
-
-    cout << "execute ground truth for (11, 234)" << endl;
-    t_executor_res opt = reward->getOptimalTraj(28.0);
-    cout << "execution done" << endl;
-
     // speedup testing process by inserting already learned metric result
     mat m(2,2);
     /*
@@ -285,8 +276,14 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
 
     cout << "(main) creating dictionary generalizer object" << endl;
 //    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
-    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham));
+    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham));
     cout << "(main) done" << endl;
+
+    std::shared_ptr<DmpRewardComputer> reward = std::shared_ptr<DmpRewardComputer>(new DmpRewardComputer(resolvePath(cfFile), az, bz, dmpStepSize, dmpGen->getDegOfFreedom(), dmpGen->getTrajectory()->getTmax()));
+
+    cout << "execute ground truth for (11, 234)" << endl;
+    t_executor_res opt = reward->getOptimalTraj(28.0);
+    cout << "execution done" << endl;
 
     cout << "(main) initializing trajectory" << endl;
     std::vector<std::shared_ptr<Trajectory>> initTraj;
@@ -493,7 +490,7 @@ void testHumanoidsPouring(std::shared_ptr<ControlQueue> simulationQueue, std::sh
   */
 
 //    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as);
-    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham));
+    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham));
 
     std::vector<std::shared_ptr<Trajectory>> initTraj;
     initTraj.push_back(dmpGen->getTrajectory());
@@ -660,7 +657,7 @@ void testHumanoidsGrasping(std::shared_ptr<ControlQueue> queue) {
     timeCenters(0) = 2.5;
 
 //    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
-    std::shared_ptr<DictionaryGeneralizer> dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham));
+    std::shared_ptr<DictionaryGeneralizer> dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, NULL, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham));
 
     std::vector<std::shared_ptr<Trajectory>> initTraj;
     initTraj.push_back(dmpGen->getTrajectory());
@@ -828,7 +825,7 @@ void testSegmentationArtificialData(std::shared_ptr<ControlQueue> queue) {
     newQueryPoint(0) = 1.6;
     newQueryPoint(1) = 6.5;
 
-    shared_ptr<SegmentationTestingRewardComputer> reward(new SegmentationTestingRewardComputer(6, 2.5, 1));
+    shared_ptr<SegmentationTestingRewardComputer> reward(new SegmentationTestingRewardComputer(6, 2.5, 1, 20.0));
 
     cout << "execute ground truth for (6, 2.5)" << endl;
     t_executor_res opt = reward->getOptimalTraj(0, 5);
@@ -841,7 +838,7 @@ void testSegmentationArtificialData(std::shared_ptr<ControlQueue> queue) {
     m(1, 1) = 1;
 
 //    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
-    std::shared_ptr<DictionaryGeneralizer> dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham));
+    std::shared_ptr<DictionaryGeneralizer> dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham));
 
     std::vector<std::shared_ptr<Trajectory>> initTraj;
     initTraj.push_back(dmpGen->getTrajectory());
@@ -929,7 +926,7 @@ void testSegmentationArtificialData(std::shared_ptr<ControlQueue> queue) {
 
         t_executor_res updateRes = dmpGen->simulateTrajectory();
 
-        GaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1));
+        GaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1), 20.0);
 
         cout << "execute ground truth for (1.6, 7)" << endl;
         t_executor_res opt = reward.getOptimalTraj(7.0, 0);

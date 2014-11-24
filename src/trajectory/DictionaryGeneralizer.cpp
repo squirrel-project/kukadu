@@ -3,13 +3,12 @@
 using namespace std;
 using namespace arma;
 
-DictionaryGeneralizer::DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys,
-						std::vector<double> tmpsigmas, double az, double bz, double stepSize,
+DictionaryGeneralizer::DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, std::string dictionaryPath,
+                        double az, double bz, double stepSize,
 						double tolAbsErr, double tolRelErr, double ax, double tau, double ac, arma::vec trajMetricWeights,
                          double maxRelativeToMeanDistance, double as, double alpham) {
 
-    vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
-    dictTraj = std::shared_ptr<LinCombDmp>(new LinCombDmp(initQueryPoint.n_elem, degOfFreedom, dictionaryPath, baseDef, az, bz, trajMetricWeights, timeCenters));
+    dictTraj = std::shared_ptr<LinCombDmp>(new LinCombDmp(initQueryPoint.n_elem, dictionaryPath, az, bz, trajMetricWeights, timeCenters));
 
     this->simulationQueue = simulationQueue;
     this->executionQueue = executionQueue;
@@ -35,12 +34,10 @@ void DictionaryGeneralizer::setAs(double as) {
     this->as = as;
 }
 
-DictionaryGeneralizer::DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, std::string dictionaryPath, int degOfFreedom, std::vector<double> tmpmys, std::vector<double> tmpsigmas, double az, double bz,
+DictionaryGeneralizer::DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, std::string dictionaryPath, double az, double bz,
                   double stepSize, double tolAbsErr, double tolRelErr, double ax, double tau, double ac, double as, arma::mat metric, double maxRelativeToMeanDistance, double alpham) {
-	
-    vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
 
-    dictTraj = std::shared_ptr<LinCombDmp>(new LinCombDmp(initQueryPoint.n_elem, degOfFreedom, dictionaryPath, baseDef, az, bz, metric, timeCenters));
+    dictTraj = std::shared_ptr<LinCombDmp>(new LinCombDmp(initQueryPoint.n_elem, dictionaryPath, az, bz, metric, timeCenters));
 
     this->simulationQueue = simulationQueue;
     this->executionQueue = executionQueue;

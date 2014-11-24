@@ -23,11 +23,11 @@ private:
 	
 public:
 	
-    LinCombDmp(int queryDegOfFreedom, int degOfFreedom, std::string baseFolder, std::vector<DMPBase> baseDef, double az, double bz,
+    LinCombDmp(int queryDegOfFreedom, std::string baseFolder, double az, double bz,
         arma::vec trajMetricWeights, arma::vec timeCenters
 	);
 	
-    LinCombDmp(int queryDegOfFreedom, int degOfFreedom, std::string baseFolder, std::vector<DMPBase> baseDef, double az, double bz,
+    LinCombDmp(std::string baseFolder, double az, double bz,
         arma::mat metricM, arma::vec timeCenters
 	);
 	

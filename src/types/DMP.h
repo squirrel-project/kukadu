@@ -83,7 +83,7 @@ public:
 	double getTolAbsErr();
 	double getTolRelErr();
 	
-	double getTmax();
+    double getTmax();
 	
 	int operator==(Dmp const& comp) const;
     std::shared_ptr<Trajectory> copy();

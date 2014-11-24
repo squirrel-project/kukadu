@@ -20,7 +20,7 @@ private:
 	
 public:
 
-	GaussianObstacleRewardComputer(double my, double sigma, double height);
+    GaussianObstacleRewardComputer(double my, double sigma, double height, double tmax);
     arma::vec computeFun(double t);
 	
 };
@@ -65,7 +65,7 @@ private:
 
 public:
 
-    SegmentationTestingRewardComputer(double height, double slope, int degOfFreedom);
+    SegmentationTestingRewardComputer(double height, double slope, int degOfFreedom, double tmax);
     arma::vec computeFun(double t);
 
 };

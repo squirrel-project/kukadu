@@ -3,10 +3,10 @@
 using namespace std;
 using namespace arma;
 
-LinCombDmp::LinCombDmp(int queryDegOfFreedom, int degOfFreedom, std::string baseFolder, std::vector<DMPBase> baseDef, double az, double bz,
+LinCombDmp::LinCombDmp(int queryDegOfFreedom, std::string baseFolder, double az, double bz,
             arma::vec trajMetricWeights, arma::vec timeCenters
 ) :
-            DictionaryTrajectory(degOfFreedom, baseFolder, baseDef, az, bz) {
+            DictionaryTrajectory(baseFolder, az, bz) {
 
     for(int i = 0; i < timeCenters.n_elem; ++i)
         metric.push_back(Mahalanobis(queryDegOfFreedom));
@@ -19,9 +19,9 @@ LinCombDmp::LinCombDmp(int queryDegOfFreedom, int degOfFreedom, std::string base
 
 }
 
-LinCombDmp::LinCombDmp(int queryDegOfFreedom, int degOfFreedom, std::string baseFolder, std::vector<DMPBase> baseDef, double az, double bz,
+LinCombDmp::LinCombDmp(std::string baseFolder, double az, double bz,
         arma::mat metricM, arma::vec timeCenters
-    ) : DictionaryTrajectory(degOfFreedom, baseFolder, baseDef, az, bz) {
+    ) : DictionaryTrajectory(baseFolder, az, bz) {
 
     for(int i = 0; i < timeCenters.n_elem; ++i) {
         metric.push_back(metricM);

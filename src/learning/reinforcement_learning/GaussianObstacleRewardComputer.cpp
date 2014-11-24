@@ -3,7 +3,7 @@
 using namespace std;
 using namespace arma;
 
-SegmentationTestingRewardComputer::SegmentationTestingRewardComputer(double height, double slope, int degOfFreedom) : TrajectoryBasedReward(degOfFreedom) {
+SegmentationTestingRewardComputer::SegmentationTestingRewardComputer(double height, double slope, int degOfFreedom, double tmax) : TrajectoryBasedReward(degOfFreedom, tmax) {
     this->height = height;
     this->slope = slope;
 }
@@ -41,7 +41,7 @@ double PouringRewardComputer::computeCost(t_executor_res results) {
 
 }
 
-GaussianObstacleRewardComputer::GaussianObstacleRewardComputer(double my, double sigma, double height) : TrajectoryBasedReward(0) {
+GaussianObstacleRewardComputer::GaussianObstacleRewardComputer(double my, double sigma, double height, double tmax) : TrajectoryBasedReward(1, tmax) {
 	
 	this->my = my;
 	this->sigma = sigma;

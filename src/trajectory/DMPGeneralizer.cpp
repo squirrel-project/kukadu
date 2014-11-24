@@ -11,9 +11,7 @@ DMPGeneralizer::DMPGeneralizer(string baseFolder, int degOfFreedom, vector<doubl
 	this->ax = ax;
 	this->tau = tau;
 	
-	vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
-	
-    dictTraj = new DictionaryTrajectory(degOfFreedom, baseFolder, baseDef, az, bz);
+    dictTraj = new DictionaryTrajectory(baseFolder, az, bz);
 
 }
 

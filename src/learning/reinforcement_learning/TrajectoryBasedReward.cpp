@@ -3,18 +3,20 @@
 using namespace std;
 using namespace arma;
 
-TrajectoryBasedReward::TrajectoryBasedReward(int degOfFreedom) {
+TrajectoryBasedReward::TrajectoryBasedReward(int degOfFreedom, double tmax) {
 
+    this->tmax = tmax;
     this->degOfFreedom = degOfFreedom;
     rewardsWeights = vec(degOfFreedom);
     rewardsWeights.fill(1.0);
 
 }
 
-TrajectoryBasedReward::TrajectoryBasedReward(int degOfFreedom, arma::vec rewardsWeights) {
+TrajectoryBasedReward::TrajectoryBasedReward(int degOfFreedom, arma::vec rewardsWeights, double tmax) {
 
     this->degOfFreedom = degOfFreedom;
     this->rewardsWeights = rewardsWeights;
+    this->tmax = tmax;
 
 }
 
@@ -58,12 +60,15 @@ void TrajectoryBasedReward::writeToFile(std::string file, double tStart, double 
 
 }
 
+t_executor_res TrajectoryBasedReward::getOptimalTraj() {
+    return getOptimalTraj(tmax);
+}
+
 t_executor_res TrajectoryBasedReward::getOptimalTraj(double tmax) {
 
     double tmin = 0;
     t_executor_res ret;
     double step = 0.1;
-    this->tmax = tmax;
 
     int size = (int) ( (double) (tmax - tmin) / (double) step);
 
@@ -86,8 +91,9 @@ t_executor_res TrajectoryBasedReward::getOptimalTraj(double tmax, int freedomIdx
 t_executor_res TrajectoryBasedReward::getOptimalTraj(double tmin, double tmax, int freedomIdx) {
 	
 	t_executor_res ret;
+
+    //TODO: revise this
     double step = 0.1;
-	this->tmax = tmax;
 	
     int size = (int) ( (double) (tmax - tmin) / (double) step);
 	

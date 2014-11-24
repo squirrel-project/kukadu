@@ -22,11 +22,12 @@ private:
 
 public:
 
-    TrajectoryBasedReward(int degOfFreedom);
-    TrajectoryBasedReward(int degOfFreedom, arma::vec rewardsWeights);
+    TrajectoryBasedReward(int degOfFreedom, double tmax);
+    TrajectoryBasedReward(int degOfFreedom, arma::vec rewardsWeights, double tmax);
 
 	double computeCost(t_executor_res results);
 	
+    t_executor_res getOptimalTraj();
     t_executor_res getOptimalTraj(double tmax);
     t_executor_res getOptimalTraj(double tmax, int freedomIdx);
     t_executor_res getOptimalTraj(double tmin, double tmax, int freedomIdx);

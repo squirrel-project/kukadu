@@ -3,9 +3,8 @@
 using namespace std;
 using namespace arma;
 
-DictionaryTrajectory::DictionaryTrajectory(int degOfFreedom, std::string baseFolder, std::vector<DMPBase> baseDef, double az, double bz) : Trajectory() {
+DictionaryTrajectory::DictionaryTrajectory(std::string baseFolder, double az, double bz) : Trajectory() {
 
-	this->degOfFreedom = degOfFreedom;
 	this->baseFolder = baseFolder;
 	vector<string> files = getFilesInDirectory(baseFolder);
 	queryFiles = sortPrefix(files, "query");
@@ -18,13 +17,13 @@ DictionaryTrajectory::DictionaryTrajectory(int degOfFreedom, std::string baseFol
         queryPoints = mapFiles(queryFiles, trajFiles, "query", "traj");
         TrajectoryDMPLearner* dmpLearner;
 
-        this->baseDef = baseDef;
-
         vector<mat> jointsVec;
         double tMax = 0.0;
         for(int i = 0; i < queryPoints.size(); ++i) {
 
             mat joints = readMovements((string(baseFolder) + string(queryPoints.at(i).getFileDataPath())).c_str());
+            degOfFreedom = joints.n_cols - 1;
+
             queryPoints.at(i).setQueryPoint(readQuery(string(baseFolder) + string(queryPoints.at(i).getFileQueryPath())));
             jointsVec.push_back(joints);
             double currentTMax = joints(joints.n_rows - 1, 0);
@@ -78,7 +77,6 @@ DictionaryTrajectory::DictionaryTrajectory(const DictionaryTrajectory& copy) : T
 	
 	this->degOfFreedom = copy.degOfFreedom;
 	this->baseFolder = copy.baseFolder;
-	this->baseDef = copy.baseDef;
 	
 	this->files = copy.files;
 	this->queryFiles = copy.queryFiles;

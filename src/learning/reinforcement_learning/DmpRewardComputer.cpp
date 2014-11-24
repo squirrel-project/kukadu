@@ -3,7 +3,7 @@
 using namespace std;
 using namespace arma;
 
-DmpRewardComputer::DmpRewardComputer(string file, double az, double bz, double timeStep, int degOfFreedom) : TrajectoryBasedReward(degOfFreedom) {
+DmpRewardComputer::DmpRewardComputer(string file, double az, double bz, double timeStep, int degOfFreedom, double tmax) : TrajectoryBasedReward(degOfFreedom, tmax) {
 
     this->file = file;
     this->az = az;

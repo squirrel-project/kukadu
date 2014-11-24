@@ -661,7 +661,7 @@ void testIROSGrasping() {
 //  -1.3176   3.2793
 	
 //	dmpGen = new DictionaryGeneralizer(newQueryPoint, raQueue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as);
-    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, NULL, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham));
+    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, NULL, NULL, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham));
 	
     std::vector<std::shared_ptr<Trajectory>> initTraj;
 	initTraj.push_back(dmpGen->getTrajectory());
@@ -802,7 +802,7 @@ void testIROS() {
 //	newQueryPoint(0) = 1.2;
 //	newQueryPoint(1) = 6.9;
 	
-    shared_ptr<GaussianObstacleRewardComputer> reward(new GaussianObstacleRewardComputer(newQueryPoint(0), 2.0, newQueryPoint(1)));
+    shared_ptr<GaussianObstacleRewardComputer> reward(new GaussianObstacleRewardComputer(newQueryPoint(0), 2.0, newQueryPoint(1), 100.0));
     t_executor_res opt = reward->getOptimalTraj(5.0, 0);
 	
 	if(!doSimulation) {
@@ -817,7 +817,7 @@ void testIROS() {
 	
 	}
 	
-    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, raQueue, NULL, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham));
+    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, raQueue, NULL, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham));
 	
 	/*
 	switchThr = new std::thread(switchQueryPoint);
@@ -919,7 +919,7 @@ void testIROS() {
 		lastRollout->setCurrentQueryPoint(newQueryPoint);
 		dmpGen->switchQueryPoint(newQueryPoint);
 		
-		GaussianObstacleRewardComputer reward2(newQueryPoint(0), 2.0, newQueryPoint(1));
+        GaussianObstacleRewardComputer reward2(newQueryPoint(0), 2.0, newQueryPoint(1), 100.0);
         t_executor_res opt2 = reward2.getOptimalTraj(5.0, 0);
 		
 		initTraj.clear();
@@ -935,7 +935,7 @@ void testIROS() {
 		
 		switchThr->join();
 		
-		GaussianObstacleRewardComputer reward3(switchedTo(0), 2.0, switchedTo(1));
+        GaussianObstacleRewardComputer reward3(switchedTo(0), 2.0, switchedTo(1), 100.0);
         t_executor_res opt3 = reward3.getOptimalTraj(5.0, 0);
 		
 		g1 = new Gnuplot("PoWER demo2");
@@ -1017,7 +1017,7 @@ void testDictionaryGen() {
 	
 	}
 	
-    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, raQueue, NULL, inDir, columns - 1, genTmpmys, tmpsigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, 0.2, as, alpham));
+    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, raQueue, NULL, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, 0.2, as, alpham));
 	
 	switchThr = new std::thread(switchQueryPoint);
 	t_executor_res genRes = dmpGen->simulateTrajectory();
@@ -1100,7 +1100,7 @@ void testPoWER() {
 	int importanceSamplingCount = 3;
 	double t_max = 7;
 	
-    shared_ptr<SampleRewardComputer> rew(new SampleRewardComputer(0.1, 1));
+    shared_ptr<SampleRewardComputer> rew(new SampleRewardComputer(0.1, 1, 100.0));
     t_executor_res opt = rew->getOptimalTraj(t_max, 0);
 	double deltaT = 0.05;
 	int tCount = opt.t.n_elem;
