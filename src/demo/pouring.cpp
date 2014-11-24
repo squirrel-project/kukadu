@@ -215,9 +215,10 @@ int main(int argc, char** args) {
         vec startingPos = dmpGen->getTrajectory()->getStartingPos();
         simulationQueue->moveJoints(startingPos);
         switchThr = shared_ptr<thread>(new std::thread(switch2dQueryPoint));
-        t_executor_res updateRes = dmpGen->simulateTrajectory();
+
         stopThread = true;
         switchThr->join();
+
         simulationQueue->moveJoints(startingPos);
 
         char cont = 'n';
