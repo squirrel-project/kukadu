@@ -6,8 +6,3 @@ requirements:
 	libboost-all-dev
 
 e.g.: sudo apt-get install libgsl0-dev gnuplot gnuplot-x11 libarmadillo-dev libboost-all-dev
-	
-kuka robot driver (copy the folder to src/robot/ and rename it to robotDriver, such that the following path is valid src/robot/robotDriver/src/friMain.h)
-install the schunk sdh driver
-
-set $KUKADU_HOME such that this file is at $KUKADU_HOME/README
