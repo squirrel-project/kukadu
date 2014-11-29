@@ -14,15 +14,10 @@
 #include <std_msgs/Float64MultiArray.h>
 
 #include "GenericHand.h"
-
-#include "sdh/sdh.h"
-#include "sdh/util.h"
-#include "sdh/sdhlibrary_settings.h"
-#include "sdh/basisdef.h"
-#include "sdhoptions.h"
-
 #include "ros/ros.h"
 #include "std_msgs/String.h"
+
+enum kukadu_grasps {eGID_CENTRICAL, eGID_CYLINDRICAL, eGID_PARALLEL, eGID_SPHERICAL};
 
 /** \brief Provides control capabilities for the Schunk SDH robotic hand with ROS binding
  * Implements the GenericHand interface for the Schunk SDH robotic hand. Note that using this class the programm has to be executed with root rights
@@ -32,7 +27,7 @@ class RosSchunk : public GenericHand {
 
 private:
 
-    SDH::cSDHBase::eGraspId currentGraspId;
+    kukadu_grasps currentGraspId;
 
     int previousCurrentPosQueueSize;
 
@@ -69,7 +64,7 @@ public:
     void connectHand();
     void closeHand(double percentage, double velocity);
     void disconnectHand();
-    void setGrasp(SDH::cSDHBase::eGraspId grasp);
+    void setGrasp(kukadu_grasps grasp);
     void safelyDestroy();
 
     void stateCallback(const sensor_msgs::JointState state);

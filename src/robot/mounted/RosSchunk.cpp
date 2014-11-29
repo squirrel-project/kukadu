@@ -12,7 +12,7 @@ RosSchunk::RosSchunk(ros::NodeHandle node, string trajTopic, std::string stateTo
     previousCurrentPosQueueSize = 10;
     isFirstCallback = true;
 
-    currentGraspId = SDH::cSDHBase::eGID_CENTRICAL;
+    currentGraspId = eGID_CENTRICAL;
     closeHand(0.0, 1.0);
 
 }
@@ -166,16 +166,16 @@ void RosSchunk::closeHand(double percentage, double velocity) {
         vector<float> hand_pose;
 
         switch(currentGraspId) {
-        case SDH::cSDHBase::eGID_CENTRICAL:
+        case eGID_CENTRICAL:
             hand_pose = generateCentricalPose(percentage);
             break;
-        case SDH::cSDHBase::eGID_CYLINDRICAL:
+        case eGID_CYLINDRICAL:
             hand_pose = generateParallelPose(percentage);
             break;
-        case SDH::cSDHBase::eGID_PARALLEL:
+        case eGID_PARALLEL:
             hand_pose = generateParallelPose(percentage);
             break;
-        case SDH::cSDHBase::eGID_SPHERICAL:
+        case eGID_SPHERICAL:
             hand_pose = generateSphericalPose(percentage);
             break;
         default:
@@ -202,7 +202,7 @@ void RosSchunk::disconnectHand() {
 
 }
 
-void RosSchunk::setGrasp(SDH::cSDHBase::eGraspId grasp) {
+void RosSchunk::setGrasp(kukadu_grasps grasp) {
 
     closeHand(0.0, 1.0);
     currentGraspId = grasp;

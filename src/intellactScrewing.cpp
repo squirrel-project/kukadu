@@ -115,10 +115,10 @@ int main(int argc, char** args) {
             leHand = new RosSchunk(*node, "/real/left_sdh/follow_joint_trajectory/goal", "/real/left_sdh/joint_control/joint_states", "left");
 
         if(doRightOperation)
-            raHand->setGrasp(SDH::cSDHBase::eGID_CENTRICAL);
+            raHand->setGrasp(eGID_CENTRICAL);
 
         if(doLeftOperation)
-            leHand->setGrasp(SDH::cSDHBase::eGID_PARALLEL);
+            leHand->setGrasp(eGID_PARALLEL);
 
         // open hands initially
         if(doRightOperation)
