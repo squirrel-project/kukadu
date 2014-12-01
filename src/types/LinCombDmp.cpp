@@ -5,8 +5,7 @@ using namespace arma;
 
 LinCombDmp::LinCombDmp(int queryDegOfFreedom, std::string baseFolder, double az, double bz,
             arma::vec trajMetricWeights, arma::vec timeCenters
-) :
-            DictionaryTrajectory(baseFolder, az, bz) {
+) : DictionaryTrajectory(baseFolder, az, bz) {
 
     for(int i = 0; i < timeCenters.n_elem; ++i)
         metric.push_back(Mahalanobis(queryDegOfFreedom));
@@ -34,24 +33,19 @@ LinCombDmp::LinCombDmp(std::string baseFolder, double az, double bz,
 
 }
 
-/*
-Mahalanobis metric;
-	arma::vec currentQueryPoint;
-	arma::vec trajMetricWeights;
-*/
 LinCombDmp::LinCombDmp(const LinCombDmp& copy) : metric(copy.metric), DictionaryTrajectory(copy) {
+
 	this->currentQueryPoint = copy.currentQueryPoint;
 	this->trajMetricWeights = copy.trajMetricWeights;
 	this->metric = copy.metric;
     this->timeCenters = copy.timeCenters;
-//	cout << "(LinCombDmp) copy constructor" << endl;
+
 }
 
-LinCombDmp::LinCombDmp() : metric(0) {
+LinCombDmp::LinCombDmp() {
 //	cout << "(LinCombDmp) dummy constructor" << endl;
 }
 
-/*
 void LinCombDmp::setMetric(Mahalanobis metric) {
 
     this->metric.clear();
@@ -59,15 +53,16 @@ void LinCombDmp::setMetric(Mahalanobis metric) {
         this->metric.push_back(metric);
 
 }
-*/
 
 void LinCombDmp::setMetric(std::vector<Mahalanobis> metric) {
+
     this->metric = metric;
+
 }
 
 // TODO: usage of trajectory metric
 void LinCombDmp::initializeMetric() {
-	
+
 	cout << "(LinCombDmp) metric initialization" << endl;
 		
 	vector<vec> x1s, x2s;
@@ -117,7 +112,7 @@ void LinCombDmp::initializeMetric() {
     cout << "metric: " << newM.getM() << endl;
 	
 	cout << "(LinCombDmp) metric initialization done" << endl;
-	
+
 }
 
 // returns metric coefficients
@@ -137,21 +132,17 @@ std::vector<arma::vec> LinCombDmp::getCoefficients() {
         for(int j = 0; j < zCoeffs.n_elem; ++j)
             retVec(i * singleCoeffCount + j) = zCoeffs(j);
 
-        /*
-        vector<vec> ret;
-        vec zCoeffs = symmetricMatrixToColumn(metric.getM());
-        ret.push_back(zCoeffs);
-        */
-
     }
 
     ret.push_back(retVec);
 	return ret;
-	
+
 }
 
 arma::vec LinCombDmp::getTimeCenters() {
+
     return timeCenters;
+
 }
 
 // sets metric coefficients
@@ -192,23 +183,31 @@ int LinCombDmp::operator==(LinCombDmp const& comp) const {
 }
 
 std::shared_ptr<Trajectory> LinCombDmp::copy() {
+
     return std::shared_ptr<Trajectory>(new LinCombDmp(*this));
+
 }
 
 std::vector<Mahalanobis> LinCombDmp::getMetric() {
+
 	return metric;
+
 }
 
 int LinCombDmp::getQueryDegreesOfFreedom() const {
+
     return metric.at(0).getM().n_cols;
+
 }
 
 void LinCombDmp::setCurrentQueryPoint(arma::vec currQuery) {
-	
+
 	currentQueryPoint = currQuery;
-	
+
 }
 
 arma::vec LinCombDmp::getCurrentQueryPoint() {
+
 	return currentQueryPoint;
+
 }

@@ -15,12 +15,12 @@
 class LinCombDmp : public DictionaryTrajectory {
 	
 private:
-	
+
     std::vector<Mahalanobis> metric;
 	arma::vec currentQueryPoint;
 	arma::vec trajMetricWeights;
     arma::vec timeCenters;
-	
+
 public:
 	
     LinCombDmp(int queryDegOfFreedom, std::string baseFolder, double az, double bz,

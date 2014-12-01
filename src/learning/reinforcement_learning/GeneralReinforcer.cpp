@@ -41,7 +41,7 @@ t_executor_res GeneralReinforcer::getLastUpdateRes() {
 void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 	
     char cont = 'n';
-	
+
 	if(isFirstIteration) {
 		
 		rollout = getInitialRollout();
@@ -68,7 +68,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 
         t_executor_res simRes;
         if(doSimulation) {
-        //    cout << "(DMPReinforcer) simulating rollout" << endl;
+
             simulationQueue->moveJoints(startingJoints);
             trajEx->setTrajectory(rollout.at(k));
             simRes = trajEx->simulateTrajectory();
@@ -115,12 +115,6 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
             }
 
         }
-        /*
-        else {
-            cout << "(GeneralReinforcer) rollout number " << k << " rollout not used" << endl;
-        //    --k;
-        }
-        */
 
         if(doSimulation)
             simulationQueue->moveJoints(startingJoints);
@@ -146,7 +140,6 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
         cout << "(GeneralReinforcer) performing newest update" << endl;
 
         t_executor_res simRes;
-
         if(doSimulation) {
             cout << "(DMPReinforcer) simulating update" << endl;
             simulationQueue->moveJoints(startingJoints);
@@ -181,7 +174,6 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
         }
 
     }
-
 
     // TODO: this is a hack!!!! repair it (power cannot directly be applied to metric learning) --> results can get worse instead of better
     if(lastUpdateCost < tmpCost) {

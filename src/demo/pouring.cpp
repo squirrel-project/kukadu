@@ -35,6 +35,7 @@ int main(int argc, char** args) {
             ("metric.alpham", po::value<double>(), "alpham")
             ("metric.exploreSigmas", po::value<string>(), "reinforcement learning exploration sigmas")
             ("metric.importanceSamplingCount", po::value<int>(), "size of importance sampling vector")
+            ("metric.as", po::value<double>(), "as")
             ("dmp.tau", po::value<double>(), "tau")
             ("dmp.az", po::value<double>(), "az")
             ("dmp.bz", po::value<double>(), "bz")
@@ -42,7 +43,6 @@ int main(int argc, char** args) {
             ("dmp.tolAbsErr", po::value<double>(), "tolerated absolute error")
             ("dmp.tolRelErr", po::value<double>(), "tolerated relative error")
             ("dmp.ac", po::value<double>(), "ac")
-            ("dmp.as", po::value<double>(), "as")
     ;
 
     ifstream parseFile(resolvePath("$KUKADU_HOME/cfg/pouring.prop"), std::ifstream::in);
@@ -64,12 +64,12 @@ int main(int argc, char** args) {
     else return 1;
     if (vm.count("dmp.ac")) ac = vm["dmp.ac"].as<double>();
     else return 1;
-    if (vm.count("dmp.as")) as = vm["dmp.as"].as<double>();
-    else return 1;
 
+    if (vm.count("metric.as")) as = vm["metric.as"].as<double>();
+    else return 1;
     if (vm.count("metric.database")) inDir = resolvePath(vm["metric.database"].as<string>());
     else return 1;
-    if (vm.count("metric.goldStandard")) inDir = resolvePath(vm["metric.goldStandard"].as<string>());
+    if (vm.count("metric.goldStandard")) cfFile = resolvePath(vm["metric.goldStandard"].as<string>());
     else return 1;
     if (vm.count("metric.alpham")) alpham = vm["metric.alpham"].as<double>();
     else return 1;
@@ -88,11 +88,12 @@ int main(int argc, char** args) {
     else return 1;
 
     cout << "all loaded" << endl;
-    getchar();
 
+    ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
 
-    shared_ptr<ControlQueue> simulationQueue;
-    shared_ptr<ControlQueue> executionQueue;
+    int kukaStepWaitTime = dmpStepSize * 1e6;
+    shared_ptr<ControlQueue> simulationQueue = shared_ptr<ControlQueue>(new PlottingControlQueue(7, kukaStepWaitTime));;
+    shared_ptr<ControlQueue> executionQueue = shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, "simulation", "left_arm", *node));
     shared_ptr<Gnuplot> g1;
     shared_ptr<thread> switchThr;
 
@@ -102,8 +103,6 @@ int main(int argc, char** args) {
     trajMetricWeights.fill(1.0);
 
     tau = 5.0;
-    float tmp = 0.1;
-    double ax = -log(tmp) / tau / tau;
     double relativeDistanceThresh = 0.6;
 
     vec newQueryPoint(2);
@@ -118,7 +117,7 @@ int main(int argc, char** args) {
 
     cout << "(main) creating dictionary generalizer object" << endl;
 //    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
-    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, as, m, relativeDistanceThresh, alpham));
+    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ac, as, m, relativeDistanceThresh, alpham));
     cout << "(main) done" << endl;
 
     std::shared_ptr<DmpRewardComputer> reward = std::shared_ptr<DmpRewardComputer>(new DmpRewardComputer(resolvePath(cfFile), az, bz, dmpStepSize, dmpGen->getDegOfFreedom(), dmpGen->getTrajectory()->getTmax()));
@@ -146,7 +145,17 @@ int main(int argc, char** args) {
     vec initT;
     vector<vec> initY;
 
-    while( i < 2 ) {
+    cout << "(main) setting up robot" << endl;
+
+    simulationQueue->startQueueThread();
+    simulationQueue->switchMode(10);
+
+    executionQueue->startQueueThread();
+    executionQueue->switchMode(10);
+
+    cout << "(main) done" << endl;
+
+    while( i < 50 ) {
 
         cout << "(main) performing rollout" << endl;
         pow.performRollout(1, 0);
@@ -188,8 +197,6 @@ int main(int argc, char** args) {
             g1->remove_tmpfiles();
 
         ++i;
-
-        getchar();
 
     }
 

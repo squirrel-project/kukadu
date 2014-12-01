@@ -7,6 +7,7 @@ DictionaryTrajectory::DictionaryTrajectory(std::string baseFolder, double az, do
 
 	this->baseFolder = baseFolder;
 	vector<string> files = getFilesInDirectory(baseFolder);
+
 	queryFiles = sortPrefix(files, "query");
 	trajFiles = sortPrefix(files, "traj");
     dmpFiles = sortPrefix(files, "dmp");
@@ -33,15 +34,10 @@ DictionaryTrajectory::DictionaryTrajectory(std::string baseFolder, double az, do
 
         }
 
-        mat joints = jointsVec.at(0);
-        double tau = 0.8;
-        double ax = -log((float) 0.1) / joints(joints.n_rows - 1, 0) / tau;
-
         for(int i = 0; i < jointsVec.size(); ++i) {
 
             QueryPoint currentQueryPoint = queryPoints.at(i);
             mat joints = jointsVec.at(i);
-            int maxRows = joints.n_rows;
             joints = fillTrajectoryMatrix(joints, tMax);
             dmpLearner = new TrajectoryDMPLearner(az, bz, joints);
 
@@ -63,18 +59,24 @@ DictionaryTrajectory::DictionaryTrajectory(std::string baseFolder, double az, do
 
     }
 
+    degOfFreedom = queryPoints.at(0).getDmp().getDegreesOfFreedom();
+
 }
 
 std::vector<arma::vec> DictionaryTrajectory::getCoefficients() {
+
 	return coefficients;
+
 }
 
 void DictionaryTrajectory::setCoefficients(std::vector<arma::vec> coeffs) {
+
 	coefficients = coeffs;
+
 }
 
 DictionaryTrajectory::DictionaryTrajectory(const DictionaryTrajectory& copy) : Trajectory(copy) {
-	
+
 	this->degOfFreedom = copy.degOfFreedom;
 	this->baseFolder = copy.baseFolder;
 	
@@ -83,25 +85,29 @@ DictionaryTrajectory::DictionaryTrajectory(const DictionaryTrajectory& copy) : T
 	this->trajFiles = copy.trajFiles;
 	this->queryPoints = copy.queryPoints;
     this->startingPos = copy.startingPos;
-	
+
 }
 
 DictionaryTrajectory::DictionaryTrajectory() {
 }
 
 int DictionaryTrajectory::getDegreesOfFreedom() const {
+
 	return degOfFreedom;
+
 }
 
 // TODO: implement == operator
 int DictionaryTrajectory::operator==(DictionaryTrajectory const& comp) const {
+
 	string errStr = "(DictionaryTrajectory) == operator not implemted yet";
 	cerr << errStr << endl;
 	throw errStr;
+
 }
 
 vector<QueryPoint> DictionaryTrajectory::mapFiles(vector<string> queryFiles, vector<string> trajFiles, string prefix1, string prefix2) {
-	
+
 	vector<QueryPoint> ret;
 	
 	int prefix1Size = prefix1.size();
@@ -125,7 +131,7 @@ vector<QueryPoint> DictionaryTrajectory::mapFiles(vector<string> queryFiles, vec
 	}
 	
 	return ret;
-	
+
 }
 
 vector<QueryPoint> DictionaryTrajectory::mapFiles(vector<string> queryFiles, vector<string> trajFiles, vector<string> dmpFiles, string prefix1, string prefix2, string prefix3) {
@@ -167,15 +173,19 @@ vector<QueryPoint> DictionaryTrajectory::mapFiles(vector<string> queryFiles, vec
 }
 
 double DictionaryTrajectory::getTmax() {
+
 	return queryPoints.at(0).getDmp().getTmax();
+
 }
 
 std::vector<QueryPoint> DictionaryTrajectory::getQueryPoints() {
+
 	return queryPoints;
+
 }
 
 arma::vec DictionaryTrajectory::getStartingPos() {
-	
+
 	string errStr = "(DictionaryTrajectory) no starting position set yet";
 	
 	if(startingPos.n_elem > 0)
@@ -183,9 +193,11 @@ arma::vec DictionaryTrajectory::getStartingPos() {
 	
 	cerr << errStr << endl;
 	throw errStr;
-		
+
 }
 
 std::shared_ptr<Trajectory> DictionaryTrajectory::copy() {
+
     return std::shared_ptr<Trajectory>(new DictionaryTrajectory(*this));
+
 }

@@ -5,8 +5,8 @@ using namespace arma;
 
 DictionaryGeneralizer::DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, std::string dictionaryPath,
                         double az, double bz, double stepSize,
-						double tolAbsErr, double tolRelErr, double ax, double tau, double ac, arma::vec trajMetricWeights,
-                         double maxRelativeToMeanDistance, double as, double alpham) {
+                        double tolAbsErr, double tolRelErr, double ac, arma::vec trajMetricWeights,
+                        double maxRelativeToMeanDistance, double as, double alpham) {
 
     dictTraj = std::shared_ptr<LinCombDmp>(new LinCombDmp(initQueryPoint.n_elem, dictionaryPath, az, bz, trajMetricWeights, timeCenters));
 
@@ -35,28 +35,24 @@ void DictionaryGeneralizer::setAs(double as) {
 }
 
 DictionaryGeneralizer::DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, std::string dictionaryPath, double az, double bz,
-                  double stepSize, double tolAbsErr, double tolRelErr, double ax, double tau, double ac, double as, arma::mat metric, double maxRelativeToMeanDistance, double alpham) {
+                  double stepSize, double tolAbsErr, double tolRelErr, double ac, double as, arma::mat metric, double maxRelativeToMeanDistance, double alpham) {
 
-    dictTraj = std::shared_ptr<LinCombDmp>(new LinCombDmp(initQueryPoint.n_elem, dictionaryPath, az, bz, metric, timeCenters));
-
+    dictTraj = std::shared_ptr<LinCombDmp>(new LinCombDmp(dictionaryPath, az, bz, metric, timeCenters));
     this->simulationQueue = simulationQueue;
     this->executionQueue = executionQueue;
 	this->stepSize = stepSize;
 	this->tolAbsErr = tolAbsErr;
 	this->tolRelErr = tolRelErr;
-	
 	this->as = 0.0;
 	this->switchTime = 0.0;
 	this->newQpSwitch = 1;
-	
 	this->currentQuery = initQueryPoint;
     this->tEnd = dictTraj->getTmax();
 	this->ac = ac;
 	this->as = as;
     this->alpham = alpham;
-	
     this->maxRelativeToMeanDistance = maxRelativeToMeanDistance;
-	
+
 }
 
 void DictionaryGeneralizer::switchQueryPoint(vec query) {
@@ -105,13 +101,12 @@ t_executor_res DictionaryGeneralizer::executeTrajectory() {
 }
 
 void DictionaryGeneralizer::setTrajectory(std::shared_ptr<Trajectory> traj) {
-	
-	// TODO: check problem that occurred here with just casting and assigning pointer
+
     dictTraj = std::dynamic_pointer_cast<LinCombDmp>(dictTraj->copy());
     std::shared_ptr<LinCombDmp> castedTraj = std::dynamic_pointer_cast<LinCombDmp>(traj);
     vector<Mahalanobis> trajMetric = castedTraj->getMetric();
     dictTraj->setMetric(trajMetric);
-	
+
 }
 
 double DictionaryGeneralizer::getCurrentTime() {
@@ -241,9 +236,6 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 	
     int isFirstIteration = 1;
 
-//	double alpham = 1.0;
-//  cout << "(DictionaryGeneralizer) starting generalized execution" << endl;
-
 	t_executor_res ret;
     for(int i = 0; i < degOfFreedom; ++i)
         ret.y.push_back(arma::vec(stepCount));
@@ -279,12 +271,6 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
             }
         }
     }
-
-    //extendedMetricMat(0,0) = 1.0; extendedMetricMat(0,1) = 1.0; extendedMetricMat(1,0) = 1.0; extendedMetricMat(1,1) = 1.0;
-
-    // for segmentation test
-//    extendedMetricMat(0,0) = 1.0; extendedMetricMat(0,1) = 0.9589; extendedMetricMat(1,0) = 0.9589; extendedMetricMat(1,1) = 0.9449;
-//    extendedMetricMat(2,2) = 1.0; extendedMetricMat(2,3) = 0.7364; extendedMetricMat(3,2) = 0.7364; extendedMetricMat(3,3) = 4.1484;
 
     int correspondingIdx = -1;
     int oldCorrespondingIdx = -1;
@@ -389,7 +375,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
             ret.y.at(i)(j) = nextJoints(i);
 
 		retT.push_back(currentTime);
-		
+
 	}
 	
 	ret.t = stdToArmadilloVec(retT);
