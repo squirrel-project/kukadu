@@ -1,0 +1,105 @@
+#include <iostream>
+#include <string>
+#include <armadillo>
+#include <thread>
+#include <vector>
+#include <boost/program_options.hpp>
+
+#include "../../include/kukadu.h"
+
+using namespace std;
+using namespace arma;
+namespace po = boost::program_options;
+
+int main(int argc, char** args) {
+
+    int importanceSamplingCount;
+    double tau, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ac, as, alpham;
+    double handVelocity = 20.0;
+    string inDir, cfFile;
+    vector<double> rlExploreSigmas;
+
+    // Declare the supported options.
+    po::options_description desc("Allowed options");
+    desc.add_options()
+            ("metric.database", po::value<string>(), "database folder")
+            ("metric.goldStandard", po::value<string>(), "gold standard file")
+            ("metric.alpham", po::value<double>(), "alpham")
+            ("metric.exploreSigmas", po::value<string>(), "reinforcement learning exploration sigmas")
+            ("metric.importanceSamplingCount", po::value<int>(), "size of importance sampling vector")
+            ("metric.as", po::value<double>(), "as")
+            ("dmp.tau", po::value<double>(), "tau")
+            ("dmp.az", po::value<double>(), "az")
+            ("dmp.bz", po::value<double>(), "bz")
+            ("dmp.dmpStepSize", po::value<double>(), "dmp time step size")
+            ("dmp.tolAbsErr", po::value<double>(), "tolerated absolute error")
+            ("dmp.tolRelErr", po::value<double>(), "tolerated relative error")
+            ("dmp.ac", po::value<double>(), "ac")
+    ;
+
+    ifstream parseFile(resolvePath("$KUKADU_HOME/cfg/pouring.prop"), std::ifstream::in);
+    po::variables_map vm;
+    po::store(po::parse_config_file(parseFile, desc), vm);
+    po::notify(vm);
+
+    if (vm.count("dmp.tau")) tau = vm["dmp.tau"].as<double>();
+    else return 1;
+    if (vm.count("dmp.az")) az = vm["dmp.az"].as<double>();
+    else return 1;
+    if (vm.count("dmp.bz")) bz = vm["dmp.bz"].as<double>();
+    else return 1;
+    if (vm.count("dmp.dmpStepSize")) dmpStepSize = vm["dmp.dmpStepSize"].as<double>();
+    else return 1;
+    if (vm.count("dmp.tolAbsErr")) tolAbsErr = vm["dmp.tolAbsErr"].as<double>();
+    else return 1;
+    if (vm.count("dmp.tolRelErr")) tolRelErr = vm["dmp.tolRelErr"].as<double>();
+    else return 1;
+    if (vm.count("dmp.ac")) ac = vm["dmp.ac"].as<double>();
+    else return 1;
+
+    if (vm.count("metric.as")) as = vm["metric.as"].as<double>();
+    else return 1;
+    if (vm.count("metric.database")) inDir = resolvePath(vm["metric.database"].as<string>());
+    else return 1;
+    if (vm.count("metric.goldStandard")) cfFile = resolvePath(vm["metric.goldStandard"].as<string>());
+    else return 1;
+    if (vm.count("metric.alpham")) alpham = vm["metric.alpham"].as<double>();
+    else return 1;
+    if (vm.count("metric.exploreSigmas")) {
+        string tokens = vm["metric.exploreSigmas"].as<string>();
+        stringstream parseStream(tokens);
+        char bracket;
+        double dToken;
+        parseStream >> bracket;
+        while(bracket != '}') {
+            parseStream >> dToken >> bracket;
+            rlExploreSigmas.push_back(dToken);
+        }
+    } else return 1;
+    if (vm.count("metric.importanceSamplingCount")) importanceSamplingCount = vm["metric.importanceSamplingCount"].as<int>();
+    else return 1;
+
+    cout << "all loaded" << endl;
+
+    ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
+
+    int kukaStepWaitTime = dmpStepSize * 1e6;
+    shared_ptr<OrocosControlQueue> leftQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, "real", "left_arm", *node));
+    shared_ptr<thread> lqThread = leftQueue->startQueueThread();
+
+    usleep(1e6);
+    mes_result currentJoints = leftQueue->getCurrentJoints();
+    cout << currentJoints.joints.t() << endl;
+
+    try {
+        RosSchunk leftHand(*node, "real", "left");
+        leftHand.closeHand(0.0, handVelocity);
+        leftHand.closeHand(1.0, handVelocity);
+    } catch(char const* ex) {
+        cout << string(ex) << endl;
+    }
+
+    leftQueue->setFinish();
+    lqThread->join();
+
+}

@@ -16,6 +16,7 @@
 #include "GenericHand.h"
 #include "ros/ros.h"
 #include "std_msgs/String.h"
+#include "../../utils/utils.h"
 
 enum kukadu_grasps {eGID_CENTRICAL, eGID_CYLINDRICAL, eGID_PARALLEL, eGID_SPHERICAL};
 
@@ -37,19 +38,19 @@ private:
 
     std::vector<std::string> joint_names_str;
 
-    void publishSdhJoints(std::vector<float> positions);
+    void publishSdhJoints(std::vector<double> positions);
 
-    std::vector<float> generateCylindricalPose(double percentage);
-    std::vector<float> generateParallelPose(double percentage);
-    std::vector<float> generateCentricalPose(double percentage);
-    std::vector<float> generateSphericalPose(double percentage);
+    std::vector<double> generateCylindricalPose(double percentage);
+    std::vector<double> generateParallelPose(double percentage);
+    std::vector<double> generateCentricalPose(double percentage);
+    std::vector<double> generateSphericalPose(double percentage);
 
     bool targetReached;
     bool isFirstCallback;
     bool movementStarted;
 
     bool vectorsDeviate(const std::vector<double> v1, const std::vector<double> v2, double tolerance);
-    std::vector<float> currentCommandedPos;
+    std::vector<double> currentCommandedPos;
     std::vector<double> initCurrentPos;
     std::vector<double> currentPos;
     std::vector<std::vector<double>> previousCurrentPosQueue;
@@ -59,7 +60,7 @@ private:
 
 public:
 
-    RosSchunk(ros::NodeHandle node, std::string trajTopic, std::string stateTopic, std::string hand);
+    RosSchunk(ros::NodeHandle node, std::string type, std::string hand);
 
     void connectHand();
     void closeHand(double percentage, double velocity);

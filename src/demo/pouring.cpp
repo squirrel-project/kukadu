@@ -154,6 +154,7 @@ int main(int argc, char** args) {
     executionQueue->switchMode(10);
 
     cout << "(main) done" << endl;
+    int plotNum = dmpGen->getDegOfFreedom();
 
     while( i < 50 ) {
 
@@ -175,7 +176,6 @@ int main(int argc, char** args) {
 
         if( (i % 1) == 0 ) {
 
-            int plotNum = dmpGen->getDegOfFreedom();
             for(int plotTraj = 0; plotTraj < plotNum; ++plotTraj) {
 
                 ostringstream convert;   // stream used for the conversion
@@ -191,10 +191,17 @@ int main(int argc, char** args) {
 
         }
 
-        g1->reset_plot();
+        for(int plotTraj = 0; plotTraj < plotNum; ++plotTraj) {
+            g1 = gs.at(plotTraj);
+            g1->reset_plot();
+        }
 
-        if( (i % 20) == 19)
-            g1->remove_tmpfiles();
+        if( (i % 20) == 19) {
+            for(int plotTraj = 0; plotTraj < plotNum; ++plotTraj) {
+                g1 = gs.at(plotTraj);
+                g1->remove_tmpfiles();
+            }
+        }
 
         ++i;
 

@@ -116,9 +116,11 @@ void OrocosControlQueue::run() {
 
     arma::vec movement = arma::vec(1);
 
-	cout << "start moving to start position" << endl;
-    if(startingJoints.n_elem > 1) moveJoints(startingJoints);
-	cout << "finished moving to start position" << endl;
+    if(startingJoints.n_elem > 1) {
+        cout << "start moving to start position" << endl;
+        moveJoints(startingJoints);
+        cout << "finished moving to start position" << endl;
+    }
 	
 	isInit = true;
 	

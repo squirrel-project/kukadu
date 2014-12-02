@@ -2,15 +2,16 @@
 
 using namespace std;
 
-RosSchunk::RosSchunk(ros::NodeHandle node, string trajTopic, std::string stateTopic, string hand) {
+RosSchunk::RosSchunk(ros::NodeHandle node, std::string type, std::string hand) {
 
     this->node = node;
-    // trajPub = node.advertise<motion_control_msgs::JointPositions>(trajTopic, 1);
-    trajPub = node.advertise<std_msgs::Float64MultiArray>(trajTopic, 1);
+    trajPub = node.advertise<std_msgs::Float64MultiArray>(string("/") + type + string("/") + hand + "_sdh/joint_control/move", 1);
 
-    stateSub = node.subscribe(stateTopic, 1, &RosSchunk::stateCallback, this);
+    stateSub = node.subscribe(string("/") + type + string("/") + hand + "_sdh/joint_control/get_state", 1, &RosSchunk::stateCallback, this);
     previousCurrentPosQueueSize = 10;
     isFirstCallback = true;
+
+    usleep(1e6);
 
     currentGraspId = eGID_CENTRICAL;
     closeHand(0.0, 1.0);
@@ -22,6 +23,7 @@ void RosSchunk::stateCallback(const sensor_msgs::JointState state) {
     currentPosMutex.lock();
 
         if(!isFirstCallback) {
+
             previousCurrentPosQueue.erase(previousCurrentPosQueue.begin(), previousCurrentPosQueue.begin() + 1);
             previousCurrentPosQueue.push_back(currentPos);
             currentPos = state.position;
@@ -34,13 +36,13 @@ void RosSchunk::stateCallback(const sensor_msgs::JointState state) {
 
             currentPos = state.position;
             isFirstCallback = false;
+            currentCommandedPos = state.position;
 
         }
 
         vector<double> doubleCommandedPos;
         for(int i = 0; i < currentCommandedPos.size(); ++i)
             doubleCommandedPos.push_back(currentCommandedPos.at(i));
-
 
         targetReached = !vectorsDeviate(state.position, doubleCommandedPos, 0.01);
 
@@ -81,9 +83,9 @@ bool RosSchunk::vectorsDeviate(const std::vector<double> v1, const std::vector<d
 
 }
 
-std::vector<float> RosSchunk::generateCylindricalPose(double percentage) {
+std::vector<double> RosSchunk::generateCylindricalPose(double percentage) {
 
-    vector<float> hand_pose;
+    vector<double> hand_pose;
 
     hand_pose.push_back(0);
     hand_pose.push_back((-30 + percentage * 30) * M_PI / 180.0);
@@ -97,9 +99,9 @@ std::vector<float> RosSchunk::generateCylindricalPose(double percentage) {
 
 }
 
-std::vector<float> RosSchunk::generateParallelPose(double percentage) {
+std::vector<double> RosSchunk::generateParallelPose(double percentage) {
 
-    vector<float> hand_pose;
+    vector<double> hand_pose;
 
     // finger orientation
     hand_pose.push_back(0);
@@ -123,9 +125,9 @@ std::vector<float> RosSchunk::generateParallelPose(double percentage) {
 
 }
 
-std::vector<float> RosSchunk::generateCentricalPose(double percentage) {
+std::vector<double> RosSchunk::generateCentricalPose(double percentage) {
 
-    vector<float> hand_pose;
+    vector<double> hand_pose;
 
     hand_pose.push_back((60) * M_PI/180.0);
     hand_pose.push_back((-75 + percentage * 82) * M_PI / 180.0);
@@ -139,9 +141,9 @@ std::vector<float> RosSchunk::generateCentricalPose(double percentage) {
 
 }
 
-std::vector<float> RosSchunk::generateSphericalPose(double percentage) {
+std::vector<double> RosSchunk::generateSphericalPose(double percentage) {
 
-    vector<float> hand_pose;
+    vector<double> hand_pose;
 
     hand_pose.push_back((60) * M_PI / 180.0);
     hand_pose.push_back((-40 + percentage * 25) * M_PI / 180.0);
@@ -163,7 +165,7 @@ void RosSchunk::closeHand(double percentage, double velocity) {
 
     if(percentage >= 0.0 && percentage <= 1.1) {
 
-        vector<float> hand_pose;
+        vector<double> hand_pose;
 
         switch(currentGraspId) {
         case eGID_CENTRICAL:
@@ -179,7 +181,6 @@ void RosSchunk::closeHand(double percentage, double velocity) {
             hand_pose = generateSphericalPose(percentage);
             break;
         default:
-
             string msg = "(RosSchunk) grasp type not supported";
             cerr << msg << endl;
             throw msg;
@@ -213,33 +214,26 @@ void RosSchunk::safelyDestroy() {
 
 }
 
-void RosSchunk::publishSdhJoints(std::vector<float> positions) {
+void RosSchunk::publishSdhJoints(std::vector<double> positions) {
 
-    throw "reimplement rosschunk";
-    /*
-        motion_control_msgs::JointPositions newJoints;
-        for(int i = 0; i < positions.size(); ++i)
-            newJoints.positions.push_back(positions.at(i));
+//    throw "reimplement rosschunk";
 
-        currentCommandedPos = positions;
+    std_msgs::Float64MultiArray newJoints;
+    for(int i = 0; i < positions.size(); ++i)
+        newJoints.data.push_back(positions.at(i));
 
-        // get current position
+    currentCommandedPos = positions;
+
+    // get current position
+    ros::spinOnce();
+
+    targetReached = false;
+    movementStarted = false;
+
+    initCurrentPos = currentPos;
+    trajPub.publish(newJoints);
+
+    while(!targetReached)
         ros::spinOnce();
 
-        targetReached = false;
-        movementStarted = false;
-
-        initCurrentPos = currentPos;
-
-        int nr_trial = 3;
-        for(int i = 0; i < 3; i++ ){
-
-                trajPub.publish(newJoints);
-                usleep(500*1000);
-
-        }
-
-        while(!targetReached)
-            ros::spinOnce();
-*/
 }

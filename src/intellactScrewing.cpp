@@ -109,10 +109,10 @@ int main(int argc, char** args) {
     if(!simulate) {
 
         if(doRightOperation)
-            raHand = new RosSchunk(*node, "/real/right_sdh/follow_joint_trajectory/goal", "/real/right_sdh/joint_control/joint_states", "right");
+            raHand = new RosSchunk(*node, "real", "right");
 
         if(doLeftOperation)
-            leHand = new RosSchunk(*node, "/real/left_sdh/follow_joint_trajectory/goal", "/real/left_sdh/joint_control/joint_states", "left");
+            leHand = new RosSchunk(*node, "real", "left");
 
         if(doRightOperation)
             raHand->setGrasp(eGID_CENTRICAL);
