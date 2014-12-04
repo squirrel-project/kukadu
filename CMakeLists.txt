@@ -109,8 +109,10 @@ src/learning/reinforcement_learning/GradientDescent.cpp
 src/learning/reinforcement_learning/DmpRewardComputer.cpp
 src/trajectory/TrajectoryExecutor.cpp
 src/robot/PlottingControlQueue.cpp
+src/robot/SensorStorage.cpp
 src/trajectory/TimeDepDictionaryGeneralizer.cpp
 src/utils/CustomSet.cpp
+src/utils/easyloggingpp/src/easylogging++.h
 )
 
 add_executable(pouring src/demo/pouring.cpp)

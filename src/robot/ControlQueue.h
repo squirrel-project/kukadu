@@ -109,7 +109,7 @@ public:
 	/**
 	 * \brief Returns current robot position in cartesian space
 	 */
-    virtual arma::vec getCartesianPos() = 0;
+    virtual mes_result getCartesianPos() = 0;
 	
 	/**
 	 * \brief Returns the robot joints the robot has been directly before starting command mode
@@ -125,11 +125,18 @@ public:
 	 * \brief Returns joints if the robot is in command mode
 	 */
 	virtual mes_result getCurrentJoints() = 0;
+
+    virtual mes_result getCurrentJntFrcTrq() = 0;
+
+    virtual mes_result getCurrentCartesianFrcTrq() = 0;
 	
 	/**
 	 * \brief Returns true if the command mode initialization is done
 	 */
 	virtual bool isInitialized() = 0;
+
+    virtual std::string getRobotName() = 0;
+    virtual std::vector<std::string> getJointNames() = 0;
     
 };
 

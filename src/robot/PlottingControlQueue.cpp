@@ -12,9 +12,24 @@ void PlottingControlQueue::setInitValues() {
 
 	isInit = false;
 	finish = 0;
+    currentTime = 0.0;
 	
     currentJoints = arma::vec(1);
     currentCarts = arma::vec(1);
+
+}
+
+std::string PlottingControlQueue::getRobotName() {
+    return "Simulation (PlottingControlQueue";
+}
+
+std::vector<std::string> PlottingControlQueue::getJointNames() {
+    vector<string> ret;
+    for(int i = 0; i < getMovementDegreesOfFreedom(); ++i) {
+        stringstream s;
+        s << i;
+        ret.push_back(string("joint ") + s.str());
+    }
 
 }
 
@@ -23,12 +38,40 @@ void PlottingControlQueue::run() {
     setInitValues();
     isInit = true;
 
+    ros::Rate rate(1 / (sleepTime * 1e-6));
+
     while(!finish && ros::ok) {
 
     //    currentTime += sleepTime * 1e-6;
-        usleep(sleepTime);
+        rate.sleep();
 
     }
+}
+
+mes_result PlottingControlQueue::getCurrentCartesianFrcTrq() {
+
+    mes_result ret;
+    vec frcTrq(6);
+    frcTrq.fill(0.0);
+
+    ret.joints = frcTrq;
+    ret.time = currentTime;
+
+    return ret;
+
+}
+
+mes_result PlottingControlQueue::getCurrentJntFrcTrq() {
+
+    mes_result ret;
+    vec frcTrq(getMovementDegreesOfFreedom());
+    frcTrq.fill(0.0);
+
+    ret.joints = frcTrq;
+    ret.time = currentTime;
+
+    return ret;
+
 }
 
 void PlottingControlQueue::setFinish() {
@@ -66,8 +109,7 @@ void PlottingControlQueue::setAdditionalLoad(float loadMass, float loadPos) {
 void PlottingControlQueue::setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq) {
 }
 
-arma::vec PlottingControlQueue::getCartesianPos() {
-//	return currentCarts;
+mes_result PlottingControlQueue::getCartesianPos() {
     throw "not supported yet";
 }
 

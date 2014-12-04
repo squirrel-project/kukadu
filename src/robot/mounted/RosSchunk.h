@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <mutex>
+#include <limits>
 
 #include <sensor_msgs/JointState.h>
 #include <control_msgs/FollowJointTrajectoryGoal.h>
@@ -12,11 +13,15 @@
 #include <trajectory_msgs/JointTrajectory.h>
 #include <trajectory_msgs/JointTrajectoryPoint.h>
 #include <std_msgs/Float64MultiArray.h>
+#include <iis_schunk_hardware/TactileMatrix.h>
+#include <iis_schunk_hardware/TactileSensor.h>
 
 #include "GenericHand.h"
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "../../utils/utils.h"
+
+#define SDH_IGNORE_JOINT std::numeric_limits<double>::min()
 
 enum kukadu_grasps {eGID_CENTRICAL, eGID_CYLINDRICAL, eGID_PARALLEL, eGID_SPHERICAL};
 
@@ -35,10 +40,10 @@ private:
     ros::NodeHandle node;
     ros::Publisher trajPub;
     ros::Subscriber stateSub;
+    ros::Subscriber tactileSub;
 
     std::vector<std::string> joint_names_str;
-
-    void publishSdhJoints(std::vector<double> positions);
+    std::vector<arma::mat> currentTactileReadings;
 
     std::vector<double> generateCylindricalPose(double percentage);
     std::vector<double> generateParallelPose(double percentage);
@@ -56,6 +61,10 @@ private:
     std::vector<std::vector<double>> previousCurrentPosQueue;
 
     std::mutex currentPosMutex;
+    std::mutex tactileMutex;
+
+    void stateCallback(const sensor_msgs::JointState& state);
+    void tactileCallback(const iis_schunk_hardware::TactileSensor& state);
 
 
 public:
@@ -68,7 +77,10 @@ public:
     void setGrasp(kukadu_grasps grasp);
     void safelyDestroy();
 
-    void stateCallback(const sensor_msgs::JointState state);
+    std::vector<arma::mat> getTactileSensing();
+
+    void publishSdhJoints(std::vector<double> positions);
+    void publishSingleJoint(int idx, double pos);
 
 };
 

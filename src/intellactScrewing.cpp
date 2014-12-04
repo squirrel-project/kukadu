@@ -128,32 +128,10 @@ int main(int argc, char** args) {
             leHand->closeHand(0.1, handVelocity);
 
         if(doRightOperation)
-            raQueue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime,
-                                         "/" + deviceType + "/" + right_prefix + "/joint_control/move",
-                                         "/" + deviceType + "/" + right_prefix + "/joint_control/get_state",
-                                         "/" + deviceType + "/" + right_prefix + "/settings/switch_mode",
-                                         "/" + deviceType + "/" + right_prefix + "/cartesian_control/get_pose",
-                                         "/" + deviceType + "/" + right_prefix + "/cartesian_control/set_impedance",
-                                         "/" + deviceType + "/" + right_prefix + "/joint_control/set_impedance",
-                                         "/" + deviceType + "/" + right_prefix + "/joint_control/ptp",
-                                         "/" + deviceType + "/" + right_prefix + "/settings/get_command_state",
-                                         "/" + deviceType + "/" + right_prefix + "/joint_control/ptp_reached",
-                                         "not supported yet",
-                                         *node));
+            raQueue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, deviceType, right_prefix, *node));
 
         if(doLeftOperation)
-            leQueue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime,
-                                         "/" + deviceType + "/" + left_prefix + "/joint_control/move",
-                                         "/" + deviceType + "/" + left_prefix + "/joint_control/get_state",
-                                         "/" + deviceType + "/" + left_prefix + "/settings/switch_mode",
-                                         "/" + deviceType + "/" + left_prefix + "/cartesian_control/get_pose",
-                                         "/" + deviceType + "/" + left_prefix + "/cartesian_control/set_impedance",
-                                         "/" + deviceType + "/" + left_prefix + "/joint_control/set_impedance",
-                                         "/" + deviceType + "/" + left_prefix + "/joint_control/ptp",
-                                         "/" + deviceType + "/" + left_prefix + "/settings/get_command_state",
-                                         "/" + deviceType + "/" + left_prefix + "/joint_control/ptp_reached",
-                                         "not supported yet",
-                                         *node));
+            leQueue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, deviceType, left_prefix, *node));
 
         cout << "(main) connection to arms established" << endl;
 

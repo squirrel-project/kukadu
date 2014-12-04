@@ -90,8 +90,11 @@ public:
 	
 	void setAdditionalLoad(float loadMass, float loadPos);
 	void setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq);
-	
-    arma::vec getCartesianPos();
+
+    mes_result getCurrentJntFrcTrq();
+    mes_result getCurrentCartesianFrcTrq();
+    mes_result getCartesianPos();
+
     arma::vec getStartingJoints();
     arma::vec retrieveJointsFromRobot();
 	
@@ -99,6 +102,9 @@ public:
 	bool isInitialized();
 	void safelyDestroy();
 	void setInitValues();
+
+    std::string getRobotName();
+    std::vector<std::string> getJointNames();
     
 };
 

@@ -1,3 +1,6 @@
+#include "../utils/easyloggingpp/src/easylogging++.h"
+_INITIALIZE_EASYLOGGINGPP
+
 #include <iostream>
 #include <string>
 #include <armadillo>
@@ -91,15 +94,44 @@ int main(int argc, char** args) {
     mes_result currentJoints = leftQueue->getCurrentJoints();
     cout << currentJoints.joints.t() << endl;
 
-    try {
-        RosSchunk leftHand(*node, "real", "left");
-        leftHand.closeHand(0.0, handVelocity);
-        leftHand.closeHand(1.0, handVelocity);
-    } catch(char const* ex) {
-        cout << string(ex) << endl;
-    }
+    shared_ptr<RosSchunk> leftHand = shared_ptr<RosSchunk>(new RosSchunk(*node, "real", "left"));
 
+    vector<shared_ptr<ControlQueue>> queues = {leftQueue};
+    vector<shared_ptr<GenericHand>> hands = {leftHand};
+    SensorStorage store(queues, hands, 100);
+    shared_ptr<thread> storageThread = store.startDataStorage("/home/c7031109/test");
+
+    /*
+    leftHand.setGrasp(eGID_PARALLEL);
+    leftHand.closeHand(0.0, handVelocity);
+
+    vector<double> handJoints = {SDH_IGNORE_JOINT, -1.5, -1.0, 0, -0.2, -1.5, -1};
+    leftHand.publishSdhJoints(handJoints);
+    */
+
+    /*
+    int idx = 0;
+    double number = 0.0;
+    while(true) {
+        cin >> idx;
+        cin >> number;
+        leftHand.publishSingleJoint(idx, number);
+    }
+    */
+
+    /*
     leftQueue->setFinish();
     lqThread->join();
+    */
+
+    /*
+    cout << "(main) press key to continue" << endl;
+    getchar();
+
+    handJoints = {SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0.4, 1.2, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
+    leftHand.publishSdhJoints(handJoints);
+    */
+
+    storageThread->join();
 
 }

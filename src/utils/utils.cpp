@@ -3,6 +3,17 @@
 using namespace std;
 using namespace arma;
 
+int createDirectory(std::string path) {
+
+    struct stat st = {0};
+
+    if (stat(path.c_str(), &st) == -1) {
+        mkdir(path.c_str(), 0700);
+        return true;
+    } else return false;
+
+}
+
 std::string resolvePath(std::string path) {
 
     wordexp_t p;

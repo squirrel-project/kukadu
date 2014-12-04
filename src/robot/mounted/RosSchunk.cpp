@@ -1,6 +1,8 @@
 #include "RosSchunk.h"
 
 using namespace std;
+using namespace arma;
+using namespace iis_schunk_hardware;
 
 RosSchunk::RosSchunk(ros::NodeHandle node, std::string type, std::string hand) {
 
@@ -8,17 +10,48 @@ RosSchunk::RosSchunk(ros::NodeHandle node, std::string type, std::string hand) {
     trajPub = node.advertise<std_msgs::Float64MultiArray>(string("/") + type + string("/") + hand + "_sdh/joint_control/move", 1);
 
     stateSub = node.subscribe(string("/") + type + string("/") + hand + "_sdh/joint_control/get_state", 1, &RosSchunk::stateCallback, this);
+    tactileSub = node.subscribe(string("/") + type + string("/") + hand + "_sdh/sensoring/tactile", 1, &RosSchunk::tactileCallback, this);
     previousCurrentPosQueueSize = 10;
     isFirstCallback = true;
 
-    usleep(1e6);
+    ros::Rate r(5);
+    while(isFirstCallback) {
+        ros::spinOnce();
+        r.sleep();
+    }
 
-    currentGraspId = eGID_CENTRICAL;
-    closeHand(0.0, 1.0);
+    currentCommandedPos = currentPos;
+    currentGraspId = eGID_PARALLEL;
+    publishSdhJoints(currentPos);
 
 }
 
-void RosSchunk::stateCallback(const sensor_msgs::JointState state) {
+void RosSchunk::tactileCallback(const iis_schunk_hardware::TactileSensor& state) {
+
+    tactileMutex.lock();
+
+        currentTactileReadings.clear();
+
+        for(int i = 0; i < state.tactile_matrix.size(); ++i) {
+
+             TactileMatrix tactMat = state.tactile_matrix.at(i);
+             int xSize = tactMat.cells_x;
+             int ySize = tactMat.cells_y;
+             mat currentMat(xSize, ySize);
+
+             for(int j = 0, run = 0; j < xSize; ++j)
+                 for(int k = 0; k < ySize; ++k, ++run)
+                     currentMat(j, k) = tactMat.tactile_array.at(run);
+
+             currentTactileReadings.push_back(currentMat);
+
+        }
+
+    tactileMutex.unlock();
+
+}
+
+void RosSchunk::stateCallback(const sensor_msgs::JointState& state) {
 
     currentPosMutex.lock();
 
@@ -205,7 +238,6 @@ void RosSchunk::disconnectHand() {
 
 void RosSchunk::setGrasp(kukadu_grasps grasp) {
 
-    closeHand(0.0, 1.0);
     currentGraspId = grasp;
 
 }
@@ -214,15 +246,30 @@ void RosSchunk::safelyDestroy() {
 
 }
 
+void RosSchunk::publishSingleJoint(int idx, double pos) {
+
+    vector<double> command;
+    for(int i = 0; i < currentCommandedPos.size(); ++i)
+        if(i == idx)
+            command.push_back(pos);
+        else
+            command.push_back(SDH_IGNORE_JOINT);
+
+    publishSdhJoints(command);
+
+}
+
 void RosSchunk::publishSdhJoints(std::vector<double> positions) {
 
-//    throw "reimplement rosschunk";
-
     std_msgs::Float64MultiArray newJoints;
-    for(int i = 0; i < positions.size(); ++i)
-        newJoints.data.push_back(positions.at(i));
+    for(int i = 0; i < positions.size(); ++i) {
+        if(positions.at(i) != SDH_IGNORE_JOINT)
+            newJoints.data.push_back(positions.at(i));
+        else
+            newJoints.data.push_back(currentCommandedPos.at(i));
+    }
 
-    currentCommandedPos = positions;
+    currentCommandedPos = newJoints.data;
 
     // get current position
     ros::spinOnce();
@@ -235,5 +282,16 @@ void RosSchunk::publishSdhJoints(std::vector<double> positions) {
 
     while(!targetReached)
         ros::spinOnce();
+
+}
+
+std::vector<arma::mat> RosSchunk::getTactileSensing() {
+
+    std::vector<arma::mat> ret;
+    tactileMutex.lock();
+        ret = currentTactileReadings;
+    tactileMutex.unlock();
+
+    return ret;
 
 }

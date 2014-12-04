@@ -26,6 +26,10 @@
 #include <gsl/gsl_poly.h>
 #include <gsl/gsl_linalg.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include "Tokenizer.h"
 #include "../trajectory/DMPTrajectoryGenerator.h"
 #include "../trajectory/TrajectoryDMPLearner.h"
@@ -37,6 +41,8 @@
 #include "types.h"
 
 #include "gnuplot-cpp/gnuplot_i.hpp"
+
+int createDirectory(std::string path);
 
 void printDoubleVector(std::vector<double>* data);
 void printDoubleVector(double* data, int size);

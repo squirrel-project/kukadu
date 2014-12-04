@@ -15,6 +15,7 @@
 #include "ControlQueue.h"
 #include "../utils/DestroyableObject.h"
 #include "../utils/types.h"
+#include "../utils/utils.h"
 #include "robotDriver/src/kuka/friRemote.h"
 
 #include "ros/ros.h"
@@ -27,6 +28,7 @@
 #include <std_msgs/Float32MultiArray.h>
 #include <std_msgs/MultiArrayDimension.h>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Wrench.h>
 #include <iis_kukie/CartesianImpedance.h>
 #include <iis_kukie/FriJointCommand.h>
 #include <iis_kukie/FriJointImpedance.h>
@@ -63,12 +65,15 @@ private:
     arma::vec startingJoints;
     arma::vec currentJoints;
     arma::vec currentCarts;
+    arma::vec currentJntFrqTrq;
+    arma::vec currentCartFrqTrq;
 	
 	double currentTime;
 	
     std::queue<arma::vec> movementQueue;
 	std::mutex currentJointsMutex;
 	std::mutex currentCartsMutex;
+    std::mutex cartFrcTrqMutex;
 	
 	std::string commandTopic;
 	std::string retJointPosTopic;
@@ -80,6 +85,11 @@ private:
 	std::string commandStateTopic;
 	std::string ptpReachedTopic;
 	std::string addLoadTopic;
+    std::string jntFrcTrqTopic;
+    std::string cartFrcTrqTopic;
+
+    std::string deviceType;
+    std::string armPrefix;
 	
 	ros::NodeHandle node;
 	ros::Rate* loop_rate;
@@ -96,26 +106,18 @@ private:
 	ros::Subscriber subCartPos;
 	ros::Subscriber subComState;
 	ros::Subscriber subPtpReached;
+    ros::Subscriber subjntFrcTrq;
+    ros::Subscriber subCartFrqTrq;
 	
 	double computeDistance(float* a1, float* a2, int size);
 
 public:
 
-	/** \brief Constructor for KukaControlQueue
-	 * \param port port to listen for incoming fri connection
-	 * \param sleepTime cycle sleep time (time between to packets sent in command mode)
-	 * \param initMode control mode (e.g. command mode, monitor mode) with which the queue should be started
-	 */
-	OrocosControlQueue(int argc, char** argv, int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
-		std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
-		std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, ros::NodeHandle node
-	);
-
     OrocosControlQueue(int argc, char** argv, int sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node);
 
     void constructQueue(int argc, char** argv, int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
                         std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
-                        std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, ros::NodeHandle node
+                        std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic, ros::NodeHandle node
                     );
 	
 	void run();
@@ -129,8 +131,11 @@ public:
 	
 	void setAdditionalLoad(float loadMass, float loadPos);
 	void setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq);
+
+    mes_result getCurrentJntFrcTrq();
+    mes_result getCurrentCartesianFrcTrq();
 	
-    arma::vec getCartesianPos();
+    mes_result getCartesianPos();
     arma::vec getStartingJoints();
     arma::vec retrieveJointsFromRobot();
 	
@@ -144,6 +149,11 @@ public:
 	void robotCartPosCallback(const geometry_msgs::Pose& msg);
 	void commandStateCallback(const std_msgs::Float32MultiArray& msg);
 	void phpReachedCallback(const std_msgs::Int32MultiArray& msg);
+    void jntFrcTrqCallback(const std_msgs::Float64MultiArray& msg);
+    void cartFrcTrqCallback(const geometry_msgs::Wrench& msg);
+
+    std::string getRobotName();
+    std::vector<std::string> getJointNames();
     
 };
 

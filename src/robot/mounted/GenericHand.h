@@ -1,6 +1,8 @@
 #ifndef GENERICHAND
 #define GENERICHAND
 
+#include <vector>
+#include <armadillo>
 #include "../../utils/DestroyableObject.h"
 
 /**
@@ -30,6 +32,8 @@ public:
 	 * 
 	 */
 	virtual void disconnectHand() = 0;
+
+    virtual std::vector<arma::mat> getTactileSensing() = 0;
 
 };
 
