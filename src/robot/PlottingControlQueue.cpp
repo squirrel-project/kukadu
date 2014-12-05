@@ -19,8 +19,12 @@ void PlottingControlQueue::setInitValues() {
 
 }
 
+std::string PlottingControlQueue::getRobotFileName() {
+    return "simulation_plotting_control_queue";
+}
+
 std::string PlottingControlQueue::getRobotName() {
-    return "Simulation (PlottingControlQueue";
+    return "Simulation (PlottingControlQueue)";
 }
 
 std::vector<std::string> PlottingControlQueue::getJointNames() {

@@ -153,6 +153,7 @@ public:
     void cartFrcTrqCallback(const geometry_msgs::Wrench& msg);
 
     std::string getRobotName();
+    std::string getRobotFileName();
     std::vector<std::string> getJointNames();
     
 };

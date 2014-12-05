@@ -45,6 +45,8 @@ private:
     std::vector<std::string> joint_names_str;
     std::vector<arma::mat> currentTactileReadings;
 
+    std::string hand;
+
     std::vector<double> generateCylindricalPose(double percentage);
     std::vector<double> generateParallelPose(double percentage);
     std::vector<double> generateCentricalPose(double percentage);
@@ -81,6 +83,8 @@ public:
 
     void publishSdhJoints(std::vector<double> positions);
     void publishSingleJoint(int idx, double pos);
+
+    std::string getHandName();
 
 };
 

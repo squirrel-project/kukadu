@@ -35,6 +35,8 @@ public:
 
     virtual std::vector<arma::mat> getTactileSensing() = 0;
 
+    virtual std::string getHandName() = 0;
+
 };
 
 #endif

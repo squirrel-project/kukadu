@@ -132,6 +132,7 @@ int main(int argc, char** args) {
     leftHand.publishSdhJoints(handJoints);
     */
 
-    storageThread->join();
+    if(storageThread)
+        storageThread->join();
 
 }

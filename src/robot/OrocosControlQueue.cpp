@@ -78,6 +78,10 @@ OrocosControlQueue::OrocosControlQueue(int argc, char** argv, int sleepTime, std
 
 }
 
+std::string OrocosControlQueue::getRobotFileName() {
+    return string("kuka_lwr_") + deviceType + string("_") + armPrefix;
+}
+
 std::string OrocosControlQueue::getRobotName() {
     return string("KUKA LWR (") + deviceType + string(" ") + armPrefix + string(")");
 }

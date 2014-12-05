@@ -104,6 +104,7 @@ public:
 	void setInitValues();
 
     std::string getRobotName();
+    std::string getRobotFileName();
     std::vector<std::string> getJointNames();
     
 };

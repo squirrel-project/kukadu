@@ -9,6 +9,8 @@ RosSchunk::RosSchunk(ros::NodeHandle node, std::string type, std::string hand) {
     this->node = node;
     trajPub = node.advertise<std_msgs::Float64MultiArray>(string("/") + type + string("/") + hand + "_sdh/joint_control/move", 1);
 
+    this->hand = hand;
+
     stateSub = node.subscribe(string("/") + type + string("/") + hand + "_sdh/joint_control/get_state", 1, &RosSchunk::stateCallback, this);
     tactileSub = node.subscribe(string("/") + type + string("/") + hand + "_sdh/sensoring/tactile", 1, &RosSchunk::tactileCallback, this);
     previousCurrentPosQueueSize = 10;
@@ -24,6 +26,10 @@ RosSchunk::RosSchunk(ros::NodeHandle node, std::string type, std::string hand) {
     currentGraspId = eGID_PARALLEL;
     publishSdhJoints(currentPos);
 
+}
+
+std::string RosSchunk::getHandName() {
+    return string("schunk_") + hand;
 }
 
 void RosSchunk::tactileCallback(const iis_schunk_hardware::TactileSensor& state) {

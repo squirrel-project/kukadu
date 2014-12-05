@@ -33,20 +33,25 @@ class SensorStorage {
 private:
 
     bool stopped;
+    bool storageStopped;
 
     double pollingFrequency;
 
     std::vector<std::shared_ptr<ControlQueue>> queues;
     std::vector<std::shared_ptr<GenericHand>> hands;
 
-    std::shared_ptr<std::ofstream> outputStream;
+    std::vector<std::shared_ptr<std::ofstream>> queueStreams;
+    std::vector<std::shared_ptr<std::ofstream>> handStreams;
 
     void storeData();
+    void writeVectorInLine(std::shared_ptr<std::ofstream> stream, arma::vec writeVec);
+    void writeMatrixInLine(std::shared_ptr<std::ofstream> stream, arma::mat writeMat);
 
 public:
 
     SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands, double pollingFrequency);
     std::shared_ptr<std::thread> startDataStorage(std::string folderName);
+    void stopDataStorage();
 
 };
 
