@@ -49,7 +49,7 @@ void RosSchunk::tactileCallback(const iis_schunk_hardware::TactileSensor& state)
                  for(int k = 0; k < ySize; ++k, ++run)
                      currentMat(j, k) = tactMat.tactile_array.at(run);
 
-             currentTactileReadings.push_back(currentMat);
+             currentTactileReadings.push_back(currentMat.t());
 
         }
 

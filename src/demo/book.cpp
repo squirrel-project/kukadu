@@ -92,6 +92,8 @@ int main(int argc, char** args) {
 
     usleep(1e6);
     mes_result currentJoints = leftQueue->getCurrentJoints();
+
+    // measured joints were -0.2252   1.3174  -2.1671   0.4912   0.8510  -1.5699   1.0577
     cout << currentJoints.joints.t() << endl;
 
     shared_ptr<RosSchunk> leftHand = shared_ptr<RosSchunk>(new RosSchunk(*node, "real", "left"));

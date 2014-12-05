@@ -21,13 +21,6 @@
 #define STORE_HND_JNT_POS 16
 #define STORE_HND_TCTLE 32
 
-/** \brief The OrocosControlQueue provides control capabilities for the Kuka LWR 4+ robotic arm
- *
- * This class implements the abstract ControlQueue class for the usage with the iisorocos system. It provides basic functionalities such as command mode control
- * in joint space as well as point to point movement in cartesian and joint space. To use it, the additionally provided KRL script has to be selected on the robot
- * controller side. For further information how to use it, please see the sample programs and the kuka documentation
- * \ingroup RobotFramework
- */
 class SensorStorage {
 
 private:
@@ -46,6 +39,8 @@ private:
     void storeData();
     void writeVectorInLine(std::shared_ptr<std::ofstream> stream, arma::vec writeVec);
     void writeMatrixInLine(std::shared_ptr<std::ofstream> stream, arma::mat writeMat);
+    void writeLabels(std::shared_ptr<std::ofstream> stream, std::vector<std::string> labels);
+    void writeMatrixMetaInfo(std::shared_ptr<std::ofstream> stream, int matrixNum, int xDim, int yDim);
 
 public:
 

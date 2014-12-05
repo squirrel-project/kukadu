@@ -71,6 +71,7 @@ void SensorStorage::stopDataStorage() {
     handStreams.clear();
 
 }
+
 void SensorStorage::writeVectorInLine(std::shared_ptr<ofstream> stream, arma::vec writeVec) {
     for(int i = 0; i < writeVec.n_elem; ++i)
         *stream << writeVec(i) << "\t";
@@ -82,11 +83,24 @@ void SensorStorage::writeMatrixInLine(std::shared_ptr<ofstream> stream, arma::ma
             *stream << writeMat(i, j) << "\t";
 }
 
+void SensorStorage::writeLabels(std::shared_ptr<std::ofstream> stream, std::vector<std::string> labels) {
+    for(int i = 0; i < labels.size(); ++i)
+        *stream << labels.at(i) << "\t";
+    *stream << endl;
+}
+
+void SensorStorage::writeMatrixMetaInfo(std::shared_ptr<std::ofstream> stream, int matrixNum, int xDim, int yDim) {
+    *stream << "matrix " << matrixNum << ": " << xDim << "x" << yDim << endl;
+
+}
+
 void SensorStorage::storeData() {
 
     double waitTime = 1.0 / pollingFrequency;
     ros::Rate rate(pollingFrequency);
     double currentTime = 0.0;
+
+    bool firstTime = true;
 
     while(!stopped) {
 
@@ -98,6 +112,36 @@ void SensorStorage::storeData() {
             mes_result cartPos = currentQueue->getCartesianPos();
             mes_result jntFrcTrq = currentQueue->getCurrentJntFrcTrq();
             mes_result cartFrcTrq = currentQueue->getCurrentCartesianFrcTrq();
+
+            if(firstTime) {
+
+                vector<string> jointNames = currentQueue->getJointNames();
+                vector<string> labels;
+
+                for(int j = 0; j < jointNames.size(); ++j)
+                    labels.push_back(string("joint_") + jointNames.at(j));
+
+                labels.push_back("cart_pos_x");
+                labels.push_back("cart_pos_y");
+                labels.push_back("cart_pos_z");
+                labels.push_back("cart_quat_x");
+                labels.push_back("cart_quat_y");
+                labels.push_back("cart_quat_z");
+                labels.push_back("cart_quat_w");
+
+                for(int j = 0; j < jointNames.size(); ++j)
+                    labels.push_back(string("force_joint_") + jointNames.at(j));
+
+                labels.push_back("cart_force_x");
+                labels.push_back("cart_force_y");
+                labels.push_back("cart_force_z");
+                labels.push_back("cart_trq_x");
+                labels.push_back("cart_trq_y");
+                labels.push_back("cart_trq_z");
+
+                writeLabels(currentOfStream, labels);
+
+            }
 
             *currentOfStream << joints.time << "\t";
             writeVectorInLine(currentOfStream, joints.joints);
@@ -116,6 +160,23 @@ void SensorStorage::storeData() {
             shared_ptr<ofstream> currentOfStream = handStreams.at(i);
             std::vector<arma::mat> currentSensing = currentHand->getTactileSensing();
 
+            if(firstTime) {
+
+                vector<string> labels;
+
+                for(int i = 0, running = 0; i < currentSensing.size(); ++i) {
+                    writeMatrixMetaInfo(currentOfStream, i, currentSensing.at(i).n_rows, currentSensing.at(i).n_cols);
+                    for(int j = 0; j < currentSensing.at(i).n_cols * currentSensing.at(i).n_rows + 3; ++j, ++running) {
+                        stringstream s;
+                        s << running;
+                        labels.push_back(s.str());
+                    }
+                }
+
+                writeLabels(currentOfStream, labels);
+
+            }
+
             *currentOfStream << currentTime << "\t";
             for(int j = 0; j < currentSensing.size(); ++j)
                 writeMatrixInLine(currentOfStream, currentSensing.at(i));
@@ -127,6 +188,7 @@ void SensorStorage::storeData() {
 
         }
 
+        firstTime = false;
         rate.sleep();
 
     }
