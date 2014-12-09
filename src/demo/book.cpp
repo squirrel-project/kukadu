@@ -93,23 +93,20 @@ int main(int argc, char** args) {
     usleep(1e6);
     mes_result currentJoints = leftQueue->getCurrentJoints();
 
+    /*
     // measured joints were -0.2252   1.3174  -2.1671   0.4912   0.8510  -1.5699   1.0577
+    leftQueue->switchMode(10);
+    leftQueue->moveJoints(stdToArmadilloVec({-0.2252, 1.3174, -2.1671, 0.4912, 0.8510, -1.5699, 1.0577}));
     cout << currentJoints.joints.t() << endl;
+    */
 
     shared_ptr<RosSchunk> leftHand = shared_ptr<RosSchunk>(new RosSchunk(*node, "real", "left"));
 
-    vector<shared_ptr<ControlQueue>> queues = {leftQueue};
-    vector<shared_ptr<GenericHand>> hands = {leftHand};
-    SensorStorage store(queues, hands, 100);
-    shared_ptr<thread> storageThread = store.startDataStorage("/home/c7031109/test");
-
-    /*
-    leftHand.setGrasp(eGID_PARALLEL);
-    leftHand.closeHand(0.0, handVelocity);
+    leftHand->setGrasp(eGID_PARALLEL);
+    leftHand->closeHand(0.0, handVelocity);
 
     vector<double> handJoints = {SDH_IGNORE_JOINT, -1.5, -1.0, 0, -0.2, -1.5, -1};
-    leftHand.publishSdhJoints(handJoints);
-    */
+    leftHand->publishSdhJoints(handJoints);
 
     /*
     int idx = 0;
@@ -117,24 +114,27 @@ int main(int argc, char** args) {
     while(true) {
         cin >> idx;
         cin >> number;
-        leftHand.publishSingleJoint(idx, number);
+        leftHand->publishSingleJoint(idx, number);
     }
     */
 
-    /*
-    leftQueue->setFinish();
-    lqThread->join();
-    */
-
-    /*
     cout << "(main) press key to continue" << endl;
     getchar();
 
+    vector<shared_ptr<ControlQueue>> queues = {leftQueue};
+    vector<shared_ptr<GenericHand>> hands = {leftHand};
+    SensorStorage store(queues, hands, 100);
+    shared_ptr<thread> storageThread = store.startDataStorage("/home/c7031109/mes_data/nonlinear_bottom_b_2");
+
+    sleep(1);
+
     handJoints = {SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0.4, 1.2, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
-    leftHand.publishSdhJoints(handJoints);
-    */
+    leftHand->publishSdhJoints(handJoints);
 
     if(storageThread)
         storageThread->join();
+
+    leftQueue->setFinish();
+    lqThread->join();
 
 }

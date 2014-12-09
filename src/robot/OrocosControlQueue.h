@@ -111,6 +111,14 @@ private:
 	
 	double computeDistance(float* a1, float* a2, int size);
 
+    /* orocos callback functions */
+    void robotJointPosCallback(const sensor_msgs::JointState& msg);
+    void robotCartPosCallback(const geometry_msgs::Pose& msg);
+    void commandStateCallback(const std_msgs::Float32MultiArray& msg);
+    void phpReachedCallback(const std_msgs::Int32MultiArray& msg);
+    void jntFrcTrqCallback(const std_msgs::Float64MultiArray& msg);
+    void cartFrcTrqCallback(const geometry_msgs::Wrench& msg);
+
 public:
 
     OrocosControlQueue(int argc, char** argv, int sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node);
@@ -144,14 +152,6 @@ public:
 	void safelyDestroy();
 	void setInitValues();
 	
-	/* orocos callback functions */
-	void robotJointPosCallback(const sensor_msgs::JointState& msg);
-	void robotCartPosCallback(const geometry_msgs::Pose& msg);
-	void commandStateCallback(const std_msgs::Float32MultiArray& msg);
-	void phpReachedCallback(const std_msgs::Int32MultiArray& msg);
-    void jntFrcTrqCallback(const std_msgs::Float64MultiArray& msg);
-    void cartFrcTrqCallback(const geometry_msgs::Wrench& msg);
-
     std::string getRobotName();
     std::string getRobotFileName();
     std::vector<std::string> getJointNames();
