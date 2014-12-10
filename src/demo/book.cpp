@@ -10,6 +10,10 @@ _INITIALIZE_EASYLOGGINGPP
 
 #include "../../include/kukadu.h"
 
+
+#define ROBOT_TYPE "real"
+#define ROBOT_SIDE "right"
+
 using namespace std;
 using namespace arma;
 namespace po = boost::program_options;
@@ -87,20 +91,20 @@ int main(int argc, char** args) {
     ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
 
     int kukaStepWaitTime = dmpStepSize * 1e6;
-    shared_ptr<OrocosControlQueue> leftQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, "real", "left_arm", *node));
+    shared_ptr<OrocosControlQueue> leftQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, ROBOT_TYPE, ROBOT_SIDE + string("_arm"), *node));
     shared_ptr<thread> lqThread = leftQueue->startQueueThread();
 
     usleep(1e6);
-    mes_result currentJoints = leftQueue->getCurrentJoints();
 
     /*
     // measured joints were -0.2252   1.3174  -2.1671   0.4912   0.8510  -1.5699   1.0577
+    mes_result currentJoints = leftQueue->getCurrentJoints();
     leftQueue->switchMode(10);
     leftQueue->moveJoints(stdToArmadilloVec({-0.2252, 1.3174, -2.1671, 0.4912, 0.8510, -1.5699, 1.0577}));
     cout << currentJoints.joints.t() << endl;
     */
 
-    shared_ptr<RosSchunk> leftHand = shared_ptr<RosSchunk>(new RosSchunk(*node, "real", "left"));
+    shared_ptr<RosSchunk> leftHand = shared_ptr<RosSchunk>(new RosSchunk(*node, ROBOT_TYPE, ROBOT_SIDE));
 
     leftHand->setGrasp(eGID_PARALLEL);
     leftHand->closeHand(0.0, handVelocity);
@@ -124,7 +128,7 @@ int main(int argc, char** args) {
     vector<shared_ptr<ControlQueue>> queues = {leftQueue};
     vector<shared_ptr<GenericHand>> hands = {leftHand};
     SensorStorage store(queues, hands, 100);
-    shared_ptr<thread> storageThread = store.startDataStorage("/home/c7031109/mes_data/nonlinear_bottom_b_2");
+    shared_ptr<thread> storageThread = store.startDataStorage("/home/c7031109/test");
 
     sleep(1);
 

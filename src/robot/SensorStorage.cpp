@@ -81,6 +81,7 @@ void SensorStorage::writeMatrixInLine(std::shared_ptr<ofstream> stream, arma::ma
     for(int i = 0; i < writeMat.n_rows; ++i)
         for(int j = 0; j < writeMat.n_cols; ++j)
             *stream << writeMat(i, j) << "\t";
+     *stream << "|\t";
 }
 
 void SensorStorage::writeLabels(std::shared_ptr<std::ofstream> stream, std::vector<std::string> labels) {
@@ -117,6 +118,8 @@ void SensorStorage::storeData() {
 
                 vector<string> jointNames = currentQueue->getJointNames();
                 vector<string> labels;
+
+                labels.push_back("time");
 
                 for(int j = 0; j < jointNames.size(); ++j)
                     labels.push_back(string("joint_") + jointNames.at(j));
@@ -164,9 +167,11 @@ void SensorStorage::storeData() {
 
                 vector<string> labels;
 
-                for(int i = 0, running = 0; i < currentSensing.size(); ++i) {
-                    writeMatrixMetaInfo(currentOfStream, i, currentSensing.at(i).n_rows, currentSensing.at(i).n_cols);
-                    for(int j = 0; j < currentSensing.at(i).n_cols * currentSensing.at(i).n_rows + 3; ++j, ++running) {
+                labels.push_back("time");
+
+                for(int k = 0, running = 0; k < currentSensing.size(); ++k) {
+                    writeMatrixMetaInfo(currentOfStream, k, currentSensing.at(k).n_rows, currentSensing.at(k).n_cols);
+                    for(int j = 0; j < currentSensing.at(k).n_cols * currentSensing.at(k).n_rows; ++j, ++running) {
                         stringstream s;
                         s << running;
                         labels.push_back(s.str());
@@ -179,7 +184,7 @@ void SensorStorage::storeData() {
 
             *currentOfStream << currentTime << "\t";
             for(int j = 0; j < currentSensing.size(); ++j)
-                writeMatrixInLine(currentOfStream, currentSensing.at(i));
+                writeMatrixInLine(currentOfStream, currentSensing.at(j));
 
             *currentOfStream << endl;
 

@@ -60,7 +60,7 @@ OrocosControlQueue::OrocosControlQueue(int argc, char** argv, int sleepTime, std
     commandTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/move";
     retJointPosTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/get_state";
     switchModeTopic = "/" + deviceType + "/" + armPrefix + "/settings/switch_mode";
-    retCartPosTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/get_pose";
+    retCartPosTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/get_pose_quat_wf";
     stiffnessTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/set_impedance";
     jntStiffnessTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/set_impedance";
     ptpTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/ptp";
@@ -120,13 +120,14 @@ void OrocosControlQueue::robotJointPosCallback(const sensor_msgs::JointState& ms
 void OrocosControlQueue::robotCartPosCallback(const geometry_msgs::Pose& msg) {
 
 	currentCartsMutex.lock();
-        currentCarts = arma::vec(6);
+        currentCarts = arma::vec(7);
         currentCarts(0) = msg.position.x;
         currentCarts(1) = msg.position.y;
         currentCarts(2) = msg.position.z;
         currentCarts(3) = msg.orientation.x;
         currentCarts(4) = msg.orientation.y;
         currentCarts(5) = msg.orientation.z;
+        currentCarts(6) = msg.orientation.w;
 	currentCartsMutex.unlock();
 
 }
