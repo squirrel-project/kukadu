@@ -6,6 +6,7 @@
 #include <armadillo>
 #include <memory>
 #include <thread>
+#include <geometry_msgs/Pose.h>
 
 #define COMMAND_NOT_SET -100
 
@@ -58,6 +59,12 @@ public:
 	 * \param joints joints to add
 	 */
     virtual void addJointsPosToQueue(arma::vec joints) = 0;
+
+    /**
+     * \brief Adds next cartesian position to queue
+     * \param pose end-effector pose to add
+     */
+    virtual void addCartesianPosToQueue(geometry_msgs::Pose pose) = 0;
 	
 	/**
 	 * \brief Switches robot modes. A state might be a real time command mode or an monitoring mode
@@ -87,6 +94,18 @@ public:
 	 * \param joints array of joint positions
 	 */
     virtual void moveJoints(arma::vec joints) = 0;
+
+    /**
+     * \brief Implements simple point to point movement in cartesian space
+     * \param pose of end-effector
+     */
+    virtual void moveCartesian(geometry_msgs::Pose pos) = 0;
+
+    /**
+     * \brief Implements simple point to point movement in cartesian space (does not block until the position is reached)
+     * \param pose of end-effector
+     */
+    virtual void moveCartesianNb(geometry_msgs::Pose pos) = 0;
 	
 	/**
 	 * \brief Changes the load data of the robot (e.g. needs to be used whenever robot picks up an object)
@@ -110,6 +129,11 @@ public:
 	 * \brief Returns current robot position in cartesian space
 	 */
     virtual mes_result getCartesianPos() = 0;
+
+    /**
+     * \brief Returns current robot position in cartesian space
+     */
+    virtual geometry_msgs::Pose getCartesianPose() = 0;
 	
 	/**
 	 * \brief Returns the robot joints the robot has been directly before starting command mode

@@ -88,6 +88,10 @@ void PlottingControlQueue::addJointsPosToQueue(arma::vec joints) {
     currentTime += sleepTime * 1e-6;
 }
 
+void PlottingControlQueue::addCartesianPosToQueue(geometry_msgs::Pose pose) {
+    throw "not supported yet";
+}
+
 void PlottingControlQueue::switchMode(int mode) {
 
 }
@@ -103,6 +107,14 @@ void PlottingControlQueue::setStartingJoints(arma::vec joints) {
     startingJoints = joints;
 }
 
+void PlottingControlQueue::moveCartesianNb(geometry_msgs::Pose pos) {
+    throw "not supported yet";
+}
+
+void PlottingControlQueue::moveCartesian(geometry_msgs::Pose pos) {
+    throw "not supported yet";
+}
+
 void PlottingControlQueue::moveJoints(arma::vec joints) {
     currentJoints = joints;
 }
@@ -114,6 +126,10 @@ void PlottingControlQueue::setStiffness(float cpstiffnessxyz, float cpstiffnessa
 }
 
 mes_result PlottingControlQueue::getCartesianPos() {
+    throw "not supported yet";
+}
+
+geometry_msgs::Pose PlottingControlQueue::getCartesianPose() {
     throw "not supported yet";
 }
 

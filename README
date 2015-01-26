@@ -4,5 +4,6 @@ requirements:
 	gnuplot-x11
 	libarmadillo-dev
 	libboost-all-dev
+	libncurses5-dev
 
-e.g.: sudo apt-get install libgsl0-dev gnuplot gnuplot-x11 libarmadillo-dev libboost-all-dev
+e.g.: sudo apt-get install libgsl0-dev gnuplot gnuplot-x11 libarmadillo-dev libboost-all-dev libncurses5-dev

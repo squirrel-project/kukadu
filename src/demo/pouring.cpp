@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <iostream>
 #include <string>
 #include <armadillo>
@@ -11,17 +12,21 @@ using namespace std;
 using namespace arma;
 namespace po = boost::program_options;
 
+void moveLeftArm();
 void switch2dQueryPoint();
 
 bool stopThread;
-double k, d, currentY;
+double k = 11.778701751;
+double d = 0.982426177;
+double currentY = 0.48;
 shared_ptr<DictionaryGeneralizer> dmpGen;
+shared_ptr<ControlQueue> holderQueue;
 
 int main(int argc, char** args) {
 
-    int importanceSamplingCount;
+    int importanceSamplingCount, useSimulation, performRl, maxRLIterations, learnMetric;
     double tau, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ac, as, alpham;
-    string inDir, cfFile;
+    string inDir, cfFile, simPrefix;
     vector<double> rlExploreSigmas;
 
     // only one time center selected
@@ -35,7 +40,10 @@ int main(int argc, char** args) {
             ("metric.alpham", po::value<double>(), "alpham")
             ("metric.exploreSigmas", po::value<string>(), "reinforcement learning exploration sigmas")
             ("metric.importanceSamplingCount", po::value<int>(), "size of importance sampling vector")
+            ("metric.performRL", po::value<int>(), "use reinforcement learning?")
             ("metric.as", po::value<double>(), "as")
+            ("metric.maxRLIterations", po::value<int>(), "maximum number of reinforcement learning iterations")
+            ("metric.learnMetric", po::value<int>(), "learn metric or use predefined one?")
             ("dmp.tau", po::value<double>(), "tau")
             ("dmp.az", po::value<double>(), "az")
             ("dmp.bz", po::value<double>(), "bz")
@@ -43,6 +51,7 @@ int main(int argc, char** args) {
             ("dmp.tolAbsErr", po::value<double>(), "tolerated absolute error")
             ("dmp.tolRelErr", po::value<double>(), "tolerated relative error")
             ("dmp.ac", po::value<double>(), "ac")
+            ("dmp.useSimulation", po::value<int>(), "use simulation?")
     ;
 
     ifstream parseFile(resolvePath("$KUKADU_HOME/cfg/pouring.prop"), std::ifstream::in);
@@ -64,6 +73,10 @@ int main(int argc, char** args) {
     else return 1;
     if (vm.count("dmp.ac")) ac = vm["dmp.ac"].as<double>();
     else return 1;
+    if (vm.count("dmp.useSimulation")) useSimulation = vm["dmp.useSimulation"].as<int>();
+    else return 1;
+
+    simPrefix = useSimulation ? "simulation" : "real";
 
     if (vm.count("metric.as")) as = vm["metric.as"].as<double>();
     else return 1;
@@ -86,14 +99,21 @@ int main(int argc, char** args) {
     } else return 1;
     if (vm.count("metric.importanceSamplingCount")) importanceSamplingCount = vm["metric.importanceSamplingCount"].as<int>();
     else return 1;
+    if (vm.count("metric.performRL")) performRl = vm["metric.performRL"].as<int>();
+    else return 1;
+    if (vm.count("metric.maxRLIterations")) maxRLIterations = vm["metric.maxRLIterations"].as<int>();
+    else return 1;
+    if (vm.count("metric.learnMetric")) learnMetric = vm["metric.learnMetric"].as<int>();
+    else return 1;
 
     cout << "all loaded" << endl;
 
     ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
 
     int kukaStepWaitTime = dmpStepSize * 1e6;
-    shared_ptr<ControlQueue> simulationQueue = shared_ptr<ControlQueue>(new PlottingControlQueue(7, kukaStepWaitTime));;
-    shared_ptr<ControlQueue> executionQueue = shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, "simulation", "left_arm", *node));
+    shared_ptr<ControlQueue> simulationQueue = shared_ptr<ControlQueue>(new PlottingControlQueue(7, kukaStepWaitTime));
+    holderQueue = shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, simPrefix, "right_arm", *node));
+    shared_ptr<ControlQueue> executionQueue = shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, simPrefix, "left_arm", *node));
     shared_ptr<Gnuplot> g1;
     shared_ptr<thread> switchThr;
 
@@ -116,8 +136,11 @@ int main(int argc, char** args) {
     m(1, 1) = 0.0007;
 
     cout << "(main) creating dictionary generalizer object" << endl;
-//    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
-    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ac, as, m, relativeDistanceThresh, alpham));
+    if(learnMetric)
+        dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ac, trajMetricWeights, relativeDistanceThresh, as, alpham));
+    else
+        dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ac, as, m, relativeDistanceThresh, alpham));
+
     cout << "(main) done" << endl;
 
     std::shared_ptr<DmpRewardComputer> reward = std::shared_ptr<DmpRewardComputer>(new DmpRewardComputer(resolvePath(cfFile), az, bz, dmpStepSize, dmpGen->getDegOfFreedom(), dmpGen->getTrajectory()->getTmax()));
@@ -147,78 +170,104 @@ int main(int argc, char** args) {
 
     cout << "(main) setting up robot" << endl;
 
+    geometry_msgs::Pose rightStartPos;
+    rightStartPos.position.x = 0.1266098458318735; rightStartPos.position.y = 0.6804381841413323; rightStartPos.position.z = 0.26416318113180093;
+    rightStartPos.orientation.x = -0.351192181682; rightStartPos.orientation.y = 0.563953194328; rightStartPos.orientation.z = 0.461341670882; rightStartPos.orientation.w = 0.588061582881;
+
+    vec leftStartPos = {-1.3379182815551758, 1.1682424545288086, 1.1133999824523926, -1.7567673921585083, -1.0026493072509766, 0.8772866725921631, 0.6723997592926025};
+
+    holderQueue->switchMode(OrocosControlQueue::KUKA_JNT_POS_MODE);
+    holderQueue->moveCartesian(rightStartPos);
+
     simulationQueue->startQueueThread();
-    simulationQueue->switchMode(10);
+    simulationQueue->switchMode(OrocosControlQueue::KUKA_JNT_POS_MODE);
 
     executionQueue->startQueueThread();
-    executionQueue->switchMode(10);
+    executionQueue->switchMode(OrocosControlQueue::KUKA_JNT_POS_MODE);
+
+
+    simulationQueue->moveJoints(leftStartPos);
+    cout << "if simulation was ok, press a key to execute on real robot..." << endl; getchar();
+    executionQueue->moveJoints(leftStartPos);
 
     cout << "(main) done" << endl;
     int plotNum = dmpGen->getDegOfFreedom();
 
-    while( i < 50 ) {
+    if(learnMetric && useSimulation) {
 
-        cout << "(main) performing rollout" << endl;
-        pow.performRollout(1, 0);
-        lastRollout = std::dynamic_pointer_cast<LinCombDmp>(pow.getLastUpdate());
-        cout << "(main) retrieving last metric" << endl;
-        vector<Mahalanobis> metrics = lastRollout->getMetric();
+        while(i < maxRLIterations) {
 
-        cout << "used metrics: " << endl;
-        for(int i = 0; i < metrics.size(); ++i)
-            cout << metrics.at(i).getM() << endl;
+            cout << "(main) performing rollout" << endl;
+            pow.performRollout(1, 0);
+            lastRollout = std::dynamic_pointer_cast<LinCombDmp>(pow.getLastUpdate());
+            cout << "(main) retrieving last metric" << endl;
+            vector<Mahalanobis> metrics = lastRollout->getMetric();
 
-        if(i == 0) {
-            initT = pow.getLastUpdateRes().t;
-            initY = pow.getLastUpdateRes().y;
-        }
+            cout << "used metrics: " << endl;
+            for(int i = 0; i < metrics.size(); ++i)
+                cout << metrics.at(i).getM() << endl;
+
+            if(i == 0) {
+                initT = pow.getLastUpdateRes().t;
+                initY = pow.getLastUpdateRes().y;
+            }
 
 
-        if( (i % 1) == 0 ) {
+            if( (i % 1) == 0 ) {
 
-            for(int plotTraj = 0; plotTraj < plotNum; ++plotTraj) {
+                for(int plotTraj = 0; plotTraj < plotNum; ++plotTraj) {
 
-                ostringstream convert;   // stream used for the conversion
-                convert << plotTraj;
+                    ostringstream convert;   // stream used for the conversion
+                    convert << plotTraj;
 
-                g1 = gs.at(plotTraj);
-                g1->set_style("lines").plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[plotTraj]), "optimal trajectoy");
-                g1->set_style("lines").plot_xy(armadilloToStdVec(initT), armadilloToStdVec(initY[plotTraj]), "initial trajectoy");
-                g1->set_style("lines").plot_xy(armadilloToStdVec(pow.getLastUpdateRes().t), armadilloToStdVec(pow.getLastUpdateRes().y[plotTraj]), "generalized trajectory");
-                g1->showonscreen();
+                    g1 = gs.at(plotTraj);
+                    g1->set_style("lines").plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[plotTraj]), "optimal trajectoy");
+                    g1->set_style("lines").plot_xy(armadilloToStdVec(initT), armadilloToStdVec(initY[plotTraj]), "initial trajectoy");
+                    g1->set_style("lines").plot_xy(armadilloToStdVec(pow.getLastUpdateRes().t), armadilloToStdVec(pow.getLastUpdateRes().y[plotTraj]), "generalized trajectory");
+                    g1->showonscreen();
+
+                }
 
             }
 
-        }
-
-        for(int plotTraj = 0; plotTraj < plotNum; ++plotTraj) {
-            g1 = gs.at(plotTraj);
-            g1->reset_plot();
-        }
-
-        if( (i % 20) == 19) {
             for(int plotTraj = 0; plotTraj < plotNum; ++plotTraj) {
                 g1 = gs.at(plotTraj);
-                g1->remove_tmpfiles();
+                g1->reset_plot();
             }
-        }
 
-        ++i;
+            if( (i % 20) == 19) {
+                for(int plotTraj = 0; plotTraj < plotNum; ++plotTraj) {
+                    g1 = gs.at(plotTraj);
+                    g1->remove_tmpfiles();
+                }
+            }
+
+            ++i;
+
+        }
 
     }
+
+    cout << "(PouringExperiment) switching mode for holding arm" << endl;
+    holderQueue->switchMode(OrocosControlQueue::KUKA_JNT_POS_MODE);
 
     cout << "(PouringExperiment) execution of trajectory at new position" << endl;
 
     while( 1 ) {
 
-        cout << "(PouringExperiment) first coordinate (< 0 for exit): " << endl;
+        cout << "(PouringExperiment) location (first coordinate) (< 0 for exit): " << endl;
         cin >> newQueryPoint(0);
 
         if(newQueryPoint(0) < 0)
             break;
 
-        cout << "(PouringExperiment) second coordinate: " << endl;
+        cout << "(PouringExperiment) amount to pour (second coordinate) (< 0 for exit): " << endl;
         cin >> newQueryPoint(1);
+
+        if(newQueryPoint(1) < 0)
+            break;
+
+        fflush(stdin); fflush(stdout);
 
         dmpGen->setAs(as);
 
@@ -227,13 +276,15 @@ int main(int argc, char** args) {
         dmpGen->switchQueryPoint(newQueryPoint);
 
         vec startingPos = dmpGen->getTrajectory()->getStartingPos();
-        simulationQueue->moveJoints(startingPos);
+
+        /*
         switchThr = shared_ptr<thread>(new std::thread(switch2dQueryPoint));
 
         stopThread = true;
         switchThr->join();
 
         simulationQueue->moveJoints(startingPos);
+        */
 
         char cont = 'n';
         cout << "(main) do you want to execute this trajectory? (y/N) ";
@@ -242,6 +293,7 @@ int main(int argc, char** args) {
         if(cont == 'y' || cont == 'Y') {
 
             cout << "(main) executing trial" << endl;
+            shared_ptr<thread> moveArmThread = shared_ptr<thread>(new std::thread(moveLeftArm));
 
             lastRollout = std::dynamic_pointer_cast<LinCombDmp>(dmpGen->getTrajectory());
             lastRollout->setCurrentQueryPoint(newQueryPoint);
@@ -253,11 +305,36 @@ int main(int argc, char** args) {
             stopThread = true;
             switchThr->join();
 
+            ungetc('c', stdin);
+            moveArmThread->join();
+
         }
 
     }
 
 
+}
+
+void moveLeftArm() {
+
+    geometry_msgs::Pose currentPose = holderQueue->getCartesianPose();
+    cout << currentPose.position.x << " " << currentPose.position.y << " " << currentPose.position.z << endl;
+    ros::Rate sl(20);
+    while( 1 ) {
+
+        int key = getch();
+        if(key == 68) {
+            currentPose.position.y -= 0.005;
+            holderQueue->moveCartesianNb(currentPose);
+        } else if(key == 67) {
+            currentPose.position.y += 0.005;
+            holderQueue->moveCartesianNb(currentPose);
+        } else if(key == 'q')
+            break;
+
+        sl.sleep();
+
+    }
 }
 
 /* switch query point for pouring */
@@ -274,12 +351,14 @@ void switch2dQueryPoint() {
 
         ros::spinOnce();
 
+        double currentY = holderQueue->getCartesianPos().joints(1);
+
         sleepRate.sleep();
         double oldQp = qp(0);
         qp(0) = k * currentY + d;
 
         if(oldQp != qp(0)) {
-            cout << currentY << endl;
+            cout << "currentY: " << currentY << endl;
             cout << "switching execution to position " << qp(0) << endl;
             dmpGen->switchQueryPoint(qp);
         }

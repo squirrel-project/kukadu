@@ -129,20 +129,20 @@ t_executor_res executeDemo(shared_ptr<ControlQueue> movementQu, string file, int
 }
 
 /* reimplements the getch() function available on windows
- * 
+ *
  * returns: sign take from console
  * input: -
 */
 int getch() {
-	struct termios oldt, newt;
-	int ch;
-	tcgetattr( STDIN_FILENO, &oldt );
-	newt = oldt;
-	newt.c_lflag &= ~( ICANON | ECHO );
-	tcsetattr( STDIN_FILENO, TCSANOW, &newt );
-	ch = getchar();
-	tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
-	return ch;
+    struct termios oldt, newt;
+    int ch;
+    tcgetattr( STDIN_FILENO, &oldt );
+    newt = oldt;
+    newt.c_lflag &= ~( ICANON | ECHO );
+    tcsetattr( STDIN_FILENO, TCSANOW, &newt );
+    ch = getchar();
+    tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
+    return ch;
 }
 
 std::vector<double> constructDmpMys(mat joints) {
@@ -788,5 +788,19 @@ arma::mat fillTrajectoryMatrix(arma::mat joints, double tMax) {
     }
 
     return joints;
+
+}
+
+void set_ctrlc_exit_handler() {
+    struct sigaction sigIntHandler;
+    sigIntHandler.sa_handler = exit_handler;
+    sigemptyset(&sigIntHandler.sa_mask);
+    sigIntHandler.sa_flags = 0;
+    sigaction(SIGINT, &sigIntHandler, NULL);
+}
+
+void exit_handler(int s) {
+
+    exit(1);
 
 }

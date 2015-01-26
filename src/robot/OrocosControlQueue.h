@@ -55,7 +55,8 @@ private:
 	int isInit;
 	int argc;
 	
-	int ptpReached;
+    int ptpReached;
+    int cartesianPtpReached;
 	int monComMode;
 	int impMode;
 	int currentMode;
@@ -74,6 +75,8 @@ private:
 	std::mutex currentJointsMutex;
 	std::mutex currentCartsMutex;
     std::mutex cartFrcTrqMutex;
+
+    geometry_msgs::Pose currentCartPose;
 	
 	std::string commandTopic;
 	std::string retJointPosTopic;
@@ -87,6 +90,9 @@ private:
 	std::string addLoadTopic;
     std::string jntFrcTrqTopic;
     std::string cartFrcTrqTopic;
+    std::string cartMoveTopic;
+    std::string cartPtpReachedTopic;
+    std::string cartMoveQueueTopic;
 
     std::string deviceType;
     std::string armPrefix;
@@ -97,7 +103,9 @@ private:
 	ros::Publisher pubCommand;
 	ros::Publisher pubSwitchMode;
 	ros::Publisher pubPtp;
+    ros::Publisher pubCartPtp;
 	ros::Publisher pubAddLoad;
+    ros::Publisher pubCartMoveQueue;
 	
 	ros::Publisher pub_set_cart_stiffness;
 	ros::Publisher pub_set_joint_stiffness;
@@ -108,6 +116,7 @@ private:
 	ros::Subscriber subPtpReached;
     ros::Subscriber subjntFrcTrq;
     ros::Subscriber subCartFrqTrq;
+    ros::Subscriber subCartPtpReached;
 	
 	double computeDistance(float* a1, float* a2, int size);
 
@@ -115,7 +124,8 @@ private:
     void robotJointPosCallback(const sensor_msgs::JointState& msg);
     void robotCartPosCallback(const geometry_msgs::Pose& msg);
     void commandStateCallback(const std_msgs::Float32MultiArray& msg);
-    void phpReachedCallback(const std_msgs::Int32MultiArray& msg);
+    void ptpReachedCallback(const std_msgs::Int32MultiArray& msg);
+    void cartPtpReachedCallback(const std_msgs::Int32MultiArray& msg);
     void jntFrcTrqCallback(const std_msgs::Float64MultiArray& msg);
     void cartFrcTrqCallback(const geometry_msgs::Wrench& msg);
 
@@ -125,7 +135,8 @@ public:
 
     void constructQueue(int argc, char** argv, int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
                         std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
-                        std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic, ros::NodeHandle node
+                        std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic,
+                        std::string cartMoveTopic, std::string cartPtpReachedTopic, std::string cartMoveQueueTopic, ros::NodeHandle node
                     );
 	
 	void run();
@@ -136,6 +147,10 @@ public:
 	void synchronizeToControlQueue(int maxNumJointsInQueue);
     void setStartingJoints(arma::vec joints);
     void moveJoints(arma::vec joints);
+    void moveCartesian(geometry_msgs::Pose pos);
+    void moveCartesianNb(geometry_msgs::Pose pos);
+
+    void addCartesianPosToQueue(geometry_msgs::Pose pose);
 	
 	void setAdditionalLoad(float loadMass, float loadPos);
 	void setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq);
@@ -144,6 +159,7 @@ public:
     mes_result getCurrentCartesianFrcTrq();
 	
     mes_result getCartesianPos();
+    geometry_msgs::Pose getCartesianPose();
     arma::vec getStartingJoints();
     arma::vec retrieveJointsFromRobot();
 	
@@ -155,6 +171,10 @@ public:
     std::string getRobotName();
     std::string getRobotFileName();
     std::vector<std::string> getJointNames();
+
+    static const int KUKA_JNT_POS_MODE = 10;
+    static const int KUKA_CART_IMP_MODE = 20;
+    static const int KUKA_JNT_IMP_MODE = 30;
     
 };
 

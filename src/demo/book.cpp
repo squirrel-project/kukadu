@@ -12,7 +12,7 @@ _INITIALIZE_EASYLOGGINGPP
 
 
 #define ROBOT_TYPE "real"
-#define ROBOT_SIDE "right"
+#define ROBOT_SIDE "left"
 
 using namespace std;
 using namespace arma;
@@ -23,7 +23,7 @@ int main(int argc, char** args) {
     int importanceSamplingCount;
     double tau, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ac, as, alpham;
     double handVelocity = 20.0;
-    string inDir, cfFile;
+    string inDir, cfFile, dataFolder;
     vector<double> rlExploreSigmas;
 
     // Declare the supported options.
@@ -42,9 +42,10 @@ int main(int argc, char** args) {
             ("dmp.tolAbsErr", po::value<double>(), "tolerated absolute error")
             ("dmp.tolRelErr", po::value<double>(), "tolerated relative error")
             ("dmp.ac", po::value<double>(), "ac")
+            ("mes.folder", po::value<string>(), "measurment data folder")
     ;
 
-    ifstream parseFile(resolvePath("$KUKADU_HOME/cfg/pouring.prop"), std::ifstream::in);
+    ifstream parseFile(resolvePath("$KUKADU_HOME/cfg/book.prop"), std::ifstream::in);
     po::variables_map vm;
     po::store(po::parse_config_file(parseFile, desc), vm);
     po::notify(vm);
@@ -86,7 +87,10 @@ int main(int argc, char** args) {
     if (vm.count("metric.importanceSamplingCount")) importanceSamplingCount = vm["metric.importanceSamplingCount"].as<int>();
     else return 1;
 
-    cout << "all loaded" << endl;
+    if (vm.count("mes.folder")) dataFolder = resolvePath(vm["mes.folder"].as<string>());
+    else return 1;
+
+    cout << "all properties loaded" << endl;
 
     ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
 
@@ -128,7 +132,7 @@ int main(int argc, char** args) {
     vector<shared_ptr<ControlQueue>> queues = {leftQueue};
     vector<shared_ptr<GenericHand>> hands = {leftHand};
     SensorStorage store(queues, hands, 100);
-    shared_ptr<thread> storageThread = store.startDataStorage("/home/c7031109/test");
+    shared_ptr<thread> storageThread = store.startDataStorage(dataFolder);
 
     sleep(1);
 

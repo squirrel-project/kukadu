@@ -82,11 +82,14 @@ public:
 	void run();
 	void setFinish();
     void addJointsPosToQueue(arma::vec joints);
+    void addCartesianPosToQueue(geometry_msgs::Pose pose);
 	void switchMode(int mode);
 	void stopCurrentMode();
 	void synchronizeToControlQueue(int maxNumJointsInQueue);
     void setStartingJoints(arma::vec joints);
     void moveJoints(arma::vec joints);
+    void moveCartesian(geometry_msgs::Pose pos);
+    void moveCartesianNb(geometry_msgs::Pose pos);
 	
 	void setAdditionalLoad(float loadMass, float loadPos);
 	void setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq);
@@ -94,6 +97,7 @@ public:
     mes_result getCurrentJntFrcTrq();
     mes_result getCurrentCartesianFrcTrq();
     mes_result getCartesianPos();
+    geometry_msgs::Pose getCartesianPose();
 
     arma::vec getStartingJoints();
     arma::vec retrieveJointsFromRobot();

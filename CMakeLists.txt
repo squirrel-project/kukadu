@@ -32,6 +32,9 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
+set(CURSES_USE_NCURSES TRUE)
+find_package(Curses)
+
 ###########
 ## Build ##
 ###########
@@ -116,19 +119,19 @@ src/utils/easyloggingpp/src/easylogging++.h
 )
 
 add_executable(pouring src/demo/pouring.cpp)
-target_link_libraries(pouring kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
+target_link_libraries(pouring kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
 
 add_executable(book src/demo/book.cpp)
-target_link_libraries(book kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
+target_link_libraries(book kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
 
 add_executable(testing src/testing.cpp)
-target_link_libraries(testing kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
+target_link_libraries(testing kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
 
 add_executable(kukadu_screwing src/intellactScrewing.cpp)
-target_link_libraries(kukadu_screwing kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
+target_link_libraries(kukadu_screwing kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
 
 add_executable(kukadu_humanoids src/humanoids2014.cpp)
-target_link_libraries(kukadu_humanoids kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
+target_link_libraries(kukadu_humanoids kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
 
 add_executable(kukadu_mes src/guided.cpp)
-target_link_libraries(kukadu_mes kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
+target_link_libraries(kukadu_mes kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})

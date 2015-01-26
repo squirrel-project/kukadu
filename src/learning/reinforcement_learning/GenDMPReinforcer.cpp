@@ -174,9 +174,8 @@ void GenDMPReinforcer::plotFeedback(DMPGeneralizer* dmpGen, Dmp rollout, t_execu
 		g1->showonscreen();
 		
 	}
-	
-	getch();
-	getch();
+
+    getchar();
 	
 	for(int i = 0; i < gs.size(); ++i) {
 		g1 = gs.at(i);

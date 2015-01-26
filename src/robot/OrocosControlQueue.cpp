@@ -5,8 +5,11 @@ using namespace arma;
 
 void OrocosControlQueue::constructQueue(int argc, char** argv, int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
                     std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
-                    std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic, ros::NodeHandle node
+                    std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic,
+                    std::string cartMoveTopic, std::string cartPtpReachedTopic, std::string cartMoveQueueTopic, ros::NodeHandle node
                 ) {
+
+    set_ctrlc_exit_handler();
 
     currentTime = 0.0;
     this->sleepTime= sleepTime;
@@ -22,10 +25,14 @@ void OrocosControlQueue::constructQueue(int argc, char** argv, int sleepTime, st
     this->addLoadTopic = addLoadTopic;
     this->jntFrcTrqTopic = jntFrcTrqTopic;
     this->cartFrcTrqTopic = cartFrcTrqTopic;
+    this->cartMoveTopic = cartMoveTopic;
+    this->cartPtpReachedTopic = cartPtpReachedTopic;
+    this->cartMoveQueueTopic = cartMoveQueueTopic;
 
     monComMode = -1;
     impMode = -1;
     ptpReached = 0;
+    cartesianPtpReached = 0;
 
     this->argc = argc;
     this->argv = argv;
@@ -39,12 +46,15 @@ void OrocosControlQueue::constructQueue(int argc, char** argv, int sleepTime, st
     subJntPos = node.subscribe(retPosTopic, 2, &OrocosControlQueue::robotJointPosCallback, this);
     subCartPos = node.subscribe(retCartPosTopic, 2, &OrocosControlQueue::robotCartPosCallback, this);
     subComState = node.subscribe(commandStateTopic, 2, &OrocosControlQueue::commandStateCallback, this);
-    subPtpReached = node.subscribe(ptpReachedTopic, 2, &OrocosControlQueue::phpReachedCallback, this);
+    subPtpReached = node.subscribe(ptpReachedTopic, 2, &OrocosControlQueue::ptpReachedCallback, this);
     subjntFrcTrq = node.subscribe(jntFrcTrqTopic, 2, &OrocosControlQueue::jntFrcTrqCallback, this);
     subCartFrqTrq = node.subscribe(cartFrcTrqTopic, 2, &OrocosControlQueue::cartFrcTrqCallback, this);
+    subCartPtpReached = node.subscribe(cartPtpReachedTopic, 2, &OrocosControlQueue::cartPtpReachedCallback, this);
 
     pub_set_cart_stiffness = node.advertise<iis_kukie::CartesianImpedance>(stiffnessTopic, 1);
     pub_set_joint_stiffness = node.advertise<iis_kukie::FriJointImpedance>(jntStiffnessTopic, 1);
+    pubCartPtp = node.advertise<geometry_msgs::Pose>(cartMoveTopic, 1);
+    pubCartMoveQueue = node.advertise<geometry_msgs::Pose>(cartMoveQueueTopic, 1);
 
     pubCommand = node.advertise<std_msgs::Float64MultiArray>(commandTopic, 10);
     pubSwitchMode = node.advertise<std_msgs::Int32>(switchModeTopic, 1);
@@ -68,14 +78,21 @@ OrocosControlQueue::OrocosControlQueue(int argc, char** argv, int sleepTime, std
     ptpReachedTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/ptp_reached";
     jntFrcTrqTopic = "/" + deviceType + "/" + armPrefix + "/sensoring/est_ext_jnt_trq";
     cartFrcTrqTopic = "/" + deviceType + "/" + armPrefix + "/sensoring/cartesian_wrench";
+    cartMoveTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/ptpQuaternion";
+    cartPtpReachedTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/ptp_reached";
+    cartMoveQueueTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/move";
     addLoadTopic = "not supported yet";
 
     this->deviceType = deviceType;
     this->armPrefix = armPrefix;
 
     constructQueue(argc, argv, sleepTime, commandTopic, retJointPosTopic, switchModeTopic, retCartPosTopic, stiffnessTopic,
-                   jntStiffnessTopic, ptpTopic, commandStateTopic, ptpReachedTopic, addLoadTopic, jntFrcTrqTopic, cartFrcTrqTopic, node);
+                   jntStiffnessTopic, ptpTopic, commandStateTopic, ptpReachedTopic, addLoadTopic, jntFrcTrqTopic, cartFrcTrqTopic, cartMoveTopic, cartPtpReachedTopic, cartMoveQueueTopic, node);
 
+}
+
+void OrocosControlQueue::addCartesianPosToQueue(geometry_msgs::Pose pose) {
+    pubCartMoveQueue.publish(pose);
 }
 
 std::string OrocosControlQueue::getRobotFileName() {
@@ -128,8 +145,15 @@ void OrocosControlQueue::robotCartPosCallback(const geometry_msgs::Pose& msg) {
         currentCarts(4) = msg.orientation.y;
         currentCarts(5) = msg.orientation.z;
         currentCarts(6) = msg.orientation.w;
+
+        currentCartPose = msg;
+
 	currentCartsMutex.unlock();
 
+}
+
+geometry_msgs::Pose OrocosControlQueue::getCartesianPose() {
+    return currentCartPose;
 }
 
 void OrocosControlQueue::commandStateCallback(const std_msgs::Float32MultiArray& msg) {
@@ -137,8 +161,12 @@ void OrocosControlQueue::commandStateCallback(const std_msgs::Float32MultiArray&
 	impMode = msg.data[1];
 }
 
-void OrocosControlQueue::phpReachedCallback(const std_msgs::Int32MultiArray& msg) {
-	ptpReached = msg.data[0];
+void OrocosControlQueue::ptpReachedCallback(const std_msgs::Int32MultiArray& msg) {
+    ptpReached = msg.data[0];
+}
+
+void OrocosControlQueue::cartPtpReachedCallback(const std_msgs::Int32MultiArray& msg) {
+    cartesianPtpReached = msg.data[0];
 }
 
 void OrocosControlQueue::run() {
@@ -263,6 +291,38 @@ void OrocosControlQueue::synchronizeToControlQueue(int maxNumJointsInQueue) {
 
 void OrocosControlQueue::setStartingJoints(arma::vec joints) {
 	startingJoints = joints;
+}
+
+void OrocosControlQueue::moveCartesianNb(geometry_msgs::Pose pos) {
+    pubCartPtp.publish(pos);
+}
+
+void OrocosControlQueue::moveCartesian(geometry_msgs::Pose pos) {
+
+    cartesianPtpReached = 0;
+
+    if(ros::ok) {
+
+        cout << "(OrocosControlQueue) moving" << endl;
+        pubCartPtp.publish(pos);
+        ros::spinOnce();
+
+        // just to make sure, arm really reached target
+        loop_rate->sleep();
+        ros::spinOnce();
+
+        while(!cartesianPtpReached) {
+            loop_rate->sleep();
+            loop_rate->sleep();
+            loop_rate->sleep();
+            ros::spinOnce();
+        }
+        cout << "(OrocosControlQueue) ptp movement done" << endl;
+
+    } else {
+        cout << "(OrocosControlQueue) ros error" << endl;
+    }
+
 }
 
 void OrocosControlQueue::moveJoints(arma::vec joints) {

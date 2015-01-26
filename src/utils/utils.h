@@ -18,6 +18,7 @@
 #include <armadillo>
 #include <wordexp.h>
 #include <memory>
+#include <signal.h>
 
 #include <dirent.h>
 #include <gsl/gsl_vector.h>
@@ -104,5 +105,8 @@ arma::mat columnToSymmetricMatrix(arma::vec c);
 
 t_executor_res executeDemo(std::shared_ptr<ControlQueue> movementQu, std::string file, int doSimulation, double az, double bz, int plotResults);
 t_executor_res executeDemo(std::shared_ptr<ControlQueue> movementQu, std::string file, int doSimulation, double az, double bz, int plotResults, double dmpStepSize);
+
+void set_ctrlc_exit_handler();
+void exit_handler(int s);
 
 #endif

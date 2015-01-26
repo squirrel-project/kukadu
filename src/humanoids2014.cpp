@@ -143,7 +143,7 @@ int main(int argc, char** args) {
         cout << "(humanoids2014) cost for comparing same trajectory: " << cost << endl;
 
     }
-    getch();
+    getchar();
 
 	return 0;
 

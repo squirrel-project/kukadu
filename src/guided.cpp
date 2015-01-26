@@ -183,7 +183,7 @@ int main(int argc, char** args) {
     laQueue->switchMode(10);
     laQueue->stopCurrentMode();
 
-    getch();
+    getchar();
 
     return 0;
 
