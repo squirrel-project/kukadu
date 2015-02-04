@@ -97,6 +97,7 @@ src/types/DMP.cpp
 src/types/QueryPoint.cpp
 src/types/DMPBase.cpp
 src/types/LinCombDmp.cpp
+src/types/SensorData.cpp
 src/types/DictionaryTrajectory.cpp
 src/learning/metric_learning/Mahalanobis.cpp
 src/learning/metric_learning/MahalanobisLearner.cpp

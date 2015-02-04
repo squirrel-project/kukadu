@@ -18,6 +18,8 @@ GenDMPReinforcer::GenDMPReinforcer(vec initialQueryPoint, CostComputer* cost, DM
 	this->genResults = NULL;
 	
 	this->isFirstRolloutAfterInit = true;
+    this->simQueue = std::shared_ptr<PlottingControlQueue>(new PlottingControlQueue(dmpGen->getDegOfFreedom(), dmpStepSize));
+
 }
 
 std::vector<Dmp> GenDMPReinforcer::getInitialRollout() {
@@ -27,13 +29,13 @@ std::vector<Dmp> GenDMPReinforcer::getInitialRollout() {
 	genResults = new t_executor_res[dmpGen->getQueryPointCount()];
 	for(int i = 0; i < dmpGen->getQueryPointCount(); ++i) {
 		Dmp queryDmp = dmpGen->getQueryPointByIndex(i).getDmp();
-		DMPExecutor dmpsim(queryDmp);
+        DMPExecutor dmpsim(queryDmp, simQueue);
 		genResults[i] = dmpsim.simulateTrajectory(0, queryDmp.getTmax(), getDmpStepSize(), getTolAbsErr(), getTolRelErr());
 	}
 	
 	vector<Dmp> ret;
 	Dmp rollout = dmpGen->generalizeDmp(trajectoryKernel, parameterKernel, initialQueryPoint, 100000);
-	DMPExecutor dmpsim(rollout);
+    DMPExecutor dmpsim(rollout, simQueue);
 	t_executor_res dmpResult = dmpsim.simulateTrajectory(0, rollout.getTmax(), getDmpStepSize(), getTolAbsErr(), getTolRelErr());
 	
 	if(DEBUGGENDMPREINFORCER) {
@@ -114,7 +116,7 @@ Dmp GenDMPReinforcer::updateStep() {
 	vector<Dmp> ret;
 	Dmp rollout = dmpGen->generalizeDmp(trajectoryKernel, parameterKernel, lastQueryPoint, 100000);
 	
-	DMPExecutor dmpsim(rollout);
+    DMPExecutor dmpsim(rollout, simQueue);
 	t_executor_res dmpResult = dmpsim.simulateTrajectory(0, rollout.getTmax(), getDmpStepSize(), getTolAbsErr(), getTolRelErr());
 	
 	if(DEBUGGENDMPREINFORCER) {

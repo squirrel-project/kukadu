@@ -10,6 +10,8 @@ DMPTrajectoryComparator::DMPTrajectoryComparator(Dmp traject1, Dmp traject2, vec
 	dmp1Result = executeTrajectory(traject1);
 	dmp2Result = executeTrajectory(traject2);
 
+    simQueue = std::shared_ptr<PlottingControlQueue>(new PlottingControlQueue(degOfFreedomWeights.n_elem, integrationStep));
+
 }
 
 DMPTrajectoryComparator::DMPTrajectoryComparator(t_executor_res res1, t_executor_res res2, vec degOfFreedomWeights) {
@@ -17,6 +19,8 @@ DMPTrajectoryComparator::DMPTrajectoryComparator(t_executor_res res1, t_executor
 	dmp1Result = res1;
 	dmp2Result = res2;
 	this->degOfFreedomWeights = degOfFreedomWeights;
+
+    simQueue = std::shared_ptr<PlottingControlQueue>(new PlottingControlQueue(degOfFreedomWeights.n_elem, res1.t(1) - res1.t(0)));
 
 }
 
@@ -87,7 +91,7 @@ void DMPTrajectoryComparator::setTrajectories(Dmp traj1, Dmp traj2, double integ
 
 t_executor_res DMPTrajectoryComparator::executeTrajectory(Dmp traj) {
 	
-	DMPExecutor dmpexec(traj);
+    DMPExecutor dmpexec(traj, simQueue);
 	
     /*
 	if( abs(traj1.getTmax() - traj2.getTmax()) > tTolerance ) {

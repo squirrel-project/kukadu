@@ -246,7 +246,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 	for(int i = 0; i < points; ++i) {
 
         QueryPoint currentQp = dictTraj->getQueryPoints().at(i);
-        std::shared_ptr<DMPExecutor> currentExec = std::shared_ptr<DMPExecutor>(new DMPExecutor(currentQp.getDmp()));
+        std::shared_ptr<DMPExecutor> currentExec = std::shared_ptr<DMPExecutor>(new DMPExecutor(currentQp.getDmp(), simulationQueue));
 		currentExec->initializeIntegration(0, stepSize, tolAbsErr, tolRelErr);
 
 		// if real execution use external error determination

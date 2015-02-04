@@ -12,7 +12,7 @@ DmpRewardComputer::DmpRewardComputer(string file, double az, double bz, double t
     std::shared_ptr<ControlQueue> pcq = std::shared_ptr<ControlQueue>(new PlottingControlQueue(degOfFreedom, timeStep));
 
     cout << "(DmpRewardComputer) starting execution of sample trajectory with timeStep size " << timeStep << endl;
-    executionResult = executeDemo(pcq, file, 0, az, bz, 0, timeStep);
+    executionResult = executeDemo(pcq, file, az, bz, 0);
 
     /*
     cout << "(DmpRewardComputer) performing binary tree search" << endl;

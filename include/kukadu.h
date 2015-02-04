@@ -40,6 +40,7 @@
 #include "../src/types/Trajectory.h"
 #include "../src/types/SingleSampleTrajectory.h"
 #include "../src/types/DMP.h"
+#include "../src/types/SensorData.h"
 #include "../src/types/LinCombDmp.h"
 #include "../src/types/DictionaryTrajectory.h"
 #include "../src/types/QueryPoint.h"

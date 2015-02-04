@@ -68,6 +68,7 @@ public:
     TrajectoryDMPLearner(std::vector<double> mysDef, std::vector<double> sigmasDef, double az, double bz, std::string file);
 
     TrajectoryDMPLearner(double az, double bz, std::string file);
+
     TrajectoryDMPLearner(double az, double bz, arma::mat joints);
 	
 	/**

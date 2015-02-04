@@ -3,26 +3,26 @@
 using namespace std;
 using namespace arma;
 
-DMPExecutor::DMPExecutor(Dmp traj) {
+DMPExecutor::DMPExecutor(Dmp traj, std::shared_ptr<ControlQueue> execQueue) {
 	
-	construct(traj, 1);
-	
-}
-
-DMPExecutor::DMPExecutor(Dmp traj, int suppressMessages) {
-	
-	construct(traj, suppressMessages);
+    construct(traj, execQueue, 1);
 	
 }
 
-DMPExecutor::DMPExecutor(Trajectory* traj) {
+DMPExecutor::DMPExecutor(Dmp traj, std::shared_ptr<ControlQueue> execQueue, int suppressMessages) {
+	
+    construct(traj, execQueue, suppressMessages);
+	
+}
+
+DMPExecutor::DMPExecutor(Trajectory* traj, std::shared_ptr<ControlQueue> execQueue) {
 	
 	Dmp dmp = *((Dmp*) traj);
-	construct(dmp, suppressMessages);
+    construct(dmp, execQueue, suppressMessages);
 	
 }
 
-void DMPExecutor::construct(Dmp traj, int suppressMessages) {
+void DMPExecutor::construct(Dmp traj, std::shared_ptr<ControlQueue> execQueue, int suppressMessages) {
     /*
 
 
@@ -31,6 +31,8 @@ void DMPExecutor::construct(Dmp traj, int suppressMessages) {
     std::vector<double>* vec_y;
 
     */
+
+    this->controlQueue = execQueue;
 
 	this->dmp = traj;
     this->ac = 0.0;
@@ -67,7 +69,7 @@ void DMPExecutor::construct(Dmp traj, int suppressMessages) {
 void DMPExecutor::setTrajectory(std::shared_ptr<Trajectory> traj) {
 	
     Dmp dmp = *(std::dynamic_pointer_cast<Dmp>(traj));
-	construct(dmp, suppressMessages);
+    construct(dmp, controlQueue, suppressMessages);
 	
 	vec_t.clear();
     vec_y.clear();
@@ -176,22 +178,20 @@ int DMPExecutor::jac(double t, const double* y, double *dfdy, double* dfdt, void
 	
 }
 
-t_executor_res DMPExecutor::executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr, std::shared_ptr<ControlQueue> controlQueue) {
+t_executor_res DMPExecutor::executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
 
 	this->ac = ac;
 	this->simulate = EXECUTE_ROBOT;
-	this->controlQueue = controlQueue;
-    return this->executeDMP(EXECUTE_ROBOT, tStart, tEnd, stepSize, tolAbsErr, tolRelErr);
+    return this->executeDMP(tStart, tEnd, stepSize, tolAbsErr, tolRelErr);
 	
 }
 
 t_executor_res DMPExecutor::simulateTrajectory(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
 
 	this->simulate = SIMULATE_DMP;
-	this->controlQueue = NULL;
     auto begin = std::chrono::high_resolution_clock::now();
 
-    t_executor_res ret = this->executeDMP(SIMULATE_DMP, tStart, tEnd, stepSize, tolAbsErr, tolRelErr);
+    t_executor_res ret = this->executeDMP(tStart, tEnd, stepSize, tolAbsErr, tolRelErr);
 
     auto end = std::chrono::high_resolution_clock::now();
     std::cout << "(DMPExecutor) the simulation took " << std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count() << " ns" << std::endl;
@@ -202,12 +202,16 @@ t_executor_res DMPExecutor::simulateTrajectory(double tStart, double tEnd, doubl
 
 t_executor_res DMPExecutor::simulateTrajectory() {
 	
-	return this->executeDMP(SIMULATE_DMP, 0, dmp.getTmax(), dmp.getStepSize(), dmp.getTolAbsErr(), dmp.getTolRelErr());
+    this->simulate = SIMULATE_DMP;
+    return this->executeDMP(0, dmp.getTmax(), dmp.getStepSize(), dmp.getTolAbsErr(), dmp.getTolRelErr());
 	
 }
 
 t_executor_res DMPExecutor::executeTrajectory() {
-	return this->executeDMP(EXECUTE_ROBOT, 0, dmp.getTmax(), dmp.getStepSize(), dmp.getTolAbsErr(), dmp.getTolRelErr());
+
+    this->simulate = EXECUTE_ROBOT;
+    return this->executeDMP(0, dmp.getTmax(), dmp.getStepSize(), dmp.getTolAbsErr(), dmp.getTolRelErr());
+
 }
 
 void DMPExecutor::initializeIntegration(double tStart, double stepSize, double tolAbsErr, double tolRelErr) {
@@ -276,8 +280,9 @@ void DMPExecutor::destroyIntegration() {
 
 }
 
-t_executor_res DMPExecutor::executeDMP(int simulate, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
+t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
 
+    ros::Rate sl(1.0 / stepSize);
     int stepCount = (tEnd - tStart) / stepSize;
     double currentTime = 0.0;
 
@@ -286,6 +291,8 @@ t_executor_res DMPExecutor::executeDMP(int simulate, double tStart, double tEnd,
         ret.y.push_back(arma::vec(stepCount));
 
     vector<double> retT;
+
+    controlQueue->moveJoints(y0s);
 
     initializeIntegration(0, stepSize, tolAbsErr, tolRelErr);
 
@@ -311,6 +318,10 @@ t_executor_res DMPExecutor::executeDMP(int simulate, double tStart, double tEnd,
         for(int i = 0; i < degofFreedom; ++i)
             ret.y.at(i)(j) = nextJoints(i);
 
+        if(simulate == EXECUTE_ROBOT)
+            sl.sleep();
+
+        controlQueue->addJointsPosToQueue(nextJoints);
         retT.push_back(currentTime);
 
     }

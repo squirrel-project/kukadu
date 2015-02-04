@@ -26,12 +26,6 @@ std::string resolvePath(std::string path) {
 
 }
 
-t_executor_res executeDemo(shared_ptr<ControlQueue> movementQu, string file, int doSimulation, double az, double bz, int plotResults) {
-
-    return executeDemo(movementQu, file, doSimulation, az, bz, plotResults, 1.3 * 1e-2);
-
-}
-
 arma::vec createArmaVecFromDoubleArray(double* data, int n) {
     arma::vec ret(n);
     for(int i = 0; i < n; ++i)
@@ -39,23 +33,12 @@ arma::vec createArmaVecFromDoubleArray(double* data, int n) {
     return ret;
 }
 
-t_executor_res executeDemo(shared_ptr<ControlQueue> movementQu, string file, int doSimulation, double az, double bz, int plotResults, double dmpStepSize) {
+t_executor_res executeDemo(shared_ptr<ControlQueue> movementQu, string file, double az, double bz, int plotResults) {
 	
 	Gnuplot* g1 = NULL;
 	
 	int columns = 8;
-	int kukaPort = 49938;
 	int plotNum = columns - 1;
-	
-	// constant for phase stopping
-	double ac = 10;
-
-	double tolAbsErr = 1e-1;
-	double tolRelErr = 1e-1;
-	
-	// with current implementation tStart has to be 0.0
-	double tStart = 0.0;
-	double tEnd = 7.5;
 	double tau = 0.8;
 	
 	// vector<double> tmpmys{0, 1, 2, 3, 4, 5, 6, 7, 8};
@@ -71,37 +54,14 @@ t_executor_res executeDemo(shared_ptr<ControlQueue> movementQu, string file, int
 	
 	vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
 
-	float timeCounter = 0.0;
-    arma::vec jointValues;
-    arma::vec currentJoints;
-
     TrajectoryDMPLearner dmpLearner(baseDef, tau, az, bz, ax, joints);
 	Dmp learnedDmps = dmpLearner.fitTrajectories();
-	vector<vec> dmpCoeffs = learnedDmps.getDmpCoeffs();
 
-	if(!doSimulation) {
+    movementQu->moveJoints(learnedDmps.getY0());
 		
-        movementQu->moveJoints(learnedDmps.getY0());
-		
-		currentJoints = movementQu->getCurrentJoints().joints;
-		printf("(main) begin joint [%f,%f,%f,%f,%f,%f,%f]\n", currentJoints[0], currentJoints[1], currentJoints[2], currentJoints[3], currentJoints[4], currentJoints[5], currentJoints[6]);
-		fflush(stdout);
-
-	}
     cout << "tmax: " << learnedDmps.getTmax() << endl;
-	DMPExecutor dmpexec(learnedDmps);
-	t_executor_res dmpResult;
-
-    // TODO: execution fails with doSimulation = 1; because there is no control queue attached to dmpexecutor
-    if(doSimulation) dmpResult = dmpexec.simulateTrajectory(tStart, learnedDmps.getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
-	else {
-
-        dmpResult = dmpexec.executeTrajectory(ac, tStart, learnedDmps.getTmax() - 1.1, dmpStepSize, tolAbsErr, tolRelErr, movementQu);
-		
-    //	movementQu->switchMode(10);
-    //	movementQu->stopCurrentMode();
-		
-	}
+    DMPExecutor dmpexec(learnedDmps, movementQu);
+    t_executor_res dmpResult = dmpexec.executeTrajectory();
 
     if(plotResults) {
 
@@ -421,52 +381,102 @@ gsl_matrix* invertSquareMatrix(gsl_matrix* mat) {
 */
 mat readMovements(string file) {
 	
+	ifstream inFile;
+    inFile.open(file, ios::in | ios::app | ios::binary);
+    mat retMat = readMovements(inFile);
+    inFile.close();
+    return retMat;
+
+}
+
+arma::mat readMovements(std::ifstream& inFile) {
+
     mat joints;
-	string line;
-	string token;
-	double dn = 0.0;
-	double t0 = 0.0;
+    string line;
+    string token;
+    double dn = 0.0;
+    double t0 = 0.0;
+    double prevTime = DBL_MIN;
     int fileColumns = 0;
 
     bool firstIteration = true;
-	
-	ifstream inFile;
-	inFile.open (file, ios::in | ios::app | ios::binary);
-	if (inFile.is_open()) {
-		cout << string("(utils) trajectory file ") + file + " opened\n";
-		int j = 0;
-		while(inFile.good()) {
-			getline(inFile, line);
-			Tokenizer tok(line);
 
-            if(firstIteration) {
-                int i = 0;
-                for(i = 0; tok.next() != ""; ++i);
-                fileColumns = i;
-                tok = Tokenizer(line);
-                firstIteration = false;
-                joints = mat(1, fileColumns);
+    if (inFile.is_open()) {
+
+        int j = 0;
+        while(inFile.good()) {
+
+            getline(inFile, line);
+
+            if(line != "") {
+
+                Tokenizer tok(line);
+
+                if(firstIteration) {
+                    int i = 0;
+                    for(i = 0; tok.next() != ""; ++i);
+                    fileColumns = i;
+                    tok = Tokenizer(line);
+                    firstIteration = false;
+                    joints = mat(1, fileColumns);
+                }
+
+                bool ignoreLine = false;
+
+                for(int i = 0; (token = tok.next()) != "" && i < fileColumns; ++i) {
+
+                    dn = string_to_double(token);
+
+                    if(i == 0 && prevTime == dn) {
+                        ignoreLine = true;
+                        break;
+                    } else if(i == 0)
+                        prevTime = dn;
+
+                    // normalization
+                    if(j == 0 && i == 0) { t0 = dn; dn = 0; }
+                    else if(i == 0) dn -= t0;
+
+                    joints(j, i) = dn;
+
+                }
+
+                if(!ignoreLine) {
+
+                    j++;
+                    joints.resize(j + 1, fileColumns);
+
+                }
+
             }
 
-			for(int i = 0; (token = tok.next()) != "" && i < fileColumns; ++i) {
-				dn = string_to_double(token);
-				
-				// normalization
-				if(j == 0 && i == 0) { t0 = dn; dn = 0; }
-				else if(i == 0) dn -= t0;
-				
-				joints(j, i) = dn;
-				
-			}
-			fflush(stdout);
-			j++;
-			joints.resize(j + 1, fileColumns);
-		}
-		joints.resize(j - 1, fileColumns);
-	}
-	
-	inFile.close();
-	return joints;
+        }
+        joints.resize(j - 1, fileColumns);
+    }
+
+    return joints;
+
+}
+
+std::pair<std::vector<std::string>, arma::mat> readSensorStorage(std::string file) {
+
+    vector<string> labels;
+    string token;
+    string line;
+    ifstream inFile;
+    inFile.open(file, ios::in | ios::app | ios::binary);
+    getline(inFile, line);
+
+    Tokenizer tok(line);
+    while((token = tok.next()) != "")
+        labels.push_back(token);
+
+    mat data = readMovements(inFile);
+    pair<std::vector<std::string>, arma::mat> retPair(labels, data);
+
+    inFile.close();
+    return retPair;
+
 }
 
 vec readQuery(string file) {

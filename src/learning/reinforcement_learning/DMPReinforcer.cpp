@@ -59,7 +59,7 @@ void DMPReinforcer::performRollout(int doSimulation, int doExecution) {
 		rollout = getInitialRollout();
 		isFirstIteration = false;
 		
-		DMPExecutor dmpsim(rollout.at(0));
+        DMPExecutor dmpsim(rollout.at(0), movementQueue);
 		
 		// TODO: switch this to new class scheme (not explicetely use DMPExecutor, but trajectory executor)
 		lastUpdateRes = dmpsim.simulateTrajectory(0, rollout.at(0).getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
@@ -78,7 +78,7 @@ void DMPReinforcer::performRollout(int doSimulation, int doExecution) {
 //	cout << "(DMPReinforcer) performing next rollout" << endl;
 	for(int k = 0; k < rollout.size(); ++k) {
 		
-		DMPExecutor dmpsim(rollout.at(k));
+        DMPExecutor dmpsim(rollout.at(k), movementQueue);
 		
 		if(doSimulation) {
 
@@ -123,8 +123,7 @@ void DMPReinforcer::performRollout(int doSimulation, int doExecution) {
 				movementQueue->setStiffness(2200, 300, 1.0, 15000, 150, 2.0);
                 std::shared_ptr<std::thread> thr = movementQueue->startQueueThread();
 				
-				DMPExecutor dmpexec(rollout.at(k));
-				dmpResult.push_back(dmpsim.executeTrajectory(ac, 0, rollout.at(k).getTmax(), dmpStepSize, tolAbsErr, tolRelErr, movementQueue));
+                dmpResult.push_back(dmpsim.executeTrajectory(ac, 0, rollout.at(k).getTmax(), dmpStepSize, tolAbsErr, tolRelErr));
 				
 				movementQueue->setFinish();
 				thr->join();
@@ -139,7 +138,7 @@ void DMPReinforcer::performRollout(int doSimulation, int doExecution) {
 	}
 	
 	lastUpdate = updateStep();
-	DMPExecutor dmpsim(lastUpdate);
+    DMPExecutor dmpsim(lastUpdate, movementQueue);
 	lastUpdateRes = dmpsim.simulateTrajectory(0, lastUpdate.getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
 	
 	double lastUpdateCost = cost->computeCost(lastUpdateRes);

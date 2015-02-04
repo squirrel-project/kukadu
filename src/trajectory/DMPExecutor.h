@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <chrono>
 #include <memory>
+#include <ros/rate.h>
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_matrix.h>
@@ -104,7 +105,7 @@ private:
 	static int static_func(double t, const double y[], double f[], void *params);
 	static int static_jac (double t, const double y[], double *dfdy, double dfdt[], void *params);
 
-	t_executor_res executeDMP(int simulate, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr);
+    t_executor_res executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr);
 
 protected:
 
@@ -118,17 +119,17 @@ public:
 	 * \brief constructor
 	 * \param dmp the dmp that should be executed
 	 */
-	DMPExecutor(Dmp dmp);
-	DMPExecutor(Dmp dmp, int suppressMessages);
+    DMPExecutor(Dmp dmp, std::shared_ptr<ControlQueue> execQueue);
+    DMPExecutor(Dmp dmp, std::shared_ptr<ControlQueue> execQueue, int suppressMessages);
 	
-	DMPExecutor(Trajectory* traj);
+    DMPExecutor(Trajectory* traj, std::shared_ptr<ControlQueue> execQueue);
 	
-	void construct(Dmp dmp, int suppressMessages);
+    void construct(Dmp dmp, std::shared_ptr<ControlQueue> execQueue, int suppressMessages);
 	
     void setTrajectory(std::shared_ptr<Trajectory> traj);
 	
 	t_executor_res simulateTrajectory(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr);
-    t_executor_res executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr, std::shared_ptr<ControlQueue> controlQueue);
+    t_executor_res executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr);
 	
 	t_executor_res simulateTrajectory();
 	t_executor_res executeTrajectory();

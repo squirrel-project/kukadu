@@ -137,7 +137,7 @@ int main(int argc, char** args) {
         string cfFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries_eval_traj/traj_11_234.txt";
         string cf2File = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_9_144.txt";
 
-        t_executor_res res = executeDemo(std::shared_ptr<ControlQueue>(new PlottingControlQueue(7, dmpStepSize)), resolvePath(cf2File), 0, az, bz, 0, dmpStepSize);
+        t_executor_res res = executeDemo(std::shared_ptr<ControlQueue>(new PlottingControlQueue(7, dmpStepSize)), resolvePath(cf2File), az, bz, 0);
         DmpRewardComputer rwc(resolvePath(cfFile), az, bz, dmpStepSize, res.y.size(), res.t(res.t.n_elem - 1));
         double cost = rwc.computeCost(res);
         cout << "(humanoids2014) cost for comparing same trajectory: " << cost << endl;
@@ -164,7 +164,7 @@ void testPerformance(std::shared_ptr<ControlQueue> queue) {
     //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_13_381.txt";
     //string execFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_13_498.txt";
 
-    t_executor_res demoRes = executeDemo(queue, resolvePath(execFile), 0, az, bz, 0);
+    executeDemo(queue, resolvePath(execFile), az, bz, 0);
 
 }
 
@@ -609,9 +609,6 @@ void testHumanoidsGrasping(std::shared_ptr<ControlQueue> queue) {
 
     double alpham = 1.0;
 
-    vector<double> irosmys = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
-    vector<double> irossigmas = {0.3, 0.8};
-
     //vector<double> rlExploreSigmas = {0.5, 0.5, 0.5, 0.5};
     vector<double> rlExploreSigmas = {0.2, 0.2, 0.2, 0.2};
     int rolloutsPerUpdate = 5;
@@ -639,7 +636,7 @@ void testHumanoidsGrasping(std::shared_ptr<ControlQueue> queue) {
     shared_ptr<GraspingRewardComputer> reward(new GraspingRewardComputer(vectorNewQueryPoint));
 
     cout << "execute ground truth for (8, 6) from file " << inDir + "../traj_" + stringFromDouble(newQueryPoint(0)) + "-" + stringFromDouble(newQueryPoint(1)) + ".txt" << endl;
-    t_executor_res opt = executeDemo(NULL, inDir + "../traj_" + stringFromDouble(newQueryPoint(0)) + "-" + stringFromDouble(newQueryPoint(1)) + ".txt", 1, az, bz, 0);
+    t_executor_res opt = executeDemo(NULL, inDir + "../traj_" + stringFromDouble(newQueryPoint(0)) + "-" + stringFromDouble(newQueryPoint(1)) + ".txt", 1, az, bz);
     // t_executor_res opt = executeDemo(queue, inDir + "../traj_" + stringFromDouble(newQueryPoint(0)) + "-" + stringFromDouble(newQueryPoint(1)) + ".txt", 0, az, bz, 1);
 
     // speedup testing process by inserting already learned metric result

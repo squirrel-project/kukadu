@@ -48,6 +48,8 @@ public:
     std::shared_ptr<std::thread> startDataStorage(std::string folderName);
     void stopDataStorage();
 
+    void readStorage(std::string file);
+
 };
 
 #endif

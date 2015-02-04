@@ -215,6 +215,8 @@ void OrocosControlQueue::run() {
 		ros::spinOnce();
 
 	}
+
+    cout << "thread finished" << endl;
 }
 
 void OrocosControlQueue::setInitValues() {

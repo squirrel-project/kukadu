@@ -3,9 +3,11 @@
 
 #include <algorithm>
 #include <armadillo>
+#include <memory>
 
 #include "../types/DMP.h"
 #include "../trajectory/DMPExecutor.h"
+#include "../robot/PlottingControlQueue.h"
 
 class DMPTrajectoryComparator {
 
@@ -20,6 +22,8 @@ private:
 	
 	Dmp traj1;
 	Dmp traj2;
+
+    std::shared_ptr<PlottingControlQueue> simQueue;
 	
 	t_executor_res dmp1Result;
 	t_executor_res dmp2Result;

@@ -19,6 +19,8 @@
 #include <wordexp.h>
 #include <memory>
 #include <signal.h>
+#include <utility>
+#include <limits>
 
 #include <dirent.h>
 #include <gsl/gsl_vector.h>
@@ -54,6 +56,8 @@ std::string resolvePath(std::string path);
 int getch();
 
 arma::mat readMovements(std::string file);
+arma::mat readMovements(std::ifstream& stream);
+std::pair<std::vector<std::string>, arma::mat> readSensorStorage(std::string file);
 
 arma::vec readQuery(std::string file);
 std::vector<double>* createStdVectorFromGslVector(gsl_vector* vec);
@@ -103,8 +107,7 @@ arma::mat columnToSquareMatrix(arma::vec c);
 arma::vec symmetricMatrixToColumn(arma::mat m);
 arma::mat columnToSymmetricMatrix(arma::vec c);
 
-t_executor_res executeDemo(std::shared_ptr<ControlQueue> movementQu, std::string file, int doSimulation, double az, double bz, int plotResults);
-t_executor_res executeDemo(std::shared_ptr<ControlQueue> movementQu, std::string file, int doSimulation, double az, double bz, int plotResults, double dmpStepSize);
+t_executor_res executeDemo(std::shared_ptr<ControlQueue> movementQu, std::string file, double az, double bz, int plotResults);
 
 void set_ctrlc_exit_handler();
 void exit_handler(int s);

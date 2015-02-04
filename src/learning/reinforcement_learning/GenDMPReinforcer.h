@@ -14,6 +14,7 @@
 #include "../../learning/GenericKernel.h"
 #include "../../types/DMP.h"
 #include "../../types/QueryPoint.h"
+#include "../../robot/PlottingControlQueue.h"
 
 /** \brief The GenDMPReinforcer completes the DMPReinforcer implementation by reusing the DMPGeneralizer functionality
  * 
@@ -38,6 +39,8 @@ private:
 	
 	double ql;
 	double qh;
+
+    std::shared_ptr<PlottingControlQueue> simQueue;
 	
 	/**
 	 * \brief plots feedback graphs

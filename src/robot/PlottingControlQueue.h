@@ -48,7 +48,7 @@ class PlottingControlQueue : public ControlQueue {
 
 private:
 	
-	int sleepTime;
+    int sleepTime;
 	int finish;
 	int isInit;
 	int argc;

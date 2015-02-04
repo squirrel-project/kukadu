@@ -202,7 +202,7 @@ int main(int argc, char** args) {
 
     // execute screwing
     if(doRightOperation) {
-        executeDemo(raQueue, screwFile.c_str(), simulate, az, bz, 1);
+        executeDemo(raQueue, screwFile.c_str(), simulate, az, bz);
         cout << "finished demo execution" << endl;
     }
 
