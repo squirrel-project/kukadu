@@ -14,4 +14,4 @@ tolAbsErr = 0.1
 tolRelErr = 0.1
 ac = 10
 [mes]
-folder = $HOME/book_experiments/N5472_cside_wo_3
+folder = $KUKADU_HOME/movements/book_pickup/left
