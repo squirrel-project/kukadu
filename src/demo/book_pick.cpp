@@ -11,8 +11,10 @@ _INITIALIZE_EASYLOGGINGPP
 #include "../../include/kukadu.h"
 
 
-#define ROBOT_TYPE "simulation"
+#define ROBOT_TYPE "real"
 #define ROBOT_SIDE "left"
+
+#define CONTROL_RIGHT false
 
 using namespace std;
 using namespace arma;
@@ -102,20 +104,35 @@ int main(int argc, char** args) {
     vector<double> leftHandJoints = {0, -0.38705404571511043, 0.7258474179992682, 0.010410616072391092, -1.2259735578027993, -0.4303327436948519, 0.8185967300722126};
     leftHand->publishSdhJoints(leftHandJoints);
 
-    shared_ptr<RosSchunk> rightHand = shared_ptr<RosSchunk>(new RosSchunk(*node, ROBOT_TYPE, "right"));
-    vector<double> rightHandJoints = {0, -0.5231897140548627, -0.09207113810135568, 0.865287869514727, 1.5399390781924753, -0.6258846012187079, 0.01877915351042305};
-    rightHand->publishSdhJoints(rightHandJoints);
+    if(CONTROL_RIGHT) {
+
+        shared_ptr<RosSchunk> rightHand = shared_ptr<RosSchunk>(new RosSchunk(*node, ROBOT_TYPE, "right"));
+        vector<double> rightHandJoints = {0, -0.5231897140548627, -0.09207113810135568, 0.865287869514727, 1.5399390781924753, -0.6258846012187079, 0.01877915351042305};
+        rightHand->publishSdhJoints(rightHandJoints);
+
+    }
 
     shared_ptr<OrocosControlQueue> leftQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, ROBOT_TYPE, ROBOT_SIDE + string("_arm"), *node));
     shared_ptr<thread> lqThread = leftQueue->startQueueThread();
 
-    shared_ptr<OrocosControlQueue> rightQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, ROBOT_TYPE, "right_arm", *node));
-    shared_ptr<thread> rqThread = rightQueue->startQueueThread();
+    shared_ptr<OrocosControlQueue> rightQueue = nullptr;
+    shared_ptr<thread> rqThread = nullptr;
+
+    if(CONTROL_RIGHT) {
+
+        rightQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, ROBOT_TYPE, "right_arm", *node));
+        rqThread = rightQueue->startQueueThread();
+
+    }
 
     usleep(1e6);
 
-    rightQueue->switchMode(OrocosControlQueue::KUKA_JNT_IMP_MODE);
-    rightQueue->moveJoints(stdToArmadilloVec({-2.0805978775024414, 1.4412447214126587, -2.203258752822876, 1.7961543798446655, 2.526369333267212, -1.6385622024536133, -0.7103539705276489}));
+    if(CONTROL_RIGHT) {
+
+        rightQueue->switchMode(OrocosControlQueue::KUKA_JNT_IMP_MODE);
+        rightQueue->moveJoints(stdToArmadilloVec({-2.0805978775024414, 1.4412447214126587, -2.203258752822876, 1.7961543798446655, 2.526369333267212, -1.6385622024536133, -0.7103539705276489}));
+
+    }
 
     // measured joints were -0.2252   1.3174  -2.1671   0.4912   0.8510  -1.5699   1.0577
     mes_result currentJoints = leftQueue->getCurrentJoints();
@@ -191,7 +208,9 @@ int main(int argc, char** args) {
     */
 
     leftQueue->setFinish();
-    rightQueue->setFinish();
+
+    if(CONTROL_RIGHT)
+        rightQueue->setFinish();
 
     lqThread->join();
     rqThread->join();

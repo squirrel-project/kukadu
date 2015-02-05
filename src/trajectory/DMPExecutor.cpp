@@ -194,7 +194,7 @@ t_executor_res DMPExecutor::simulateTrajectory(double tStart, double tEnd, doubl
     t_executor_res ret = this->executeDMP(tStart, tEnd, stepSize, tolAbsErr, tolRelErr);
 
     auto end = std::chrono::high_resolution_clock::now();
-    std::cout << "(DMPExecutor) the simulation took " << std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count() << " ns" << std::endl;
+    std::cout << "(DMPExecutor) the simulation took " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() << " ns" << std::endl;
 
     return ret;
 
@@ -282,7 +282,8 @@ void DMPExecutor::destroyIntegration() {
 
 t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
 
-    ros::Rate sl(1.0 / stepSize);
+    // auto begin = std::chrono::high_resolution_clock::now();
+
     int stepCount = (tEnd - tStart) / stepSize;
     double currentTime = 0.0;
 
@@ -318,8 +319,12 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
         for(int i = 0; i < degofFreedom; ++i)
             ret.y.at(i)(j) = nextJoints(i);
 
-        if(simulate == EXECUTE_ROBOT)
-            sl.sleep();
+        if(simulate == EXECUTE_ROBOT) {
+        //    auto end = std::chrono::high_resolution_clock::now();
+        //    std::cout << "(DMPExecutor) the simulation took " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() * 1e-9 << " s" << std::endl;
+        //    begin = end;
+            controlQueue->synchronizeToControlQueue(0);
+        }
 
         controlQueue->addJointsPosToQueue(nextJoints);
         retT.push_back(currentTime);
