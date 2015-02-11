@@ -6,4 +6,5 @@ release.info
 bin/*
 logs/*
 experiments/*
-
+logs
+*.log
