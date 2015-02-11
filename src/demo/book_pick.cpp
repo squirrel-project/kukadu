@@ -104,13 +104,10 @@ int main(int argc, char** args) {
     vector<double> leftHandJoints = {0, -0.38705404571511043, 0.7258474179992682, 0.010410616072391092, -1.2259735578027993, -0.4303327436948519, 0.8185967300722126};
     leftHand->publishSdhJoints(leftHandJoints);
 
-    if(CONTROL_RIGHT) {
-
-        shared_ptr<RosSchunk> rightHand = shared_ptr<RosSchunk>(new RosSchunk(*node, ROBOT_TYPE, "right"));
-        vector<double> rightHandJoints = {0, -0.5231897140548627, -0.09207113810135568, 0.865287869514727, 1.5399390781924753, -0.6258846012187079, 0.01877915351042305};
-        rightHand->publishSdhJoints(rightHandJoints);
-
-    }
+    shared_ptr<RosSchunk> rightHand = shared_ptr<RosSchunk>(new RosSchunk(*node, ROBOT_TYPE, "right"));
+    //vector<double> rightHandJoints = {0, -0.5231897140548627, -0.09207113810135568, 0.865287869514727, 1.5399390781924753, -0.6258846012187079, 0.01877915351042305};
+    vector<double> rightHandJoints = {0, -0.5238237461313833, 0.2120872918378427, 0.8655742259109377, 1.5389379959387146, -0.6260686922290597, 0.218843743489235877};
+    rightHand->publishSdhJoints(rightHandJoints);
 
     shared_ptr<OrocosControlQueue> leftQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, ROBOT_TYPE, ROBOT_SIDE + string("_arm"), *node));
     shared_ptr<thread> lqThread = leftQueue->startQueueThread();
@@ -138,9 +135,13 @@ int main(int argc, char** args) {
     mes_result currentJoints = leftQueue->getCurrentJoints();
     cout << currentJoints.joints.t() << endl;
 
+    cout << "(main) place book on expected position and press enter" << endl;
+    getchar();
+
 //    leftQueue->setStiffness(0.2, 0.01, 0.2, 15000, 150, 2.0);
-    leftQueue->switchMode(OrocosControlQueue::KUKA_JNT_IMP_MODE);
-    leftQueue->moveJoints(stdToArmadilloVec({-0.514099, 1.83194, 1.95971, -0.99676, -0.0903862, 0.987185, 1.16542}));
+    leftQueue->switchMode(OrocosControlQueue::KUKA_JNT_POS_MODE);
+    //leftQueue->moveJoints(stdToArmadilloVec({-0.514099, 1.83194, 1.95971, -0.99676, -0.0903862, 0.987185, 1.16542}));
+    leftQueue->moveJoints(stdToArmadilloVec({-0.3990752398967743, 1.7550331354141235, 1.9612526893615723, -0.6003820300102234, -0.05098132789134979, 1.200370192527771, 1.168589472770691}));
 
     cout << "(main) press key to continue" << endl;
     getchar();
@@ -156,33 +157,56 @@ int main(int argc, char** args) {
     cout << "(main) ready to move first finger?" << endl;
     getchar();
 
-    leftHandJoints = {0, -0.38705404571511043, 0.7258474179992682, 0.010410616072391092, -1.2259735578027993, -0.8303327436948519, 0.8185967300722126};
+    leftHandJoints = {0, -0.38705404571511043, 0.7258474179992682, -0.2, -0.9, -0.8303327436948519, 0.8185967300722126};
     leftHand->publishSdhJoints(leftHandJoints);
 
-    leftHandJoints = {0, -0.38705404571511043, 0.7258474179992682, 0.010410616072391092, -1.2259735578027993, -0.8303327436948519, 0.5185967300722126};
+    leftHandJoints = {0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, -0.8303327436948519, 0};
     leftHand->publishSdhJoints(leftHandJoints);
 
-    leftHandJoints = {0, -0.38705404571511043, 0.7258474179992682, 0.010410616072391092, -1.2259735578027993, -0.3303327436948519, 0.5185967300722126};
+    leftHandJoints = {0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, -0.3303327436948519, 0};
     leftHand->publishSdhJoints(leftHandJoints);
 
-    leftHandJoints = {0, -0.38705404571511043, 0.7258474179992682, 0.010410616072391092, -1.2259735578027993, -0.3303327436948519, 1.285967300722126};
+    leftHandJoints = {0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, -0.3303327436948519, 1.285967300722126};
     leftHand->publishSdhJoints(leftHandJoints);
 
     cout << "(main) ready to move second finger?" << endl;
     getchar();
 
     // second finger follows
-    leftHandJoints = {0, -0.8303327436948519, 0.8185967300722126, 0.010410616072391092, -1.2259735578027993, -0.3303327436948519, 1.285967300722126};
+    leftHandJoints = {0, -0.9303327436948519, 0.8185967300722126, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
     leftHand->publishSdhJoints(leftHandJoints);
 
-    leftHandJoints = {0, -0.8303327436948519, 0.5185967300722126, 0.010410616072391092, -1.2259735578027993, -0.3303327436948519, 1.285967300722126};
+    leftHandJoints = {0, -0.8303327436948519, 0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
     leftHand->publishSdhJoints(leftHandJoints);
 
-    leftHandJoints = {0, -0.3303327436948519, 0.5185967300722126, 0.010410616072391092, -1.2259735578027993, -0.3303327436948519, 1.285967300722126};
+    leftHandJoints = {0, 0, 0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
     leftHand->publishSdhJoints(leftHandJoints);
 
-    leftHandJoints = {0, -0.3303327436948519, 1.285967300722126, 0.010410616072391092, -1.2259735578027993, -0.3303327436948519, 1.285967300722126};
+    leftHandJoints = {0, 0, 0.5, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
     leftHand->publishSdhJoints(leftHandJoints);
+
+    // first finger again
+    leftHandJoints = {0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, -0.9303327436948519, 0.8185967300722126};
+    leftHand->publishSdhJoints(leftHandJoints);
+
+    leftHandJoints = {0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, -0.8303327436948519, 0};
+    leftHand->publishSdhJoints(leftHandJoints);
+
+    leftHandJoints = {0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0, 0};
+    leftHand->publishSdhJoints(leftHandJoints);
+
+    leftHandJoints = {0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0, 0.5};
+    leftHand->publishSdhJoints(leftHandJoints);
+
+    cout << "(main) finally grasp it?";
+    getchar();
+    leftHandJoints = {SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
+    leftHand->publishSdhJoints(leftHandJoints);
+
+    cout << "(main) press a key to lift it" << endl;
+    getchar();
+
+    leftQueue->moveJoints(stdToArmadilloVec({-0.9291561841964722, 1.9066647291183472, 1.9648972749710083, -0.949062168598175, -0.10840536653995514, 1.199838638305664, 1.1655352115631104}));
 
     /*
 

@@ -323,7 +323,7 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
         //    auto end = std::chrono::high_resolution_clock::now();
         //    std::cout << "(DMPExecutor) the simulation took " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() * 1e-9 << " s" << std::endl;
         //    begin = end;
-            controlQueue->synchronizeToControlQueue(0);
+            controlQueue->synchronizeToControlQueue(1);
         }
 
         controlQueue->addJointsPosToQueue(nextJoints);

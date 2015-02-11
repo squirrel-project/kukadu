@@ -12,7 +12,7 @@ bz = 11.75
 dmpStepSize = 0.014
 tolAbsErr = 0.1
 tolRelErr = 0.1
-ac = 10
+ac = 0
 [mes]
 folder = $KUKADU_HOME/movements/book_pickup/left
 [pick]
