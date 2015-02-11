@@ -173,12 +173,12 @@ class Gnuplot
 
 
 	    ///\brief set a style during construction
-        Gnuplot(const std::string &style = "points");
+        Gnuplot(const std::string &style = "lines lw 3");
 
         /// plot a single std::vector at one go
         Gnuplot(const std::vector<double> &x,
                 const std::string &title = "",
-                const std::string &style = "points",
+                const std::string &style = "lines lw 3",
                 const std::string &labelx = "x",
                 const std::string &labely = "y");
 
@@ -186,7 +186,7 @@ class Gnuplot
         Gnuplot(const std::vector<double> &x,
                 const std::vector<double> &y,
                 const std::string &title = "",
-                const std::string &style = "points",
+                const std::string &style = "lines lw 3",
                 const std::string &labelx = "x",
                 const std::string &labely = "y");
 
@@ -195,7 +195,7 @@ class Gnuplot
                 const std::vector<double> &y,
                 const std::vector<double> &z,
                 const std::string &title = "",
-                const std::string &style = "points",
+                const std::string &style = "lines lw 3",
                 const std::string &labelx = "x",
                 const std::string &labely = "y",
                 const std::string &labelz = "z");

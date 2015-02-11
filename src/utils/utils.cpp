@@ -61,7 +61,7 @@ t_executor_res executeDemo(shared_ptr<ControlQueue> movementQu, string file, dou
 		
     cout << "tmax: " << learnedDmps.getTmax() << endl;
     DMPExecutor dmpexec(learnedDmps, movementQu);
-    t_executor_res dmpResult = dmpexec.executeTrajectory();
+    t_executor_res dmpResult = dmpexec.simulateTrajectory();
 
     if(plotResults) {
 

@@ -3,7 +3,7 @@
 using namespace std;
 using namespace arma;
 
-SegmentationTestingRewardComputer::SegmentationTestingRewardComputer(double height, double slope, int degOfFreedom, double tmax) : TrajectoryBasedReward(degOfFreedom, tmax) {
+SegmentationTestingRewardComputer::SegmentationTestingRewardComputer(double height, double slope, int degOfFreedom, double tmax, double stepSize) : TrajectoryBasedReward(degOfFreedom, tmax, stepSize) {
     this->height = height;
     this->slope = slope;
 }
@@ -41,7 +41,7 @@ double PouringRewardComputer::computeCost(t_executor_res results) {
 
 }
 
-GaussianObstacleRewardComputer::GaussianObstacleRewardComputer(double my, double sigma, double height, double tmax) : TrajectoryBasedReward(1, tmax) {
+GaussianObstacleRewardComputer::GaussianObstacleRewardComputer(double my, double sigma, double height, double tmax, double stepSize) : TrajectoryBasedReward(1, tmax, stepSize) {
 	
 	this->my = my;
 	this->sigma = sigma;
@@ -69,6 +69,24 @@ arma::vec GaussianObstacleRewardComputer::computeFun(double t) {
 	//y1 = c1 * exp(- (x - o) .^ 2 / s) + c2 * sin(10 * x) + c1 * o / 10.0 * x;
 //	return (height * exp(- pow((t - my), 2) / sigma) + height * c3 / 8.0 * t);
 	
+}
+
+SimpleGaussianObstacleRewardComputer::SimpleGaussianObstacleRewardComputer(double my, double sigma, double height, double tmax, double stepSize) : TrajectoryBasedReward(1, tmax, stepSize) {
+
+    this->my = my;
+    this->sigma = sigma;
+    this->height = height;
+
+}
+
+arma::vec SimpleGaussianObstacleRewardComputer::computeFun(double t) {
+
+    vec retVec(1);
+
+    // y1 = c1 * exp(- (x - o) .^ 2 / s);
+    retVec(0) = height * exp(- pow((t - my), 2) / sigma);
+    return retVec;
+
 }
 
 GraspingRewardComputer::GraspingRewardComputer(std::vector<double> finalJointPos) {

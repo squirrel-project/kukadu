@@ -17,13 +17,14 @@ private:
     int degOfFreedom;
 	double tmax;
 	double slope;
+    double step;
 
     arma::vec rewardsWeights;
 
 public:
 
-    TrajectoryBasedReward(int degOfFreedom, double tmax);
-    TrajectoryBasedReward(int degOfFreedom, arma::vec rewardsWeights, double tmax);
+    TrajectoryBasedReward(int degOfFreedom, double tmax, double timeStep);
+    TrajectoryBasedReward(int degOfFreedom, arma::vec rewardsWeights, double tmax, double timeStep);
 
 	double computeCost(t_executor_res results);
 	

@@ -3,7 +3,7 @@
 using namespace std;
 using namespace arma;
 
-SampleRewardComputer::SampleRewardComputer(double slope, int degOfFreedom, double tmax) : TrajectoryBasedReward(degOfFreedom, tmax) {
+SampleRewardComputer::SampleRewardComputer(double slope, int degOfFreedom, double tmax, double stepSize) : TrajectoryBasedReward(degOfFreedom, tmax, stepSize) {
 	this->slope = slope;
 }
 

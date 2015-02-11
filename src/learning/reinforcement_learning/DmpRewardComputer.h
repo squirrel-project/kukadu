@@ -26,7 +26,7 @@ private:
 
 public:
 
-    DmpRewardComputer(std::string file, double az, double bz, double timeStep, int degOfFreedom, double tmax);
+    DmpRewardComputer(std::string file, double az, double bz, double timeStep, int degOfFreedom, double tmax, double step);
     arma::vec computeFun(double t);
 	
 };

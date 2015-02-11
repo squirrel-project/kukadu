@@ -20,9 +20,24 @@ private:
 	
 public:
 
-    GaussianObstacleRewardComputer(double my, double sigma, double height, double tmax);
+    GaussianObstacleRewardComputer(double my, double sigma, double height, double tmax, double stepSize);
     arma::vec computeFun(double t);
 	
+};
+
+class SimpleGaussianObstacleRewardComputer : public TrajectoryBasedReward {
+
+private:
+
+    double my;
+    double sigma;
+    double height;
+
+public:
+
+    SimpleGaussianObstacleRewardComputer(double my, double sigma, double height, double tmax, double stepSize);
+    arma::vec computeFun(double t);
+
 };
 
 class GraspingRewardComputer : public CostComputer {
@@ -65,7 +80,7 @@ private:
 
 public:
 
-    SegmentationTestingRewardComputer(double height, double slope, int degOfFreedom, double tmax);
+    SegmentationTestingRewardComputer(double height, double slope, int degOfFreedom, double tmax, double stepSize);
     arma::vec computeFun(double t);
 
 };

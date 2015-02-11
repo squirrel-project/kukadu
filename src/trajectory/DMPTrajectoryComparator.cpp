@@ -5,12 +5,11 @@ using namespace std;
 
 DMPTrajectoryComparator::DMPTrajectoryComparator(Dmp traject1, Dmp traject2, vec degOfFreedomWeights, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance) : traj1(traject1), traj2(traject2) {
 
+    simQueue = std::shared_ptr<PlottingControlQueue>(new PlottingControlQueue(degOfFreedomWeights.n_elem, integrationStep));
 	initAll(integrationStep, tolAbsErr, tolRelErr, degOfFreedomWeights, tTolerance);
 	
 	dmp1Result = executeTrajectory(traject1);
 	dmp2Result = executeTrajectory(traject2);
-
-    simQueue = std::shared_ptr<PlottingControlQueue>(new PlottingControlQueue(degOfFreedomWeights.n_elem, integrationStep));
 
 }
 

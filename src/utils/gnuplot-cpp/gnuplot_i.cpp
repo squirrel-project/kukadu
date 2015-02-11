@@ -459,8 +459,10 @@ Gnuplot& Gnuplot::set_smooth(const std::string &stylestr)
 //
 Gnuplot& Gnuplot::showonscreen()
 {
+
     cmd("set output");
     cmd("set terminal " + terminal_std);
+    cmd("set key font ',20'");
 
     return *this;
 }

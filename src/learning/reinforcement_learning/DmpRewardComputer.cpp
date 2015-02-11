@@ -3,7 +3,7 @@
 using namespace std;
 using namespace arma;
 
-DmpRewardComputer::DmpRewardComputer(string file, double az, double bz, double timeStep, int degOfFreedom, double tmax) : TrajectoryBasedReward(degOfFreedom, tmax) {
+DmpRewardComputer::DmpRewardComputer(string file, double az, double bz, double timeStep, int degOfFreedom, double tmax, double step) : TrajectoryBasedReward(degOfFreedom, tmax, step) {
 
     this->file = file;
     this->az = az;
@@ -41,6 +41,7 @@ arma::vec DmpRewardComputer::computeFun(double t) {
         double secondT = time(tIdx + 1);
         double firstDist = timeStep - t + firstT;
         double secondDist = timeStep - secondT + t;
+        cout << "(DmpRewardComputer) here is an interpolation bug" << endl;
         for(int i = 0; i < retVec.n_elem; ++i)
                 retVec(i) = (firstDist * executionResult.y.at(i)(tIdx) + secondDist * executionResult.y.at(i)(tIdx + 1)) / timeStep;
 
@@ -61,7 +62,7 @@ int DmpRewardComputer::binaryTimeSearch(arma::vec times, double t) {
     else if(t <= times(start))
         return start;
 
-    while(start != end) {
+    while(start != end && (start + 1) != end) {
 
         if(t >= times(middle) && t < (times(middle) + timeStep))
             return middle;
@@ -76,6 +77,6 @@ int DmpRewardComputer::binaryTimeSearch(arma::vec times, double t) {
 
     }
 
-    return -1;
+    return (start + 1);
 
 }

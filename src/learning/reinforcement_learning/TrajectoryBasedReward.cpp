@@ -3,8 +3,9 @@
 using namespace std;
 using namespace arma;
 
-TrajectoryBasedReward::TrajectoryBasedReward(int degOfFreedom, double tmax) {
+TrajectoryBasedReward::TrajectoryBasedReward(int degOfFreedom, double tmax, double step) {
 
+    this->step = step;
     this->tmax = tmax;
     this->degOfFreedom = degOfFreedom;
     rewardsWeights = vec(degOfFreedom);
@@ -12,8 +13,9 @@ TrajectoryBasedReward::TrajectoryBasedReward(int degOfFreedom, double tmax) {
 
 }
 
-TrajectoryBasedReward::TrajectoryBasedReward(int degOfFreedom, arma::vec rewardsWeights, double tmax) {
+TrajectoryBasedReward::TrajectoryBasedReward(int degOfFreedom, arma::vec rewardsWeights, double tmax, double step) {
 
+    this->step = step;
     this->degOfFreedom = degOfFreedom;
     this->rewardsWeights = rewardsWeights;
     this->tmax = tmax;
@@ -68,7 +70,6 @@ t_executor_res TrajectoryBasedReward::getOptimalTraj(double tmax) {
 
     double tmin = 0;
     t_executor_res ret;
-    double step = 0.1;
 
     int size = (int) ( (double) (tmax - tmin) / (double) step);
 

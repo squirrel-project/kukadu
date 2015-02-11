@@ -143,7 +143,7 @@ int main(int argc, char** args) {
 
     cout << "(main) done" << endl;
 
-    std::shared_ptr<DmpRewardComputer> reward = std::shared_ptr<DmpRewardComputer>(new DmpRewardComputer(resolvePath(cfFile), az, bz, dmpStepSize, dmpGen->getDegOfFreedom(), dmpGen->getTrajectory()->getTmax()));
+    std::shared_ptr<DmpRewardComputer> reward = std::shared_ptr<DmpRewardComputer>(new DmpRewardComputer(resolvePath(cfFile), az, bz, dmpStepSize, dmpGen->getDegOfFreedom(), dmpGen->getTrajectory()->getTmax(), 0.1));
     cout << "execute ground truth" << endl;
     t_executor_res opt = reward->getOptimalTraj();
     cout << "execution done" << endl;

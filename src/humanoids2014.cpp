@@ -80,7 +80,7 @@ int main(int argc, char** args) {
 
     } else if (mode == 2) {
 
-//        ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
+        ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
         std::shared_ptr<ControlQueue> queue = shared_ptr<ControlQueue>(new PlottingControlQueue(1, kukaStepWaitTime));
 //        std::shared_ptr<ControlQueue> queue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, "simulation", "left_arm", *node));
 //        ros::Subscriber sub = node->subscribe("simulation/right_arm/cartesian_control/get_pose_dir_wf", 1, automaticSwitchQueryPoint);
@@ -138,7 +138,7 @@ int main(int argc, char** args) {
         string cf2File = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries/traj_9_144.txt";
 
         t_executor_res res = executeDemo(std::shared_ptr<ControlQueue>(new PlottingControlQueue(7, dmpStepSize)), resolvePath(cf2File), az, bz, 0);
-        DmpRewardComputer rwc(resolvePath(cfFile), az, bz, dmpStepSize, res.y.size(), res.t(res.t.n_elem - 1));
+        DmpRewardComputer rwc(resolvePath(cfFile), az, bz, dmpStepSize, res.y.size(), res.t(res.t.n_elem - 1), 0.1);
         double cost = rwc.computeCost(res);
         cout << "(humanoids2014) cost for comparing same trajectory: " << cost << endl;
 
@@ -219,12 +219,12 @@ void switch2dQueryPoint() {
 
 void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue) {
 
-    // for different trajectories, you have to change the reward computer (not the gaussian computer)
-    std::string inDir = resolvePath("$KUKADU_HOME/movements/humanoids_2014/pouring_gries/");
-    string cfFile = "$KUKADU_HOME/movements/humanoids_2014/pouring_gries_eval_traj/traj_11_234.txt";
+    int gnuPlotLineWidth = 3;
+    double dmpStepSize = 0.02;
 
-    vector<double> irosmys = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 35.5};
-    vector<double> irossigmas = {0.3, 0.8};
+    // for different trajectories, you have to change the reward computer (not the gaussian computer)
+    std::string inDir = resolvePath("$KUKADU_HOME/movements/iros2014/2d_gaussian_gen/");
+    string cfFile = "$KUKADU_HOME/movements/iros2014/2d_gaussian_gen/traj_1.6_7.txt";
 
     vec timeCenters(1); timeCenters(0) = 2.0;
     //vec timeCenters(2); timeCenters(0) = 2.0; timeCenters(1) = 5.0;
@@ -237,29 +237,24 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
 
     double alpham = 1.0;
 
-    int columns = 8;
+    int columns = 2;
 
     vec trajMetricWeights(7);
     trajMetricWeights.fill(1.0);
 
-    tau = 5.0;
-    float tmp = 0.1;
-    double ax = -log(tmp) / tau / tau;
     double relativeDistanceThresh = 0.6;
 
     vec newQueryPoint(2);
-    newQueryPoint(0) = 11.0;
-    newQueryPoint(1) = 234.0;
+    newQueryPoint(0) = 1.6;
+    newQueryPoint(1) = 7;
 
     // speedup testing process by inserting already learned metric result
     mat m(2,2);
-    /*
     // values after initialization
     m(0, 0) = 1.0;
     m(1, 0) = -0.0274;
     m(0, 1) = -0.0274;
     m(1, 1) = 0.0008;
-    */
 
     /*
     // values after 50 iterations
@@ -269,20 +264,25 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
     m(1, 1) = 3.2983e-05;
     */
 
+    /*
+    // for pouring
     m(0, 0) = 1.0;
     m(1, 0) = 0;
     m(0, 1) = 0;
     m(1, 1) = 0.0007;
+    */
 
     cout << "(main) creating dictionary generalizer object" << endl;
-//    DictionaryGeneralizer* dmpGen = new DictionaryGeneralizer(timeCenters, newQueryPoint, queue, queue, inDir, columns - 1, irosmys, irossigmas, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ax, tau, ac, trajMetricWeights, relativeDistanceThresh, as, alpham);
+
+//    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ac, trajMetricWeights, relativeDistanceThresh, as, alpham));
     dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ac, as, m, relativeDistanceThresh, alpham));
     cout << "(main) done" << endl;
 
-    std::shared_ptr<DmpRewardComputer> reward = std::shared_ptr<DmpRewardComputer>(new DmpRewardComputer(resolvePath(cfFile), az, bz, dmpStepSize, dmpGen->getDegOfFreedom(), dmpGen->getTrajectory()->getTmax()));
+    //std::shared_ptr<DmpRewardComputer> reward = std::shared_ptr<DmpRewardComputer>(new DmpRewardComputer(resolvePath(cfFile), az, bz, dmpStepSize, dmpGen->getDegOfFreedom(), dmpGen->getTrajectory()->getTmax(), 0.2));
+    std::shared_ptr<SimpleGaussianObstacleRewardComputer> reward = std::shared_ptr<SimpleGaussianObstacleRewardComputer>(new SimpleGaussianObstacleRewardComputer(newQueryPoint(0), 2.0, newQueryPoint(1), dmpGen->getTrajectory()->getTmax(), 0.1));
 
-    cout << "execute ground truth for (11, 234)" << endl;
-    t_executor_res opt = reward->getOptimalTraj(28.0);
+    cout << "execute ground truth for (" << newQueryPoint(0) << ", " << newQueryPoint(1) << ")" << endl;
+    t_executor_res opt = reward->getOptimalTraj();
     cout << "execution done" << endl;
 
     cout << "(main) initializing trajectory" << endl;
@@ -310,7 +310,7 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
     vector<vec> initY;
 
     vector<double> lastRewards;
-    while( i < 2 ) {
+    while( i < 50 ) {
 
         cout << "(main) performing rollout" << endl;
         pow.performRollout(1, 0);
@@ -341,9 +341,9 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
 
                 g1 = gs.at(plotTraj);
                 string title = string("fitted sensor data (joint") + convert.str() + string(")");
-                g1->set_style("lines").plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[plotTraj]), "optimal trajectoy");
-                g1->set_style("lines").plot_xy(armadilloToStdVec(initT), armadilloToStdVec(initY[plotTraj]), "initial trajectoy");
-                g1->set_style("lines").plot_xy(armadilloToStdVec(pow.getLastUpdateRes().t), armadilloToStdVec(pow.getLastUpdateRes().y[plotTraj]), "generalized trajectory");
+                g1->set_style(string("lines lw ") + stringFromDouble(gnuPlotLineWidth)).plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[plotTraj]), "optimal trajectoy");
+                g1->set_style(string("lines lw ") + stringFromDouble(gnuPlotLineWidth)).plot_xy(armadilloToStdVec(initT), armadilloToStdVec(initY[plotTraj]), "initial trajectoy");
+                g1->set_style(string("lines lw ") + stringFromDouble(gnuPlotLineWidth)).plot_xy(armadilloToStdVec(pow.getLastUpdateRes().t), armadilloToStdVec(pow.getLastUpdateRes().y[plotTraj]), "generalized trajectory");
                 g1->showonscreen();
 
             }
@@ -357,7 +357,7 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
 
         ++i;
 
-        getchar();
+//        getchar();
 
     }
 
@@ -365,55 +365,37 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
 
     while( 1 ) {
 
-        cout << "(PouringExperiment) first coordinate (< 0 for exit): " << endl;
+        cout << "(mainScrewOrocos) first coordinate: " << endl;
         cin >> newQueryPoint(0);
-
-        if(newQueryPoint(0) < 0)
-            break;
-
-        cout << "(PouringExperiment) second coordinate: " << endl;
+        cout << "(mainScrewOrocos) second coordinate: " << endl;
         cin >> newQueryPoint(1);
-/*
-        cout << "(PouringExperiment) insert new value for as: " << endl;
-        cin >> as;
 
-        cout << "(PouringExperiment) insert new value for k: " << endl;
-        cin >> k;
-*/
-
-        dmpGen->setAs(as);
 
         lastRollout = std::dynamic_pointer_cast<LinCombDmp>(dmpGen->getTrajectory());
         lastRollout->setCurrentQueryPoint(newQueryPoint);
         dmpGen->switchQueryPoint(newQueryPoint);
 
-        vec startingPos = dmpGen->getTrajectory()->getStartingPos();
-        simulationQueue->moveJoints(startingPos);
-        switchThr = new std::thread(switch2dQueryPoint);
+        initTraj.clear();
+        initTraj.push_back(lastRollout);
+
         t_executor_res updateRes = dmpGen->simulateTrajectory();
-        stopThread = true;
-        switchThr->join();
-        simulationQueue->moveJoints(startingPos);
 
-        char cont = 'n';
-        cout << "(main) do you want to execute this trajectory? (y/N) ";
-        cin >> cont;
+        SimpleGaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1), dmpGen->getTrajectory()->getTmax(), 0.1);
 
-        if(cont == 'y' || cont == 'Y') {
+        cout << "execute ground truth for (1.6, 7)" << endl;
+        t_executor_res opt = reward.getOptimalTraj(7.0, 0);
 
-            cout << "(main) executing trial" << endl;
+        g1 = std::shared_ptr<Gnuplot>(new Gnuplot("PoWER demo2"));
+        g1->set_terminal_std("font 'Verdana, 20'");
+        g1->set_style(string("lines lw ") + stringFromDouble(gnuPlotLineWidth)).plot_xy(armadilloToStdVec(updateRes.t), armadilloToStdVec(updateRes.y[0]), "generalized trajectory");
+        g1->set_style(string("lines lw ") + stringFromDouble(gnuPlotLineWidth)).plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[0]), "optimal trajectory");
+        g1->showonscreen();
 
-            lastRollout = std::dynamic_pointer_cast<LinCombDmp>(dmpGen->getTrajectory());
-            lastRollout->setCurrentQueryPoint(newQueryPoint);
-            dmpGen->switchQueryPoint(newQueryPoint);
+        cout << "(mainScrewOrocos) press key to continue" << endl;
+        getchar();
+        getchar();
 
-            executionQueue->moveJoints(startingPos);
-            switchThr = new std::thread(switch2dQueryPoint);
-            dmpGen->executeTrajectory();
-            stopThread = true;
-            switchThr->join();
-
-        }
+        g1 = std::shared_ptr<Gnuplot>(nullptr);
 
     }
 
@@ -822,7 +804,7 @@ void testSegmentationArtificialData(std::shared_ptr<ControlQueue> queue) {
     newQueryPoint(0) = 1.6;
     newQueryPoint(1) = 6.5;
 
-    shared_ptr<SegmentationTestingRewardComputer> reward(new SegmentationTestingRewardComputer(6, 2.5, 1, 20.0));
+    shared_ptr<SegmentationTestingRewardComputer> reward(new SegmentationTestingRewardComputer(6, 2.5, 1, 20.0, 0.1));
 
     cout << "execute ground truth for (6, 2.5)" << endl;
     t_executor_res opt = reward->getOptimalTraj(0, 5);
@@ -923,7 +905,7 @@ void testSegmentationArtificialData(std::shared_ptr<ControlQueue> queue) {
 
         t_executor_res updateRes = dmpGen->simulateTrajectory();
 
-        GaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1), 20.0);
+        GaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1), 20.0, 0.1);
 
         cout << "execute ground truth for (1.6, 7)" << endl;
         t_executor_res opt = reward.getOptimalTraj(7.0, 0);
