@@ -71,6 +71,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 
             simulationQueue->moveJoints(startingJoints);
             trajEx->setTrajectory(rollout.at(k));
+
             simRes = trajEx->simulateTrajectory();
 
             if(!doExecution) {
@@ -104,6 +105,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 		}
 
         if(doSimulation || doExecution) {
+
             dmpResult.push_back(simRes);
             t_executor_res resK = simRes;
             double delta = cost->computeCost(resK);

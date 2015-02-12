@@ -29,6 +29,7 @@ private:
 	double dmpStepSize;
 	double tolAbsErr;
 	double tolRelErr;
+    double tmax;
 	
 	void initializeY0();
 	void initializeDy0();
@@ -84,6 +85,7 @@ public:
 	double getTolRelErr();
 	
     double getTmax();
+    void setTmax(double tmax);
 	
 	int operator==(Dmp const& comp) const;
     std::shared_ptr<Trajectory> copy();

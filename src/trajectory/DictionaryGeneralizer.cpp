@@ -21,7 +21,6 @@ DictionaryGeneralizer::DictionaryGeneralizer(arma::vec timeCenters, arma::vec in
 	this->newQpSwitch = 1;
 	
 	this->currentQuery = initQueryPoint;
-    this->tEnd = dictTraj->getTmax();
 	this->ac = ac;
     this->as = as;
     this->alpham = alpham;
@@ -46,8 +45,7 @@ DictionaryGeneralizer::DictionaryGeneralizer(arma::vec timeCenters, arma::vec in
 	this->as = 0.0;
 	this->switchTime = 0.0;
 	this->newQpSwitch = 1;
-	this->currentQuery = initQueryPoint;
-    this->tEnd = dictTraj->getTmax();
+    this->currentQuery = initQueryPoint;
 	this->ac = ac;
 	this->as = as;
     this->alpham = alpham;
@@ -92,12 +90,12 @@ int DictionaryGeneralizer::getDegOfFreedom() {
 }
 
 t_executor_res DictionaryGeneralizer::simulateTrajectory() {
-    return executeGen(currentQuery, tEnd, ac, as, 1);
+    return executeGen(currentQuery, dictTraj->getTmax(), ac, as, 1);
 }
 
 // TODO: implement execute trajectory
 t_executor_res DictionaryGeneralizer::executeTrajectory() {
-    return executeGen(currentQuery, tEnd, ac, as, 0);
+    return executeGen(currentQuery, dictTraj->getTmax(), ac, as, 0);
 }
 
 void DictionaryGeneralizer::setTrajectory(std::shared_ptr<Trajectory> traj) {

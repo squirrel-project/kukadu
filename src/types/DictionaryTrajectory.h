@@ -43,6 +43,7 @@ public:
 	arma::vec getStartingPos();
 	
     double getTmax();
+    void setTmax(double tmax);
 	
 	std::vector<QueryPoint> getQueryPoints();
 	

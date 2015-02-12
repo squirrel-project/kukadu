@@ -172,9 +172,17 @@ vector<QueryPoint> DictionaryTrajectory::mapFiles(vector<string> queryFiles, vec
 
 }
 
+void DictionaryTrajectory::setTmax(double tmax) {
+
+    for(int i = 0; i < queryPoints.size(); ++i)
+        queryPoints.at(i).getDmp().setTmax(tmax);
+
+}
+
 double DictionaryTrajectory::getTmax() {
 
-	return queryPoints.at(0).getDmp().getTmax();
+    return queryPoints.at(0).getDmp().getTmax();
+    //return tmax;
 
 }
 

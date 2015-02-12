@@ -53,10 +53,7 @@ private:
     // for optimization
     double axDivTau;
     double oneDivTau;
-    double durationThresh;
     int odeSystemSizeMinOne;
-
-	double duration;
 	
 	int simulate;
     int odeSystemSize;
@@ -95,7 +92,6 @@ private:
 	
 	Dmp dmp;
 	
-//	double* ys;
 	double t;
 	double stepSize;
 

@@ -87,7 +87,7 @@ std::vector<std::shared_ptr<Trajectory>> PoWER::computeRolloutParamters() {
 			
 		}
 
-        //TODO: blew1 und blew2 do not deliver same result if there are more time centers (maybe not decompose whole extended M but single submatrices
+        //TODO: blew1 und blew2 do not deliver same result if there are more time centers (maybe not decompose whole extended M but single submatrices)
 
 //        cout << "blew1: " << dmpCoeffs.at(0).t() << endl;
         std::shared_ptr<Trajectory> nextUp = lastUp->copy();

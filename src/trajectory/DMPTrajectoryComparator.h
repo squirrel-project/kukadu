@@ -5,6 +5,7 @@
 #include <armadillo>
 #include <memory>
 
+#include "../utils/utils.h"
 #include "../types/DMP.h"
 #include "../trajectory/DMPExecutor.h"
 #include "../robot/PlottingControlQueue.h"

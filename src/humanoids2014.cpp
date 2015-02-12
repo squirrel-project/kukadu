@@ -223,9 +223,7 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
     double dmpStepSize = 0.02;
 
     // for different trajectories, you have to change the reward computer (not the gaussian computer)
-    std::string inDir = resolvePath("$KUKADU_HOME/movements/iros2014/2d_gaussian_gen/");
-    string cfFile = "$KUKADU_HOME/movements/iros2014/2d_gaussian_gen/traj_1.6_7.txt";
-
+    std::string inDir = resolvePath("$KUKADU_HOME/movements/iros2014/2d_extended_gen/");
     vec timeCenters(1); timeCenters(0) = 2.0;
     //vec timeCenters(2); timeCenters(0) = 2.0; timeCenters(1) = 5.0;
     //vec timeCenters(3); timeCenters(0) = 1.0; timeCenters(1) = 2.0; timeCenters(1) = 5.0;
@@ -239,14 +237,14 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
 
     int columns = 2;
 
-    vec trajMetricWeights(7);
+    vec trajMetricWeights(1);
     trajMetricWeights.fill(1.0);
 
-    double relativeDistanceThresh = 0.6;
+    double relativeDistanceThresh = 0.4;
 
     vec newQueryPoint(2);
-    newQueryPoint(0) = 1.6;
-    newQueryPoint(1) = 7;
+    newQueryPoint(0) = 1.4;
+    newQueryPoint(1) = 5.1;
 
     // speedup testing process by inserting already learned metric result
     mat m(2,2);
@@ -274,12 +272,15 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
 
     cout << "(main) creating dictionary generalizer object" << endl;
 
-//    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ac, trajMetricWeights, relativeDistanceThresh, as, alpham));
-    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ac, as, m, relativeDistanceThresh, alpham));
+    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ac, trajMetricWeights, relativeDistanceThresh, as, alpham));
+//    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ac, as, m, relativeDistanceThresh, alpham));
+//    dmpGen->getTrajectory()->setTmax(5.0);
     cout << "(main) done" << endl;
 
     //std::shared_ptr<DmpRewardComputer> reward = std::shared_ptr<DmpRewardComputer>(new DmpRewardComputer(resolvePath(cfFile), az, bz, dmpStepSize, dmpGen->getDegOfFreedom(), dmpGen->getTrajectory()->getTmax(), 0.2));
-    std::shared_ptr<SimpleGaussianObstacleRewardComputer> reward = std::shared_ptr<SimpleGaussianObstacleRewardComputer>(new SimpleGaussianObstacleRewardComputer(newQueryPoint(0), 2.0, newQueryPoint(1), dmpGen->getTrajectory()->getTmax(), 0.1));
+
+    // dmps did not work well --> thats why i had to extend the length of the dmp and reduce it afterwards again (not related to metric learning algo)
+    std::shared_ptr<GaussianObstacleRewardComputer> reward = std::shared_ptr<GaussianObstacleRewardComputer>(new GaussianObstacleRewardComputer(newQueryPoint(0), 2.0, newQueryPoint(1), dmpGen->getTrajectory()->getTmax(), 0.1));
 
     cout << "execute ground truth for (" << newQueryPoint(0) << ", " << newQueryPoint(1) << ")" << endl;
     t_executor_res opt = reward->getOptimalTraj();
@@ -298,9 +299,7 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
     cout << "(main) creating reinforcement learning environment" << endl;
     PoWER pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, reward, simulationQueue, executionQueue, ac, dmpStepSize, tolAbsErr, tolRelErr);
     cout << "(main) done" << endl;
-//    GradientDescent pow(dmpGen, initTraj, rlExploreSigmas, rolloutsPerUpdate, importanceSamplingCount, &reward, queue, queue, ac, dmpStepSize, tolAbsErr, tolRelErr);
 
-    int plotTimes = 5;
     vector<std::shared_ptr<Gnuplot>> gs;
     for(int i = 0; i < (columns - 1); ++i)
         gs.push_back(std::shared_ptr<Gnuplot>(new Gnuplot("PoWER demo")));
@@ -309,7 +308,6 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
     vec initT;
     vector<vec> initY;
 
-    vector<double> lastRewards;
     while( i < 50 ) {
 
         cout << "(main) performing rollout" << endl;
@@ -341,7 +339,7 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
 
                 g1 = gs.at(plotTraj);
                 string title = string("fitted sensor data (joint") + convert.str() + string(")");
-                g1->set_style(string("lines lw ") + stringFromDouble(gnuPlotLineWidth)).plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[plotTraj]), "optimal trajectoy");
+                g1->set_style(string("lines lw ") + stringFromDouble(gnuPlotLineWidth)) .plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[plotTraj]), "optimal trajectoy");
                 g1->set_style(string("lines lw ") + stringFromDouble(gnuPlotLineWidth)).plot_xy(armadilloToStdVec(initT), armadilloToStdVec(initY[plotTraj]), "initial trajectoy");
                 g1->set_style(string("lines lw ") + stringFromDouble(gnuPlotLineWidth)).plot_xy(armadilloToStdVec(pow.getLastUpdateRes().t), armadilloToStdVec(pow.getLastUpdateRes().y[plotTraj]), "generalized trajectory");
                 g1->showonscreen();
@@ -380,7 +378,7 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
 
         t_executor_res updateRes = dmpGen->simulateTrajectory();
 
-        SimpleGaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1), dmpGen->getTrajectory()->getTmax(), 0.1);
+        GaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1), dmpGen->getTrajectory()->getTmax(), 0.1);
 
         cout << "execute ground truth for (1.6, 7)" << endl;
         t_executor_res opt = reward.getOptimalTraj(7.0, 0);

@@ -27,6 +27,7 @@ public:
     virtual std::shared_ptr<Trajectory> copy() = 0;
 
     virtual double getTmax() = 0;
+    virtual void setTmax(double tmax) = 0;
 	
 };
 

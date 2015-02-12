@@ -69,13 +69,12 @@ Dmp::Dmp(std::string dmpFile) {
     }
 
     vec fileDmpConsts = readMat(dmpFileStream).row(0).t();
+    this->setSupervisedTs(fileSuperVisedTs);
+    this->setSampleYs(fileSampleYs);
 
     construct(fileSuperVisedTs, fileSampleYs, fileFitYs, fileDmpCoeffs, fileDmpBases, fileDesignMatrices,
               fileDmpConsts(0), fileDmpConsts(1), fileDmpConsts(2), fileDmpConsts(3), fileDmpConsts(4),
               fileDmpConsts(5), fileDmpConsts(6), fileDmpConsts(7));
-
-    this->setSupervisedTs(fileSuperVisedTs);
-    this->setSampleYs(fileSampleYs);
 
     cout << "Dmp loaded from file" << endl;
 
@@ -158,6 +157,12 @@ void Dmp::construct(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std
     initializeDy0();
     initializeDdy0();
 	initializeG();
+
+    int s = getDataPointsNum();
+    if(s > 0)
+        tmax = getT(s - 1);
+    else
+        tmax = 0.0;
 	
 }
 
@@ -183,6 +188,8 @@ Dmp::Dmp(const Dmp& copy) : SingleSampleTrajectory(copy) {
 	initializeDy0();
 	initializeDdy0();
 	initializeG();
+
+    this->tmax = copy.tmax;
 	
 }
 
@@ -283,13 +290,13 @@ double Dmp::getTolRelErr() {
 }
 
 double Dmp::getTmax() {
+
+    return tmax;
 	
-	int s = getDataPointsNum();
-	if(s > 0)
-		return getT(s - 1);
-	else
-		return 0.0;
-	
+}
+
+void Dmp::setTmax(double tmax) {
+    this->tmax = tmax;
 }
 
 void Dmp::initializeY0() {

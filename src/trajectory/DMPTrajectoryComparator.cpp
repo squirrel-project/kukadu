@@ -30,9 +30,14 @@ double DMPTrajectoryComparator::computeDistance() {
 	
 	// do some consistency checks
 	if(degOfFreedom != dmp2Result.y.size() || degOfFreedom != degOfFreedomWeights.n_elem) {
-		cerr << "(DMPTrajectoryComparator) dimensions of weight vector and trajectory do not match" << endl;
-		throw "(DMPTrajectoryComparator) dimensions of weight vector and trajectory do not match";
+        cerr << "(DMPTrajectoryComparator) dimensions of weight vector and trajectory do not match (size1, size2) = (" << dmp2Result.y.size() << ", " << degOfFreedomWeights.n_elem << ")" << endl;
+        throw "(DMPTrajectoryComparator) dimensions of weight vector and trajectory do not match (size1, size2) = (" + stringFromDouble(dmp2Result.y.size()) + ", " + stringFromDouble(degOfFreedomWeights.n_elem) + ")";
 	}
+
+    if(dmp1Result.t.n_elem == 0 || dmp2Result.t.n_elem == 0) {
+        cerr << "(DMPTrajectoryComparator) one of the dmps is of length 0" << endl;
+        throw "(DMPTrajectoryComparator) one of the dmps is of length 0";
+    }
 
 	double tDiff = abs(dmp1Result.t(dmp1Result.t.n_elem - 1) - dmp2Result.t(dmp2Result.t.n_elem - 1));
 	if(tDiff > tTolerance) {

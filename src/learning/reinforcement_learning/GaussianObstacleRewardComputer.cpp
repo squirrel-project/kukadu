@@ -52,11 +52,6 @@ GaussianObstacleRewardComputer::GaussianObstacleRewardComputer(double my, double
 arma::vec GaussianObstacleRewardComputer::computeFun(double t) {
 	
     vec retVec(1);
-
-	// y1 = c1 * exp(- (x - o) .^ 2 / s);
-//    return height * exp(- pow((t - my), 2) / sigma);
-	
-	double c2 = 0.2;
 	double c3 = 0.2;
 	
 	//c2 = 0.2;

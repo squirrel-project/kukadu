@@ -46,7 +46,6 @@ private:
 	double stepSize;
 	double tolAbsErr;
 	double tolRelErr;
-	double tEnd;
 	double ac;
 	
 	double currentTime;

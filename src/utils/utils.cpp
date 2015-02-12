@@ -37,31 +37,27 @@ t_executor_res executeDemo(shared_ptr<ControlQueue> movementQu, string file, dou
 	
 	Gnuplot* g1 = NULL;
 	
-	int columns = 8;
-	int plotNum = columns - 1;
-	double tau = 0.8;
-	
-	// vector<double> tmpmys{0, 1, 2, 3, 4, 5, 6, 7, 8};
-	vector<double> tmpmys;
+    vector<double> tmpmys{0, 1, 2, 3, 4, 4.1, 4.3, 4.5};
+    //vector<double> tmpmys;
 	vector<double> tmpsigmas{0.2, 0.8};
 	
 	// reading in file
     mat joints = readMovements(file);
 	tmpmys = constructDmpMys(joints);
-	
-	double ax = -log((float)0.1) / joints(joints.n_rows - 1, 0) / tau;
-	// double ax = 0.2;
+
+    double tau = 0.8;
+    double ax = -log((float)0.1) / joints(joints.n_rows - 1, 0) / tau;
 	
 	vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
 
     TrajectoryDMPLearner dmpLearner(baseDef, tau, az, bz, ax, joints);
-	Dmp learnedDmps = dmpLearner.fitTrajectories();
+    Dmp learnedDmps = dmpLearner.fitTrajectories();
 
     movementQu->moveJoints(learnedDmps.getY0());
-		
-    cout << "tmax: " << learnedDmps.getTmax() << endl;
     DMPExecutor dmpexec(learnedDmps, movementQu);
     t_executor_res dmpResult = dmpexec.simulateTrajectory();
+
+    int plotNum = learnedDmps.getDegreesOfFreedom();
 
     if(plotResults) {
 
@@ -77,10 +73,6 @@ t_executor_res executeDemo(shared_ptr<ControlQueue> movementQu, string file, dou
             g1->showonscreen();
 
         }
-
-        g1 = new Gnuplot(string("internal clock plot"));
-        g1->set_style("lines").plot_xy(armadilloToStdVec(dmpResult.t), armadilloToStdVec(dmpResult.internalClock), "internal clock");
-        g1->showonscreen();
 
     }
 	
@@ -108,7 +100,7 @@ int getch() {
 std::vector<double> constructDmpMys(mat joints) {
 	vector<double> ret;
 	double tmax = joints(joints.n_rows - 1, 0);
-	for(int i = 0; i < (tmax + 1); ++i) {
+    for(double i = 0; i < (tmax + 1); i += 1.0) {
 		ret.push_back(i);
 	}
 	return ret;

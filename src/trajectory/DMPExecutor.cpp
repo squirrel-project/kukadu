@@ -56,12 +56,10 @@ void DMPExecutor::construct(Dmp traj, std::shared_ptr<ControlQueue> execQueue, i
 
     previousDesiredJoints = y0s;
 
-    duration = traj.getTmax();
 	externalErrorUsing = 0;
 	externalError = 0.0;
 	t = 0.0;
 
-    this->durationThresh = duration;
     this->odeSystemSizeMinOne = odeSystemSize - 1;
 	
 }
@@ -111,7 +109,7 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
         double g = gs(currentSystem);
         arma::vec currentCoeffs = dmpCoeffs.at(currentSystem);
 		
-        if(t <= (durationThresh - 1)) {
+        if(t <= (dmp.getTmax() - 1)) {
 			
             double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
             f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm)  + this->addTerm(t, y, i / 2, controlQueue);
@@ -250,7 +248,7 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
 	arma::vec retJoints(degofFreedom);
 	retJoints.fill(0.0);
 	
-    if(t < durationThresh) {
+    if(t < dmp.getTmax()) {
 
         int s = gsl_odeiv2_driver_apply_fixed_step(d.get(), &t, stepSize, 1, ys);
 

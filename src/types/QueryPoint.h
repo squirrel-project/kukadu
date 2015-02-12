@@ -47,7 +47,7 @@ public:
 	arma::vec getQueryPoint();
 	
 	void setDmp(Dmp dmp);
-	Dmp getDmp();
+    Dmp getDmp();
 	
 	
 };
