@@ -10,6 +10,8 @@ PlottingControlQueue::PlottingControlQueue(int degOfFreedom, double timeStep) : 
 
 void PlottingControlQueue::setInitValues() {
 
+    set_ctrlc_exit_handler();
+
 	isInit = false;
 	finish = 0;
     currentTime = 0.0;

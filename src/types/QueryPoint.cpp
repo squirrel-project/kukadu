@@ -35,7 +35,7 @@ arma::vec QueryPoint::getQueryPoint() {
 	return queryPoint;
 }
 
-Dmp QueryPoint::getDmp() {
+Dmp& QueryPoint::getDmp() {
 	return internalDmp;
 }
 

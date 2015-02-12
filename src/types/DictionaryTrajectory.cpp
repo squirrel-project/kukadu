@@ -38,7 +38,7 @@ DictionaryTrajectory::DictionaryTrajectory(std::string baseFolder, double az, do
 
             QueryPoint currentQueryPoint = queryPoints.at(i);
             mat joints = jointsVec.at(i);
-            joints = fillTrajectoryMatrix(joints, tMax);
+            joints = fillTrajectoryMatrix(joints, tMax + 8.0);
             dmpLearner = new TrajectoryDMPLearner(az, bz, joints);
 
             Dmp learnedDmps = dmpLearner->fitTrajectories();
@@ -182,7 +182,6 @@ void DictionaryTrajectory::setTmax(double tmax) {
 double DictionaryTrajectory::getTmax() {
 
     return queryPoints.at(0).getDmp().getTmax();
-    //return tmax;
 
 }
 

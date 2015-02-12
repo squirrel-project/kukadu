@@ -15,6 +15,7 @@
 #include "ControlQueue.h"
 #include "../utils/DestroyableObject.h"
 #include "../utils/types.h"
+#include "../utils/utils.h"
 #include "robotDriver/src/kuka/friRemote.h"
 
 #include "ros/ros.h"

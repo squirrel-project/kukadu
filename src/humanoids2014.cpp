@@ -240,19 +240,19 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
     vec trajMetricWeights(1);
     trajMetricWeights.fill(1.0);
 
-    double relativeDistanceThresh = 0.4;
+    double relativeDistanceThresh = 0.3;
 
     vec newQueryPoint(2);
     newQueryPoint(0) = 1.4;
-    newQueryPoint(1) = 5.1;
+    newQueryPoint(1) = 6.3;
 
     // speedup testing process by inserting already learned metric result
     mat m(2,2);
     // values after initialization
     m(0, 0) = 1.0;
-    m(1, 0) = -0.0274;
-    m(0, 1) = -0.0274;
-    m(1, 1) = 0.0008;
+    m(1, 0) = -0.3230;
+    m(0, 1) = -0.3230;
+    m(1, 1) = 0.1579;
 
     /*
     // values after 50 iterations
@@ -272,9 +272,10 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
 
     cout << "(main) creating dictionary generalizer object" << endl;
 
-    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ac, trajMetricWeights, relativeDistanceThresh, as, alpham));
-//    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ac, as, m, relativeDistanceThresh, alpham));
-//    dmpGen->getTrajectory()->setTmax(5.0);
+//    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ac, trajMetricWeights, relativeDistanceThresh, as, alpham));
+    dmpGen = std::shared_ptr<DictionaryGeneralizer>(new DictionaryGeneralizer(timeCenters, newQueryPoint, simulationQueue, executionQueue, inDir, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ac, as, m, relativeDistanceThresh, alpham));
+    dmpGen->getTrajectory()->setTmax(4.7);
+    cout << "(main) set duration to " << dmpGen->getTrajectory()->getTmax() << endl;
     cout << "(main) done" << endl;
 
     //std::shared_ptr<DmpRewardComputer> reward = std::shared_ptr<DmpRewardComputer>(new DmpRewardComputer(resolvePath(cfFile), az, bz, dmpStepSize, dmpGen->getDegOfFreedom(), dmpGen->getTrajectory()->getTmax(), 0.2));
@@ -304,11 +305,12 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
     for(int i = 0; i < (columns - 1); ++i)
         gs.push_back(std::shared_ptr<Gnuplot>(new Gnuplot("PoWER demo")));
 
-    int i = 0;
-    vec initT;
-    vector<vec> initY;
+    t_executor_res init = dmpGen->simulateTrajectory();
 
-    while( i < 50 ) {
+    vec initT = init.t;
+    vector<vec> initY = init.y;
+
+    for(int i = 0; i < 50; ++i) {
 
         cout << "(main) performing rollout" << endl;
         pow.performRollout(1, 0);
@@ -338,8 +340,7 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
                 convert << plotTraj;
 
                 g1 = gs.at(plotTraj);
-                string title = string("fitted sensor data (joint") + convert.str() + string(")");
-                g1->set_style(string("lines lw ") + stringFromDouble(gnuPlotLineWidth)) .plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[plotTraj]), "optimal trajectoy");
+                g1->set_style(string("lines lw ") + stringFromDouble(gnuPlotLineWidth)).plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[plotTraj]), "optimal trajectoy");
                 g1->set_style(string("lines lw ") + stringFromDouble(gnuPlotLineWidth)).plot_xy(armadilloToStdVec(initT), armadilloToStdVec(initY[plotTraj]), "initial trajectoy");
                 g1->set_style(string("lines lw ") + stringFromDouble(gnuPlotLineWidth)).plot_xy(armadilloToStdVec(pow.getLastUpdateRes().t), armadilloToStdVec(pow.getLastUpdateRes().y[plotTraj]), "generalized trajectory");
                 g1->showonscreen();
@@ -353,21 +354,25 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
         if( (i % 20) == 19)
             g1->remove_tmpfiles();
 
-        ++i;
-
-//        getchar();
-
     }
 
-    cout << "(PouringExperiment) execution of trajectory at new position" << endl;
+    m(0, 0) = 1.0;
+    m(1, 0) = -0.0274;
+    m(0, 1) = -0.0274;
+    m(1, 1) = 0.0008;
+
+
+    shared_ptr<LinCombDmp> lcd = std::dynamic_pointer_cast<LinCombDmp>(dmpGen->getTrajectory());
+    lcd->setMetric(Mahalanobis(m));
 
     while( 1 ) {
 
+        /*
         cout << "(mainScrewOrocos) first coordinate: " << endl;
         cin >> newQueryPoint(0);
         cout << "(mainScrewOrocos) second coordinate: " << endl;
         cin >> newQueryPoint(1);
-
+*/
 
         lastRollout = std::dynamic_pointer_cast<LinCombDmp>(dmpGen->getTrajectory());
         lastRollout->setCurrentQueryPoint(newQueryPoint);
@@ -381,12 +386,12 @@ void testHumanoidsArtificialData(std::shared_ptr<ControlQueue> simulationQueue, 
         GaussianObstacleRewardComputer reward(newQueryPoint(0), 2.0, newQueryPoint(1), dmpGen->getTrajectory()->getTmax(), 0.1);
 
         cout << "execute ground truth for (1.6, 7)" << endl;
-        t_executor_res opt = reward.getOptimalTraj(7.0, 0);
+        t_executor_res opt = reward.getOptimalTraj();
 
         g1 = std::shared_ptr<Gnuplot>(new Gnuplot("PoWER demo2"));
-        g1->set_terminal_std("font 'Verdana, 20'");
-        g1->set_style(string("lines lw ") + stringFromDouble(gnuPlotLineWidth)).plot_xy(armadilloToStdVec(updateRes.t), armadilloToStdVec(updateRes.y[0]), "generalized trajectory");
         g1->set_style(string("lines lw ") + stringFromDouble(gnuPlotLineWidth)).plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[0]), "optimal trajectory");
+        g1->set_style(string("lines lw ") + stringFromDouble(gnuPlotLineWidth)).plot_xy(armadilloToStdVec(initT), armadilloToStdVec(initY[0]), "initial trajectoy");
+        g1->set_style(string("lines lw ") + stringFromDouble(gnuPlotLineWidth)).plot_xy(armadilloToStdVec(updateRes.t), armadilloToStdVec(updateRes.y[0]), "generalized trajectory");
         g1->showonscreen();
 
         cout << "(mainScrewOrocos) press key to continue" << endl;
