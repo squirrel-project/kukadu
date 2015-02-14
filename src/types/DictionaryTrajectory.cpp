@@ -38,7 +38,7 @@ DictionaryTrajectory::DictionaryTrajectory(std::string baseFolder, double az, do
 
             QueryPoint currentQueryPoint = queryPoints.at(i);
             mat joints = jointsVec.at(i);
-            joints = fillTrajectoryMatrix(joints, tMax + 8.0);
+            joints = fillTrajectoryMatrix(joints, tMax);
             dmpLearner = new TrajectoryDMPLearner(az, bz, joints);
 
             Dmp learnedDmps = dmpLearner->fitTrajectories();

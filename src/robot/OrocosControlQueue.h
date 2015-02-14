@@ -36,6 +36,7 @@
 #include <iis_kukie/FriRobotData.h>
 #include <iis_kukie/FriRobotJntData.h>
 #include <iis_kukie/KukieError.h>
+#include <RedundantKin.h>
 
 #define COMMAND_NOT_SET -100
 
@@ -49,6 +50,16 @@
 class OrocosControlQueue : public ControlQueue {
 
 private:
+
+    // emergency solution for now (move topic expects commands in robot frame)
+    // --> moving it to an approximately align coordinate sytem and do transformations there
+    double leftW2RTM[4][4];
+
+    double leftR2WTM[4][4] = {
+                    {-0.879651, 0.336431, 0.336196, -0.492322},
+                    {0.426848, 0.246623, 0.870044, 0.754155},
+                    {0.209797, 0.90884, -0.360547, 0.629509},
+                    {0.0000, -0.0000, -0.0000, 1.0000}};
 	
 	int sleepTime;
 	int finish;
@@ -77,6 +88,7 @@ private:
     std::mutex cartFrcTrqMutex;
 
     geometry_msgs::Pose currentCartPose;
+    geometry_msgs::Pose currentCartPoseRf;
 	
 	std::string commandTopic;
 	std::string retJointPosTopic;
@@ -93,6 +105,7 @@ private:
     std::string cartMoveTopic;
     std::string cartPtpReachedTopic;
     std::string cartMoveQueueTopic;
+    std::string cartPoseRfTopic;
 
     std::string deviceType;
     std::string armPrefix;
@@ -117,6 +130,7 @@ private:
     ros::Subscriber subjntFrcTrq;
     ros::Subscriber subCartFrqTrq;
     ros::Subscriber subCartPtpReached;
+    ros::Subscriber subCartPoseRf;
 	
 	double computeDistance(float* a1, float* a2, int size);
 
@@ -128,6 +142,7 @@ private:
     void cartPtpReachedCallback(const std_msgs::Int32MultiArray& msg);
     void jntFrcTrqCallback(const std_msgs::Float64MultiArray& msg);
     void cartFrcTrqCallback(const geometry_msgs::Wrench& msg);
+    void cartPosRfCallback(const geometry_msgs::Pose msg);
 
 public:
 
@@ -136,7 +151,7 @@ public:
     void constructQueue(int argc, char** argv, int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
                         std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
                         std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic,
-                        std::string cartMoveTopic, std::string cartPtpReachedTopic, std::string cartMoveQueueTopic, ros::NodeHandle node
+                        std::string cartMoveTopic, std::string cartPtpReachedTopic, std::string cartMoveQueueTopic, std::string cartPoseRfTopic, ros::NodeHandle node
                     );
 	
 	void run();
@@ -149,6 +164,7 @@ public:
     void moveJoints(arma::vec joints);
     void moveCartesian(geometry_msgs::Pose pos);
     void moveCartesianNb(geometry_msgs::Pose pos);
+    geometry_msgs::Pose moveCartesianRelativeWf(geometry_msgs::Pose basePoseRf, geometry_msgs::Pose offset);
 
     void addCartesianPosToQueue(geometry_msgs::Pose pose);
 	
@@ -160,6 +176,7 @@ public:
 	
     mes_result getCartesianPos();
     geometry_msgs::Pose getCartesianPose();
+    geometry_msgs::Pose getCartesianPoseRf();
     arma::vec getStartingJoints();
     arma::vec retrieveJointsFromRobot();
 	
@@ -172,6 +189,7 @@ public:
     std::string getRobotFileName();
     std::vector<std::string> getJointNames();
 
+    static const int KUKA_STOP_MODE = 0;
     static const int KUKA_JNT_POS_MODE = 10;
     static const int KUKA_CART_IMP_MODE = 20;
     static const int KUKA_JNT_IMP_MODE = 30;

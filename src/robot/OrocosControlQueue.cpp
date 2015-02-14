@@ -1,4 +1,5 @@
 #include "OrocosControlQueue.h"
+#include <tf/tf.h>
 
 using namespace std;
 using namespace arma;
@@ -6,10 +7,20 @@ using namespace arma;
 void OrocosControlQueue::constructQueue(int argc, char** argv, int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
                     std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
                     std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic,
-                    std::string cartMoveTopic, std::string cartPtpReachedTopic, std::string cartMoveQueueTopic, ros::NodeHandle node
+                    std::string cartMoveTopic, std::string cartPtpReachedTopic, std::string cartMoveQueueTopic, std::string cartPoseRfTopic, ros::NodeHandle node
                 ) {
 
     set_ctrlc_exit_handler();
+
+    mat vecLeftR2WTM(4, 4);
+    for(int i = 0; i < 4; ++i)
+        for(int j = 0; j < 4; ++j)
+            vecLeftR2WTM(i, j) = leftR2WTM[i][j];
+
+    mat vecLeftWT2RM = inv(vecLeftR2WTM);
+    for(int i = 0; i < 4; ++i)
+        for(int j = 0; j < 4; ++j)
+            leftW2RTM[i][j] = vecLeftWT2RM(i, j);
 
     currentTime = 0.0;
     this->sleepTime= sleepTime;
@@ -50,6 +61,7 @@ void OrocosControlQueue::constructQueue(int argc, char** argv, int sleepTime, st
     subjntFrcTrq = node.subscribe(jntFrcTrqTopic, 2, &OrocosControlQueue::jntFrcTrqCallback, this);
     subCartFrqTrq = node.subscribe(cartFrcTrqTopic, 2, &OrocosControlQueue::cartFrcTrqCallback, this);
     subCartPtpReached = node.subscribe(cartPtpReachedTopic, 2, &OrocosControlQueue::cartPtpReachedCallback, this);
+    subCartPoseRf = node.subscribe(cartPoseRfTopic, 2, &OrocosControlQueue::cartPosRfCallback, this);
 
     pub_set_cart_stiffness = node.advertise<iis_kukie::CartesianImpedance>(stiffnessTopic, 1);
     pub_set_joint_stiffness = node.advertise<iis_kukie::FriJointImpedance>(jntStiffnessTopic, 1);
@@ -81,18 +93,60 @@ OrocosControlQueue::OrocosControlQueue(int argc, char** argv, int sleepTime, std
     cartMoveTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/ptpQuaternion";
     cartPtpReachedTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/ptp_reached";
     cartMoveQueueTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/move";
+    cartPoseRfTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/get_pose_rf";
     addLoadTopic = "not supported yet";
 
     this->deviceType = deviceType;
     this->armPrefix = armPrefix;
 
     constructQueue(argc, argv, sleepTime, commandTopic, retJointPosTopic, switchModeTopic, retCartPosTopic, stiffnessTopic,
-                   jntStiffnessTopic, ptpTopic, commandStateTopic, ptpReachedTopic, addLoadTopic, jntFrcTrqTopic, cartFrcTrqTopic, cartMoveTopic, cartPtpReachedTopic, cartMoveQueueTopic, node);
+                   jntStiffnessTopic, ptpTopic, commandStateTopic, ptpReachedTopic, addLoadTopic, jntFrcTrqTopic, cartFrcTrqTopic,
+                   cartMoveTopic, cartPtpReachedTopic, cartMoveQueueTopic, cartPoseRfTopic, node);
 
 }
 
 void OrocosControlQueue::addCartesianPosToQueue(geometry_msgs::Pose pose) {
     pubCartMoveQueue.publish(pose);
+}
+
+void OrocosControlQueue::cartPosRfCallback(const geometry_msgs::Pose msg) {
+    currentCartPoseRf = msg;
+}
+
+geometry_msgs::Pose OrocosControlQueue::getCartesianPoseRf() {
+    return currentCartPoseRf;
+}
+
+// relative pos in worldframe
+geometry_msgs::Pose OrocosControlQueue::moveCartesianRelativeWf(geometry_msgs::Pose basePoseRf, geometry_msgs::Pose offset) {
+
+//    cout << "(OrocosControQueue) moveCartesianRelativeWf currently only consideres position and not orientation" << endl;
+    double newTargetRobotPos[4] = {1, 1, 1, 1};
+    double newTargetWorldPos[4] = {1, 1, 1, 1};
+    newTargetRobotPos[0]  = basePoseRf.position.x;
+    newTargetRobotPos[1]  = basePoseRf.position.y;
+    newTargetRobotPos[2]  = basePoseRf.position.z;
+    // rotate current pose to approximate world frame (hack for now)
+    transformPos(newTargetWorldPos, leftR2WTM, newTargetRobotPos);
+
+    // add relative coordinates
+    newTargetWorldPos[0] = newTargetWorldPos[0] + offset.position.x;
+    newTargetWorldPos[1] = newTargetWorldPos[1] + offset.position.y;
+    newTargetWorldPos[2] = newTargetWorldPos[2] + offset.position.z;
+
+    // transform back to robot fraeme
+    transformPos(newTargetRobotPos, leftW2RTM, newTargetWorldPos);
+
+    // store it back to current pose
+    basePoseRf.position.x = newTargetRobotPos[0];
+    basePoseRf.position.y = newTargetRobotPos[1];
+    basePoseRf.position.z = newTargetRobotPos[2];
+
+    // publish robot frame pose to move
+    addCartesianPosToQueue(basePoseRf);
+
+    return basePoseRf;
+
 }
 
 std::string OrocosControlQueue::getRobotFileName() {
@@ -137,6 +191,7 @@ void OrocosControlQueue::robotJointPosCallback(const sensor_msgs::JointState& ms
 void OrocosControlQueue::robotCartPosCallback(const geometry_msgs::Pose& msg) {
 
 	currentCartsMutex.lock();
+
         currentCarts = arma::vec(7);
         currentCarts(0) = msg.position.x;
         currentCarts(1) = msg.position.y;

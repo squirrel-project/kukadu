@@ -1,6 +1,7 @@
 #include "../utils/easyloggingpp/src/easylogging++.h"
 _INITIALIZE_EASYLOGGINGPP
 
+#include <geometry_msgs/Pose.h>
 #include <iostream>
 #include <string>
 #include <armadillo>
@@ -17,7 +18,9 @@ _INITIALIZE_EASYLOGGINGPP
 #define CONTROL_RIGHT false
 
 using namespace std;
+using namespace ros;
 using namespace arma;
+using namespace geometry_msgs;
 namespace po = boost::program_options;
 
 int main(int argc, char** args) {
@@ -135,12 +138,17 @@ int main(int argc, char** args) {
     mes_result currentJoints = leftQueue->getCurrentJoints();
     cout << currentJoints.joints.t() << endl;
 
+    /*
     cout << "(main) place book on expected position and press enter" << endl;
     getchar();
+    */
 
 //    leftQueue->setStiffness(0.2, 0.01, 0.2, 15000, 150, 2.0);
-    leftQueue->switchMode(OrocosControlQueue::KUKA_JNT_POS_MODE);
+    leftQueue->switchMode(OrocosControlQueue::KUKA_STOP_MODE);
+    leftQueue->switchMode(OrocosControlQueue::KUKA_JNT_IMP_MODE);
     //leftQueue->moveJoints(stdToArmadilloVec({-0.514099, 1.83194, 1.95971, -0.99676, -0.0903862, 0.987185, 1.16542}));
+
+    /*
     leftQueue->moveJoints(stdToArmadilloVec({-0.3990752398967743, 1.7550331354141235, 1.9612526893615723, -0.6003820300102234, -0.05098132789134979, 1.200370192527771, 1.168589472770691}));
 
     cout << "(main) press key to continue" << endl;
@@ -152,11 +160,9 @@ int main(int argc, char** args) {
     DMPExecutor leftExecutor(leftDmp, leftQueue);
     leftExecutor.executeTrajectory(ac, 0, leftDmp.getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
 
+
     // first finger
-
     cout << "(main) ready to move first finger?" << endl;
-    getchar();
-
     leftHandJoints = {0, -0.38705404571511043, 0.7258474179992682, -0.2, -0.9, -0.8303327436948519, 0.8185967300722126};
     leftHand->publishSdhJoints(leftHandJoints);
 
@@ -170,8 +176,6 @@ int main(int argc, char** args) {
     leftHand->publishSdhJoints(leftHandJoints);
 
     cout << "(main) ready to move second finger?" << endl;
-    getchar();
-
     // second finger follows
     leftHandJoints = {0, -0.9303327436948519, 0.8185967300722126, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
     leftHand->publishSdhJoints(leftHandJoints);
@@ -198,15 +202,161 @@ int main(int argc, char** args) {
     leftHandJoints = {0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0, 0.5};
     leftHand->publishSdhJoints(leftHandJoints);
 
+    */
+
+    cout << "(main) preparing to drop (remove this for book peeling again)" << endl;
+    getchar();
+    leftQueue->moveJoints(stdToArmadilloVec({-1.0587048530578613, 1.879784107208252, 2.1199851036071777, -1.9964550733566284, -1.975645899772644, 1.5456539392471313, 2.5950534343719482}));
+
     cout << "(main) finally grasp it?";
     getchar();
-    leftHandJoints = {SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
+    leftHandJoints = {0, 0, 0.5, -0.2, -0.9, 0, 0.5};
     leftHand->publishSdhJoints(leftHandJoints);
 
+    /*
     cout << "(main) press a key to lift it" << endl;
     getchar();
-
     leftQueue->moveJoints(stdToArmadilloVec({-0.9291561841964722, 1.9066647291183472, 1.9648972749710083, -0.949062168598175, -0.10840536653995514, 1.199838638305664, 1.1655352115631104}));
+*/
+
+    cout << "(main) dropping book" << endl;
+    leftQueue->moveJoints(stdToArmadilloVec({-0.3186831772327423, 1.877084493637085, 2.4300241470336914, -1.6613903045654297, -2.41784930229187, 1.776635766029358, 2.6922547817230225}));
+
+    cout << "(main) opening fingers" << endl;
+    vector<double> openJoints = leftHandJoints = {0, -0.48705404571511043, 0.7258474179992682, -0.650410616072391092, 0.5, -0.5303327436948519, 0.8185967300722126};
+    leftHand->publishSdhJoints(leftHandJoints);
+
+    getchar();
+
+    leftQueue->switchMode(OrocosControlQueue::KUKA_STOP_MODE);
+
+    cout << "(main) starting fine grained placement" << endl;
+    getchar();
+    leftQueue->switchMode(OrocosControlQueue::KUKA_CART_IMP_MODE);
+
+    cout << "(main) start moving" << endl;
+
+    int movementDuration = 70;
+    double frcVal1, frcVal2, dist1, dist2;
+    mes_result mes;
+    Pose currentPose = leftQueue->getCartesianPoseRf();
+    Pose relativePose;
+    relativePose.position.x = 0.0009; relativePose.position.y = relativePose.position.z = 0.0;
+    Rate slRate(20);
+    Rate waitRate(0.5);
+    while(1) {
+
+        // check back side
+        mes = leftQueue->getCurrentCartesianFrcTrq();
+        frcVal1 = mes.joints(4);
+        cout << "1: " << mes.joints.t() << endl;
+        leftHandJoints = {SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0.3, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
+        leftHand->publishSdhJoints(leftHandJoints);
+        waitRate.sleep();
+        mes = leftQueue->getCurrentCartesianFrcTrq();
+        frcVal2 = mes.joints(4);
+        cout << "1: " << mes.joints.t() << endl;
+        dist1 = abs(frcVal1 - frcVal2);
+        leftHandJoints = openJoints;
+        leftHand->publishSdhJoints(leftHandJoints);
+
+
+        // check front side
+        mes = leftQueue->getCurrentCartesianFrcTrq();
+        frcVal1 = mes.joints(4);
+        cout << "2: " << mes.joints.t() << endl;
+        leftHandJoints = {SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0.6};
+        leftHand->publishSdhJoints(leftHandJoints);
+        waitRate.sleep();
+        mes = leftQueue->getCurrentCartesianFrcTrq();
+        frcVal2 = mes.joints(4);
+        cout << "2: " << mes.joints.t() << endl;
+        dist2 = abs(frcVal1 - frcVal2);
+
+        leftHandJoints = openJoints;
+        leftHand->publishSdhJoints(leftHandJoints);
+
+        if(dist1 < 0.05 && dist2 < 0.05) {
+            cout << "book stable with dists " << dist1 << " " << dist2 << endl;
+            leftHand->setGrasp(eGID_PARALLEL);
+            leftHand->closeHand(0.0, 20);
+            break;
+        } else if(dist1 > dist2) {
+            cout << "forwards with dists " << dist1 << " " << dist2 << endl;
+            relativePose.position.x = +0.0009;
+            for(int i = 0; i < movementDuration; ++i) {
+                currentPose = leftQueue->moveCartesianRelativeWf(currentPose, relativePose);
+                slRate.sleep();
+            }
+        } else if(dist1 < dist2) {
+            cout << "backwards with dists " << dist1 << " " << dist2 << endl;
+            relativePose.position.x = -0.0009;
+            for(int i = 0; i < movementDuration; ++i) {
+                currentPose = leftQueue->moveCartesianRelativeWf(currentPose, relativePose);
+                slRate.sleep();
+            }
+        }
+
+    //    getchar();
+
+    }
+
+    leftQueue->switchMode(OrocosControlQueue::KUKA_STOP_MODE);
+    cout << "done" << endl;
+    getchar();
+    getchar();
+
+
+    /*******************placing book*************************/
+
+    // preparing joint: -1.0587048530578613, 1.879784107208252, 2.1199851036071777, -1.9964550733566284, -1.975645899772644, 1.5456539392471313, 2.5950534343719482
+    // preparing cartesian pose_dir_wf: 0.05717991894543589, 0.8644983475584886, 0.4805854570793575, 0.21734215181578964, -0.9751957397510774, -0.04188762248520789, -1.5343423139861556
+    /* preparing cartesian pose_quat_wf:
+            position:
+              x: 0.0571799189454
+              y: 0.864498347558
+              z: 0.480585457079
+            orientation:
+              x: 0.569213558645
+              y: -0.443778916198
+              z: 0.534112599132
+              w: 0.440204148465
+        preparing cartesian pose_quat_rf:
+            position:
+              x: 0.0571799189454
+              y: 0.864498347558
+              z: 0.480585457079
+            orientation:
+              x: 0.569213558645
+              y: -0.443778916198
+              z: 0.534112599132
+              w: 0.440204148465
+    */
+
+
+
+    // pressing down joint: -0.2579503059387207, 1.8491992950439453, 2.409682512283325, -1.6310813426971436, -2.3986194133758545, 1.8296722173690796, 2.7402396202087402
+    // pressing down cartesian pose_dir_wf: [0.07881880131491087, 0.8291342215107211, 0.22191931766732076, 0.2062804784406847, -0.9781121794204191, -0.027272939377186667, -1.5688184012210034
+    /* pressing down cartesian pose_quat_wf:
+            position:
+              x: 0.0788188013149
+              y: 0.829134221511
+              z: 0.221919317667
+            orientation:
+              x: 0.555722913663
+              y: -0.452557743135
+              z: 0.542491578435
+              w: 0.438253522249
+       pressing down cartesian pose_quat_rf:
+            position:
+              x: -0.540514051914
+              y: -0.154238834977
+              z: 0.424770444632
+            orientation:
+              x: -0.766787623456
+              y: -0.545844270684
+              z: 0.32225782789
+              w: 0.101196749218
 
     /*
 
@@ -231,6 +381,8 @@ int main(int argc, char** args) {
 
     */
 
+
+
     leftQueue->setFinish();
 
     if(CONTROL_RIGHT)
@@ -238,5 +390,7 @@ int main(int argc, char** args) {
 
     lqThread->join();
     rqThread->join();
+
+    return EXIT_SUCCESS;
 
 }

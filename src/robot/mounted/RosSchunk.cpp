@@ -211,7 +211,7 @@ void RosSchunk::closeHand(double percentage, double velocity) {
             hand_pose = generateCentricalPose(percentage);
             break;
         case eGID_CYLINDRICAL:
-            hand_pose = generateParallelPose(percentage);
+            hand_pose = generateCylindricalPose(percentage);
             break;
         case eGID_PARALLEL:
             hand_pose = generateParallelPose(percentage);
