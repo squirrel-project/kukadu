@@ -39,6 +39,10 @@ std::vector<std::string> PlottingControlQueue::getJointNames() {
 
 }
 
+void PlottingControlQueue::setJntPtpThresh(double thresh) {
+
+}
+
 void PlottingControlQueue::run() {
 
     setInitValues();

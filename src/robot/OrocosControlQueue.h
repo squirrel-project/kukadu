@@ -23,6 +23,7 @@
 
 #include <sensor_msgs/JointState.h>
 #include <std_msgs/Int32.h>
+#include <std_msgs/Float64.h>
 #include <std_msgs/Int32MultiArray.h>
 #include <std_msgs/Float64MultiArray.h>
 #include <std_msgs/Float32MultiArray.h>
@@ -106,6 +107,7 @@ private:
     std::string cartPtpReachedTopic;
     std::string cartMoveQueueTopic;
     std::string cartPoseRfTopic;
+    std::string jntSetPtpThreshTopic;
 
     std::string deviceType;
     std::string armPrefix;
@@ -122,6 +124,7 @@ private:
 	
 	ros::Publisher pub_set_cart_stiffness;
 	ros::Publisher pub_set_joint_stiffness;
+    ros::Publisher pub_set_ptp_thresh;
 	
 	ros::Subscriber subJntPos;
 	ros::Subscriber subCartPos;
@@ -151,7 +154,8 @@ public:
     void constructQueue(int argc, char** argv, int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
                         std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
                         std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic,
-                        std::string cartMoveTopic, std::string cartPtpReachedTopic, std::string cartMoveQueueTopic, std::string cartPoseRfTopic, ros::NodeHandle node
+                        std::string cartMoveTopic, std::string cartPtpReachedTopic, std::string cartMoveQueueTopic, std::string cartPoseRfTopic,
+                        std::string setPtpThresh, ros::NodeHandle node
                     );
 	
 	void run();
@@ -164,6 +168,7 @@ public:
     void moveJoints(arma::vec joints);
     void moveCartesian(geometry_msgs::Pose pos);
     void moveCartesianNb(geometry_msgs::Pose pos);
+    void setJntPtpThresh(double thresh);
     geometry_msgs::Pose moveCartesianRelativeWf(geometry_msgs::Pose basePoseRf, geometry_msgs::Pose offset);
 
     void addCartesianPosToQueue(geometry_msgs::Pose pose);

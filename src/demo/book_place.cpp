@@ -1,6 +1,7 @@
 #include "../utils/easyloggingpp/src/easylogging++.h"
 _INITIALIZE_EASYLOGGINGPP
 
+#include <geometry_msgs/Pose.h>
 #include <iostream>
 #include <string>
 #include <armadillo>
@@ -13,10 +14,12 @@ _INITIALIZE_EASYLOGGINGPP
 #define ROBOT_TYPE "simulation"
 #define ROBOT_SIDE "left"
 
-#define CONTROL_RIGHT true
+#define CONTROL_RIGHT false
 
 using namespace std;
+using namespace ros;
 using namespace arma;
+using namespace geometry_msgs;
 namespace po = boost::program_options;
 
 int main(int argc, char** args) {
@@ -104,6 +107,7 @@ int main(int argc, char** args) {
     leftHand->publishSdhJoints(leftHandJoints);
 
     shared_ptr<RosSchunk> rightHand = shared_ptr<RosSchunk>(new RosSchunk(*node, ROBOT_TYPE, "right"));
+    //vector<double> rightHandJoints = {0, -0.5231897140548627, -0.09207113810135568, 0.865287869514727, 1.5399390781924753, -0.6258846012187079, 0.01877915351042305};
     vector<double> rightHandJoints = {0, -0.5238237461313833, 0.2120872918378427, 0.8655742259109377, 1.5389379959387146, -0.6260686922290597, 0.218843743489235877};
     rightHand->publishSdhJoints(rightHandJoints);
 
@@ -129,82 +133,112 @@ int main(int argc, char** args) {
 
     }
 
-    // measured joints were -0.2252   1.3174  -2.1671   0.4912   0.8510  -1.5699   1.0577
-    mes_result currentJoints = leftQueue->getCurrentJoints();
-    cout << currentJoints.joints.t() << endl;
-
-    cout << "(main) place book on expected position (press enter)" << endl;
-    getchar();
-
-//    leftQueue->setStiffness(0.2, 0.01, 0.2, 15000, 150, 2.0);
-    leftQueue->switchMode(OrocosControlQueue::KUKA_JNT_POS_MODE);
+    leftQueue->switchMode(OrocosControlQueue::KUKA_STOP_MODE);
+    leftQueue->switchMode(OrocosControlQueue::KUKA_JNT_IMP_MODE);
     //leftQueue->moveJoints(stdToArmadilloVec({-0.514099, 1.83194, 1.95971, -0.99676, -0.0903862, 0.987185, 1.16542}));
-    leftQueue->moveJoints(stdToArmadilloVec({-0.3990752398967743, 1.7550331354141235, 1.9612526893615723, -0.6003820300102234, -0.05098132789134979, 1.200370192527771, 1.168589472770691}));
 
-    cout << "(main) press key to continue" << endl;
+
+    cout << "(main) preparing to drop (remove this for book peeling again)" << endl;
     getchar();
+    leftQueue->moveJoints(stdToArmadilloVec({-1.0587048530578613, 1.879784107208252, 2.1199851036071777, -1.9964550733566284, -1.975645899772644, 1.5456539392471313, 2.5950534343719482}));
 
-    SensorData dat(trajFile);
-    TrajectoryDMPLearner learner(az, bz, dat.getRange(0, 8));
-    Dmp leftDmp = learner.fitTrajectories();
-    DMPExecutor leftExecutor(leftDmp, leftQueue);
-    leftExecutor.executeTrajectory(ac, 0, leftDmp.getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
-
-    // first finger
-
-    cout << "(main) ready to move first finger? (press enter)" << endl;
+    cout << "(main) finally grasp it?";
     getchar();
-
-    leftHandJoints = {0, -0.38705404571511043, 0.7258474179992682, -0.2, -0.9, -0.8303327436948519, 0.8185967300722126};
+    leftHandJoints = {0, 0, 0.5, -0.2, -0.9, 0, 0.5};
     leftHand->publishSdhJoints(leftHandJoints);
 
-    leftHandJoints = {0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, -0.8303327436948519, 0};
-    leftHand->publishSdhJoints(leftHandJoints);
+    //leftQueue->switchMode(OrocosControlQueue::KUKA_STOP_MODE);
+    //leftQueue->switchMode(OrocosControlQueue::KUKA_JNT_IMP_MODE);
+    cout << "(main) dropping book" << endl;
+    leftQueue->moveJoints(stdToArmadilloVec({-0.3186831772327423, 1.877084493637085, 2.4300241470336914, -1.6613903045654297, -2.41784930229187, 1.776635766029358, 2.6922547817230225}));
 
-    leftHandJoints = {0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, -0.3303327436948519, 0};
+    cout << "(main) opening fingers" << endl;
+    vector<double> openJoints = leftHandJoints = {0, -0.48705404571511043, 0.7258474179992682, -0.650410616072391092, 0.5, -0.5303327436948519, 0.8185967300722126};
     leftHand->publishSdhJoints(leftHandJoints);
-
-    leftHandJoints = {0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, -0.3303327436948519, 1.285967300722126};
-    leftHand->publishSdhJoints(leftHandJoints);
-
-    cout << "(main) ready to move second finger? (press enter)" << endl;
     getchar();
-
-    // second finger follows
-    leftHandJoints = {0, -0.9303327436948519, 0.8185967300722126, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
-    leftHand->publishSdhJoints(leftHandJoints);
-
-    leftHandJoints = {0, -0.8303327436948519, 0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
-    leftHand->publishSdhJoints(leftHandJoints);
-
-    leftHandJoints = {0, 0, 0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
-    leftHand->publishSdhJoints(leftHandJoints);
-
-    leftHandJoints = {0, 0, 0.5, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
-    leftHand->publishSdhJoints(leftHandJoints);
-
-    // first finger again
-    leftHandJoints = {0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, -0.9303327436948519, 0.8185967300722126};
-    leftHand->publishSdhJoints(leftHandJoints);
-
-    leftHandJoints = {0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, -0.8303327436948519, 0};
-    leftHand->publishSdhJoints(leftHandJoints);
-
-    leftHandJoints = {0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0, 0};
-    leftHand->publishSdhJoints(leftHandJoints);
-
-    leftHandJoints = {0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0, 0.5};
-    leftHand->publishSdhJoints(leftHandJoints);
-
-    cout << "(main) finally grasp it? (press enter)";
+    leftQueue->switchMode(OrocosControlQueue::KUKA_STOP_MODE);
+    cout << "(main) starting fine grained placement" << endl;
     getchar();
-    leftHandJoints = {SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
-    leftHand->publishSdhJoints(leftHandJoints);
+    leftQueue->switchMode(OrocosControlQueue::KUKA_CART_IMP_MODE);
 
-    cout << "(main) press a key to lift it (press enter)" << endl;
-    getchar();
+    cout << "(main) start moving" << endl;
 
-    leftQueue->moveJoints(stdToArmadilloVec({-0.9291561841964722, 1.9066647291183472, 1.9648972749710083, -0.949062168598175, -0.10840536653995514, 1.199838638305664, 1.1655352115631104}));
+    int movementDuration = 70;
+    double frcVal1, frcVal2, dist1, dist2;
+    mes_result mes;
+    Pose currentPose = leftQueue->getCartesianPoseRf();
+    Pose relativePose;
+    relativePose.position.x = 0.0009; relativePose.position.y = relativePose.position.z = 0.0;
+    Rate slRate(20);
+    Rate waitRate(0.5);
+    int stableCount = 0;
+    while(1) {
+
+        // check back side
+        mes = leftQueue->getCurrentCartesianFrcTrq();
+        frcVal1 = mes.joints(4);
+        cout << "1: " << mes.joints.t() << endl;
+        leftHandJoints = {SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0.3, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
+        leftHand->publishSdhJoints(leftHandJoints);
+        waitRate.sleep();
+        mes = leftQueue->getCurrentCartesianFrcTrq();
+        frcVal2 = mes.joints(4);
+        cout << "1: " << mes.joints.t() << endl;
+        dist1 = abs(frcVal1 - frcVal2);
+        leftHandJoints = openJoints;
+        leftHand->publishSdhJoints(leftHandJoints);
+
+
+        // check front side
+        mes = leftQueue->getCurrentCartesianFrcTrq();
+        frcVal1 = mes.joints(4);
+        cout << "2: " << mes.joints.t() << endl;
+        leftHandJoints = {SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0.6};
+        leftHand->publishSdhJoints(leftHandJoints);
+        waitRate.sleep();
+        mes = leftQueue->getCurrentCartesianFrcTrq();
+        frcVal2 = mes.joints(4);
+        cout << "2: " << mes.joints.t() << endl;
+        dist2 = abs(frcVal1 - frcVal2);
+
+        leftHandJoints = openJoints;
+        leftHand->publishSdhJoints(leftHandJoints);
+
+        if(dist1 < 0.05 && dist2 < 0.05) {
+            cout << "book stable with dists " << dist1 << " " << dist2 << endl;
+
+            if(++stableCount == 3) {
+                leftHand->setGrasp(eGID_PARALLEL);
+                leftHand->closeHand(0.0, 20);
+                break;
+            }
+
+        } else if(dist1 > dist2) {
+            cout << "forwards with dists " << dist1 << " " << dist2 << endl;
+            relativePose.position.x = +0.0009;
+
+            for(int i = 0; i < movementDuration; ++i) {
+                currentPose = leftQueue->moveCartesianRelativeWf(currentPose, relativePose);
+                slRate.sleep();
+            }
+        } else if(dist1 < dist2) {
+            cout << "backwards with dists " << dist1 << " " << dist2 << endl;
+            relativePose.position.x = -0.0009;
+
+            for(int i = 0; i < movementDuration; ++i) {
+                currentPose = leftQueue->moveCartesianRelativeWf(currentPose, relativePose);
+                slRate.sleep();
+            }
+
+        }
+
+    //    getchar();
+
+    }
+
+    leftQueue->switchMode(OrocosControlQueue::KUKA_STOP_MODE);
+    cout << "done" << endl;
+
     leftQueue->setFinish();
 
     if(CONTROL_RIGHT)
@@ -212,5 +246,7 @@ int main(int argc, char** args) {
 
     lqThread->join();
     rqThread->join();
+
+    return EXIT_SUCCESS;
 
 }

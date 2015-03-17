@@ -107,6 +107,7 @@ public:
 	bool isInitialized();
 	void safelyDestroy();
 	void setInitValues();
+    void setJntPtpThresh(double thresh);
 
     std::string getRobotName();
     std::string getRobotFileName();

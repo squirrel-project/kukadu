@@ -7,7 +7,7 @@ using namespace arma;
 void OrocosControlQueue::constructQueue(int argc, char** argv, int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
                     std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
                     std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic,
-                    std::string cartMoveTopic, std::string cartPtpReachedTopic, std::string cartMoveQueueTopic, std::string cartPoseRfTopic, ros::NodeHandle node
+                    std::string cartMoveTopic, std::string cartPtpReachedTopic, std::string cartMoveQueueTopic, std::string cartPoseRfTopic, std::string jntSetPtpThreshTopic, ros::NodeHandle node
                 ) {
 
     set_ctrlc_exit_handler();
@@ -39,6 +39,7 @@ void OrocosControlQueue::constructQueue(int argc, char** argv, int sleepTime, st
     this->cartMoveTopic = cartMoveTopic;
     this->cartPtpReachedTopic = cartPtpReachedTopic;
     this->cartMoveQueueTopic = cartMoveQueueTopic;
+    this->jntSetPtpThreshTopic = jntSetPtpThreshTopic;
 
     monComMode = -1;
     impMode = -1;
@@ -67,6 +68,7 @@ void OrocosControlQueue::constructQueue(int argc, char** argv, int sleepTime, st
     pub_set_joint_stiffness = node.advertise<iis_kukie::FriJointImpedance>(jntStiffnessTopic, 1);
     pubCartPtp = node.advertise<geometry_msgs::Pose>(cartMoveTopic, 1);
     pubCartMoveQueue = node.advertise<geometry_msgs::Pose>(cartMoveQueueTopic, 1);
+    pub_set_ptp_thresh = node.advertise<std_msgs::Float64>(jntSetPtpThreshTopic, 1);
 
     pubCommand = node.advertise<std_msgs::Float64MultiArray>(commandTopic, 10);
     pubSwitchMode = node.advertise<std_msgs::Int32>(switchModeTopic, 1);
@@ -94,6 +96,7 @@ OrocosControlQueue::OrocosControlQueue(int argc, char** argv, int sleepTime, std
     cartPtpReachedTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/ptp_reached";
     cartMoveQueueTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/move";
     cartPoseRfTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/get_pose_rf";
+    jntSetPtpThreshTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/set_ptp_thresh";
     addLoadTopic = "not supported yet";
 
     this->deviceType = deviceType;
@@ -101,7 +104,7 @@ OrocosControlQueue::OrocosControlQueue(int argc, char** argv, int sleepTime, std
 
     constructQueue(argc, argv, sleepTime, commandTopic, retJointPosTopic, switchModeTopic, retCartPosTopic, stiffnessTopic,
                    jntStiffnessTopic, ptpTopic, commandStateTopic, ptpReachedTopic, addLoadTopic, jntFrcTrqTopic, cartFrcTrqTopic,
-                   cartMoveTopic, cartPtpReachedTopic, cartMoveQueueTopic, cartPoseRfTopic, node);
+                   cartMoveTopic, cartPtpReachedTopic, cartMoveQueueTopic, cartPoseRfTopic, jntSetPtpThreshTopic, node);
 
 }
 
@@ -115,6 +118,12 @@ void OrocosControlQueue::cartPosRfCallback(const geometry_msgs::Pose msg) {
 
 geometry_msgs::Pose OrocosControlQueue::getCartesianPoseRf() {
     return currentCartPoseRf;
+}
+
+void OrocosControlQueue::setJntPtpThresh(double thresh) {
+    std_msgs::Float64 th;
+    th.data = thresh;
+    pub_set_ptp_thresh.publish(th);
 }
 
 // relative pos in worldframe

@@ -153,6 +153,8 @@ public:
     virtual mes_result getCurrentJntFrcTrq() = 0;
 
     virtual mes_result getCurrentCartesianFrcTrq() = 0;
+
+    virtual void setJntPtpThresh(double thresh) = 0;
 	
 	/**
 	 * \brief Returns true if the command mode initialization is done
