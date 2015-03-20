@@ -55,12 +55,7 @@ private:
     // emergency solution for now (move topic expects commands in robot frame)
     // --> moving it to an approximately align coordinate sytem and do transformations there
     double leftW2RTM[4][4];
-
-    double leftR2WTM[4][4] = {
-                    {-0.879651, 0.336431, 0.336196, -0.492322},
-                    {0.426848, 0.246623, 0.870044, 0.754155},
-                    {0.209797, 0.90884, -0.360547, 0.629509},
-                    {0.0000, -0.0000, -0.0000, 1.0000}};
+    double leftR2WTM[4][4];
 	
 	int sleepTime;
 	int finish;

@@ -10,6 +10,23 @@ void OrocosControlQueue::constructQueue(int argc, char** argv, int sleepTime, st
                     std::string cartMoveTopic, std::string cartPtpReachedTopic, std::string cartMoveQueueTopic, std::string cartPoseRfTopic, std::string jntSetPtpThreshTopic, ros::NodeHandle node
                 ) {
 
+    leftR2WTM[0][0] = -0.879651;
+    leftR2WTM[0][1] = 0.336431;
+    leftR2WTM[0][2] = 0.336196;
+    leftR2WTM[0][3] = -0.492322;
+    leftR2WTM[1][0] = 0.426848;
+    leftR2WTM[1][1] = 0.246623;
+    leftR2WTM[1][2] = 0.870044;
+    leftR2WTM[1][3] = 0.754155;
+    leftR2WTM[2][0] = 0.209797;
+    leftR2WTM[2][1] = 0.90884;
+    leftR2WTM[2][2] = -0.360547;
+    leftR2WTM[2][3] = 0.629509;
+    leftR2WTM[3][0] = 0.0000;
+    leftR2WTM[3][1] = -0.0000;
+    leftR2WTM[3][2] = -0.0000;
+    leftR2WTM[3][3] = 1.0000;
+
     set_ctrlc_exit_handler();
 
     mat vecLeftR2WTM(4, 4);
