@@ -107,7 +107,7 @@ int main(int argc, char** args) {
     vector<double> rightHandJoints = {0, -0.5238237461313833, 0.2120872918378427, 0.8655742259109377, 1.5389379959387146, -0.6260686922290597, 0.218843743489235877};
     rightHand->publishSdhJoints(rightHandJoints);
 
-    shared_ptr<OrocosControlQueue> leftQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, ROBOT_TYPE, ROBOT_SIDE + string("_arm"), *node));
+    shared_ptr<OrocosControlQueue> leftQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(kukaStepWaitTime, ROBOT_TYPE, ROBOT_SIDE + string("_arm"), *node));
     shared_ptr<thread> lqThread = leftQueue->startQueueThread();
 
     shared_ptr<OrocosControlQueue> rightQueue = nullptr;
@@ -115,7 +115,7 @@ int main(int argc, char** args) {
 
     if(CONTROL_RIGHT) {
 
-        rightQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, ROBOT_TYPE, "right_arm", *node));
+        rightQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(kukaStepWaitTime, ROBOT_TYPE, "right_arm", *node));
         rqThread = rightQueue->startQueueThread();
 
     }
@@ -144,8 +144,8 @@ int main(int argc, char** args) {
     cout << "(main) press key to continue" << endl;
     getchar();
 
-    SensorData dat(trajFile);
-    TrajectoryDMPLearner learner(az, bz, dat.getRange(0, 8));
+    shared_ptr<SensorData> dat = SensorStorage::readStorage(leftQueue, trajFile);
+    TrajectoryDMPLearner learner(az, bz, dat->getRange(0, 8));
     Dmp leftDmp = learner.fitTrajectories();
     DMPExecutor leftExecutor(leftDmp, leftQueue);
     leftExecutor.executeTrajectory(ac, 0, leftDmp.getTmax(), dmpStepSize, tolAbsErr, tolRelErr);

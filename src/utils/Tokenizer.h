@@ -35,8 +35,11 @@ public:
     void setDelimiter(const std::string& delimiter);    // set delimiter string only
 
     std::string next();                                 // return the next token, return "" if it ends
+    void putBackLast();
 
     std::vector<std::string> split();                   // return array of tokens from current cursor
+
+    int getTokenIdx();
 
 protected:
 
@@ -49,6 +52,10 @@ private:
     std::string token;                                  // output string
     std::string delimiter;                              // delimiter string
     std::string::const_iterator currPos;                // string iterator pointing the current position
+    std::string lastToken;
+
+    int tokenIdx;
+    bool useLastToken;
 
 };
 

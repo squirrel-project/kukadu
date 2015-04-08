@@ -10,17 +10,38 @@ SensorData::SensorData(std::vector<std::string> labels, arma::mat values) {
 
 }
 
-SensorData::SensorData(std::string file) {
+SensorData::SensorData(std::string timeLabel, std::vector<std::string> jointPosLabels, std::vector<std::string> jointFrcLabels, std::vector<std::string> cartPosLabels,
+           std::vector<std::string> cartFrcTrqLabels, arma::vec time, arma::mat jointPos, arma::mat jointFrc, arma::mat cartPos, arma::mat cartFrcTrq) {
 
-    readStorage(file);
+    this->jointPosLabels = jointPosLabels;
+    this->jointFrcLabels = jointPosLabels;
+    this->cartPosLabels = cartPosLabels;
+    this->cartFrcTrqLabels = cartFrcTrqLabels;
 
-}
+    labels.push_back(timeLabel);
+    for(int i = 0; i < jointPosLabels.size(); ++i)
+        labels.push_back(jointPosLabels.at(i));
 
-void SensorData::readStorage(std::string file) {
+    for(int i = 0; i < jointFrcLabels.size(); ++i)
+        labels.push_back(jointFrcLabels.at(i));
 
-    pair<vector<string>, mat> storage = readSensorStorage(file);
-    labels = storage.first;
-    values = storage.second;
+    for(int i = 0; i < cartPosLabels.size(); ++i)
+        labels.push_back(cartPosLabels.at(i));
+
+    for(int i = 0; i < cartFrcTrqLabels.size(); ++i)
+        labels.push_back(cartFrcTrqLabels.at(i));
+
+    if(jointPosLabels.size() > 0)
+        values = armaJoinRows(time, jointPos);
+
+    if(jointFrcLabels.size() > 0)
+        values = armaJoinRows(values, jointFrc);
+
+    if(cartPosLabels.size() > 0)
+        values = armaJoinRows(values, cartPos);
+
+    if(cartFrcTrqLabels.size() > 0)
+        values = armaJoinRows(values, cartFrcTrq);
 
 }
 
@@ -90,4 +111,56 @@ arma::mat SensorData::getRange(int startIdx, int endIdx) {
 
     return getRange(rangeVec);
 
+}
+
+arma::vec SensorData::getTimes() {
+    return values.col(0);
+}
+
+arma::mat SensorData::getJointPos() {
+    return values.cols(1, 1 + jointPosLabels.size() - 1);
+}
+
+arma::mat SensorData::getJointForces() {
+    return values.cols(1 + jointPosLabels.size(), 1 + jointPosLabels.size() + jointFrcLabels.size() - 1);
+}
+
+arma::mat SensorData::cartPos() {
+    return values.cols(1 + jointPosLabels.size() + jointFrcLabels.size(), 1 + jointPosLabels.size() + jointFrcLabels.size() + cartPosLabels.size() - 1);
+}
+
+arma::mat SensorData::cartFrcTrqs() {
+    return values.cols(1 + jointPosLabels.size() + jointFrcLabels.size() + cartPosLabels.size(), 1 + jointPosLabels.size() + jointFrcLabels.size() + cartPosLabels.size() + cartFrcTrqLabels.size() - 1);
+}
+
+double SensorData::getTime(int rowIdx) {
+    return values(rowIdx, 0);
+}
+
+arma::vec SensorData::getJointPosRow(int rowIdx) {
+    vec retVal(jointPosLabels.size());
+    for(int i = 0; i < jointPosLabels.size(); ++i)
+        retVal(i) = values(rowIdx, i + 1);
+    return retVal;
+}
+
+arma::vec SensorData::getJointForcesRow(int rowIdx) {
+    vec retVal(jointFrcLabels.size());
+    for(int i = 0; i < jointFrcLabels.size(); ++i)
+        retVal(i) = values(rowIdx, i + 1 + jointPosLabels.size());
+    return retVal;
+}
+
+arma::vec SensorData::cartPosRow(int rowIdx) {
+    vec retVal(cartPosLabels.size());
+    for(int i = 0; i < cartPosLabels.size(); ++i)
+        retVal(i) = values(rowIdx, i + 1 + jointPosLabels.size() + jointFrcLabels.size());
+    return retVal;
+}
+
+arma::vec SensorData::cartFrcTrqsRow(int rowIdx) {
+    vec retVal(cartFrcTrqLabels.size());
+    for(int i = 0; i < cartFrcTrqLabels.size(); ++i)
+        retVal(i) = values(rowIdx, i + 1 + jointPosLabels.size() + jointFrcLabels.size() + cartPosLabels.size());
+    return retVal;
 }

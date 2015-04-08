@@ -11,7 +11,7 @@ _INITIALIZE_EASYLOGGINGPP
 
 #include "../../include/kukadu.h"
 
-#define ROBOT_TYPE "simulation"
+#define ROBOT_TYPE "real"
 #define ROBOT_SIDE "left"
 
 #define CONTROL_RIGHT false
@@ -111,7 +111,7 @@ int main(int argc, char** args) {
     vector<double> rightHandJoints = {0, -0.5238237461313833, 0.2120872918378427, 0.8655742259109377, 1.5389379959387146, -0.6260686922290597, 0.218843743489235877};
     rightHand->publishSdhJoints(rightHandJoints);
 
-    shared_ptr<OrocosControlQueue> leftQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, ROBOT_TYPE, ROBOT_SIDE + string("_arm"), *node));
+    shared_ptr<OrocosControlQueue> leftQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(kukaStepWaitTime, ROBOT_TYPE, ROBOT_SIDE + string("_arm"), *node));
     shared_ptr<thread> lqThread = leftQueue->startQueueThread();
 
     shared_ptr<OrocosControlQueue> rightQueue = nullptr;
@@ -119,12 +119,14 @@ int main(int argc, char** args) {
 
     if(CONTROL_RIGHT) {
 
-        rightQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, ROBOT_TYPE, "right_arm", *node));
+        rightQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(kukaStepWaitTime, ROBOT_TYPE, "right_arm", *node));
         rqThread = rightQueue->startQueueThread();
 
     }
 
     usleep(1e6);
+
+    leftQueue->setJntPtpThresh(2.5);
 
     if(CONTROL_RIGHT) {
 
@@ -135,29 +137,25 @@ int main(int argc, char** args) {
 
     leftQueue->switchMode(OrocosControlQueue::KUKA_STOP_MODE);
     leftQueue->switchMode(OrocosControlQueue::KUKA_JNT_IMP_MODE);
-    //leftQueue->moveJoints(stdToArmadilloVec({-0.514099, 1.83194, 1.95971, -0.99676, -0.0903862, 0.987185, 1.16542}));
 
-
-    cout << "(main) preparing to drop (remove this for book peeling again)" << endl;
+    cout << "(main) preparing to grasp (press key)" << endl;
     getchar();
     leftQueue->moveJoints(stdToArmadilloVec({-1.0587048530578613, 1.879784107208252, 2.1199851036071777, -1.9964550733566284, -1.975645899772644, 1.5456539392471313, 2.5950534343719482}));
 
-    cout << "(main) finally grasp it?";
+    cout << "(main) finally grasp it? (press key)";
     getchar();
     leftHandJoints = {0, 0, 0.5, -0.2, -0.9, 0, 0.5};
     leftHand->publishSdhJoints(leftHandJoints);
 
-    //leftQueue->switchMode(OrocosControlQueue::KUKA_STOP_MODE);
-    //leftQueue->switchMode(OrocosControlQueue::KUKA_JNT_IMP_MODE);
     cout << "(main) dropping book" << endl;
     leftQueue->moveJoints(stdToArmadilloVec({-0.3186831772327423, 1.877084493637085, 2.4300241470336914, -1.6613903045654297, -2.41784930229187, 1.776635766029358, 2.6922547817230225}));
 
-    cout << "(main) opening fingers" << endl;
+    cout << "(main) opening fingers (press key)" << endl;
     vector<double> openJoints = leftHandJoints = {0, -0.48705404571511043, 0.7258474179992682, -0.650410616072391092, 0.5, -0.5303327436948519, 0.8185967300722126};
     leftHand->publishSdhJoints(leftHandJoints);
     getchar();
     leftQueue->switchMode(OrocosControlQueue::KUKA_STOP_MODE);
-    cout << "(main) starting fine grained placement" << endl;
+    cout << "(main) starting fine grained placement (press key)" << endl;
     getchar();
     leftQueue->switchMode(OrocosControlQueue::KUKA_CART_IMP_MODE);
 
@@ -172,13 +170,14 @@ int main(int argc, char** args) {
     Rate slRate(20);
     Rate waitRate(0.5);
     int stableCount = 0;
+    double moveAbs = 0.0014;
     while(1) {
 
         // check back side
         mes = leftQueue->getCurrentCartesianFrcTrq();
         frcVal1 = mes.joints(4);
         cout << "1: " << mes.joints.t() << endl;
-        leftHandJoints = {SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0.3, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
+        leftHandJoints = {SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, -0.8, 0.3, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
         leftHand->publishSdhJoints(leftHandJoints);
         waitRate.sleep();
         mes = leftQueue->getCurrentCartesianFrcTrq();
@@ -193,7 +192,7 @@ int main(int argc, char** args) {
         mes = leftQueue->getCurrentCartesianFrcTrq();
         frcVal1 = mes.joints(4);
         cout << "2: " << mes.joints.t() << endl;
-        leftHandJoints = {SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0.6};
+        leftHandJoints = {SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, -0.7, 0.6};
         leftHand->publishSdhJoints(leftHandJoints);
         waitRate.sleep();
         mes = leftQueue->getCurrentCartesianFrcTrq();
@@ -204,7 +203,7 @@ int main(int argc, char** args) {
         leftHandJoints = openJoints;
         leftHand->publishSdhJoints(leftHandJoints);
 
-        if(dist1 < 0.05 && dist2 < 0.05) {
+        if(dist1 < 0.07 && dist2 < 0.07) {
             cout << "book stable with dists " << dist1 << " " << dist2 << endl;
 
             if(++stableCount == 3) {
@@ -215,7 +214,7 @@ int main(int argc, char** args) {
 
         } else if(dist1 > dist2) {
             cout << "forwards with dists " << dist1 << " " << dist2 << endl;
-            relativePose.position.x = +0.0009;
+            relativePose.position.x = moveAbs;
 
             for(int i = 0; i < movementDuration; ++i) {
                 currentPose = leftQueue->moveCartesianRelativeWf(currentPose, relativePose);
@@ -223,7 +222,7 @@ int main(int argc, char** args) {
             }
         } else if(dist1 < dist2) {
             cout << "backwards with dists " << dist1 << " " << dist2 << endl;
-            relativePose.position.x = -0.0009;
+            relativePose.position.x = -moveAbs;
 
             for(int i = 0; i < movementDuration; ++i) {
                 currentPose = leftQueue->moveCartesianRelativeWf(currentPose, relativePose);
@@ -237,8 +236,11 @@ int main(int argc, char** args) {
     }
 
     leftQueue->switchMode(OrocosControlQueue::KUKA_STOP_MODE);
+    leftQueue->switchMode(OrocosControlQueue::KUKA_JNT_IMP_MODE);
+    leftQueue->moveJoints(stdToArmadilloVec({-1.032808542251587, 1.772948980331421, 2.3052618503570557, -1.9651068449020386, -1.8061085939407349, 1.7254467010498047, 2.702965259552002}));
     cout << "done" << endl;
 
+    leftQueue->switchMode(OrocosControlQueue::KUKA_STOP_MODE);
     leftQueue->setFinish();
 
     if(CONTROL_RIGHT)

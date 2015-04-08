@@ -112,8 +112,8 @@ int main(int argc, char** args) {
 
     int kukaStepWaitTime = dmpStepSize * 1e6;
     shared_ptr<ControlQueue> simulationQueue = shared_ptr<ControlQueue>(new PlottingControlQueue(7, kukaStepWaitTime));
-    holderQueue = shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, simPrefix, "right_arm", *node));
-    shared_ptr<ControlQueue> executionQueue = shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, simPrefix, "left_arm", *node));
+    holderQueue = shared_ptr<ControlQueue>(new OrocosControlQueue(kukaStepWaitTime, simPrefix, "right_arm", *node));
+    shared_ptr<ControlQueue> executionQueue = shared_ptr<ControlQueue>(new OrocosControlQueue(kukaStepWaitTime, simPrefix, "left_arm", *node));
     shared_ptr<Gnuplot> g1;
     shared_ptr<thread> switchThr;
 

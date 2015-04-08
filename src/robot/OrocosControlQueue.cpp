@@ -4,7 +4,7 @@
 using namespace std;
 using namespace arma;
 
-void OrocosControlQueue::constructQueue(int argc, char** argv, int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
+void OrocosControlQueue::constructQueue(int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
                     std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
                     std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic,
                     std::string cartMoveTopic, std::string cartPtpReachedTopic, std::string cartMoveQueueTopic, std::string cartPoseRfTopic, std::string jntSetPtpThreshTopic, ros::NodeHandle node
@@ -63,9 +63,6 @@ void OrocosControlQueue::constructQueue(int argc, char** argv, int sleepTime, st
     ptpReached = 0;
     cartesianPtpReached = 0;
 
-    this->argc = argc;
-    this->argv = argv;
-
     setInitValues();
     startingJoints = arma::vec(1);
     currentJntFrqTrq = arma::vec(1);
@@ -96,7 +93,7 @@ void OrocosControlQueue::constructQueue(int argc, char** argv, int sleepTime, st
 
 }
 
-OrocosControlQueue::OrocosControlQueue(int argc, char** argv, int sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node) : ControlQueue(LBR_MNJ) {
+OrocosControlQueue::OrocosControlQueue(int sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node) : ControlQueue(LBR_MNJ) {
 
     commandTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/move";
     retJointPosTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/get_state";
@@ -119,7 +116,7 @@ OrocosControlQueue::OrocosControlQueue(int argc, char** argv, int sleepTime, std
     this->deviceType = deviceType;
     this->armPrefix = armPrefix;
 
-    constructQueue(argc, argv, sleepTime, commandTopic, retJointPosTopic, switchModeTopic, retCartPosTopic, stiffnessTopic,
+    constructQueue(sleepTime, commandTopic, retJointPosTopic, switchModeTopic, retCartPosTopic, stiffnessTopic,
                    jntStiffnessTopic, ptpTopic, commandStateTopic, ptpReachedTopic, addLoadTopic, jntFrcTrqTopic, cartFrcTrqTopic,
                    cartMoveTopic, cartPtpReachedTopic, cartMoveQueueTopic, cartPoseRfTopic, jntSetPtpThreshTopic, node);
 

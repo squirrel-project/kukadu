@@ -141,7 +141,7 @@ int main(int argc, char** args) {
     std::shared_ptr<std::thread> raThr = std::shared_ptr<std::thread>(nullptr);
 
     // execute guided measurement
-    laQueue = std::shared_ptr<OrocosControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, prefix, hardware, *node));
+    laQueue = std::shared_ptr<OrocosControlQueue>(new OrocosControlQueue(kukaStepWaitTime, prefix, hardware, *node));
 
     laQueue->stopCurrentMode();
     raThr = laQueue->startQueueThread();

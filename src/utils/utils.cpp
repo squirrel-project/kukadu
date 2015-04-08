@@ -793,6 +793,39 @@ arma::mat fillTrajectoryMatrix(arma::mat joints, double tMax) {
 
 }
 
+arma::mat armaJoinRows(arma::vec v1, arma::mat m2) {
+
+    if(v1.n_elem != m2.n_rows)
+        throw "(armaJoinRows) matrix dimensions do not match";
+
+    arma::mat retMat(m2.n_rows, 1 + m2.n_cols);
+    for(int i = 0; i < m2.n_rows; ++i) {
+        retMat(i, 0) = v1(i);
+        for(int j = 0; j < m2.n_cols; ++j)
+            retMat(i, 1 + j) = m2(i, j);
+    }
+
+    return retMat;
+
+}
+
+arma::mat armaJoinRows(arma::mat m1, arma::mat m2) {
+
+    if(m1.n_rows != m2.n_rows)
+        throw "(armaJoinRows) matrix dimensions do not match";
+
+    arma::mat retMat(m1.n_rows, m1.n_cols + m2.n_cols);
+    for(int i = 0; i < m1.n_rows; ++i) {
+        for(int j = 0; j < m1.n_cols; ++j)
+            retMat(i, j) = m1(i, j);
+        for(int j = 0; j < m2.n_cols; ++j)
+            retMat(i, m1.n_cols + j) = m2(i, j);
+    }
+
+    return retMat;
+
+}
+
 void set_ctrlc_exit_handler() {
     struct sigaction sigIntHandler;
     sigIntHandler.sa_handler = exit_handler;

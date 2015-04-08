@@ -112,4 +112,7 @@ t_executor_res executeDemo(std::shared_ptr<ControlQueue> movementQu, std::string
 void set_ctrlc_exit_handler();
 void exit_handler(int s);
 
+arma::mat armaJoinRows(arma::vec v1, arma::mat m2);
+arma::mat armaJoinRows(arma::mat m1, arma::mat m2);
+
 #endif

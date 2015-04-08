@@ -59,16 +59,12 @@ private:
 	
 	int sleepTime;
 	int finish;
-	int isInit;
-	int argc;
-	
+	int isInit;	
     int ptpReached;
     int cartesianPtpReached;
 	int monComMode;
 	int impMode;
 	int currentMode;
-	
-	char** argv;
 	
     arma::vec startingJoints;
     arma::vec currentJoints;
@@ -144,9 +140,9 @@ private:
 
 public:
 
-    OrocosControlQueue(int argc, char** argv, int sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node);
+    OrocosControlQueue(int sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node);
 
-    void constructQueue(int argc, char** argv, int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
+    void constructQueue(int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
                         std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
                         std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic,
                         std::string cartMoveTopic, std::string cartPtpReachedTopic, std::string cartMoveQueueTopic, std::string cartPoseRfTopic,
