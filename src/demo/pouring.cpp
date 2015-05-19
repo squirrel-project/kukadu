@@ -109,6 +109,7 @@ int main(int argc, char** args) {
     cout << "all loaded" << endl;
 
     ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
+    cout << "ros connection initialized" << endl;
 
     int kukaStepWaitTime = dmpStepSize * 1e6;
     shared_ptr<ControlQueue> simulationQueue = shared_ptr<ControlQueue>(new PlottingControlQueue(7, kukaStepWaitTime));

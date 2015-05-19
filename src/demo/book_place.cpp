@@ -11,7 +11,7 @@ _INITIALIZE_EASYLOGGINGPP
 
 #include "../../include/kukadu.h"
 
-#define ROBOT_TYPE "real"
+#define ROBOT_TYPE "simulation"
 #define ROBOT_SIDE "left"
 
 #define CONTROL_RIGHT false
@@ -101,6 +101,7 @@ int main(int argc, char** args) {
     int kukaStepWaitTime = dmpStepSize * 1e6;
 
     ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
+    cout << "ros connection initialized" << endl;
 
     shared_ptr<RosSchunk> leftHand = shared_ptr<RosSchunk>(new RosSchunk(*node, ROBOT_TYPE, ROBOT_SIDE));
     vector<double> leftHandJoints = {0, -0.38705404571511043, 0.7258474179992682, 0.010410616072391092, -1.2259735578027993, -0.4303327436948519, 0.8185967300722126};
@@ -164,13 +165,14 @@ int main(int argc, char** args) {
     int movementDuration = 70;
     double frcVal1, frcVal2, dist1, dist2;
     mes_result mes;
-    Pose currentPose = leftQueue->getCartesianPoseRf();
+    Pose currentPose = leftQueue->getCartesianPose();
     Pose relativePose;
     relativePose.position.x = 0.0009; relativePose.position.y = relativePose.position.z = 0.0;
     Rate slRate(20);
     Rate waitRate(0.5);
     int stableCount = 0;
     double moveAbs = 0.0014;
+
     while(1) {
 
         // check back side
@@ -213,6 +215,7 @@ int main(int argc, char** args) {
             }
 
         } else if(dist1 > dist2) {
+
             cout << "forwards with dists " << dist1 << " " << dist2 << endl;
             relativePose.position.x = moveAbs;
 
@@ -220,7 +223,9 @@ int main(int argc, char** args) {
                 currentPose = leftQueue->moveCartesianRelativeWf(currentPose, relativePose);
                 slRate.sleep();
             }
+
         } else if(dist1 < dist2) {
+
             cout << "backwards with dists " << dist1 << " " << dist2 << endl;
             relativePose.position.x = -moveAbs;
 

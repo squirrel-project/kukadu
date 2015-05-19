@@ -20,6 +20,7 @@
 #include "../src/robot/mounted/RosSchunk.h"
 #include "../src/robot/ControlQueue.h"
 #include "../src/robot/SensorStorage.h"
+#include "../src/robot/KukieSimulator.h"
 #include "../src/trajectory/DMPExecutor.h"
 #include "../src/trajectory/DMPTrajectoryGenerator.h"
 #include "../src/trajectory/PolyTrajectoryGenerator.h"

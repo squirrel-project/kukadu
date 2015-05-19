@@ -30,13 +30,13 @@
 #include <std_msgs/MultiArrayDimension.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Wrench.h>
-#include <iis_kukie/CartesianImpedance.h>
-#include <iis_kukie/FriJointCommand.h>
-#include <iis_kukie/FriJointImpedance.h>
-#include <iis_kukie/FriJointState.h>
-#include <iis_kukie/FriRobotData.h>
-#include <iis_kukie/FriRobotJntData.h>
-#include <iis_kukie/KukieError.h>
+#include <iis_robot_dep/CartesianImpedance.h>
+#include <iis_robot_dep/FriJointCommand.h>
+#include <iis_robot_dep/FriJointImpedance.h>
+#include <iis_robot_dep/FriJointState.h>
+#include <iis_robot_dep/FriRobotData.h>
+#include <iis_robot_dep/FriRobotJntData.h>
+#include <iis_robot_dep/KukieError.h>
 #include <RedundantKin.h>
 
 #define COMMAND_NOT_SET -100
@@ -51,11 +51,6 @@
 class OrocosControlQueue : public ControlQueue {
 
 private:
-
-    // emergency solution for now (move topic expects commands in robot frame)
-    // --> moving it to an approximately align coordinate sytem and do transformations there
-    double leftW2RTM[4][4];
-    double leftR2WTM[4][4];
 	
 	int sleepTime;
 	int finish;
@@ -94,9 +89,10 @@ private:
 	std::string addLoadTopic;
     std::string jntFrcTrqTopic;
     std::string cartFrcTrqTopic;
-    std::string cartMoveTopic;
+    std::string cartPtpTopic;
     std::string cartPtpReachedTopic;
-    std::string cartMoveQueueTopic;
+    std::string cartMoveRfQueueTopic;
+    std::string cartMoveWfQueueTopic;
     std::string cartPoseRfTopic;
     std::string jntSetPtpThreshTopic;
 
@@ -111,7 +107,8 @@ private:
 	ros::Publisher pubPtp;
     ros::Publisher pubCartPtp;
 	ros::Publisher pubAddLoad;
-    ros::Publisher pubCartMoveQueue;
+    ros::Publisher pubCartMoveRfQueue;
+    ros::Publisher pubCartMoveWfQueue;
 	
 	ros::Publisher pub_set_cart_stiffness;
 	ros::Publisher pub_set_joint_stiffness;
@@ -145,7 +142,7 @@ public:
     void constructQueue(int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
                         std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
                         std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic,
-                        std::string cartMoveTopic, std::string cartPtpReachedTopic, std::string cartMoveQueueTopic, std::string cartPoseRfTopic,
+                        std::string cartPtpTopic, std::string cartPtpReachedTopic, std::string cartMoveRfQueueTopic, std::string cartMoveWfQueueTopic, std::string cartPoseRfTopic,
                         std::string setPtpThresh, ros::NodeHandle node
                     );
 	

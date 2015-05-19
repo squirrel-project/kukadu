@@ -14,4 +14,4 @@ tolAbsErr = 0.1
 tolRelErr = 0.1
 ac = 10
 [mes]
-folder = $KUKADU_HOME/movements/book_pickup/left
+folder = $HOME/tmp/N5373_top

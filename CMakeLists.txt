@@ -12,8 +12,10 @@ find_package(catkin REQUIRED COMPONENTS
     message_generation
     message_runtime
     iis_kukie
-#    tf_conversions
-#    tf2_kdl
+    iis_robot_dep
+    iis_schunk_hardware
+    planning_scene_plugin
+    tf_conversions
 )
 
 find_package(Boost REQUIRED COMPONENTS program_options)
@@ -87,6 +89,7 @@ src/learning/GaussianKernel.cpp
 src/learning/reinforcement_learning/GenDMPReinforcer.cpp
 src/utils/gnuplot-cpp/gnuplot_i.cpp
 src/robot/ControlQueue.cpp
+src/robot/KukieSimulator.cpp
 src/learning/reinforcement_learning/DMPReinforcer.cpp
 src/learning/reinforcement_learning/TerminalCostComputer.cpp
 src/robot/OrocosControlQueue.cpp

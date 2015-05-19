@@ -15,7 +15,7 @@ int main(int argc, char** args) {
     vector<string> fileNames = {
 
         "N5373_bottom_w_1", "N5373_bottom_w_2", "N5373_bottom_w_3",
-        "N5373_cside_w_1", "N5373_cside_w_2", "N5373_cside_w_1",
+        "N5373_cside_w_1", "N5373_cside_w_2", "N5373_cside_w_3",
         "N5373_oside_w_1", "N5373_oside_w_2", "N5373_oside_w_3",
         "N5373_top_w_1", "N5373_top_w_2", "N5373_top_w_3",
 
@@ -37,9 +37,9 @@ int main(int argc, char** args) {
         };
 
     for(string file : fileNames) {
-        shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, string("/home/c7031109/data/studium/informatik/phd/projects/squirrel/books/book_experiments/") + file + string("/kuka_lwr_real_left_arm_0"));
+        shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, string("/home/c7031109/data/studium/informatik/phd/projects/squirrel/books/book_experiments_raw/") + file + string("/kuka_lwr_real_left_arm_0"));
         SensorStorage scaredOfSenka(queueVectors, std::vector<std::shared_ptr<GenericHand>>(), 10);
-        scaredOfSenka.setExportMode(STORE_RBT_JNT_FTRQ | STORE_RBT_CART_FTRQ);
+        scaredOfSenka.setExportMode(STORE_RBT_JNT_FTRQ | STORE_RBT_CART_FTRQ | STORE_CART_ABS_FRC);
         scaredOfSenka.storeData(true, "/home/c7031109/tmp/data/" + file, data);
     }
 

@@ -7,15 +7,22 @@ _INITIALIZE_EASYLOGGINGPP
 #include <thread>
 #include <vector>
 #include <boost/program_options.hpp>
+#include <geometry_msgs/Pose.h>
+#include "../utils/utils.h"
 
 #include "../../include/kukadu.h"
 
 
-#define ROBOT_TYPE "real"
+#define ROBOT_TYPE "simulation"
 #define ROBOT_SIDE "left"
 
+#define CONTROL_RIGHT false
+#define USE_HANDS true
+
 using namespace std;
+using namespace ros;
 using namespace arma;
+using namespace geometry_msgs;
 namespace po = boost::program_options;
 
 int main(int argc, char** args) {
@@ -93,56 +100,130 @@ int main(int argc, char** args) {
     cout << "all properties loaded" << endl;
 
     ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
+    cout << "ros connection initialized" << endl;
 
     int kukaStepWaitTime = dmpStepSize * 1e6;
+
     shared_ptr<OrocosControlQueue> leftQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(kukaStepWaitTime, ROBOT_TYPE, ROBOT_SIDE + string("_arm"), *node));
     shared_ptr<thread> lqThread = leftQueue->startQueueThread();
 
+    shared_ptr<OrocosControlQueue> rightQueue = nullptr;
+    shared_ptr<thread> rqThread = nullptr;
+
+    if(CONTROL_RIGHT) {
+
+        rightQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(kukaStepWaitTime, ROBOT_TYPE, "right_arm", *node));
+        rqThread = rightQueue->startQueueThread();
+
+    }
+
     usleep(1e6);
 
-    /*
-    // measured joints were -0.2252   1.3174  -2.1671   0.4912   0.8510  -1.5699   1.0577
-    mes_result currentJoints = leftQueue->getCurrentJoints();
-    leftQueue->switchMode(10);
-    leftQueue->moveJoints(stdToArmadilloVec({-0.2252, 1.3174, -2.1671, 0.4912, 0.8510, -1.5699, 1.0577}));
-    cout << currentJoints.joints.t() << endl;
-    */
+    shared_ptr<RosSchunk> rightHand = nullptr;
 
-    shared_ptr<RosSchunk> leftHand = shared_ptr<RosSchunk>(new RosSchunk(*node, ROBOT_TYPE, ROBOT_SIDE));
+    if(CONTROL_RIGHT) {
 
-    leftHand->setGrasp(eGID_PARALLEL);
-    leftHand->closeHand(0.0, handVelocity);
+        if(USE_HANDS) {
 
-    vector<double> handJoints = {SDH_IGNORE_JOINT, -1.5, -1.0, 0, -0.2, -1.5, -1};
-    leftHand->publishSdhJoints(handJoints);
+            rightHand = shared_ptr<RosSchunk>(new RosSchunk(*node, ROBOT_TYPE, "right"));
+            vector<double> rightHandJoints = {0, -0.5238237461313833, 0.2120872918378427, 0.8655742259109377, 1.5389379959387146, -0.6260686922290597, 0.218843743489235877};
+            rightHand->publishSdhJoints(rightHandJoints);
 
-    /*
-    int idx = 0;
-    double number = 0.0;
-    while(true) {
-        cin >> idx;
-        cin >> number;
-        leftHand->publishSingleJoint(idx, number);
+        }
+
     }
-    */
+
+    shared_ptr<RosSchunk> leftHand = nullptr;
+    vector<double> handJoints = {0, -1.5, -1.0, 0, -0.2, -1.5, -1};
+    if(USE_HANDS) {
+
+        leftHand = shared_ptr<RosSchunk>(new RosSchunk(*node, ROBOT_TYPE, ROBOT_SIDE));
+
+        leftHand->setGrasp(eGID_PARALLEL);
+        leftHand->closeHand(0.0, handVelocity);
+        leftHand->publishSdhJoints(handJoints);
+
+    }
 
     cout << "(main) press key to continue" << endl;
     getchar();
 
+    leftQueue->switchMode(OrocosControlQueue::KUKA_JNT_IMP_MODE);
+
+    if(CONTROL_RIGHT) {
+        rightQueue->switchMode(OrocosControlQueue::KUKA_JNT_IMP_MODE);
+        rightQueue->moveJoints(stdToArmadilloVec({-2.3800294399261475, 1.5282957553863525, -2.280046224594116, 1.884490966796875, 2.1091063022613525, -1.4556314945220947, -0.7266652584075928}));
+    }
+
+//    Pose nextPose;
+//    nextPose.position.x = 0.3; nextPose.position.y = 0.72; nextPose.position.z = 0.33;
+//    nextPose.orientation.x = 0.684919567855; nextPose.orientation.y = 0.700748577783; nextPose.orientation.z = -0.138084983006; nextPose.orientation.w = -0.144113681622;
+
+    // first moving to position where it is known that cartesian ptp works
+//    leftQueue->moveJoints(stdToArmadilloVec({-1.3115264177322388, 1.1336190700531006, 1.8791016340255737, -1.4257887601852417, -1.3585442304611206, 0.5410774350166321, -1.9308620691299438}));
+    leftQueue->moveJoints(stdToArmadilloVec({-0.40275293588638306, 1.7016545534133911, 1.8671916723251343, -0.6587858200073242, 0.0556875579059124, 1.1993221044540405, -1.9818705320358276}));
+
+
+    leftQueue->switchMode(OrocosControlQueue::KUKA_STOP_MODE);
+
+    cout << "(main) search for book? press key to continue" << endl;
+    getchar();
+    leftQueue->switchMode(OrocosControlQueue::KUKA_CART_IMP_MODE);
+    //leftQueue->switchMode(OrocosControlQueue::KUKA_JNT_IMP_MODE);
+
+    int maxMovementDuration = 700;
+    ros::Rate slRate(70);
+    Pose currentPose = leftQueue->getCartesianPose();
+    cout << currentPose.position.x << " " << currentPose.position.y << " " << currentPose.position.z << endl;
+    Pose relativePose;
+    relativePose.position.x = -0.0009; relativePose.position.y = relativePose.position.z = 0.0;
+    // Rate slRate(20);
+    double initCartForce = leftQueue->getAbsoluteCartForce();
+    double currentCartForce = initCartForce;
+    double maxDeviation = 10;
+    for(int i = 0; i < maxMovementDuration; ++i) {
+        currentPose = leftQueue->moveCartesianRelativeWf(currentPose, relativePose);        //leftQueue->moveCartesian(currentPose);
+        slRate.sleep();
+        currentCartForce = leftQueue->getAbsoluteCartForce();
+        cout << currentCartForce << " " << maxDeviation << " " << (currentCartForce - initCartForce) << " " << abs(currentCartForce - initCartForce) << endl;
+    }
+
+/*
     vector<shared_ptr<ControlQueue>> queues = {leftQueue};
     vector<shared_ptr<GenericHand>> hands = {leftHand};
-    SensorStorage store(queues, hands, 100);
-    shared_ptr<thread> storageThread = store.startDataStorage(dataFolder);
 
-    sleep(1);
+    for(int i = 0;  i < 20; ++i) {
 
-    handJoints = {SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0.4, 1.2, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
-    leftHand->publishSdhJoints(handJoints);
+        cout << "(book) press key to prepare for next experiment" << endl;
+        getchar();
 
-    if(storageThread)
-        storageThread->join();
+        leftHand->publishSdhJoints(handJoints);
+        leftQueue->moveJoints(stdToArmadilloVec({-0.40275293588638306, 1.7016545534133911, 1.8671916723251343, -0.6587858200073242, 0.0556875579059124, 1.1993221044540405, -1.9818705320358276}));
+
+        cout << "(book) press key to start experiment number " << i << endl;
+        getchar();
+
+        stringstream s;
+        s << dataFolder << "_" << i;
+
+        SensorStorage store(queues, hands, 100);
+        shared_ptr<thread> storageThread = store.startDataStorage(s.str());
+
+        sleep(1);
+
+        vector<double> newHandJoints = {SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0.4, 1.2, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
+        leftHand->publishSdhJoints(newHandJoints);
+
+        sleep(2);
+
+        store.stopDataStorage();
+
+        if(storageThread)
+            storageThread->join();
+
+    }
 
     leftQueue->setFinish();
     lqThread->join();
-
+*/
 }

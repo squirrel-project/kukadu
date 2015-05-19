@@ -17,13 +17,15 @@ private:
     std::vector<std::string> jointFrcLabels;
     std::vector<std::string> cartPosLabels;
     std::vector<std::string> cartFrcTrqLabels;
+    std::vector<std::string> cartForceAbsLabel;
     arma::mat values;
 
 public:
 
     SensorData(std::vector<std::string> labels, arma::mat values);
-    SensorData(std::string timeLabel, std::vector<std::string> jointPosLabels, std::vector<std::string> jointFrcLabels, std::vector<std::string> cartPosLabels, std::vector<std::string> cartFrcTrqLabels,
-               arma::vec time, arma::mat jointPos, arma::mat jointFrc, arma::mat cartPos, arma::mat cartFrcTrq);
+    SensorData(std::string timeLabel, std::vector<std::string> jointPosLabels, std::vector<std::string> jointFrcLabels, std::vector<std::string> cartPosLabels,
+               std::vector<std::string> cartForceAbsLabel, std::vector<std::string> cartFrcTrqLabels,
+               arma::vec time, arma::mat jointPos, arma::mat jointFrc, arma::mat cartPos, arma::mat cartForceAbs, arma::mat cartFrcTrq);
 
     int labelExists(std::string label);
     arma::vec getDataByIdx(int idx);

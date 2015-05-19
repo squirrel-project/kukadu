@@ -23,6 +23,7 @@
 #define STORE_RBT_CART_FTRQ 8
 #define STORE_HND_JNT_POS 16
 #define STORE_HND_TCTLE 32
+#define STORE_CART_ABS_FRC 64
 
 class SensorStorage {
 
@@ -36,6 +37,7 @@ private:
     bool storeCartPos;
     bool storeJntFrc;
     bool storeCartFrcTrq;
+    bool storeCartAbsFrc;
     bool storeHndJntPos;
     bool storeHndTctle;
 

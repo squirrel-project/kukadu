@@ -7,37 +7,10 @@ using namespace arma;
 void OrocosControlQueue::constructQueue(int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
                     std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
                     std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic,
-                    std::string cartMoveTopic, std::string cartPtpReachedTopic, std::string cartMoveQueueTopic, std::string cartPoseRfTopic, std::string jntSetPtpThreshTopic, ros::NodeHandle node
+                    std::string cartPtpTopic, std::string cartPtpReachedTopic, std::string cartMoveRfQueueTopic, std::string cartMoveWfQueueTopic, std::string cartPoseRfTopic, std::string jntSetPtpThreshTopic, ros::NodeHandle node
                 ) {
 
-    leftR2WTM[0][0] = -0.879651;
-    leftR2WTM[0][1] = 0.336431;
-    leftR2WTM[0][2] = 0.336196;
-    leftR2WTM[0][3] = -0.492322;
-    leftR2WTM[1][0] = 0.426848;
-    leftR2WTM[1][1] = 0.246623;
-    leftR2WTM[1][2] = 0.870044;
-    leftR2WTM[1][3] = 0.754155;
-    leftR2WTM[2][0] = 0.209797;
-    leftR2WTM[2][1] = 0.90884;
-    leftR2WTM[2][2] = -0.360547;
-    leftR2WTM[2][3] = 0.629509;
-    leftR2WTM[3][0] = 0.0000;
-    leftR2WTM[3][1] = -0.0000;
-    leftR2WTM[3][2] = -0.0000;
-    leftR2WTM[3][3] = 1.0000;
-
     set_ctrlc_exit_handler();
-
-    mat vecLeftR2WTM(4, 4);
-    for(int i = 0; i < 4; ++i)
-        for(int j = 0; j < 4; ++j)
-            vecLeftR2WTM(i, j) = leftR2WTM[i][j];
-
-    mat vecLeftWT2RM = inv(vecLeftR2WTM);
-    for(int i = 0; i < 4; ++i)
-        for(int j = 0; j < 4; ++j)
-            leftW2RTM[i][j] = vecLeftWT2RM(i, j);
 
     currentTime = 0.0;
     this->sleepTime= sleepTime;
@@ -53,9 +26,10 @@ void OrocosControlQueue::constructQueue(int sleepTime, std::string commandTopic,
     this->addLoadTopic = addLoadTopic;
     this->jntFrcTrqTopic = jntFrcTrqTopic;
     this->cartFrcTrqTopic = cartFrcTrqTopic;
-    this->cartMoveTopic = cartMoveTopic;
+    this->cartPtpTopic = cartPtpTopic;
     this->cartPtpReachedTopic = cartPtpReachedTopic;
-    this->cartMoveQueueTopic = cartMoveQueueTopic;
+    this->cartMoveRfQueueTopic = cartMoveRfQueueTopic;
+    this->cartMoveWfQueueTopic = cartMoveWfQueueTopic;
     this->jntSetPtpThreshTopic = jntSetPtpThreshTopic;
 
     monComMode = -1;
@@ -78,10 +52,11 @@ void OrocosControlQueue::constructQueue(int sleepTime, std::string commandTopic,
     subCartPtpReached = node.subscribe(cartPtpReachedTopic, 2, &OrocosControlQueue::cartPtpReachedCallback, this);
     subCartPoseRf = node.subscribe(cartPoseRfTopic, 2, &OrocosControlQueue::cartPosRfCallback, this);
 
-    pub_set_cart_stiffness = node.advertise<iis_kukie::CartesianImpedance>(stiffnessTopic, 1);
-    pub_set_joint_stiffness = node.advertise<iis_kukie::FriJointImpedance>(jntStiffnessTopic, 1);
-    pubCartPtp = node.advertise<geometry_msgs::Pose>(cartMoveTopic, 1);
-    pubCartMoveQueue = node.advertise<geometry_msgs::Pose>(cartMoveQueueTopic, 1);
+    pub_set_cart_stiffness = node.advertise<iis_robot_dep::CartesianImpedance>(stiffnessTopic, 1);
+    pub_set_joint_stiffness = node.advertise<iis_robot_dep::FriJointImpedance>(jntStiffnessTopic, 1);
+    pubCartPtp = node.advertise<geometry_msgs::Pose>(cartPtpTopic, 1);
+    pubCartMoveRfQueue = node.advertise<geometry_msgs::Pose>(cartMoveRfQueueTopic, 1);
+    pubCartMoveWfQueue = node.advertise<geometry_msgs::Pose>(cartMoveWfQueueTopic, 1);
     pub_set_ptp_thresh = node.advertise<std_msgs::Float64>(jntSetPtpThreshTopic, 1);
 
     pubCommand = node.advertise<std_msgs::Float64MultiArray>(commandTopic, 10);
@@ -106,10 +81,11 @@ OrocosControlQueue::OrocosControlQueue(int sleepTime, std::string deviceType, st
     ptpReachedTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/ptp_reached";
     jntFrcTrqTopic = "/" + deviceType + "/" + armPrefix + "/sensoring/est_ext_jnt_trq";
     cartFrcTrqTopic = "/" + deviceType + "/" + armPrefix + "/sensoring/cartesian_wrench";
-    cartMoveTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/ptpQuaternion";
+    cartPtpTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/ptpQuaternion";
     cartPtpReachedTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/ptp_reached";
-    cartMoveQueueTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/move";
-    cartPoseRfTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/get_pose_rf";
+    cartMoveRfQueueTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/move_rf";
+    cartMoveWfQueueTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/move_wf";
+    cartPoseRfTopic = "/" + deviceType + "/" + armPrefix + "/cartesian_control/get_pose_quat_rf";
     jntSetPtpThreshTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/set_ptp_thresh";
     addLoadTopic = "not supported yet";
 
@@ -118,12 +94,12 @@ OrocosControlQueue::OrocosControlQueue(int sleepTime, std::string deviceType, st
 
     constructQueue(sleepTime, commandTopic, retJointPosTopic, switchModeTopic, retCartPosTopic, stiffnessTopic,
                    jntStiffnessTopic, ptpTopic, commandStateTopic, ptpReachedTopic, addLoadTopic, jntFrcTrqTopic, cartFrcTrqTopic,
-                   cartMoveTopic, cartPtpReachedTopic, cartMoveQueueTopic, cartPoseRfTopic, jntSetPtpThreshTopic, node);
+                   cartPtpTopic, cartPtpReachedTopic, cartMoveRfQueueTopic, cartMoveWfQueueTopic, cartPoseRfTopic, jntSetPtpThreshTopic, node);
 
 }
 
 void OrocosControlQueue::addCartesianPosToQueue(geometry_msgs::Pose pose) {
-    pubCartMoveQueue.publish(pose);
+    pubCartMoveWfQueue.publish(pose);
 }
 
 void OrocosControlQueue::cartPosRfCallback(const geometry_msgs::Pose msg) {
@@ -143,27 +119,17 @@ void OrocosControlQueue::setJntPtpThresh(double thresh) {
 // relative pos in worldframe
 geometry_msgs::Pose OrocosControlQueue::moveCartesianRelativeWf(geometry_msgs::Pose basePoseRf, geometry_msgs::Pose offset) {
 
-//    cout << "(OrocosControQueue) moveCartesianRelativeWf currently only consideres position and not orientation" << endl;
-    double newTargetRobotPos[4] = {1, 1, 1, 1};
     double newTargetWorldPos[4] = {1, 1, 1, 1};
-    newTargetRobotPos[0]  = basePoseRf.position.x;
-    newTargetRobotPos[1]  = basePoseRf.position.y;
-    newTargetRobotPos[2]  = basePoseRf.position.z;
-    // rotate current pose to approximate world frame (hack for now)
-    transformPos(newTargetWorldPos, leftR2WTM, newTargetRobotPos);
 
     // add relative coordinates
-    newTargetWorldPos[0] = newTargetWorldPos[0] + offset.position.x;
-    newTargetWorldPos[1] = newTargetWorldPos[1] + offset.position.y;
-    newTargetWorldPos[2] = newTargetWorldPos[2] + offset.position.z;
-
-    // transform back to robot fraeme
-    transformPos(newTargetRobotPos, leftW2RTM, newTargetWorldPos);
+    newTargetWorldPos[0] = basePoseRf.position.x + offset.position.x;
+    newTargetWorldPos[1] = basePoseRf.position.y + offset.position.y;
+    newTargetWorldPos[2] = basePoseRf.position.z + offset.position.z;
 
     // store it back to current pose
-    basePoseRf.position.x = newTargetRobotPos[0];
-    basePoseRf.position.y = newTargetRobotPos[1];
-    basePoseRf.position.z = newTargetRobotPos[2];
+    basePoseRf.position.x = newTargetWorldPos[0];
+    basePoseRf.position.y = newTargetWorldPos[1];
+    basePoseRf.position.z = newTargetWorldPos[2];
 
     // publish robot frame pose to move
     addCartesianPosToQueue(basePoseRf);
@@ -268,13 +234,6 @@ void OrocosControlQueue::run() {
 			// move to position in queue
 			movement = movementQueue.front();
 			movementQueue.pop();
-			
-            /*
-			motion_control_msgs::JointPositions nextCommand;
-			for(int i = 0; i < getMovementDegreesOfFreedom(); ++i) {
-				nextCommand.positions.push_back(movement[i]);
-			}
-            */
 
             std_msgs::Float64MultiArray nextCommand;
             for(int i = 0; i < getMovementDegreesOfFreedom(); ++i)
@@ -470,7 +429,7 @@ void OrocosControlQueue::setAdditionalLoad(float loadMass, float loadPos) {
 
 void OrocosControlQueue::setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq) {
 
-    iis_kukie::CartesianImpedance imp;
+    iis_robot_dep::CartesianImpedance imp;
 	
 	imp.stiffness.linear.x = imp.stiffness.linear.y = imp.stiffness.linear.z = cpstiffnessxyz;
 	imp.damping.linear.x = imp.damping.linear.y = imp.damping.linear.z = cpdamping;
@@ -479,7 +438,7 @@ void OrocosControlQueue::setStiffness(float cpstiffnessxyz, float cpstiffnessabc
 	imp.cpmaxdelta = cpmaxdelta;
 	imp.axismaxdeltatrq = axismaxdeltatrq;
 	
-    iis_kukie::FriJointImpedance newImpedance;
+    iis_robot_dep::FriJointImpedance newImpedance;
 	for (int j = 0; j < 7; j++){
 		newImpedance.stiffness[j] = cpstiffnessxyz;
 		newImpedance.damping[j] = cpdamping;

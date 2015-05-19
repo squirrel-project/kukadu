@@ -22,7 +22,7 @@ SensorStorage::SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, 
 
 void SensorStorage::setExportMode(int mode) {
 
-    storeTime = storeJntPos = storeCartPos = storeJntFrc = storeCartFrcTrq = storeHndJntPos = storeHndTctle = false;
+    storeCartAbsFrc = storeTime = storeJntPos = storeCartPos = storeJntFrc = storeCartFrcTrq = storeHndJntPos = storeHndTctle = false;
 
     if(mode & STORE_TIME)
         storeTime = true;
@@ -44,6 +44,9 @@ void SensorStorage::setExportMode(int mode) {
 
     if(mode & STORE_HND_TCTLE)
         storeHndTctle = true;
+
+    if(mode & STORE_CART_ABS_FRC)
+        storeCartAbsFrc = true;
 
 }
 
@@ -180,6 +183,8 @@ void SensorStorage::storeData(bool storeHeader, std::vector<std::shared_ptr<std:
             mes_result cartPos;
             mes_result jntFrcTrq;
             mes_result cartFrcTrq;
+            mes_result cartAbsFrcTrq;
+            double absCartFrc = 0.0;
 
             if(data.size()) {
 
@@ -203,6 +208,16 @@ void SensorStorage::storeData(bool storeHeader, std::vector<std::shared_ptr<std:
                 if(storeCartFrcTrq) {
                     cartPos.time = time;
                     cartFrcTrq.joints = data.at(i)->cartFrcTrqsRow(dataPointIdx);
+                }
+
+                if(storeCartAbsFrc) {
+                    cartPos.time = time;
+                    cartAbsFrcTrq.joints = data.at(i)->cartFrcTrqsRow(dataPointIdx);
+                    absCartFrc = 0.0;
+                    for(int i = 0; i < 3; ++i) {
+                        absCartFrc += pow(cartAbsFrcTrq.joints(i), 2);
+                    }
+                    absCartFrc = sqrt(absCartFrc);
                 }
 
             } else {
@@ -261,6 +276,12 @@ void SensorStorage::storeData(bool storeHeader, std::vector<std::shared_ptr<std:
 
                 }
 
+                if(storeCartAbsFrc) {
+
+                    labels.push_back("cart_abs_force");
+
+                }
+
                 writeLabels(currentOfStream, labels);
 
             }
@@ -279,6 +300,12 @@ void SensorStorage::storeData(bool storeHeader, std::vector<std::shared_ptr<std:
 
             if(storeCartFrcTrq)
                 writeVectorInLine(currentOfStream, cartFrcTrq.joints);
+
+            if(storeCartAbsFrc) {
+                vec absForce(1);
+                absForce(0) = absCartFrc;
+                writeVectorInLine(currentOfStream, absForce);
+            }
 
             *currentOfStream << endl;
 
@@ -341,6 +368,7 @@ std::shared_ptr<SensorData> SensorStorage::readStorage(std::shared_ptr<ControlQu
     vector<string> jointFrcLabels;
     vector<string> cartPosLabels;
     vector<string> cartFrcTrqLabels;
+    vector<string> cartAbsForceLabels;
 
     for(int i = 0; i < jointNames.size(); ++i)
         jointPosLabels.push_back("joint_" + jointNames.at(i));
@@ -363,6 +391,8 @@ std::shared_ptr<SensorData> SensorStorage::readStorage(std::shared_ptr<ControlQu
     cartFrcTrqLabels.push_back("cart_trq_y");
     cartFrcTrqLabels.push_back("cart_trq_z");
 
+    cartAbsForceLabels.push_back("cart_abs_force");
+
     string line = "";
     string nextToken = "";
     ifstream inFile;
@@ -375,6 +405,7 @@ std::shared_ptr<SensorData> SensorStorage::readStorage(std::shared_ptr<ControlQu
     int jointsForceStartIdx = -1;
     int cartsPosStartIdx = -1;
     int cartsForceStartIdx = -1;
+    int cartsAbsForceStartIdx = -1;
     int timeIdx = -1;
 
     // localizing single measurements in header
@@ -479,6 +510,19 @@ std::shared_ptr<SensorData> SensorStorage::readStorage(std::shared_ptr<ControlQu
 
         }
 
+        // if none of the previous cases, go on...
+        if(!foundDimension) {
+
+            // if first joint token found, all of them have to be in consecutive order
+            if(!nextToken.compare(cartAbsForceLabels.at(0))) {
+
+                foundDimension = true;
+                cartsAbsForceStartIdx = tok.getTokenIdx();
+
+            }
+
+        }
+
     }
 
     // reading all present measurements
@@ -486,11 +530,12 @@ std::shared_ptr<SensorData> SensorStorage::readStorage(std::shared_ptr<ControlQu
     // ignoring first line (something is wrong with first line)
     mes = mes.rows(1, mes.n_rows - 1);
 
-    vec times;
-    mat jointPos;
-    mat jointFrcs;
-    mat cartPos;
-    mat cartFrcTrqs;
+    vec times(1);
+    mat jointPos(1,1);
+    mat jointFrcs(1,1);
+    mat cartPos(1,1);
+    mat cartFrcTrqs(1,1);
+    mat cartAbsFrcs(1,1);
 
     if(timeIdx >= 0)
         times = vec(mes.col(timeIdx));
@@ -507,8 +552,11 @@ std::shared_ptr<SensorData> SensorStorage::readStorage(std::shared_ptr<ControlQu
     if(cartsForceStartIdx >= 0)
         cartFrcTrqs = mat(mes.cols(cartsForceStartIdx, cartsForceStartIdx + 6 - 1));
 
-    shared_ptr<SensorData> dat = shared_ptr<SensorData>(new SensorData("time", jointPosLabels, jointFrcLabels, cartPosLabels, cartFrcTrqLabels,
-                                                                       times, jointPos, jointFrcs, cartPos, cartFrcTrqs));
+    if(cartsAbsForceStartIdx >= 0)
+        cartAbsFrcs = mat(mes.cols(cartsAbsForceStartIdx, cartsAbsForceStartIdx + 1 - 1));
+
+    shared_ptr<SensorData> dat = shared_ptr<SensorData>(new SensorData("time", jointPosLabels, jointFrcLabels, cartPosLabels, cartAbsForceLabels, cartFrcTrqLabels,
+                                                                       times, jointPos, jointFrcs, cartPos, cartAbsFrcs, cartFrcTrqs));
 
     inFile.close();
     return dat;

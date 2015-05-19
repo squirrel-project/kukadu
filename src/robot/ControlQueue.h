@@ -164,6 +164,8 @@ public:
     virtual std::string getRobotName() = 0;
     virtual std::string getRobotFileName() = 0;
     virtual std::vector<std::string> getJointNames() = 0;
+
+    virtual double getAbsoluteCartForce();
     
 };
 

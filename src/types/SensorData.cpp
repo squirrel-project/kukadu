@@ -11,37 +11,44 @@ SensorData::SensorData(std::vector<std::string> labels, arma::mat values) {
 }
 
 SensorData::SensorData(std::string timeLabel, std::vector<std::string> jointPosLabels, std::vector<std::string> jointFrcLabels, std::vector<std::string> cartPosLabels,
-           std::vector<std::string> cartFrcTrqLabels, arma::vec time, arma::mat jointPos, arma::mat jointFrc, arma::mat cartPos, arma::mat cartFrcTrq) {
+           std::vector<std::string> cartForceAbsLabel, std::vector<std::string> cartFrcTrqLabels, arma::vec time, arma::mat jointPos, arma::mat jointFrc, arma::mat cartPos, arma::mat cartForceAbs, arma::mat cartFrcTrq) {
 
     this->jointPosLabels = jointPosLabels;
     this->jointFrcLabels = jointPosLabels;
     this->cartPosLabels = cartPosLabels;
     this->cartFrcTrqLabels = cartFrcTrqLabels;
+    this->cartForceAbsLabel = cartForceAbsLabel;
 
     labels.push_back(timeLabel);
-    for(int i = 0; i < jointPosLabels.size(); ++i)
+    for(int i = 0; jointPos.n_cols > 1 && i < jointPosLabels.size(); ++i)
         labels.push_back(jointPosLabels.at(i));
 
-    for(int i = 0; i < jointFrcLabels.size(); ++i)
+    for(int i = 0; jointFrc.n_cols > 1 && i < jointFrcLabels.size(); ++i)
         labels.push_back(jointFrcLabels.at(i));
 
-    for(int i = 0; i < cartPosLabels.size(); ++i)
+    for(int i = 0; cartPos.n_cols > 1 && i < cartPosLabels.size(); ++i)
         labels.push_back(cartPosLabels.at(i));
 
-    for(int i = 0; i < cartFrcTrqLabels.size(); ++i)
+    for(int i = 0; cartFrcTrq.n_cols > 1 && i < cartFrcTrqLabels.size(); ++i)
         labels.push_back(cartFrcTrqLabels.at(i));
 
-    if(jointPosLabels.size() > 0)
+    for(int i = 0; cartForceAbs.n_cols > 1 && i < cartForceAbsLabel.size(); ++i)
+        labels.push_back(cartForceAbsLabel.at(i));
+
+    if(time.n_elem > 1)
         values = armaJoinRows(time, jointPos);
 
-    if(jointFrcLabels.size() > 0)
+    if(jointFrc.n_cols > 1)
         values = armaJoinRows(values, jointFrc);
 
-    if(cartPosLabels.size() > 0)
+    if(cartPos.n_cols > 1)
         values = armaJoinRows(values, cartPos);
 
-    if(cartFrcTrqLabels.size() > 0)
+    if(cartFrcTrq.n_cols > 1)
         values = armaJoinRows(values, cartFrcTrq);
+
+    if(cartForceAbs.n_cols > 1)
+        values = armaJoinRows(values, cartForceAbs);
 
 }
 

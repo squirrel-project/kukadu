@@ -826,6 +826,10 @@ arma::mat armaJoinRows(arma::mat m1, arma::mat m2) {
 
 }
 
+double absolute(double val) {
+    return (val >= 0) ? val : -val;
+}
+
 void set_ctrlc_exit_handler() {
     struct sigaction sigIntHandler;
     sigIntHandler.sa_handler = exit_handler;
