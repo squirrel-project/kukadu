@@ -14,8 +14,8 @@ class KukieSimulator {
 
 private:
 
-    std::string topAddObject = "/simulation/scene/AddPrimitiveShape";
-    std::string topApplyForceTorque = "/simulation/scene/ApplyForceAndTorque";
+    std::string topAddObject;
+    std::string topApplyForceTorque;
 	
     ros::NodeHandle node;
 

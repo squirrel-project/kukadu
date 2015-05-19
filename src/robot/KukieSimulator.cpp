@@ -13,6 +13,9 @@ KukieSimulator::KukieSimulator(ros::NodeHandle node) {
 
     this->node = node;
 
+    topAddObject = "/simulation/scene/AddPrimitiveShape";
+    topApplyForceTorque = "/simulation/scene/ApplyForceAndTorque";
+
     pubAddObject = node.advertise<planning_scene_plugin::AddPrimitiveShape>(topAddObject, 1);
     pubApplyForceTorque = node.advertise<planning_scene_plugin::ApplyForceAndTorque>(topApplyForceTorque, 1);
 
