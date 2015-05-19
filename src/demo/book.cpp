@@ -13,7 +13,7 @@ _INITIALIZE_EASYLOGGINGPP
 #include "../../include/kukadu.h"
 
 
-#define ROBOT_TYPE "simulation"
+#define ROBOT_TYPE "real"
 #define ROBOT_SIDE "left"
 
 #define CONTROL_RIGHT false
@@ -163,16 +163,15 @@ int main(int argc, char** args) {
 //    leftQueue->moveJoints(stdToArmadilloVec({-1.3115264177322388, 1.1336190700531006, 1.8791016340255737, -1.4257887601852417, -1.3585442304611206, 0.5410774350166321, -1.9308620691299438}));
     leftQueue->moveJoints(stdToArmadilloVec({-0.40275293588638306, 1.7016545534133911, 1.8671916723251343, -0.6587858200073242, 0.0556875579059124, 1.1993221044540405, -1.9818705320358276}));
 
-
+    /*
     leftQueue->switchMode(OrocosControlQueue::KUKA_STOP_MODE);
 
     cout << "(main) search for book? press key to continue" << endl;
     getchar();
-    leftQueue->switchMode(OrocosControlQueue::KUKA_CART_IMP_MODE);
-    //leftQueue->switchMode(OrocosControlQueue::KUKA_JNT_IMP_MODE);
+    // leftQueue->switchMode(OrocosControlQueue::KUKA_CART_IMP_MODE);
+    leftQueue->switchMode(OrocosControlQueue::KUKA_JNT_IMP_MODE);
 
-    int maxMovementDuration = 700;
-    ros::Rate slRate(70);
+    int maxMovementDuration = 10;
     Pose currentPose = leftQueue->getCartesianPose();
     cout << currentPose.position.x << " " << currentPose.position.y << " " << currentPose.position.z << endl;
     Pose relativePose;
@@ -181,14 +180,16 @@ int main(int argc, char** args) {
     double initCartForce = leftQueue->getAbsoluteCartForce();
     double currentCartForce = initCartForce;
     double maxDeviation = 10;
-    for(int i = 0; i < maxMovementDuration; ++i) {
-        currentPose = leftQueue->moveCartesianRelativeWf(currentPose, relativePose);        //leftQueue->moveCartesian(currentPose);
-        slRate.sleep();
+    for(int i = 0; abs(currentCartForce - initCartForce) < maxDeviation && i < maxMovementDuration; ++i) {
+        // currentPose = leftQueue->moveCartesianRelativeWf(currentPose, relativePose);
+        currentPose.position.x -= 0.01;
+        leftQueue->moveCartesian(currentPose);
+        // slRate.sleep();
         currentCartForce = leftQueue->getAbsoluteCartForce();
         cout << currentCartForce << " " << maxDeviation << " " << (currentCartForce - initCartForce) << " " << abs(currentCartForce - initCartForce) << endl;
     }
+    */
 
-/*
     vector<shared_ptr<ControlQueue>> queues = {leftQueue};
     vector<shared_ptr<GenericHand>> hands = {leftHand};
 
@@ -225,5 +226,5 @@ int main(int argc, char** args) {
 
     leftQueue->setFinish();
     lqThread->join();
-*/
+
 }
