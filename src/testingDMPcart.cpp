@@ -59,7 +59,7 @@ std::string resolvePath(std::string path) {
 
 int main(int argc, char** args) {
 
-  cout<<"test start \\ creating interfaces"<<endl;
+  cout<<"test start; creating interfaces"<<endl;
 
   ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
 
@@ -75,8 +75,7 @@ int main(int argc, char** args) {
   cout<<"control queue interface created"<<endl;
 
 
-
-
+  //moving hand to staring position
   vector<double> newPos= {0, -1.57, 0, -1.57,0,-1.57,0};
 
   handQ->publishSdhJoints(newPos);
