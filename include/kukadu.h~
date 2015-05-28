@@ -55,7 +55,7 @@
 #include "../src/learning/reinforcement_learning/DmpRewardComputer.h"
 #include "../src/robot/PlottingControlQueue.h"
 #include "../src/trajectory/TimeDepDictionaryGeneralizer.h"
-#include "../src/robot/SimInterface.h"
+#include "../src/robot/SimInterface.cpp"
 
 #ifdef ROS_SUPPORT
 #include "../src/robot/OrocosControlQueue.h"
