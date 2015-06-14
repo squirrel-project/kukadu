@@ -349,12 +349,17 @@ void OrocosControlQueue::moveCartesian(geometry_msgs::Pose pos) {
         // just to make sure, arm really reached target
         loop_rate->sleep();
         ros::spinOnce();
+        double start=ros::Time::now().toSec();
 
         while(!cartesianPtpReached) {
             loop_rate->sleep();
             loop_rate->sleep();
             loop_rate->sleep();
             ros::spinOnce();
+            if (ros::Time::now().toSec()-start>10.0){
+                cout << "(OrocosControlQueue) ptp movement fail" << endl;
+                break;
+            }
         }
         cout << "(OrocosControlQueue) ptp movement done" << endl;
 
