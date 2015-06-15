@@ -89,10 +89,7 @@ int main(int argc, char** args) {
 
     vector<double> PoC={0.272241000000000,	0.876041000000000,	0.315563000000000,	0.776795000000000,	0.0112587000000000,	-0.0194455000000000,	0.629462000000000};
     // float newPoC[7]={0.299991,	0.920158,	0.397039,	0.776795,	0.0112587,	-0.0194455,	0.629462233312};
-    //queue->moveCartQuats(newPoC);
-   // vector<double> newPoC1={0.272241000000000,	0.876041000000000,	0.315563000000000,	0.776795000000000,	0.0112587000000000,	-0.0194455000000000,	0.629462000000000};
-   // vector<double> newPoC1={0.272241000000000,	0.876041000000000,	0.395563000000000,	0.776795000000000,	0.0112587000000000,	-0.0194455000000000,	0.629462000000000};
-    vector<double> newPoC1={0.0,	0.0,	0.0,	0.776795000000000,	0.0112587000000000,	-0.0194455000000000,	0.629462000000000};
+    vector<double> newPoC1={0.272241000000000,	0.876041000000000,	0.395563000000000,	0.776795000000000,	0.0112587000000000,	-0.0194455000000000,	0.629462000000000};
 
     arma::vec Rpos={0.299991,	0.920158,	0.397039,	0.776795,	0.0112587,	-0.0194455,	6.86636e-44};
     //queue->moveCartesian(vectordouble2pose(&Rpos));
@@ -131,16 +128,16 @@ int main(int argc, char** args) {
 
         // float newP1[3]={0.27,0.7,0.2}; //first
         string path="/home/c7031098/Documents/Work/pushing/models/2box.stl";
-      //  simI->importMesh("2box",path,newP1, newO1, 0.0, 0.8);
-       // simI->setObjMaterial("2box","lowFrictionMaterial");
+        //  simI->importMesh("2box",path,newP1, newO1, 0.0, 0.8);
+        // simI->setObjMaterial("2box","lowFrictionMaterial");
         sleep(2);
         cout<<"moving to starting position"<<endl;
         queue->moveCartesian(vectordouble2pose(&newPoC1));
         sleep(2);
         cout<<"executing trajectory"<<endl;
 
-        //executeTrajCart(queue, resolvePath("/home/c7031098/testing/Rcart1.txt"));
-      //  executeTrajCart(queue,resolvePath("/home/c7031098/testing/dataCart/car22.txt"));
+        // executeTrajCart(queue, resolvePath("/home/c7031098/testing/Rcart1.txt")); //for right arm
+        executeTrajCart(queue,resolvePath("/home/c7031098/testing/dataCart/car12.txt"));
 
         break;
     }
@@ -153,7 +150,7 @@ int main(int argc, char** args) {
         //float newP1[3]={0.25,0.7,0.2};
         float newO1[4]={0,0,0,0};
         float dim1[3]= {0.2,0.2,0.1};
-         string path="/home/c7031098/Documents/Work/pushing/models/2box.stl";
+        string path="/home/c7031098/Documents/Work/pushing/models/2box.stl";
 
         // float newP1[3]={0.27,0.7,0.2}; //first
         simI->importMesh("2box",path,newP1, newO1, 0.0, 0.8);
@@ -176,31 +173,6 @@ int main(int argc, char** args) {
 
 
     /*
-sleep(2);
-
-
-executeTrajCart(queue, resolvePath("/home/c7031098/testing/Rcart1.txt"));
-
-switch(experiment){
-
-
-
-case 2: {
-    float newP1[3]={0.23,0.7,0.1};
-    float newO1[4]={0,0,0,0};
-    float dim1[3]= {0.2,0.2,0.1};
-    simI->addPrimShape(1,"box1",newP1,newO1, dim1,0.4);
-   sleep(1);
-   simI->setObjMaterial("box1","lowFrictionMaterial");
-    sleep(5);
-    queue->moveCartQuats(newPoC1);
-
-    cout<<"in starting position C"<<endl;
-     sleep(5);
-     t_executor_res demoRes = executeDMPcart(queue, resolvePath("/home/c7031098/testing/dataCart/car24.txt"), resolvePath("/home/c7031098/testing/dataCart/ob24.txt"),  0, az, bz, 0,simI, "box1");
-
-break;
-}
 
 case 3: {
     simI->setObjMaterial("sponge","lowFrictionMaterial");
@@ -318,8 +290,6 @@ geometry_msgs::Pose vectordouble2pose(std::vector<double>* vectorpose){
 
 void executeTrajCart(OrocosControlQueue* movementQu, string file){
 
-
-
     int columns = 8;
     mat coord = readMovements(file);
     int duration=coord.n_rows;
@@ -328,8 +298,7 @@ void executeTrajCart(OrocosControlQueue* movementQu, string file){
     cout<<"starting movement"<<endl;
     sleep(0.5);
 
-
-    for (int i =0; i < duration; i=i+5) {
+    for (int i =0; i < duration; i=i+1) {
         vector<double> moveCarts;
         for(int j = 0; j < 7; ++j){
             sleep(0.5);
@@ -339,13 +308,8 @@ void executeTrajCart(OrocosControlQueue* movementQu, string file){
         }
         cout<<endl;
 
-       // movementQu->addCartesianPosToQueue(vectordouble2pose(&moveCarts));
-        vector<double> diff={0.0,	0.00,	0.08,	0.0,	0.0,	0.0,	1.0};
+        vector<double> diff={0.0,	0.00,	0.05,	0.0,	0.0,	0.0,	1.0};
         movementQu->moveCartesianRelativeWf(vectordouble2pose(&moveCarts), vectordouble2pose(&diff));
-
-
-
-        // movementQu->moveCartesian(vectordouble2pose(&moveCarts));
 
     }
 
