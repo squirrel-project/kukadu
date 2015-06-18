@@ -843,3 +843,19 @@ void exit_handler(int s) {
     exit(1);
 
 }
+
+
+geometry_msgs::Pose vectorarma2pose(arma::vec* vectorpose){
+
+    geometry_msgs:: Pose posepose;
+    posepose.position.x=vectorpose->at(0);
+    posepose.position.y=vectorpose->at(1);
+    posepose.position.z=vectorpose->at(2);
+    posepose.orientation.x=vectorpose->at(3);
+    posepose.orientation.y=vectorpose->at(4);
+    posepose.orientation.z=vectorpose->at(5);
+    posepose.orientation.w=vectorpose->at(6);
+
+    return posepose;
+
+}

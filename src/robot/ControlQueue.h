@@ -166,6 +166,7 @@ public:
     virtual std::vector<std::string> getJointNames() = 0;
 
     virtual double getAbsoluteCartForce();
+   // virtual int getMode() = 0;
     
 };
 

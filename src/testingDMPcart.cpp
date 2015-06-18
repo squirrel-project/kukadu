@@ -15,8 +15,8 @@
 using namespace std;
 using namespace arma;
 
-int test=1; //testing trajectory without dmps
-//int test=2; //testing trajectory with dmps
+//int test=1; //testing trajectory without dmps
+int test=2; //testing trajectory with dmps
 
 
 std::string hand="left";
@@ -29,13 +29,14 @@ std::string environment="simulation";
 
 std::string resolvePath(std::string path);
 geometry_msgs::Pose vectordouble2pose(std::vector<double>* vectorpose);
+geometry_msgs::Pose vectorarma2pose(arma::vec* vectorpose);
 arma::mat readMovements(std::string file);
 
-void executeTrajCart(OrocosControlQueue* movementQu, string file);
+void executeTrajCart(std::shared_ptr<OrocosControlQueue> movementQu, string file);
 void collectDataCart(OrocosControlQueue* queue, SimInterface* sim, string object_id);
 t_executor_res executeDMPcart(OrocosControlQueue* movementQu, string file, string file1, int doSimulation, double az, double bz, int plotResults, SimInterface* simI,string object_id);
 t_executor_res executePushCart(OrocosControlQueue* movementQu, string file, string file1, int doSimulation, double az, double bz, int plotResults, SimInterface* simI,string object_id);
-
+t_executor_res executeDemoPush(shared_ptr<OrocosControlQueue> movementQu,shared_ptr<SimInterface> SimI, string file,string fileObject, double az, double bz, int plotResults, int doSimulation, string object_id);
 double az = 48.0;
 double bz = (az - 1) / 4;
 
@@ -66,15 +67,18 @@ int main(int argc, char** args) {
 
     ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
 
+    std::shared_ptr<SimInterface> simI= std::shared_ptr<SimInterface>(new SimInterface (argc, args, kukaStepWaitTime, *node));
+    std::shared_ptr<OrocosControlQueue> queue = std::shared_ptr<OrocosControlQueue>(new OrocosControlQueue(kukaStepWaitTime, environment, arm, *node));
+
     //if (environment=="simulation"){
     thread* inputThr = NULL;
-    SimInterface* simI= new SimInterface (argc, args, kukaStepWaitTime, *node);
+   // SimInterface* simI= new SimInterface (argc, args, kukaStepWaitTime, *node);
     cout<<"sim interface created"<<endl;
 
     RosSchunk* handQ=new RosSchunk(*node, environment, hand);
     cout<<"hand interface created"<<endl;
 
-    OrocosControlQueue* queue = new OrocosControlQueue(kukaStepWaitTime, environment, arm, *node);
+  //  OrocosControlQueue* queue = new OrocosControlQueue(kukaStepWaitTime, environment, arm, *node);
     cout<<"control queue interface created"<<endl;
 
 
@@ -100,8 +104,8 @@ int main(int argc, char** args) {
     float newO[4]={0,0,0,0};
     float dim[3]= {1,2,0.08};
 
-    simI->addPrimShape(1,"sponge",newP,newO, dim,1);
-    simI->setObjMaterial("sponge","lowFrictionMaterial");
+   // simI->addPrimShape(1,"sponge",newP,newO, dim,1);
+   // simI->setObjMaterial("sponge","lowFrictionMaterial");
 
     sleep(1);
 
@@ -126,6 +130,8 @@ int main(int argc, char** args) {
         float newO1[4]={0,0,0,0};
         float dim1[3]= {0.2,0.2,0.1};
 
+
+
         // float newP1[3]={0.27,0.7,0.2}; //first
         string path="/home/c7031098/Documents/Work/pushing/models/2box.stl";
         //  simI->importMesh("2box",path,newP1, newO1, 0.0, 0.8);
@@ -139,6 +145,9 @@ int main(int argc, char** args) {
         // executeTrajCart(queue, resolvePath("/home/c7031098/testing/Rcart1.txt")); //for right arm
         executeTrajCart(queue,resolvePath("/home/c7031098/testing/dataCart/car12.txt"));
 
+        cout<<"end"<<endl;
+
+
         break;
     }
 
@@ -150,7 +159,11 @@ int main(int argc, char** args) {
         //float newP1[3]={0.25,0.7,0.2};
         float newO1[4]={0,0,0,0};
         float dim1[3]= {0.2,0.2,0.1};
+
+        string object_id="2box";
         string path="/home/c7031098/Documents/Work/pushing/models/2box.stl";
+        string file="/home/c7031098/testing/dataCart/car12.txt";
+        string fileObject="/home/c7031098/testing/dataCart/car12.txt";
 
         // float newP1[3]={0.27,0.7,0.2}; //first
         simI->importMesh("2box",path,newP1, newO1, 0.0, 0.8);
@@ -159,7 +172,10 @@ int main(int argc, char** args) {
         queue->moveCartesian(vectordouble2pose(&newPoC1));
 
         cout<<"in starting position C"<<endl;
+
         sleep(5);
+       t_executor_res demoRes= executeDemoPush(queue,simI, file,fileObject,  az,  bz, 0, 1, object_id);
+        //executeDemo(queue,)
        //  t_executor_res demoRes = executeDMPcart(queue, resolvePath("/home/c7031098/testing/dataCart/car12.txt"), resolvePath("/home/c7031098/testing/dataCart/o25d1.txt"),  0, az, bz, 0,simI, "2box");
 
 
@@ -270,6 +286,64 @@ break;
     //inputThr = new thread(collectDataCart,queue,simI,"box1");
     //cout<<"collecting data started"<<endl;
     //executeTrajCart(queue, resolvePath("/home/c7031098/testing/data1.txt"));
+
+    getchar();
+
+    return 0;
+}
+
+
+
+t_executor_res executeDemoPush(shared_ptr<OrocosControlQueue> movementQu,shared_ptr<SimInterface> SimI, string file,string fileObject, double az, double bz, int plotResults, int doSimulation, string object_id) {
+
+    Gnuplot* g1 = NULL;
+
+    vector<double> tmpmys{0, 1, 2, 3, 4, 4.1, 4.3, 4.5};
+    //vector<double> tmpmys;
+    vector<double> tmpsigmas{0.2, 0.8};
+
+    // reading in file
+    mat carts = readMovements(file);
+    tmpmys = constructDmpMys(carts);
+    mat desPos= readMovements(fileObject);
+
+    double tau = 0.8;
+    double ax = -log((float)0.1) / carts(carts.n_rows - 1, 0) / tau;
+
+    vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
+
+    TrajectoryDMPLearner dmpLearner(baseDef, tau, az, bz, ax, carts);
+    Dmp learnedDmps = dmpLearner.fitTrajectories();
+    arma::vec startP=learnedDmps.getY0();
+
+    movementQu->moveCartesian(vectorarma2pose(&startP));
+    movementQu->stopCurrentMode();
+    movementQu->switchMode(20);
+
+    DMPExecutorPush dmpexec(learnedDmps, movementQu, doSimulation, SimI, object_id);
+    t_executor_res dmpResult = dmpexec.simulateTrajectory(2);
+
+    int plotNum = learnedDmps.getDegreesOfFreedom();
+
+    if(plotResults) {
+
+        for(int plotTraj = 0; plotTraj < plotNum; ++plotTraj) {
+
+            ostringstream convert;   // stream used for the conversion
+            convert << plotTraj;
+
+            string title = string("fitted sensor data (joint") + convert.str() + string(")");
+            g1 = new Gnuplot(title);
+            g1->set_style("lines").plot_xy(armadilloToStdVec(learnedDmps.getSupervisedTs()), armadilloToStdVec(learnedDmps.getSampleYByIndex(plotTraj)), "sample y");
+            g1->set_style("lines").plot_xy(armadilloToStdVec(dmpResult.t), armadilloToStdVec(dmpResult.y[plotTraj]), "dmp y");
+            g1->showonscreen();
+
+        }
+
+    }
+
+    return dmpResult;
+
 }
 
 
@@ -288,7 +362,22 @@ geometry_msgs::Pose vectordouble2pose(std::vector<double>* vectorpose){
 
 }
 
-void executeTrajCart(OrocosControlQueue* movementQu, string file){
+geometry_msgs::Pose vectorarma2pose(arma::vec* vectorpose){
+
+    geometry_msgs:: Pose posepose;
+    posepose.position.x=vectorpose->at(0);
+    posepose.position.y=vectorpose->at(1);
+    posepose.position.z=vectorpose->at(2);
+    posepose.orientation.x=vectorpose->at(3);
+    posepose.orientation.y=vectorpose->at(4);
+    posepose.orientation.z=vectorpose->at(5);
+    posepose.orientation.w=vectorpose->at(6);
+
+    return posepose;
+
+}
+
+void executeTrajCart(std::shared_ptr<OrocosControlQueue> movementQu, string file){
 
     int columns = 8;
     mat coord = readMovements(file);
@@ -308,7 +397,8 @@ void executeTrajCart(OrocosControlQueue* movementQu, string file){
         }
         cout<<endl;
 
-        vector<double> diff={0.0,	0.00,	0.05,	0.0,	0.0,	0.0,	1.0};
+       // vector<double> diff={0.0,	0.00,	0.05,	0.0,	0.0,	0.0,	1.0};
+        vector<double> diff={0.0,	0.00,	0.0,	0.0,	0.0,	0.0,	1.0};
         movementQu->moveCartesianRelativeWf(vectordouble2pose(&moveCarts), vectordouble2pose(&diff));
 
     }
