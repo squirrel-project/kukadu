@@ -350,11 +350,16 @@ void OrocosControlQueue::moveCartesian(geometry_msgs::Pose pos) {
         loop_rate->sleep();
         ros::spinOnce();
 
+        double start=ros::Time().toSec();
+
         while(!cartesianPtpReached) {
             loop_rate->sleep();
             loop_rate->sleep();
             loop_rate->sleep();
             ros::spinOnce();
+            if (ros::Time().toSec()-start>30.0){
+                throw new std::string("(OrocosControlQueue) time limit reached; ptp movement not done ");
+            }
         }
         cout << "(OrocosControlQueue) ptp movement done" << endl;
 
@@ -478,3 +483,8 @@ bool OrocosControlQueue::isInitialized() {
 
 void OrocosControlQueue::safelyDestroy() {
 }
+
+/*int OrocosControlQueue::getMode(){
+
+    return currentMode;
+}*/

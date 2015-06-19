@@ -182,6 +182,7 @@ public:
     std::string getRobotName();
     std::string getRobotFileName();
     std::vector<std::string> getJointNames();
+   // int getMode();
 
     static const int KUKA_STOP_MODE = 0;
     static const int KUKA_JNT_POS_MODE = 10;

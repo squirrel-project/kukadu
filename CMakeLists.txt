@@ -125,9 +125,11 @@ src/learning/reinforcement_learning/DmpRewardComputer.cpp
 src/trajectory/TrajectoryExecutor.cpp
 src/robot/PlottingControlQueue.cpp
 src/robot/SensorStorage.cpp
+src/robot/SimInterface.cpp
 src/trajectory/TimeDepDictionaryGeneralizer.cpp
 src/utils/CustomSet.cpp
 src/utils/easyloggingpp/src/easylogging++.h
+src/manipulation/pushing/DMPExecutorPush.cpp
 )
 
 find_package(Eigen REQUIRED)
@@ -158,3 +160,12 @@ target_link_libraries(kukadu_humanoids kukadulib ${catkin_LIBRARIES} ${Boost_LIB
 
 add_executable(kukadu_mes src/guided.cpp)
 target_link_libraries(kukadu_mes kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
+
+add_executable(DMPcart_test src/testingDMPcart.cpp)
+target_link_libraries(DMPcart_test kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
+
+add_executable(SimInt_test src/SimInterfaceExample.cpp)
+target_link_libraries(SimInt_test kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
+
+add_executable(t_push src/techingPush.cpp)
+target_link_libraries(t_push kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})

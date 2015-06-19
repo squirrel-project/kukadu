@@ -4,6 +4,10 @@
 #define SIMULATE_DMP 1
 #define EXECUTE_ROBOT 2
 
+#define KUKADU_EXEC_JOINT 1
+#define KUKADU_EXEC_CART 2
+
+
 #include <armadillo>
 #include <vector>
 #include <iostream>
@@ -56,6 +60,7 @@ private:
     int odeSystemSizeMinOne;
 	
 	int simulate;
+    int controlMode=KUKADU_EXEC_JOINT;
     int odeSystemSize;
 	int degofFreedom;
 	
@@ -101,13 +106,13 @@ private:
 	static int static_func(double t, const double y[], double f[], void *params);
 	static int static_jac (double t, const double y[], double *dfdy, double dfdt[], void *params);
 
-    t_executor_res executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr);
+    t_executor_res executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr,int mode=KUKADU_EXEC_JOINT);
 
 protected:
 
 	int func (double t, const double* y, double* f, void* params);
 	int jac(double t, const double* y, double *dfdy, double* dfdt, void* params);
-    double addTerm(double t, const double* currentDesiredYs, int jointNumber, std::shared_ptr<ControlQueue> queue);
+    virtual double addTerm(double t, const double* currentDesiredYs, int jointNumber, std::shared_ptr<ControlQueue> queue);
 
 public:
 
@@ -124,11 +129,14 @@ public:
 	
     void setTrajectory(std::shared_ptr<Trajectory> traj);
 	
-	t_executor_res simulateTrajectory(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr);
-    t_executor_res executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr);
+    t_executor_res simulateTrajectory(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr, int mode=KUKADU_EXEC_JOINT);
+    t_executor_res executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr, int mode=KUKADU_EXEC_JOINT);
 	
-	t_executor_res simulateTrajectory();
-	t_executor_res executeTrajectory();
+    t_executor_res simulateTrajectory(int mode);
+    t_executor_res executeTrajectory(int mode);
+
+    t_executor_res simulateTrajectory();
+    t_executor_res executeTrajectory();
 	
 	void initializeIntegration(double tStart, double stepSize, double tolAbsErr, double tolRelErr);
 	void destroyIntegration();

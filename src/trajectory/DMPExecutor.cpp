@@ -176,20 +176,22 @@ int DMPExecutor::jac(double t, const double* y, double *dfdy, double* dfdt, void
 	
 }
 
-t_executor_res DMPExecutor::executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
+t_executor_res DMPExecutor::executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr, int mode) {
 
+    this->controlMode=mode;
 	this->ac = ac;
 	this->simulate = EXECUTE_ROBOT;
-    return this->executeDMP(tStart, tEnd, stepSize, tolAbsErr, tolRelErr);
+    return this->executeDMP(tStart, tEnd, stepSize, tolAbsErr, tolRelErr, mode);
 	
 }
 
-t_executor_res DMPExecutor::simulateTrajectory(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
+t_executor_res DMPExecutor::simulateTrajectory(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr,  int mode) {
 
-	this->simulate = SIMULATE_DMP;
+    this->simulate = SIMULATE_DMP;
+    this->controlMode=mode;
     auto begin = std::chrono::high_resolution_clock::now();
 
-    t_executor_res ret = this->executeDMP(tStart, tEnd, stepSize, tolAbsErr, tolRelErr);
+    t_executor_res ret = this->executeDMP(tStart, tEnd, stepSize, tolAbsErr, tolRelErr, mode);
 
     auto end = std::chrono::high_resolution_clock::now();
     std::cout << "(DMPExecutor) the simulation took " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() << " ns" << std::endl;
@@ -198,11 +200,27 @@ t_executor_res DMPExecutor::simulateTrajectory(double tStart, double tEnd, doubl
 
 }
 
-t_executor_res DMPExecutor::simulateTrajectory() {
+t_executor_res DMPExecutor::simulateTrajectory(int mode) {
 	
     this->simulate = SIMULATE_DMP;
-    return this->executeDMP(0, dmp.getTmax(), dmp.getStepSize(), dmp.getTolAbsErr(), dmp.getTolRelErr());
+    this->controlMode=mode;
+    return this->executeDMP(0, dmp.getTmax(), dmp.getStepSize(), dmp.getTolAbsErr(), dmp.getTolRelErr(), mode);
 	
+}
+
+t_executor_res DMPExecutor::executeTrajectory(int mode) {
+
+    this->simulate = EXECUTE_ROBOT;
+    this->controlMode=mode;
+    return this->executeDMP(0, dmp.getTmax(), dmp.getStepSize(), dmp.getTolAbsErr(), dmp.getTolRelErr(), mode);
+
+}
+
+t_executor_res DMPExecutor::simulateTrajectory() {
+
+    this->simulate = SIMULATE_DMP;
+    return this->executeDMP(0, dmp.getTmax(), dmp.getStepSize(), dmp.getTolAbsErr(), dmp.getTolRelErr());
+
 }
 
 t_executor_res DMPExecutor::executeTrajectory() {
@@ -211,7 +229,6 @@ t_executor_res DMPExecutor::executeTrajectory() {
     return this->executeDMP(0, dmp.getTmax(), dmp.getStepSize(), dmp.getTolAbsErr(), dmp.getTolRelErr());
 
 }
-
 void DMPExecutor::initializeIntegration(double tStart, double stepSize, double tolAbsErr, double tolRelErr) {
 
 	t = tStart;
@@ -278,7 +295,7 @@ void DMPExecutor::destroyIntegration() {
 
 }
 
-t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
+t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr, int mode) {
 
     // auto begin = std::chrono::high_resolution_clock::now();
 
@@ -291,7 +308,12 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
 
     vector<double> retT;
 
-    controlQueue->moveJoints(y0s);
+    if (mode==KUKADU_EXEC_JOINT){
+    controlQueue->moveJoints(y0s);}
+    else controlQueue->addCartesianPosToQueue(vectorarma2pose(&y0s));
+
+    cout<<"movement start done"<<endl;
+
 
     initializeIntegration(0, stepSize, tolAbsErr, tolRelErr);
 
@@ -323,8 +345,10 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
         //    begin = end;
             controlQueue->synchronizeToControlQueue(1);
         }
+        if (mode==KUKADU_EXEC_JOINT){
+        controlQueue->addJointsPosToQueue(nextJoints);}
+        else  controlQueue->addCartesianPosToQueue(vectorarma2pose(&nextJoints));
 
-        controlQueue->addJointsPosToQueue(nextJoints);
         retT.push_back(currentTime);
 
     }
