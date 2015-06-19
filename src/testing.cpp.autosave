@@ -54,7 +54,7 @@ int main(int argc, char** args) {
 
     FitCube cube = fitBox(cloud_filtered);
 
-    //transform pointcloud
+    // transform pointcloud
     //transform(*cloud_filtered, *cloud_filtered, )
 
 

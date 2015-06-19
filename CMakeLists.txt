@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(kukadu)
 
+find_package(cmake_modules REQUIRED)
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -16,9 +18,15 @@ find_package(catkin REQUIRED COMPONENTS
     iis_schunk_hardware
     planning_scene_plugin
     tf_conversions
+    pcl_ros
+    pcl_conversions
+    sensor_msgs
 )
 
-find_package(Boost REQUIRED COMPONENTS program_options)
+set(CURSES_USE_NCURSES TRUE)
+find_package(Curses)
+find_package(Boost REQUIRED)
+find_package(PCL REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -36,9 +44,6 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
-set(CURSES_USE_NCURSES TRUE)
-find_package(Curses)
-
 ###########
 ## Build ##
 ###########
@@ -49,11 +54,12 @@ find_package(Curses)
 include_directories(
     ${catkin_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
+    ${Eigen_INCLUDE_DIRS}
     $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/
     $ENV{IIS_INCLUDE_PATH}/external_rosmake_ws/motion_control/motion_control_msgs/msg_gen/cpp/include
 )
 
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 add_definitions(-DOSNAME_LINUX=1)
 add_definitions(-w)
 add_definitions(-std=c++0x)
@@ -124,6 +130,8 @@ src/utils/CustomSet.cpp
 src/utils/easyloggingpp/src/easylogging++.h
 )
 
+find_package(Eigen REQUIRED)
+
 add_executable(pouring src/demo/pouring.cpp)
 target_link_libraries(pouring kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
 
@@ -140,7 +148,7 @@ add_executable(book_lean src/demo/book_lean.cpp)
 target_link_libraries(book_lean kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
 
 add_executable(testing src/testing.cpp)
-target_link_libraries(testing kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
+target_link_libraries(testing kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a)
 
 add_executable(kukadu_screwing src/intellactScrewing.cpp)
 target_link_libraries(kukadu_screwing kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})

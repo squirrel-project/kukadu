@@ -215,7 +215,7 @@ void OrocosControlQueue::cartPtpReachedCallback(const std_msgs::Int32MultiArray&
 
 void OrocosControlQueue::run() {
 
-	setInitValues();
+    setInitValues();
 
     arma::vec movement = arma::vec(1);
 
@@ -229,23 +229,23 @@ void OrocosControlQueue::run() {
 	
 	while(!finish && ros::ok) {
 
-		if(movementQueue.size() > 0) {
-			
-			// move to position in queue
-			movement = movementQueue.front();
-			movementQueue.pop();
+        if(movementQueue.size() > 0) {
+
+            // move to position in queue
+            movement = movementQueue.front();
+            movementQueue.pop();
 
             std_msgs::Float64MultiArray nextCommand;
             for(int i = 0; i < getMovementDegreesOfFreedom(); ++i)
                 nextCommand.data.push_back(movement[i]);
 
-			pubCommand.publish(nextCommand);
+            pubCommand.publish(nextCommand);
 
-		} else {
+        } else {
 
-				movement = currentJoints;
+            movement = currentJoints;
 
-		}
+        }
 		currentTime += sleepTime * 1e-6;
 		usleep(sleepTime);
 		
@@ -263,8 +263,8 @@ void OrocosControlQueue::setInitValues() {
 	
     currentJoints = arma::vec(1);
     currentCarts = arma::vec(1);
-	
-	while(!movementQueue.empty()) movementQueue.pop();
+
+    while(!movementQueue.empty()) movementQueue.pop();
 
 }
 
@@ -299,7 +299,7 @@ void OrocosControlQueue::setFinish() {
 }
 
 void OrocosControlQueue::addJointsPosToQueue(arma::vec joints) {
-	movementQueue.push(joints);
+    movementQueue.push(joints);
 }
 
 void OrocosControlQueue::switchMode(int mode) {
@@ -325,7 +325,7 @@ void OrocosControlQueue::stopCurrentMode() {
 }
 
 void OrocosControlQueue::synchronizeToControlQueue(int maxNumJointsInQueue) {
-	while(movementQueue.size() > maxNumJointsInQueue);
+    while(movementQueue.size() > maxNumJointsInQueue);
 }
 
 void OrocosControlQueue::setStartingJoints(arma::vec joints) {

@@ -60,6 +60,8 @@ private:
 	int monComMode;
 	int impMode;
 	int currentMode;
+
+    std::queue<arma::vec> movementQueue;
 	
     arma::vec startingJoints;
     arma::vec currentJoints;
@@ -69,7 +71,6 @@ private:
 	
 	double currentTime;
 	
-    std::queue<arma::vec> movementQueue;
 	std::mutex currentJointsMutex;
 	std::mutex currentCartsMutex;
     std::mutex cartFrcTrqMutex;
