@@ -16,12 +16,13 @@ using namespace std;
 using namespace arma;
 
 //int test=1; //testing trajectory without dmps
-int test=2; //testing trajectory with dmps
+//int test=2; //testing trajectory with dmps
+int test = 3;
 
 
-std::string hand="left";
-std::string arm="left_arm";
-std::string environment="simulation";
+std::string hand = "left";
+std::string arm = "left_arm";
+std::string environment = "simulation";
 
 //string hand="right";
 //string arm="right_arm";
@@ -40,9 +41,9 @@ t_executor_res executeDemoPush(shared_ptr<OrocosControlQueue> movementQu,shared_
 double az = 48.0;
 double bz = (az - 1) / 4;
 
-int temp=0;
+int temp = 0;
 
-SimInterface *sim;
+
 int kukaStepWaitTime = 1.8 * 1e4;
 double dmpStepSize = kukaStepWaitTime * 1e-6;
 //void collectData(OrocosControlQueueExt* queue);
@@ -70,15 +71,11 @@ int main(int argc, char** args) {
     std::shared_ptr<SimInterface> simI= std::shared_ptr<SimInterface>(new SimInterface (argc, args, kukaStepWaitTime, *node));
     std::shared_ptr<OrocosControlQueue> queue = std::shared_ptr<OrocosControlQueue>(new OrocosControlQueue(kukaStepWaitTime, environment, arm, *node));
 
-    //if (environment=="simulation"){
-    thread* inputThr = NULL;
-   // SimInterface* simI= new SimInterface (argc, args, kukaStepWaitTime, *node);
-    cout<<"sim interface created"<<endl;
 
     RosSchunk* handQ=new RosSchunk(*node, environment, hand);
     cout<<"hand interface created"<<endl;
 
-  //  OrocosControlQueue* queue = new OrocosControlQueue(kukaStepWaitTime, environment, arm, *node);
+    //  OrocosControlQueue* queue = new OrocosControlQueue(kukaStepWaitTime, environment, arm, *node);
     cout<<"control queue interface created"<<endl;
 
 
@@ -104,15 +101,15 @@ int main(int argc, char** args) {
     float newO[4]={0,0,0,0};
     float dim[3]= {1,2,0.08};
 
-   // simI->addPrimShape(1,"sponge",newP,newO, dim,1);
-   // simI->setObjMaterial("sponge","lowFrictionMaterial");
+    // simI->addPrimShape(1,"sponge",newP,newO, dim,1);
+    // simI->setObjMaterial("sponge","lowFrictionMaterial");
 
     sleep(1);
 
-   // arma::vec startPosLeft={-0.7234392762184143, 0.9734601378440857, 1.2643691301345825, -0.9762417674064636, -0.5300372242927551, 1.1202027797698975, 0.3392448425292969};
-   // queue->moveJoints(Rpos);
+    // arma::vec startPosLeft={-0.7234392762184143, 0.9734601378440857, 1.2643691301345825, -0.9762417674064636, -0.5300372242927551, 1.1202027797698975, 0.3392448425292969};
+    // queue->moveJoints(Rpos);
     //float Rpos[7]={0.343906,	0.381331,	0.384666,	0.00919376,	0.679607,	0.729507,	0.0765885};
-      //queue->moveCartQuats(Rpos);
+    //queue->moveCartQuats(Rpos);
 
     switch(test){
 
@@ -166,50 +163,53 @@ int main(int argc, char** args) {
         string fileObject="/home/c7031098/testing/dataCart/car12.txt";
 
         // float newP1[3]={0.27,0.7,0.2}; //first
-        simI->importMesh("2box",path,newP1, newO1, 0.0, 0.8);
-        simI->setObjMaterial("2box","lowFrictionMaterial");
+        // simI->importMesh("2box",path,newP1, newO1, 0.0, 0.8);
+        simI->addPrimShape(1,object_id,newP1,newO1, dim1,1);
+        simI->setObjMaterial(object_id,"lowFrictionMaterial");
         sleep(5);
         queue->moveCartesian(vectordouble2pose(&newPoC1));
 
         cout<<"in starting position C"<<endl;
 
         sleep(5);
-       t_executor_res demoRes= executeDemoPush(queue,simI, file,fileObject,  az,  bz, 0, 1, object_id);
+        t_executor_res demoRes= executeDemoPush(queue,simI, file,fileObject,  az,  bz, 0, 1, object_id);
         //executeDemo(queue,)
-       //  t_executor_res demoRes = executeDMPcart(queue, resolvePath("/home/c7031098/testing/dataCart/car12.txt"), resolvePath("/home/c7031098/testing/dataCart/o25d1.txt"),  0, az, bz, 0,simI, "2box");
+        //  t_executor_res demoRes = executeDMPcart(queue, resolvePath("/home/c7031098/testing/dataCart/car12.txt"), resolvePath("/home/c7031098/testing/dataCart/o25d1.txt"),  0, az, bz, 0,simI, "2box");
 
 
         break;
     }
 
 
+    case 3: {
+        simI->setObjMaterial("sponge","lowFrictionMaterial");
+        float newP2[3]={0.25,0.7,0.2};
+        float newO2[4]={0,0,0,0};
+        float dim2[3]= {0.2,0.06};
+
+        string file="/home/c7031098/testing/dataCart/car31.txt";
+        string fileObject=resolvePath("/home/c7031098/testing/dataCart/ob3.txt");
+        string object_id="bottle";
+        simI->addPrimShape(3,"bottle",newP2,newO2, dim2,0.4);
+        sleep(3);
+
+        simI->setObjPose("bottle",newP2,newO2);
+        // inputThr = new thread(collectData,queue);
+        simI->setObjMaterial("bottle","lowFrictionMaterial");
+        sleep(3);
+        queue->moveCartesian(vectordouble2pose(&newPoC1));
+
+        cout<<"in starting position C"<<endl;
+        sleep(5);
+        t_executor_res demoRes= executeDemoPush(queue,simI, file,fileObject,  az,  bz, 0, 1, object_id);
+
+        break;
+    }
+
     }
 
 
-
-
     /*
-
-case 3: {
-    simI->setObjMaterial("sponge","lowFrictionMaterial");
-         float newP2[3]={0.25,0.7,0.2};
-         float newO2[4]={0,0,0,0};
-         float dim2[3]= {0.2,0.06};
-         simI->addPrimShape(3,"bottle",newP2,newO2, dim2,0.4);
-         sleep(3);
-
-         simI->setObjPose("bottle",newP2,newO2);
-        // inputThr = new thread(collectData,queue);
-         simI->setObjMaterial("bottle","lowFrictionMaterial");
-       sleep(3);
-    queue->moveCartQuats(newPoC1);
-
-    cout<<"in starting position C"<<endl;
-     sleep(5);
-     t_executor_res demoRes = executeDMPcart(queue, resolvePath("/home/c7031098/testing/dataCart/car31.txt"), resolvePath("/home/c7031098/testing/dataCart/ob3.txt"),  0, az, bz, 0,simI, "bottle");
-
-break;
-}
 case 5: {
     simI->setObjMaterial("sponge","lowFrictionMaterial");
          float newP2[3]={0.25,0.7,0.2};
@@ -350,13 +350,13 @@ t_executor_res executeDemoPush(shared_ptr<OrocosControlQueue> movementQu,shared_
 geometry_msgs::Pose vectordouble2pose(std::vector<double>* vectorpose){
 
     geometry_msgs:: Pose posepose;
-    posepose.position.x=vectorpose->at(0);
-    posepose.position.y=vectorpose->at(1);
-    posepose.position.z=vectorpose->at(2);
-    posepose.orientation.x=vectorpose->at(3);
-    posepose.orientation.y=vectorpose->at(4);
-    posepose.orientation.z=vectorpose->at(5);
-    posepose.orientation.w=vectorpose->at(6);
+    posepose.position.x = vectorpose->at(0);
+    posepose.position.y = vectorpose->at(1);
+    posepose.position.z = vectorpose->at(2);
+    posepose.orientation.x = vectorpose->at(3);
+    posepose.orientation.y = vectorpose->at(4);
+    posepose.orientation.z = vectorpose->at(5);
+    posepose.orientation.w = vectorpose->at(6);
 
     return posepose;
 
@@ -365,13 +365,13 @@ geometry_msgs::Pose vectordouble2pose(std::vector<double>* vectorpose){
 geometry_msgs::Pose vectorarma2pose(arma::vec* vectorpose){
 
     geometry_msgs:: Pose posepose;
-    posepose.position.x=vectorpose->at(0);
-    posepose.position.y=vectorpose->at(1);
-    posepose.position.z=vectorpose->at(2);
-    posepose.orientation.x=vectorpose->at(3);
-    posepose.orientation.y=vectorpose->at(4);
-    posepose.orientation.z=vectorpose->at(5);
-    posepose.orientation.w=vectorpose->at(6);
+    posepose.position.x = vectorpose->at(0);
+    posepose.position.y = vectorpose->at(1);
+    posepose.position.z = vectorpose->at(2);
+    posepose.orientation.x = vectorpose->at(3);
+    posepose.orientation.y = vectorpose->at(4);
+    posepose.orientation.z = vectorpose->at(5);
+    posepose.orientation.w = vectorpose->at(6);
 
     return posepose;
 
@@ -381,7 +381,7 @@ void executeTrajCart(std::shared_ptr<OrocosControlQueue> movementQu, string file
 
     int columns = 8;
     mat coord = readMovements(file);
-    int duration=coord.n_rows;
+    int duration = coord.n_rows;
     movementQu->stopCurrentMode();
     movementQu->switchMode(20);
     cout<<"starting movement"<<endl;
@@ -397,11 +397,13 @@ void executeTrajCart(std::shared_ptr<OrocosControlQueue> movementQu, string file
         }
         cout<<endl;
 
-       // vector<double> diff={0.0,	0.00,	0.05,	0.0,	0.0,	0.0,	1.0};
+        // vector<double> diff={0.0,	0.00,	0.05,	0.0,	0.0,	0.0,	1.0};
         vector<double> diff={0.0,	0.00,	0.0,	0.0,	0.0,	0.0,	1.0};
         movementQu->moveCartesianRelativeWf(vectordouble2pose(&moveCarts), vectordouble2pose(&diff));
 
     }
 
 }
+
+
 
