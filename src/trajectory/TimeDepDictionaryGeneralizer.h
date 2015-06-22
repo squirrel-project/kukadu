@@ -12,7 +12,7 @@
 #include "../types/LinCombDmp.h"
 #include "../trajectory/TrajectoryExecutor.h"
 #include "../trajectory/DMPTrajectoryGenerator.h"
-#include "../trajectory/TrajectoryDMPLearner.h"
+#include "../trajectory/JointDMPLearner.h"
 #include "../learning/GenericKernel.h"
 #include "../learning/GaussianProcessRegressor.h"
 #include "../learning/LWRRegressor.h"

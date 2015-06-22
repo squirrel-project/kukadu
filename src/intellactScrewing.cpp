@@ -128,10 +128,10 @@ int main(int argc, char** args) {
             leHand->closeHand(0.1, handVelocity);
 
         if(doRightOperation)
-            raQueue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(kukaStepWaitTime, deviceType, right_prefix, *node));
+            raQueue = std::shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, deviceType, right_prefix, *node));
 
         if(doLeftOperation)
-            leQueue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(kukaStepWaitTime, deviceType, left_prefix, *node));
+            leQueue = std::shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, deviceType, left_prefix, *node));
 
         cout << "(main) connection to arms established" << endl;
 

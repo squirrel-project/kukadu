@@ -35,7 +35,7 @@
 
 #include "Tokenizer.h"
 #include "../trajectory/DMPTrajectoryGenerator.h"
-#include "../trajectory/TrajectoryDMPLearner.h"
+#include "../trajectory/JointDMPLearner.h"
 #include "../learning/GaussianProcessRegressor.h"
 #include "../learning/TricubeKernel.h"
 #include "../learning/GaussianKernel.h"

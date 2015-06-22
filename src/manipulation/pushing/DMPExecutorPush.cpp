@@ -1,6 +1,6 @@
 #include "DMPExecutorPush.h"
 
-DMPExecutorPush::DMPExecutorPush(Dmp dmp, std::shared_ptr<ControlQueue> execQueue, int doSimulation, std::shared_ptr<SimInterface> simI,string object_id): DMPExecutor(dmp, execQueue), object_id(object_id), doSimulation(doSimulation), simI(simI) {
+DMPExecutorPush::DMPExecutorPush(std::shared_ptr<Dmp> dmp, std::shared_ptr<ControlQueue> execQueue, int doSimulation, std::shared_ptr<SimInterface> simI, string object_id): DMPExecutor(dmp, execQueue), object_id(object_id), doSimulation(doSimulation), simI(simI) {
 
 }
 

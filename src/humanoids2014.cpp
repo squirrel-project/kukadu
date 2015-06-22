@@ -69,9 +69,9 @@ int main(int argc, char** args) {
         ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
         std::shared_ptr<ControlQueue> queue(nullptr);
         if(DOSIMULATION)
-            queue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(kukaStepWaitTime, "simulation", "left_arm", *node));
+            queue = std::shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, "simulation", "left_arm", *node));
         else
-            queue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(kukaStepWaitTime, "real", "left_arm", *node));
+            queue = std::shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, "real", "left_arm", *node));
 
         queue->startQueueThread();
         queue->switchMode(10);
@@ -82,7 +82,7 @@ int main(int argc, char** args) {
 
         ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
         std::shared_ptr<ControlQueue> queue = shared_ptr<ControlQueue>(new PlottingControlQueue(1, kukaStepWaitTime));
-//        std::shared_ptr<ControlQueue> queue = std::shared_ptr<ControlQueue>(new OrocosControlQueue(argc, args, kukaStepWaitTime, "simulation", "left_arm", *node));
+//        std::shared_ptr<ControlQueue> queue = std::shared_ptr<ControlQueue>(new KukieControlQueue(argc, args, kukaStepWaitTime, "simulation", "left_arm", *node));
 //        ros::Subscriber sub = node->subscribe("simulation/right_arm/cartesian_control/get_pose_dir_wf", 1, automaticSwitchQueryPoint);
 
         std::shared_ptr<std::thread> queueThread(queue->startQueueThread());
@@ -96,9 +96,9 @@ int main(int argc, char** args) {
         ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
         shared_ptr<ControlQueue> queue(nullptr);
         if(DOSIMULATION)
-            queue = shared_ptr<ControlQueue>(new OrocosControlQueue(kukaStepWaitTime, "simulation", "right_arm", *node));
+            queue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, "simulation", "right_arm", *node));
         else
-            queue = shared_ptr<ControlQueue>(new OrocosControlQueue(kukaStepWaitTime, "real", "right_arm", *node));
+            queue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, "real", "right_arm", *node));
 
         queue->startQueueThread();
         queue->switchMode(10);
@@ -109,8 +109,8 @@ int main(int argc, char** args) {
 
         ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
 
-        shared_ptr<ControlQueue> simulationQueue = shared_ptr<ControlQueue>(new OrocosControlQueue(kukaStepWaitTime, "simulation", "left_arm", *node));
-        shared_ptr<ControlQueue> executionQueue = shared_ptr<ControlQueue>(new OrocosControlQueue(kukaStepWaitTime, "simulation", "left_arm", *node));
+        shared_ptr<ControlQueue> simulationQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, "simulation", "left_arm", *node));
+        shared_ptr<ControlQueue> executionQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, "simulation", "left_arm", *node));
 
         simulationQueue->startQueueThread();
         simulationQueue->switchMode(10);

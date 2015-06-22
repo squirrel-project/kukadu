@@ -59,7 +59,7 @@ include_directories(
     $ENV{IIS_INCLUDE_PATH}/external_rosmake_ws/motion_control/motion_control_msgs/msg_gen/cpp/include
 )
 
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
 add_definitions(-DOSNAME_LINUX=1)
 add_definitions(-w)
 add_definitions(-std=c++0x)
@@ -80,7 +80,7 @@ src/trajectory/DMPExecutor.cpp
 src/trajectory/TrajectoryGenerator.cpp
 src/trajectory/DMPTrajectoryGenerator.cpp
 src/trajectory/PolyTrajectoryGenerator.cpp
-src/trajectory/TrajectoryDMPLearner.cpp
+src/trajectory/JointDMPLearner.cpp
 src/trajectory/DMPGeneralizer.cpp
 src/learning/GenericKernel.cpp
 src/learning/TricubeKernel.cpp
@@ -98,7 +98,7 @@ src/robot/ControlQueue.cpp
 src/robot/KukieSimulator.cpp
 src/learning/reinforcement_learning/DMPReinforcer.cpp
 src/learning/reinforcement_learning/TerminalCostComputer.cpp
-src/robot/OrocosControlQueue.cpp
+src/robot/KukieControlQueue.cpp
 src/trajectory/DictionaryGeneralizer.cpp
 src/trajectory/TrajectoryComparator.cpp
 src/trajectory/DMPTrajectoryComparator.cpp
@@ -108,6 +108,8 @@ src/types/DMP.cpp
 src/types/QueryPoint.cpp
 src/types/DMPBase.cpp
 src/types/LinCombDmp.cpp
+src/types/jointdmp.cpp
+src/types/cartesiandmp.cpp
 src/types/SensorData.cpp
 src/types/DictionaryTrajectory.cpp
 src/learning/metric_learning/Mahalanobis.cpp
@@ -167,5 +169,5 @@ target_link_libraries(DMPcart_test kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARI
 add_executable(SimInt_test src/SimInterfaceExample.cpp)
 target_link_libraries(SimInt_test kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
 
-add_executable(t_push src/techingPush.cpp)
+add_executable(t_push src/teachingPush.cpp)
 target_link_libraries(t_push kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})

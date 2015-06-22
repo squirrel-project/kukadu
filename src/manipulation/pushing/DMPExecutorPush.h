@@ -26,7 +26,7 @@ private:
 
 public:
 
-    DMPExecutorPush(Dmp dmp, std::shared_ptr<ControlQueue> execQueue, int doSimulation, std::shared_ptr<SimInterface> simI,string object_id);
+    DMPExecutorPush(std::shared_ptr<Dmp> dmp, std::shared_ptr<ControlQueue> execQueue, int doSimulation, std::shared_ptr<SimInterface> simI,string object_id);
 
     double addTerm(double t, const double* currentDesiredYs, int jointNumber, std::shared_ptr<ControlQueue> queue) override;
 

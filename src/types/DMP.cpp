@@ -354,23 +354,18 @@ std::vector<arma::vec> fitYs;
 	double bz;
 	double ax;
 */
-int Dmp::operator==(Dmp const& comp) const {
+int Dmp::operator==(std::shared_ptr<Dmp> const& comp) const {
 	
-	Dmp tComp(comp);
-	Dmp tThis(*this);
+//    std::shared_ptr<Dmp> tComp = dynamic_pointer_cast<Dmp>(comp->copy());
+//    std::shared_ptr<Dmp> tThis = dynamic_pointer_cast<Dmp>(this->copy());
 	
 //	cout << "(dmp comp)" << (tComp == tThis)<< " " << (compareVectorOfArmadillos(dmpCoeffs, comp.dmpCoeffs)) << " " << (compareArmadilloVec(y0, comp.y0)) << " " << (compareArmadilloVec(dy0, comp.dy0)) << " " <<
 //				(compareArmadilloVec(ddy0, comp.ddy0)) << " " << (compareArmadilloVec(g, comp.g)) << " " << (dmpBase == comp.dmpBase) << " " <<
 //				(tau == comp.tau) << " " << (az == comp.az) << " " << (bz == comp.bz) << " " << (ax == comp.ax) << endl;
 	
 	// design matrices are ignored here
-	return (compareVectorOfArmadillos(dmpCoeffs, comp.dmpCoeffs) && compareArmadilloVec(y0, comp.y0) && compareArmadilloVec(dy0, comp.dy0) &&
-				compareArmadilloVec(ddy0, comp.ddy0) && compareArmadilloVec(g, comp.g) && dmpBase == comp.dmpBase &&
-				tau == comp.tau && az == comp.az && bz == comp.bz && ax == comp.ax );
+    return (compareVectorOfArmadillos(dmpCoeffs, comp->dmpCoeffs) && compareArmadilloVec(y0, comp->y0) && compareArmadilloVec(dy0, comp->dy0) &&
+                compareArmadilloVec(ddy0, comp->ddy0) && compareArmadilloVec(g, comp->g) && dmpBase == comp->dmpBase &&
+                tau == comp->tau && az == comp->az && bz == comp->bz && ax == comp->ax );
 	
 }
-
-std::shared_ptr<Trajectory> Dmp::copy() {
-    return std::shared_ptr<Trajectory>(new Dmp(*this));
-}
-

@@ -3,7 +3,7 @@
 using namespace arma;
 using namespace std;
 
-DMPTrajectoryComparator::DMPTrajectoryComparator(Dmp traject1, Dmp traject2, vec degOfFreedomWeights, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance) : traj1(traject1), traj2(traject2) {
+DMPTrajectoryComparator::DMPTrajectoryComparator(std::shared_ptr<Dmp> traject1, std::shared_ptr<Dmp> traject2, vec degOfFreedomWeights, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance) : traj1(traject1), traj2(traject2) {
 
     simQueue = std::shared_ptr<PlottingControlQueue>(new PlottingControlQueue(degOfFreedomWeights.n_elem, integrationStep));
 	initAll(integrationStep, tolAbsErr, tolRelErr, degOfFreedomWeights, tTolerance);
@@ -69,15 +69,15 @@ double DMPTrajectoryComparator::computeDistance() {
 }
 
 // TODO: add some optimiziations here (e.g. list of already executed trajectories)
-void DMPTrajectoryComparator::setTrajectories(Dmp traj1, Dmp traj2, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance) {
+void DMPTrajectoryComparator::setTrajectories(std::shared_ptr<Dmp> traj1, std::shared_ptr<Dmp> traj2, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance) {
 	
-	Dmp old1 = this->traj1;
-	Dmp old2 = this->traj2;
+    std::shared_ptr<Dmp> old1 = this->traj1;
+    std::shared_ptr<Dmp> old2 = this->traj2;
 	
 	initAll(integrationStep, tolAbsErr, tolRelErr, degOfFreedomWeights, tTolerance);
 	
 	if(this->traj2 == traj1 || this->traj1 == traj2) {
-		Dmp tmp = traj1;
+        std::shared_ptr<Dmp> tmp = traj1;
 		traj1 = traj2;
 		traj2 = tmp;
 	}
@@ -93,7 +93,7 @@ void DMPTrajectoryComparator::setTrajectories(Dmp traj1, Dmp traj2, double integ
 
 }
 
-t_executor_res DMPTrajectoryComparator::executeTrajectory(Dmp traj) {
+t_executor_res DMPTrajectoryComparator::executeTrajectory(std::shared_ptr<Dmp> traj) {
 	
     DMPExecutor dmpexec(traj, simQueue);
 	
@@ -104,7 +104,7 @@ t_executor_res DMPTrajectoryComparator::executeTrajectory(Dmp traj) {
 	}
     */
 	
-    return dmpexec.simulateTrajectory(0, max(traj1.getTmax(),traj2.getTmax()), integrationStep, tolAbsErr, tolRelErr);
+    return dmpexec.simulateTrajectory(0, max(traj1->getTmax(), traj2->getTmax()), integrationStep, tolAbsErr, tolRelErr);
 	
 }
 
