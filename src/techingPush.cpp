@@ -23,7 +23,7 @@
 using namespace std;
 using namespace arma;
 
-int experiment = 0;
+int experiment = 3;
 //int experiment = 1; // collectiong data by kinesthetic teaching
 //int experiment = 2; // reproducing movement in real world and collectiong data
 //int experiment = 3; // reproducing movement in simulator and collectiong data
@@ -32,7 +32,7 @@ int experiment = 0;
 bool firstSet = false;
 int head = 0;
 
-int kukaStepWaitTime = 1.8 * 1e4;
+int kukaStepWaitTime = 14 * 1e4;
 float pickMaxAxisTorque = 2.0;
 double az = 48.0;
 double bz = (az - 1) / 4;
@@ -40,13 +40,14 @@ double bz = (az - 1) / 4;
 char consoleInputter();
 char consoleInput = 0;
 
-std::string hand="left";
-std::string arm="left_arm";
-std::string environment="simulation";
-string headTopic="/"+environment+"/"+"kit_head/joint_control/move";
+std::string hand = "left";
+std::string arm = "left_arm";
+std::string environment = "simulation";
+string headTopic = "/"+environment+"/"+"kit_head/joint_control/move";
 
 
 void collectDataReal(std::shared_ptr<OrocosControlQueue> queue, string fileR, string fileO, string fileS);
+void collectDataSim(std::shared_ptr<OrocosControlQueue> queue,std::shared_ptr<SimInterface> sim, string objecId, string fileR, string fileO, string fileS);
 geometry_msgs::Pose vectordouble2pose(std::vector<double>* vectorpose);
 t_executor_res executePush(shared_ptr<OrocosControlQueue> movementQu, string file, double az, double bz);
 
@@ -62,11 +63,13 @@ void arCallback(tf::tfMessage msg);
 int main(int argc, char** args) {
 
 
-    string fileO = "/home/c7031098/testing/pos.txt";
-    string fileS = "/home/c7031098/testing/pos.txt";
-    string fileR = "/home/c7031098/testing/pos.txt";
+    string fileO = "/home/c7031098/testing/testCar1/SimposOn.txt";
+    string fileS = "/home/c7031098/testing/testCar1/SimPosSn.txt";
+    string fileR = "/home/c7031098/testing/testCar1/SimPosRn.txt";
 
-    string fileDMP = "/home/c7031098/testing/pos.txt";
+    // string fileDMP = "/home/c7031098/testing/testCar1/posR.txt";
+
+    string fileDMP="/home/c7031098/testing/testCar1/SimPosR.txt";
 
     ros::init(argc, args, "push");
 
@@ -76,6 +79,15 @@ int main(int argc, char** args) {
     std::shared_ptr<std::thread> raThr = std::shared_ptr<std::thread>(nullptr);
 
     queue = std::shared_ptr<OrocosControlQueue>(new OrocosControlQueue(kukaStepWaitTime, environment, arm, *node));
+
+
+    RosSchunk* handQ=new RosSchunk(*node, environment, hand);
+    cout<<"hand interface created"<<endl;
+
+    //moving hand to staring position
+    vector<double> newPos = {0, -1.57, 0, -1.57,0,-1.57,0};
+    handQ->publishSdhJoints(newPos);
+
 
     cout<< "initilization done"<<endl;
 
@@ -146,7 +158,6 @@ int main(int argc, char** args) {
     case 2:{
 
 
-
         if (head){ cout<<"moving head 0.4"<<endl;
 
             headMove = node->advertise<std_msgs::Float64MultiArray>(headTopic, 1);
@@ -208,6 +219,55 @@ int main(int argc, char** args) {
 
         break;
     }
+
+    case 3: {
+        std::shared_ptr<SimInterface> simI= std::shared_ptr<SimInterface>(new SimInterface (argc, args, kukaStepWaitTime, *node));
+        cout<<"simulator interface created"<<endl;
+
+        float newP[3]={0.5,0.7,0.01};
+        float newO[4]={0,0,0,0};
+        float dim[3]= {1,2,0.08};
+
+        simI->addPrimShape(1,"sponge", newP, newO, dim, 10.0);
+        simI->setObjMaterial("sponge","highFrictionMaterial");
+        cout<< "sponge imported "<< endl;
+
+        queue->stopCurrentMode();
+        queue->switchMode(10);
+
+        //vector<double> startP={0.272241000000000,	0.876041000000000,	0.395563000000000,	0.776795000000000,	0.0112587000000000,	-0.0194455000000000,	0.629462000000000};
+        //vector<double> startP={0.10626,	1.08934,	0.305562,	-0.216973,	-0.9353,	0.206316,	0.188599};
+
+        vector<double> startP={0.0605175,	0.744077,	0.288841,	-0.245374,	-0.954758,	0.141078,	0.0912608};
+        vector<double> newPoC1={0.272241000000000,	0.876041000000000,	0.395563000000000,	0.776795000000000,	0.0112587000000000,	-0.0194455000000000,	0.629462000000000};
+
+        cout << "moving to the start position "<< endl;
+        // queue->moveCartesian(vectordouble2pose(&startP));
+        queue->moveCartesian(vectordouble2pose(&newPoC1));
+
+        float newP1[3]={0.30,0.7,0.2};
+        //float newP1[3]={0.23,0.7,0.2};
+        //float newP1[3]={0.25,0.7,0.2};
+        float newO1[4]={0,0,0,0};
+        float dim1[3]= {0.2,0.2,0.1};
+
+        string objectId="box";
+        simI->addPrimShape(1,objectId,newP1,newO1, dim1,1);
+
+        cout <<" box imported " << endl;
+
+        std::thread* inputThrC = NULL;
+        inputThrC = new std::thread(collectDataSim, queue, simI,  objectId, fileR,  fileO, fileS);
+
+        t_executor_res demoRes= executePush(queue, fileDMP, az, bz);
+
+        cout << "movement done "<< endl;
+
+        break;
+
+    }
+
+
         /*
 
 
@@ -344,7 +404,8 @@ void arCallback(tf::tfMessage msg) {
 
 
 
-void collectDataSim(std::shared_ptr<OrocosControlQueue> queue,std::shared_ptr<SimInterface> sim, string object_id, string fileR, string fileO, string fileS){
+void collectDataSim(std::shared_ptr<OrocosControlQueue> queue,std::shared_ptr<SimInterface> sim, string objectId, string fileR, string fileO, string fileS){
+
     ofstream oFile;
     ofstream sFile;
     ofstream rFile;
@@ -353,81 +414,27 @@ void collectDataSim(std::shared_ptr<OrocosControlQueue> queue,std::shared_ptr<Si
     sFile.open(fileS);
     rFile.open(fileR);
 
+    cout << "files open" << endl;
+
     double time = 0.0;
     double lastTime = -1.0;
     arma::vec wrench;
     int columns = 8;
 
-    while(1){
-
-        // mes_result mesRes = queue->getCurrentJoints();
-        geometry_msgs::Pose PoseR = queue->getCartesianPose();
-        mes_result mesResS = queue->getCurrentCartesianFrcTrq();
-
-        time = mesResS.time;
-        wrench = mesResS.joints;
-
-
-        usleep(0.5 * 1e4);
-        if(lastTime != time) {
-
-            rFile << time;
-            rFile << time;
-            rFile << "\t" << PoseR.position.x;
-            rFile << "\t" << PoseR.position.y;
-            rFile << "\t" << PoseR.position.z;
-            rFile << "\t" << PoseR.orientation.x;
-            rFile << "\t" << PoseR.orientation.y;
-            rFile << "\t" << PoseR.orientation.z;
-            rFile << "\t" << PoseR.orientation.w;
-            rFile << endl;
-
-            sFile << time;
-            for(int i = 0; i < columns - 1; ++i) { sFile << "\t" << wrench[i]; }
-            sFile << endl;
-
-            oFile << time;
-            oFile << "\t" << translation.x;
-            oFile << "\t" << translation.y;
-            oFile << "\t" << translation.z;
-            oFile << "\t" << rotation.x;
-            oFile << "\t" << rotation.y;
-            oFile << "\t" << rotation.z;
-            oFile << "\t" << rotation.w;
-            oFile << endl;
-
-            lastTime = time;
-        }
-    }
-
-}
-
-void collectDataReal(std::shared_ptr<OrocosControlQueue> queue, string fileR, string fileO, string fileS){
-    ofstream oFile;
-    ofstream sFile;
-    ofstream rFile;
-
-    oFile.open(fileO);
-    sFile.open(fileS);
-    rFile.open(fileR);
-
-    double time = 0.0;
-    double lastTime = -1.0;
-
-    arma::vec wrench;
-    int columns = 8;
+    double start= ros::Time::now().toSec();
 
     while(1){
 
-        // mes_result mesRes = queue->getCurrentJoints();
+        mes_result mesResJ = queue->getCurrentJoints();
         geometry_msgs::Pose PoseR = queue->getCartesianPose();
+        geometry_msgs::Pose Pose = sim->getObjPose(objectId);
         mes_result mesResS = queue->getCurrentCartesianFrcTrq();
-        geometry_msgs::Pose Pose;
 
-        time = mesResS.time;
+        time = ros::Time::now().toSec() - start;
         wrench = mesResS.joints;
 
-        usleep(0.5 * 1e4);
+
+       // usleep(0.5 * 1e4);
         if(lastTime != time) {
 
             rFile << time;
@@ -454,9 +461,80 @@ void collectDataReal(std::shared_ptr<OrocosControlQueue> queue, string fileR, st
             oFile << "\t" << Pose.orientation.z;
             oFile << "\t" << Pose.orientation.w;
             oFile << endl;
+
             lastTime = time;
+
         }
     }
+
+
+
+
+}
+
+void collectDataReal(std::shared_ptr<OrocosControlQueue> queue, string fileR, string fileO, string fileS){
+    ofstream oFile;
+    ofstream sFile;
+    ofstream rFile;
+
+    oFile.open(fileO);
+    sFile.open(fileS);
+    rFile.open(fileR);
+
+    double time = 0.0;
+    double lastTime = -1.0;
+
+    arma::vec wrench;
+    int columns = 8;
+
+    while(1){
+
+
+
+        // mes_result mesRes = queue->getCurrentJoints();
+        geometry_msgs::Pose PoseR = queue->getCartesianPose();
+        mes_result mesResS = queue->getCurrentCartesianFrcTrq();
+        mes_result joints = queue->getCurrentJoints();
+
+        time = joints.time;
+        wrench = mesResS.joints;
+
+
+        usleep(0.1 * 1e4);
+        if(lastTime != time) {
+
+            rFile << time;
+            rFile << time;
+            rFile << "\t" << PoseR.position.x;
+            rFile << "\t" << PoseR.position.y;
+            rFile << "\t" << PoseR.position.z;
+            rFile << "\t" << PoseR.orientation.x;
+            rFile << "\t" << PoseR.orientation.y;
+            rFile << "\t" << PoseR.orientation.z;
+            rFile << "\t" << PoseR.orientation.w;
+            rFile << endl;
+
+            sFile << time;
+            for(int i = 0; i < columns - 1; ++i) { sFile << "\t" << wrench[i]; }
+            sFile << endl;
+
+
+            oFile << time;
+            oFile << "\t" << translation.x;
+            oFile << "\t" << translation.y;
+            oFile << "\t" << translation.z;
+            oFile << "\t" << rotation.x;
+            oFile << "\t" << rotation.y;
+            oFile << "\t" << rotation.z;
+            oFile << "\t" << rotation.w;
+            oFile << endl;
+
+            lastTime = time;
+
+
+        }
+    }
+
 
 
 }

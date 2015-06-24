@@ -310,7 +310,14 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
 
     if (mode==KUKADU_EXEC_JOINT){
     controlQueue->moveJoints(y0s);}
-    else controlQueue->addCartesianPosToQueue(vectorarma2pose(&y0s));
+    else {
+        controlQueue->switchMode(10);
+        controlQueue->moveCartesian(vectorarma2pose(&y0s));
+       sleep(2);
+        controlQueue->switchMode(20);
+
+    cout<<"movemetn cart to start done"<<endl;}
+       // controlQueue->addCartesianPosToQueue(vectorarma2pose(&y0s));}
 
     cout<<"movement start done"<<endl;
 

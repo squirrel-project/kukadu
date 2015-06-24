@@ -44,7 +44,7 @@ double bz = (az - 1) / 4;
 int temp = 0;
 
 
-int kukaStepWaitTime = 1.8 * 1e4;
+int kukaStepWaitTime = 14 * 1e4;
 double dmpStepSize = kukaStepWaitTime * 1e-6;
 //void collectData(OrocosControlQueueExt* queue);
 
@@ -70,19 +70,16 @@ int main(int argc, char** args) {
 
     std::shared_ptr<SimInterface> simI= std::shared_ptr<SimInterface>(new SimInterface (argc, args, kukaStepWaitTime, *node));
     std::shared_ptr<OrocosControlQueue> queue = std::shared_ptr<OrocosControlQueue>(new OrocosControlQueue(kukaStepWaitTime, environment, arm, *node));
+    cout<<"control queue interface created"<<endl;
 
 
     RosSchunk* handQ=new RosSchunk(*node, environment, hand);
     cout<<"hand interface created"<<endl;
 
-    //  OrocosControlQueue* queue = new OrocosControlQueue(kukaStepWaitTime, environment, arm, *node);
-    cout<<"control queue interface created"<<endl;
-
-
     //moving hand to staring position
-    vector<double> newPos= {0, -1.57, 0, -1.57,0,-1.57,0};
-
+    vector<double> newPos = {0, -1.57, 0, -1.57,0,-1.57,0};
     handQ->publishSdhJoints(newPos);
+
     queue->stopCurrentMode();
     queue->switchMode(10);
     queue->startQueueThread();
@@ -135,12 +132,17 @@ int main(int argc, char** args) {
         // simI->setObjMaterial("2box","lowFrictionMaterial");
         sleep(2);
         cout<<"moving to starting position"<<endl;
-        queue->moveCartesian(vectordouble2pose(&newPoC1));
+
+        vector<double> startP={0.10626,	1.08934,	0.305562,	-0.216973,	-0.9353,	0.206316,	0.188599};
+
+        //queue->moveCartesian(vectordouble2pose(&newPoC1));
+        queue->moveCartesian(vectordouble2pose(&startP));
         sleep(2);
         cout<<"executing trajectory"<<endl;
 
-        // executeTrajCart(queue, resolvePath("/home/c7031098/testing/Rcart1.txt")); //for right arm
-        executeTrajCart(queue,resolvePath("/home/c7031098/testing/dataCart/car12.txt"));
+        //executeTrajCart(queue, resolvePath("/home/c7031098/testing/Rcart1.txt")); //for right arm
+        //executeTrajCart(queue,resolvePath("/home/c7031098/testing/dataCart/car12.txt"));
+        executeTrajCart(queue,resolvePath("/home/c7031098/testing/test1906/posR.txt"));
 
         cout<<"end"<<endl;
 
@@ -172,7 +174,7 @@ int main(int argc, char** args) {
         cout<<"in starting position C"<<endl;
 
         sleep(5);
-        t_executor_res demoRes= executeDemoPush(queue,simI, file,fileObject,  az,  bz, 0, 1, object_id);
+        //t_executor_res demoRes= executeDemoPush(queue,simI, file,fileObject,  az,  bz, 0, 1, object_id);
         //executeDemo(queue,)
         //  t_executor_res demoRes = executeDMPcart(queue, resolvePath("/home/c7031098/testing/dataCart/car12.txt"), resolvePath("/home/c7031098/testing/dataCart/o25d1.txt"),  0, az, bz, 0,simI, "2box");
 
@@ -187,21 +189,23 @@ int main(int argc, char** args) {
         float newO2[4]={0,0,0,0};
         float dim2[3]= {0.2,0.06};
 
-        string file="/home/c7031098/testing/dataCart/car31.txt";
+        string file="/home/c7031098/testing/dataCart/car1.txt";
         string fileObject=resolvePath("/home/c7031098/testing/dataCart/ob3.txt");
-        string object_id="bottle";
-        simI->addPrimShape(3,"bottle",newP2,newO2, dim2,0.4);
+        string object_id="box";
+        simI->addPrimShape(1,object_id,newP2,newO2, dim2,0.4);
         sleep(3);
 
-        simI->setObjPose("bottle",newP2,newO2);
-        // inputThr = new thread(collectData,queue);
-        simI->setObjMaterial("bottle","lowFrictionMaterial");
-        sleep(3);
+
         queue->moveCartesian(vectordouble2pose(&newPoC1));
+
+        simI->setObjPose(object_id,newP2,newO2);
+        // inputThr = new thread(collectData,queue);
+        simI->setObjMaterial(object_id,"highFrictionMaterial");
+        sleep(3);
 
         cout<<"in starting position C"<<endl;
         sleep(5);
-        t_executor_res demoRes= executeDemoPush(queue,simI, file,fileObject,  az,  bz, 0, 1, object_id);
+        //t_executor_res demoRes= executeDemoPush(queue,simI, file,fileObject,  az,  bz, 0, 1, object_id);
 
         break;
     }
@@ -294,7 +298,7 @@ break;
 
 
 
-t_executor_res executeDemoPush(shared_ptr<OrocosControlQueue> movementQu,shared_ptr<SimInterface> SimI, string file,string fileObject, double az, double bz, int plotResults, int doSimulation, string object_id) {
+/*int executeDemoPush(shared_ptr<OrocosControlQueue> movementQu,shared_ptr<SimInterface> SimI, string file,string fileObject, double az, double bz, int plotResults, int doSimulation, string object_id) {
 
     Gnuplot* g1 = NULL;
 
@@ -320,7 +324,7 @@ t_executor_res executeDemoPush(shared_ptr<OrocosControlQueue> movementQu,shared_
     movementQu->stopCurrentMode();
     movementQu->switchMode(20);
 
-    DMPExecutorPush dmpexec(learnedDmps, movementQu, doSimulation, SimI, object_id);
+   /* //DMPExecutorPush dmpexec(learnedDmps, movementQu, doSimulation, SimI, object_id);
     t_executor_res dmpResult = dmpexec.simulateTrajectory(2);
 
     int plotNum = learnedDmps.getDegreesOfFreedom();
@@ -342,9 +346,11 @@ t_executor_res executeDemoPush(shared_ptr<OrocosControlQueue> movementQu,shared_
 
     }
 
-    return dmpResult;
+    //return dmpResult;
 
-}
+    return 0;
+
+}*/
 
 
 geometry_msgs::Pose vectordouble2pose(std::vector<double>* vectorpose){

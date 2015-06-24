@@ -15,7 +15,7 @@ RosSchunk::RosSchunk(ros::NodeHandle node, std::string type, std::string hand) {
     tactileSub = node.subscribe(string("/") + type + string("/") + hand + "_sdh/sensoring/tactile", 1, &RosSchunk::tactileCallback, this);
     previousCurrentPosQueueSize = 10;
     isFirstCallback = true;
-
+cout << string("/") + type + string("/") + hand + "_sdh/joint_control/get_state" << endl;
     ros::Rate r(5);
     while(isFirstCallback) {
         ros::spinOnce();

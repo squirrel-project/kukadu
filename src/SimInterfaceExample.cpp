@@ -40,7 +40,7 @@ int main(int argc, char** args) {
        //checking the pose
 
        geometry_msgs::Pose Pose;
-       simI->getObjPose("dish",Pose);
+       //simI->getObjPose("dish",Pose);
        cout<<Pose<< endl;
 
       //simI->getObjPose("my_box",Pose);

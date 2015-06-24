@@ -60,68 +60,68 @@ void SimInterface::addPrimShape(int type,string object_id,float* position, float
 
     pubObj.publish(primObj);
 
-   cout << "object created" << endl;
+    cout << "object created" << endl;
 
 }
 void SimInterface::addPrimShape(int type,string object_id)
 {
 
-   planning_scene_plugin::AddPrimitiveShape primObj;
-   primObj.object_id=object_id;
+    planning_scene_plugin::AddPrimitiveShape primObj;
+    primObj.object_id=object_id;
 
-   primObj.pose.position.x=0.3;
-   primObj.pose.position.y=0.5;
-   primObj.pose.position.z=0.3;
-   primObj.pose.orientation.x=0.0;
-   primObj.pose.orientation.y=0.0;
-   primObj.pose.orientation.z=0.0;
-   primObj.pose.orientation.w=0.0;
+    primObj.pose.position.x=0.3;
+    primObj.pose.position.y=0.5;
+    primObj.pose.position.z=0.3;
+    primObj.pose.orientation.x=0.0;
+    primObj.pose.orientation.y=0.0;
+    primObj.pose.orientation.z=0.0;
+    primObj.pose.orientation.w=0.0;
 
 
     primObj.mass=0.4;
 
-     if(type==1)
-     {
+    if(type==1)
+    {
 
-     primObj.type=1;
-     vector<double> dim;
-     dim.push_back(0.2);
-     dim.push_back(0.2);
-     dim.push_back(0.2);
-     primObj.dimensions=dim;
-     }
-     else if(type==2)
-     {
-         primObj.type=2;
-         vector<double> dim;
-         dim.push_back(0.2);
-         primObj.dimensions=dim;
-     }
-     else if(type==3)
-     {
+        primObj.type=1;
+        vector<double> dim;
+        dim.push_back(0.2);
+        dim.push_back(0.2);
+        dim.push_back(0.2);
+        primObj.dimensions=dim;
+    }
+    else if(type==2)
+    {
+        primObj.type=2;
+        vector<double> dim;
+        dim.push_back(0.2);
+        primObj.dimensions=dim;
+    }
+    else if(type==3)
+    {
 
-         primObj.type=3;
-         vector<double> dim;
-         dim.push_back(0.2);
-         dim.push_back(0.05);
-         primObj.dimensions=dim;
-     }
-     else if(type==4)
-     {
+        primObj.type=3;
+        vector<double> dim;
+        dim.push_back(0.2);
+        dim.push_back(0.05);
+        primObj.dimensions=dim;
+    }
+    else if(type==4)
+    {
 
-         primObj.type=4;
-         vector<double> dim;
-         dim.push_back(0.2);
-         dim.push_back(0.05);
-         primObj.dimensions=dim;
-     }
-     pubObj.publish(primObj);
+        primObj.type=4;
+        vector<double> dim;
+        dim.push_back(0.2);
+        dim.push_back(0.05);
+        primObj.dimensions=dim;
+    }
+    pubObj.publish(primObj);
 
     cout << "object created" << endl;
 }
 
 
- /*  string file_path  	The absolute path of the mesh file to import
+/*  string file_path  	The absolute path of the mesh file to import
     byte  file_format	A number, indicating the file format (OBJ=0,DXF=1,F3DS=2,ASCII_STL=3,BINARY_STL=4,COLLADA=5)
     string object_id	The name of the object in the simulation scene (if object with given name already exists, it will be removed!!!)
     goemtry_msgs/Pose pose	The target pose of the imported mesh (currently only position data is considered)
@@ -184,56 +184,58 @@ void SimInterface::importMesh(string object_id, string path)
 
 //getting pose of the object
 
-void SimInterface::getObjPose(string object_id, geometry_msgs::Pose &objPose)
-{
+geometry_msgs::Pose SimInterface::getObjPose(string object_id){
 
-        vrep_common::simRosGetObjectHandle handleSrv;
-        handleSrv.request.objectName=object_id;
-        objHandleClient.call(handleSrv);
+    geometry_msgs::Pose objPose;
+    vrep_common::simRosGetObjectHandle handleSrv;
+    handleSrv.request.objectName=object_id;
+    objHandleClient.call(handleSrv);
 
-        vrep_common::simRosGetObjectPose getPoseSrv;
-        getPoseSrv.request.relativeToObjectHandle = REF_FRAME_ORIGIN;
-        getPoseSrv.request.handle=handleSrv.response.handle;
-        monitorObjClient.call(getPoseSrv);
-        objPose = getPoseSrv.response.pose.pose;
+    vrep_common::simRosGetObjectPose getPoseSrv;
+    getPoseSrv.request.relativeToObjectHandle = REF_FRAME_ORIGIN;
+    getPoseSrv.request.handle=handleSrv.response.handle;
+    monitorObjClient.call(getPoseSrv);
+    objPose = getPoseSrv.response.pose.pose;
+
+    return objPose;
 }
 
 void SimInterface::setObjPose(string object_id, float* position, float* orientation)
 {
-         planning_scene_plugin::SetObjectPose srv;
-         srv.request.object_id=object_id;
-         srv.request.pose.position.x=position[0];
-         srv.request.pose.position.y=position[1];
-         srv.request.pose.position.z=position[2];
-         srv.request.pose.orientation.x=orientation[0];
-         srv.request.pose.orientation.y=orientation[1];
-         srv.request.pose.orientation.z=orientation[2];
-         srv.request.pose.orientation.w=orientation[3];
+    planning_scene_plugin::SetObjectPose srv;
+    srv.request.object_id=object_id;
+    srv.request.pose.position.x=position[0];
+    srv.request.pose.position.y=position[1];
+    srv.request.pose.position.z=position[2];
+    srv.request.pose.orientation.x=orientation[0];
+    srv.request.pose.orientation.y=orientation[1];
+    srv.request.pose.orientation.z=orientation[2];
+    srv.request.pose.orientation.w=orientation[3];
 
-         setPoseClient.call(srv);
+    setPoseClient.call(srv);
 }
 
 void SimInterface::removeObj(string object_id)
 {
-        cout << "removing object "<<object_id<<endl;
-        vrep_common::simRosGetObjectHandle handleSrv;
-        vrep_common::simRosRemoveObject remObj, remObjVis;
+    cout << "removing object "<<object_id<<endl;
+    vrep_common::simRosGetObjectHandle handleSrv;
+    vrep_common::simRosRemoveObject remObj, remObjVis;
 
-        char str[object_id.size() + 1];
-        memcpy(str, object_id.c_str(), object_id.size() + 1);
-        strcat(str,"_visible");
+    char str[object_id.size() + 1];
+    memcpy(str, object_id.c_str(), object_id.size() + 1);
+    strcat(str,"_visible");
 
-        handleSrv.request.objectName=str;
-        objHandleClient.call(handleSrv);
-        remObjVis.request.handle=handleSrv.response.handle;
-        removeObjClient.call(remObjVis);
+    handleSrv.request.objectName=str;
+    objHandleClient.call(handleSrv);
+    remObjVis.request.handle=handleSrv.response.handle;
+    removeObjClient.call(remObjVis);
 
-        handleSrv.request.objectName=object_id;
-        objHandleClient.call(handleSrv);
-        remObj.request.handle=handleSrv.response.handle;
-        removeObjClient.call(remObj);
+    handleSrv.request.objectName=object_id;
+    objHandleClient.call(handleSrv);
+    remObj.request.handle=handleSrv.response.handle;
+    removeObjClient.call(remObj);
 
-        cout << "object "<<object_id<<" removed"<<endl;
+    cout << "object "<<object_id<<" removed"<<endl;
 }
 
 /*/simulation/scene/SetObjectMaterial

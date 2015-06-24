@@ -61,8 +61,7 @@ public:
    void importMesh(std::string object_id,std:: string path,float* position, float* orientation);
    void importMesh(std::string object_id,std::string path);
 
-
-   void getObjPose(std::string object_id, geometry_msgs::Pose &objPose);
+   geometry_msgs::Pose getObjPose(std::string object_id);
    void removeObj(std::string object_id);
    void setObjPose(std::string object_id, float* position, float* orientation);
    void setObjMaterial(std::string object_id,std::string material_id);

@@ -46,7 +46,7 @@ struct gsl_delete_expression {
  */
 class DMPExecutor : public TrajectoryExecutor {
 
-private:
+protected:
 
 	double tau;
 	double az;
@@ -110,7 +110,7 @@ private:
 
 protected:
 
-	int func (double t, const double* y, double* f, void* params);
+    virtual int func (double t, const double* y, double* f, void* params);
 	int jac(double t, const double* y, double *dfdy, double* dfdt, void* params);
     virtual double addTerm(double t, const double* currentDesiredYs, int jointNumber, std::shared_ptr<ControlQueue> queue);
 
