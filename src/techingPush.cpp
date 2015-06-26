@@ -28,7 +28,8 @@ int experiment = 3;
 //int experiment = 2; // reproducing movement in real world and collectiong data
 //int experiment = 3; // reproducing movement in simulator and collectiong data
 
-
+bool record = false;
+bool start = false;
 bool firstSet = false;
 int head = 0;
 
@@ -63,13 +64,14 @@ void arCallback(tf::tfMessage msg);
 int main(int argc, char** args) {
 
 
-    string fileO = "/home/c7031098/testing/testCar1/SimposOn.txt";
-    string fileS = "/home/c7031098/testing/testCar1/SimPosSn.txt";
-    string fileR = "/home/c7031098/testing/testCar1/SimPosRn.txt";
+    string fileO = "/home/c7031098/testing/testCar1/SimposO1.txt";
+    string fileS = "/home/c7031098/testing/testCar1/SimPosS1.txt";
+    string fileR = "/home/c7031098/testing/testCar1/SimPosR1.txt";
 
-    // string fileDMP = "/home/c7031098/testing/testCar1/posR.txt";
+    //string fileDMP = "/home/c7031098/testing/testCar1/posR.txt";
 
-    string fileDMP="/home/c7031098/testing/testCar1/SimPosR.txt";
+    string fileDMP = "/home/c7031098/testing/testCar1/car1.txt";
+
 
     ros::init(argc, args, "push");
 
@@ -80,12 +82,11 @@ int main(int argc, char** args) {
 
     queue = std::shared_ptr<OrocosControlQueue>(new OrocosControlQueue(kukaStepWaitTime, environment, arm, *node));
 
-
     RosSchunk* handQ=new RosSchunk(*node, environment, hand);
     cout<<"hand interface created"<<endl;
 
     //moving hand to staring position
-    vector<double> newPos = {0, -1.57, 0, -1.57,0,-1.57,0};
+    vector<double> newPos = {0, -1.57, 0, -1.57, 0, -1.57, 0};
     handQ->publishSdhJoints(newPos);
 
 
@@ -256,6 +257,7 @@ int main(int argc, char** args) {
 
         cout <<" box imported " << endl;
 
+        start = 1;
         std::thread* inputThrC = NULL;
         inputThrC = new std::thread(collectDataSim, queue, simI,  objectId, fileR,  fileO, fileS);
 
@@ -422,50 +424,60 @@ void collectDataSim(std::shared_ptr<OrocosControlQueue> queue,std::shared_ptr<Si
     int columns = 8;
 
     double start= ros::Time::now().toSec();
+    vector<geometry_msgs::Pose> robotP;
+    vector<geometry_msgs::Pose> objectP;
+    vector <double> tvec;
 
-    while(1){
+    while (start && !record){
+        if (record) start = false;
 
-        mes_result mesResJ = queue->getCurrentJoints();
-        geometry_msgs::Pose PoseR = queue->getCartesianPose();
-        geometry_msgs::Pose Pose = sim->getObjPose(objectId);
-        mes_result mesResS = queue->getCurrentCartesianFrcTrq();
+    }
+
+    while(record){
+
+
+        //mes_result mesResJ = queue->getCurrentJoints();
+       // geometry_msgs::Pose PoseR = queue->getCartesianPose();
+       // geometry_msgs::Pose Pose = sim->getObjPose(objectId);
+        //mes_result mesResS = queue->getCurrentCartesianFrcTrq();
 
         time = ros::Time::now().toSec() - start;
-        wrench = mesResS.joints;
+        tvec.push_back(time);
+        robotP.push_back(queue->getCartesianPose());
+        objectP.push_back(sim->getObjPose(objectId));
 
+         usleep(0.5 * 1e3);
 
-       // usleep(0.5 * 1e4);
-        if(lastTime != time) {
-
-            rFile << time;
-            rFile << time;
-            rFile << "\t" << PoseR.position.x;
-            rFile << "\t" << PoseR.position.y;
-            rFile << "\t" << PoseR.position.z;
-            rFile << "\t" << PoseR.orientation.x;
-            rFile << "\t" << PoseR.orientation.y;
-            rFile << "\t" << PoseR.orientation.z;
-            rFile << "\t" << PoseR.orientation.w;
-            rFile << endl;
-
-            sFile << time;
-            for(int i = 0; i < columns - 1; ++i) { sFile << "\t" << wrench[i]; }
-            sFile << endl;
-
-            oFile << time;
-            oFile << "\t" << Pose.position.x;
-            oFile << "\t" << Pose.position.y;
-            oFile << "\t" << Pose.position.z;
-            oFile << "\t" << Pose.orientation.x;
-            oFile << "\t" << Pose.orientation.y;
-            oFile << "\t" << Pose.orientation.z;
-            oFile << "\t" << Pose.orientation.w;
-            oFile << endl;
-
-            lastTime = time;
-
-        }
     }
+
+
+   cout << "writing to files recorded data; data length " << tvec.size() << endl;
+
+   for (int i=0; i<tvec.size(); i++){
+    rFile << tvec.at(i);
+    rFile << "\t" << robotP.at(i).position.x;
+    rFile << "\t" << robotP.at(i).position.y;
+    rFile << "\t" << robotP.at(i).position.z;
+    rFile << "\t" << robotP.at(i).orientation.x;
+    rFile << "\t" << robotP.at(i).orientation.y;
+    rFile << "\t" << robotP.at(i).orientation.z;
+    rFile << "\t" << robotP.at(i).orientation.w;
+    rFile << endl;
+
+
+    oFile << tvec.at(i);
+    oFile << "\t" << objectP.at(i).position.x;
+    oFile << "\t" << objectP.at(i).position.y;
+    oFile << "\t" << objectP.at(i).position.z;
+    oFile << "\t" << objectP.at(i).orientation.x;
+    oFile << "\t" << objectP.at(i).orientation.y;
+    oFile << "\t" << objectP.at(i).orientation.z;
+    oFile << "\t" << objectP.at(i).orientation.w;
+    oFile << endl;
+
+    }
+
+   cout << " writing done " << endl;
 
 
 
@@ -487,6 +499,8 @@ void collectDataReal(std::shared_ptr<OrocosControlQueue> queue, string fileR, st
     arma::vec wrench;
     int columns = 8;
 
+
+
     while(1){
 
 
@@ -500,10 +514,9 @@ void collectDataReal(std::shared_ptr<OrocosControlQueue> queue, string fileR, st
         wrench = mesResS.joints;
 
 
-        usleep(0.1 * 1e4);
+        usleep(0.5 * 1e4);
         if(lastTime != time) {
 
-            rFile << time;
             rFile << time;
             rFile << "\t" << PoseR.position.x;
             rFile << "\t" << PoseR.position.y;
@@ -554,6 +567,11 @@ t_executor_res executePush(shared_ptr<OrocosControlQueue> movementQu, string fil
 
     // reading in file
     mat carts = readMovements(file);
+
+    for (int i=1; i <carts.n_rows; i++){
+
+
+    }
     tmpmys = constructDmpMys(carts);
 
     double tau = 0.8;
@@ -570,7 +588,10 @@ t_executor_res executePush(shared_ptr<OrocosControlQueue> movementQu, string fil
     movementQu->switchMode(20);
 
     DMPExecutor dmpexec(learnedDmps, movementQu, 0);
+    record = true;
     t_executor_res dmpResult = dmpexec.executeTrajectory(2);
+
+    record = false;
 
 
     return dmpResult;
@@ -593,3 +614,76 @@ geometry_msgs::Pose vectordouble2pose(std::vector<double>* vectorpose){
     return posepose;
 
 }
+
+
+/*void collectDataSim(std::shared_ptr<OrocosControlQueue> queue,std::shared_ptr<SimInterface> sim, string objectId, string fileR, string fileO, string fileS){
+
+    ofstream oFile;
+    ofstream sFile;
+    ofstream rFile;
+
+    oFile.open(fileO);
+    sFile.open(fileS);
+    rFile.open(fileR);
+
+    cout << "files open" << endl;
+
+    double time = 0.0;
+    double lastTime = -1.0;
+    arma::vec wrench;
+    int columns = 8;
+
+    double start= ros::Time::now().toSec();
+    vector<geometry_msgs::Pose> robotP;
+    vector<geometry_msgs::Pose> objectP;
+
+    while(record){
+
+
+
+        mes_result mesResJ = queue->getCurrentJoints();
+       // geometry_msgs::Pose PoseR = queue->getCartesianPose();
+       // geometry_msgs::Pose Pose = sim->getObjPose(objectId);
+        //mes_result mesResS = queue->getCurrentCartesianFrcTrq();
+
+        time = ros::Time::now().toSec() - start;
+        wrench = mesResS.joints;
+
+
+       // usleep(0.5 * 1e4);
+        if(lastTime != time) {
+
+            rFile << time;
+            rFile << time;
+            rFile << "\t" << PoseR.position.x;
+            rFile << "\t" << PoseR.position.y;
+            rFile << "\t" << PoseR.position.z;
+            rFile << "\t" << PoseR.orientation.x;
+            rFile << "\t" << PoseR.orientation.y;
+            rFile << "\t" << PoseR.orientation.z;
+            rFile << "\t" << PoseR.orientation.w;
+            rFile << endl;
+
+            sFile << time;
+            for(int i = 0; i < columns - 1; ++i) { sFile << "\t" << wrench[i]; }
+            sFile << endl;
+
+            oFile << time;
+            oFile << "\t" << Pose.position.x;
+            oFile << "\t" << Pose.position.y;
+            oFile << "\t" << Pose.position.z;
+            oFile << "\t" << Pose.orientation.x;
+            oFile << "\t" << Pose.orientation.y;
+            oFile << "\t" << Pose.orientation.z;
+            oFile << "\t" << Pose.orientation.w;
+            oFile << endl;
+
+            lastTime = time;
+
+        }
+    }
+
+
+
+
+}*/
