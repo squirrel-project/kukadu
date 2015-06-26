@@ -115,7 +115,7 @@ int main(int argc, char** args) {
     int kukaStepWaitTime = dmpStepSize * 1e6;
 
     ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
-    shared_ptr<ControlQueue> leftQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, "real", "right_arm", *node));
+    shared_ptr<ControlQueue> leftQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, "simulation", "right_arm", *node));
     vector<shared_ptr<ControlQueue>> queueVectors;
     queueVectors.push_back(leftQueue);
 

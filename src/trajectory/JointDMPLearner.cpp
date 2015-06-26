@@ -27,6 +27,22 @@ std::shared_ptr<Dmp> JointDMPLearner::createDmpInstance(arma::vec supervisedTs, 
 
 }
 
-arma::vec JointDMPLearner::computeFitY(arma::vec& time, arma::vec& y, arma::vec& dy, arma::vec& ddy, arma::vec& vec_g) {
-    return tau * tau * ddy - az * (bz * (vec_g - y) - tau * dy);
+arma::mat JointDMPLearner::computeFitY(arma::vec& time, arma::mat &y, arma::mat &dy, arma::mat &ddy, arma::vec& vec_g) {
+
+    mat retMat(y.n_cols, y.n_rows);
+    for(int i = 0; i < y.n_rows; ++i) {
+
+        for(int j = 0; j < y.n_cols; ++j) {
+
+            double yVal = y(i, j);
+            double dyVal = dy(i, j);
+            double ddyVal = ddy(i, j);
+            retMat(j, i) = tau * tau * ddyVal - az * (bz * (vec_g(j) - yVal) - tau * dyVal);
+
+        }
+
+    }
+
+    return retMat;
+
 }

@@ -22,7 +22,7 @@ private:
     std::vector<DMPBase> dmpBase;
 
     void construct(std::vector<DMPBase> dmpBase, double tau, double az, double bz, double ax, arma::mat joints, int degFreedom);
-    trajectory_learner_internal fitTrajectory(arma::vec time, arma::vec y, arma::vec dy, arma::vec ddy);
+    std::vector<trajectory_learner_internal> fitTrajectory(arma::vec time, arma::mat y, arma::mat dy, arma::mat ddy);
 
 protected:
 
@@ -34,7 +34,7 @@ protected:
     virtual std::shared_ptr<Dmp> createDmpInstance(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<arma::vec> fitYs, std::vector<arma::vec> dmpCoeffs, std::vector<DMPBase> dmpBase, std::vector<arma::mat> designMatrices,
                                                    double tau, double az, double bz, double ax) = 0;
 
-    virtual arma::vec computeFitY(arma::vec& time, arma::vec& y, arma::vec& dy, arma::vec& ddy, arma::vec& vec_g) = 0;
+    virtual arma::mat computeFitY(arma::vec& time, arma::mat& y, arma::mat& dy, arma::mat& ddy, arma::vec& vec_g) = 0;
 
 public:
 
