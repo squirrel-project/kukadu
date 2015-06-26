@@ -81,6 +81,7 @@ src/trajectory/TrajectoryGenerator.cpp
 src/trajectory/DMPTrajectoryGenerator.cpp
 src/trajectory/PolyTrajectoryGenerator.cpp
 src/trajectory/JointDMPLearner.cpp
+src/trajectory/generaldmplearner.cpp
 src/trajectory/DMPGeneralizer.cpp
 src/learning/GenericKernel.cpp
 src/learning/TricubeKernel.cpp

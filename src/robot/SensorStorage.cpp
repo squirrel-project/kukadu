@@ -16,6 +16,8 @@ SensorStorage::SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, 
     stopped = false;
     storageStopped = true;
 
+    thr = nullptr;
+
     storeTime = storeJntPos = storeCartPos = storeJntFrc = storeCartFrcTrq = storeHndJntPos = storeHndTctle = true;
 
 }
@@ -72,7 +74,7 @@ std::shared_ptr<std::thread> SensorStorage::startDataStorage(std::string folderN
             handStreams.push_back(queueFile);
         }
 
-        shared_ptr<thread> thr = shared_ptr<thread>(nullptr);
+        thr = shared_ptr<thread>(nullptr);
         thr = std::shared_ptr<std::thread>(new std::thread(&SensorStorage::store, this));
         storageStopped = false;
         return thr;

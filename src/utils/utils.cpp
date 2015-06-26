@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "../trajectory/DMPExecutor.h"
 
 using namespace std;
 using namespace arma;

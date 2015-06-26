@@ -52,6 +52,19 @@ SensorData::SensorData(std::string timeLabel, std::vector<std::string> jointPosL
 
 }
 
+void SensorData::removeDuplicateTimes() {
+
+    double currentTime = DBL_MAX;
+    int vecSize = values.n_rows;
+    for(int i = 0; i < vecSize; ++i) {
+        double nextTime = getTime(i);
+        if(currentTime == nextTime) {
+            values.shed_row(i);
+        }
+    }
+
+}
+
 int SensorData::labelExists(std::string label) {
 
     for(int i = 0; i < labels.size(); ++i) {

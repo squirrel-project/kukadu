@@ -2,6 +2,9 @@
 
 #include <memory>
 #include <iostream>
+#include <boost/program_options.hpp>
+
+/*
 #include <pcl/common/common.h>
 #include <pcl/common/transforms.h>
 #include <pcl/common/pca.h>
@@ -13,20 +16,142 @@
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/segmentation/extract_clusters.h>
+*/
+
+namespace po = boost::program_options;
 
 using namespace std;
-using namespace pcl;
+//using namespace pcl;
 
+/*
 struct FitCube {
     Eigen::Vector3f translation;
     Eigen::Quaternionf rotation;
     double width, height, depth;
 };
+*/
 
+/*
 PointCloud<PointXYZ>::Ptr segmentPlanar(PointCloud<PointXYZ>::Ptr cloud, bool negative);
 FitCube fitBox(PointCloud<PointXYZ>::Ptr cloud);
+*/
 
 int main(int argc, char** args) {
+
+    int importanceSamplingCount;
+    double tau, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ac, as, alpham;
+    string inDir, cfFile, dataFolder, trajFile;
+    vector<double> rlExploreSigmas;
+
+    // Declare the supported options.
+    po::options_description desc("Allowed options");
+    desc.add_options()
+            ("metric.database", po::value<string>(), "database folder")
+            ("metric.goldStandard", po::value<string>(), "gold standard file")
+            ("metric.alpham", po::value<double>(), "alpham")
+            ("metric.exploreSigmas", po::value<string>(), "reinforcement learning exploration sigmas")
+            ("metric.importanceSamplingCount", po::value<int>(), "size of importance sampling vector")
+            ("metric.as", po::value<double>(), "as")
+            ("dmp.tau", po::value<double>(), "tau")
+            ("dmp.az", po::value<double>(), "az")
+            ("dmp.bz", po::value<double>(), "bz")
+            ("dmp.dmpStepSize", po::value<double>(), "dmp time step size")
+            ("dmp.tolAbsErr", po::value<double>(), "tolerated absolute error")
+            ("dmp.tolRelErr", po::value<double>(), "tolerated relative error")
+            ("dmp.ac", po::value<double>(), "ac")
+            ("mes.folder", po::value<string>(), "measurment data folder")
+            ("pick.trajectory", po::value<string>(), "data for measured trajectory")
+    ;
+
+    ifstream parseFile(resolvePath("$KUKADU_HOME/cfg/book_pick.prop"), std::ifstream::in);
+    po::variables_map vm;
+    po::store(po::parse_config_file(parseFile, desc), vm);
+    po::notify(vm);
+
+    if (vm.count("dmp.tau")) tau = vm["dmp.tau"].as<double>();
+    else return 1;
+    if (vm.count("dmp.az")) az = vm["dmp.az"].as<double>();
+    else return 1;
+    if (vm.count("dmp.bz")) bz = vm["dmp.bz"].as<double>();
+    else return 1;
+    if (vm.count("dmp.dmpStepSize")) dmpStepSize = vm["dmp.dmpStepSize"].as<double>();
+    else return 1;
+    if (vm.count("dmp.tolAbsErr")) tolAbsErr = vm["dmp.tolAbsErr"].as<double>();
+    else return 1;
+    if (vm.count("dmp.tolRelErr")) tolRelErr = vm["dmp.tolRelErr"].as<double>();
+    else return 1;
+    if (vm.count("dmp.ac")) ac = vm["dmp.ac"].as<double>();
+    else return 1;
+
+    if (vm.count("metric.as")) as = vm["metric.as"].as<double>();
+    else return 1;
+    if (vm.count("metric.database")) inDir = resolvePath(vm["metric.database"].as<string>());
+    else return 1;
+    if (vm.count("metric.goldStandard")) cfFile = resolvePath(vm["metric.goldStandard"].as<string>());
+    else return 1;
+    if (vm.count("metric.alpham")) alpham = vm["metric.alpham"].as<double>();
+    else return 1;
+    if (vm.count("metric.exploreSigmas")) {
+        string tokens = vm["metric.exploreSigmas"].as<string>();
+        stringstream parseStream(tokens);
+        char bracket;
+        double dToken;
+        parseStream >> bracket;
+        while(bracket != '}') {
+            parseStream >> dToken >> bracket;
+            rlExploreSigmas.push_back(dToken);
+        }
+    } else return 1;
+    if (vm.count("metric.importanceSamplingCount")) importanceSamplingCount = vm["metric.importanceSamplingCount"].as<int>();
+    else return 1;
+
+    if (vm.count("mes.folder")) dataFolder = resolvePath(vm["mes.folder"].as<string>());
+    else return 1;
+
+    if (vm.count("pick.trajectory")) trajFile = resolvePath(vm["pick.trajectory"].as<string>());
+    else return 1;
+
+    cout << "all properties loaded" << endl;
+    int kukaStepWaitTime = dmpStepSize * 1e6;
+
+    ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
+    shared_ptr<ControlQueue> leftQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, "real", "right_arm", *node));
+    vector<shared_ptr<ControlQueue>> queueVectors;
+    queueVectors.push_back(leftQueue);
+
+    leftQueue->stopCurrentMode();
+
+    shared_ptr<thread> lqThread = leftQueue->startQueueThread();
+    leftQueue->switchMode(10);
+    leftQueue->moveJoints(stdToArmadilloVec({-0.142816, 1.02806, 1.38676, 0.855349, -0.611948, -1.11719, -1.87344}));
+
+    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031109/tmp/data/kuka_lwr_real_right_arm_0");
+    data->removeDuplicateTimes();
+
+    arma::vec times = data->getTimes();
+    arma::mat jointPos = data->getJointPos();
+
+    JointDMPLearner learner(az, bz, join_rows(times, jointPos));
+    std::shared_ptr<Dmp> leftDmp = learner.fitTrajectories();
+    DMPExecutor leftExecutor(leftDmp, leftQueue);
+    leftExecutor.executeTrajectory(ac, 0, leftDmp->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+
+    /*
+    int timeCount = data->getTimes().n_elem;
+    ros::Rate r(75);
+    arma::vec currentRow;
+    for(int i = 0; i < timeCount; ++i) {
+        currentRow = data->getJointPosRow(i);
+        leftQueue->addJointsPosToQueue(currentRow);
+        //leftQueue->synchronizeToControlQueue(1);
+        r.sleep();
+    }
+    */
+
+    leftQueue->stopCurrentMode();
+    getchar();
+
+    /*
 
     char* pcdFile = "/home/c7031109/tmp/pcds/with-object.pcd";
 
@@ -106,6 +231,7 @@ int main(int argc, char** args) {
     ros::shutdown();
     return 0;
 
+    */
 
     /*
     ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
@@ -150,6 +276,7 @@ int main(int argc, char** args) {
 
 }
 
+/*
 // according to http://www.pcl-users.org/Finding-oriented-bounding-box-of-a-cloud-td4024616.html
 FitCube fitBox(PointCloud<PointXYZ>::Ptr cloud) {
 
@@ -239,3 +366,4 @@ PointCloud<PointXYZ>::Ptr segmentPlanar(PointCloud<PointXYZ>::Ptr cloud, bool ne
     return cloud_f;
 
 }
+*/

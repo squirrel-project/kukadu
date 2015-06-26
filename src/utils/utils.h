@@ -33,15 +33,14 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "Tokenizer.h"
 #include "../trajectory/DMPTrajectoryGenerator.h"
-#include "../trajectory/JointDMPLearner.h"
 #include "../learning/GaussianProcessRegressor.h"
 #include "../learning/TricubeKernel.h"
 #include "../learning/GaussianKernel.h"
 #include "../robot/ControlQueue.h"
 #include "../types/DMPBase.h"
 #include "types.h"
+#include "Tokenizer.h"
 
 #include "gnuplot-cpp/gnuplot_i.hpp"
 

@@ -1,9 +1,10 @@
 #ifndef DMP
 #define DMP
 
-#include "SingleSampleTrajectory.h"
 #include "DMPBase.h"
+#include "SingleSampleTrajectory.h"
 #include "../utils/conversion_utils.h"
+
 #include <vector>
 #include <armadillo>
 

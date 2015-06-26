@@ -43,6 +43,8 @@ private:
 
     double pollingFrequency;
 
+    std::shared_ptr<std::thread> thr;
+
     std::vector<std::shared_ptr<ControlQueue>> queues;
     std::vector<std::shared_ptr<GenericHand>> hands;
 
