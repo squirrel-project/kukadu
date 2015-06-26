@@ -58,7 +58,6 @@
 #include "../src/robot/PlottingControlQueue.h"
 #include "../src/trajectory/TimeDepDictionaryGeneralizer.h"
 #include "../src/robot/SimInterface.h"
-#include "../src/manipulation/pushing/DMPExecutorPush.h"
 
 #ifdef ROS_SUPPORT
 #include "../src/robot/KukieControlQueue.h"
