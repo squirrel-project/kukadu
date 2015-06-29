@@ -24,7 +24,7 @@ private:
 	CostComputer* cost;
     std::shared_ptr<ControlQueue> movementQueue;
 	
-	std::vector<Dmp> rollout;
+    std::vector<std::shared_ptr<Dmp>> rollout;
 	std::vector<t_executor_res> dmpResult;
 	
 	t_executor_res lastUpdateRes;
@@ -37,7 +37,7 @@ private:
 	double tolRelErr;
 	
 	std::vector<double> lastCost;
-	Dmp lastUpdate;
+    std::shared_ptr<Dmp> lastUpdate;
 
 public:
 
@@ -55,19 +55,19 @@ public:
 	/**
 	 * \brief returns the first rollout of the reinforcement learning algorithm
 	 */
-	virtual std::vector<Dmp> getInitialRollout() = 0;
+    virtual std::vector<std::shared_ptr<Dmp>> getInitialRollout() = 0;
 	
-	virtual Dmp updateStep() = 0;
+    virtual std::shared_ptr<Dmp> updateStep() = 0;
 	
-	Dmp getLastUpdate();
-	void setLastUpdate(Dmp lastUpdate);
+    std::shared_ptr<Dmp> getLastUpdate();
+    void setLastUpdate(std::shared_ptr<Dmp> lastUpdate);
 	
 	/**
 	 * \brief computes the dmp parameters for the next rollout
 	 */
-	virtual std::vector<Dmp> computeRolloutParamters() = 0;
+    virtual std::vector<std::shared_ptr<Dmp>> computeRolloutParamters() = 0;
 	
-	std::vector<Dmp> getLastRolloutParameters();
+    std::vector<std::shared_ptr<Dmp>> getLastRolloutParameters();
 	std::vector<t_executor_res> getLastExecutionResults();
 	t_executor_res getLastUpdateRes();
 	

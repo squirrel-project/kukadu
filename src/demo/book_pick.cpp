@@ -100,6 +100,13 @@ int main(int argc, char** args) {
     ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
     cout << "ros connection initialized" << endl;
 
+    /*
+    KukieSimulator sim(*node);
+    sim.addPrimitiveObject("book", stdToArmadilloVec({0.3, 0.5, 0}), stdToArmadilloVec({0, 0, 0}), 1.0, KS_BOX, stdToArmadilloVec({0.2, 0.3, 0.1}));
+    cout << "(main) object created" << endl;
+    getchar();
+    */
+
     shared_ptr<RosSchunk> leftHand = shared_ptr<RosSchunk>(new RosSchunk(*node, ROBOT_TYPE, ROBOT_SIDE));
     vector<double> leftHandJoints = {0, -0.38705404571511043, 0.7258474179992682, 0.010410616072391092, -1.2259735578027993, -0.4303327436948519, 0.8185967300722126};
     leftHand->publishSdhJoints(leftHandJoints);
@@ -108,15 +115,15 @@ int main(int argc, char** args) {
     vector<double> rightHandJoints = {0, -0.5238237461313833, 0.2120872918378427, 0.8655742259109377, 1.5389379959387146, -0.6260686922290597, 0.218843743489235877};
     rightHand->publishSdhJoints(rightHandJoints);
 
-    shared_ptr<OrocosControlQueue> leftQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(kukaStepWaitTime, ROBOT_TYPE, ROBOT_SIDE + string("_arm"), *node));
+    shared_ptr<KukieControlQueue> leftQueue = shared_ptr<KukieControlQueue>(new KukieControlQueue(kukaStepWaitTime, ROBOT_TYPE, ROBOT_SIDE + string("_arm"), *node));
     shared_ptr<thread> lqThread = leftQueue->startQueueThread();
 
-    shared_ptr<OrocosControlQueue> rightQueue = nullptr;
+    shared_ptr<KukieControlQueue> rightQueue = nullptr;
     shared_ptr<thread> rqThread = nullptr;
 
     if(CONTROL_RIGHT) {
 
-        rightQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(kukaStepWaitTime, ROBOT_TYPE, "right_arm", *node));
+        rightQueue = shared_ptr<KukieControlQueue>(new KukieControlQueue(kukaStepWaitTime, ROBOT_TYPE, "right_arm", *node));
         rqThread = rightQueue->startQueueThread();
 
     }
@@ -125,7 +132,7 @@ int main(int argc, char** args) {
 
     if(CONTROL_RIGHT) {
 
-        rightQueue->switchMode(OrocosControlQueue::KUKA_JNT_IMP_MODE);
+        rightQueue->switchMode(KukieControlQueue::KUKA_JNT_IMP_MODE);
         rightQueue->moveJoints(stdToArmadilloVec({-2.0805978775024414, 1.4412447214126587, -2.203258752822876, 1.7961543798446655, 2.526369333267212, -1.6385622024536133, -0.7103539705276489}));
 
     }
@@ -135,26 +142,26 @@ int main(int argc, char** args) {
     cout << currentJoints.joints.t() << endl;
 
     cout << "(main) place book on expected position (press enter)" << endl;
-    getchar();
+    // getchar();
 
 //    leftQueue->setStiffness(0.2, 0.01, 0.2, 15000, 150, 2.0);
-    leftQueue->switchMode(OrocosControlQueue::KUKA_JNT_POS_MODE);
+    leftQueue->switchMode(KukieControlQueue::KUKA_JNT_POS_MODE);
     //leftQueue->moveJoints(stdToArmadilloVec({-0.514099, 1.83194, 1.95971, -0.99676, -0.0903862, 0.987185, 1.16542}));
     leftQueue->moveJoints(stdToArmadilloVec({-0.3990752398967743, 1.7550331354141235, 1.9612526893615723, -0.6003820300102234, -0.05098132789134979, 1.200370192527771, 1.168589472770691}));
 
     cout << "(main) press key to continue" << endl;
-    getchar();
+    // getchar();
 
     shared_ptr<SensorData> dat = SensorStorage::readStorage(leftQueue, trajFile);
-    TrajectoryDMPLearner learner(az, bz, dat->getRange(0, 8));
-    Dmp leftDmp = learner.fitTrajectories();
+    JointDMPLearner learner(az, bz, dat->getRange(0, 8));
+    std::shared_ptr<Dmp> leftDmp = learner.fitTrajectories();
     DMPExecutor leftExecutor(leftDmp, leftQueue);
-    leftExecutor.executeTrajectory(ac, 0, leftDmp.getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+    leftExecutor.executeTrajectory(ac, 0, leftDmp->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
 
     // first finger
 
     cout << "(main) ready to move first finger? (press enter)" << endl;
-    getchar();
+    // getchar();
 
     leftHandJoints = {0, -0.38705404571511043, 0.7258474179992682, -0.2, -0.9, -0.8303327436948519, 0.8185967300722126};
     leftHand->publishSdhJoints(leftHandJoints);
@@ -169,7 +176,7 @@ int main(int argc, char** args) {
     leftHand->publishSdhJoints(leftHandJoints);
 
     cout << "(main) ready to move second finger? (press enter)" << endl;
-    getchar();
+    // getchar();
 
     // second finger follows
     leftHandJoints = {0, -0.9303327436948519, 0.8185967300722126, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
@@ -198,12 +205,12 @@ int main(int argc, char** args) {
     leftHand->publishSdhJoints(leftHandJoints);
 
     cout << "(main) finally grasp it? (press enter)";
-    getchar();
+    // getchar();
     leftHandJoints = {SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
     leftHand->publishSdhJoints(leftHandJoints);
 
     cout << "(main) press a key to lift it (press enter)" << endl;
-    getchar();
+    // getchar();
 
     leftQueue->moveJoints(stdToArmadilloVec({-0.9291561841964722, 1.9066647291183472, 1.9648972749710083, -0.949062168598175, -0.10840536653995514, 1.199838638305664, 1.1655352115631104}));
     leftQueue->setFinish();

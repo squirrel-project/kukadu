@@ -21,8 +21,8 @@ private:
 	
 	arma::vec degOfFreedomWeights;
 	
-	Dmp traj1;
-	Dmp traj2;
+    std::shared_ptr<Dmp> traj1;
+    std::shared_ptr<Dmp> traj2;
 
     std::shared_ptr<PlottingControlQueue> simQueue;
 	
@@ -30,14 +30,14 @@ private:
 	t_executor_res dmp2Result;
 	
 	void initAll(double integrationStep, double tolAbsErr, double tolRelErr, arma::vec degOfFreedomWeights, double tTolerance);
-	t_executor_res executeTrajectory(Dmp traj);
+    t_executor_res executeTrajectory(std::shared_ptr<Dmp> traj);
 	
 public:
 	
-	DMPTrajectoryComparator(Dmp traject1, Dmp traject2, arma::vec degOfFreedomWeights, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance);
+    DMPTrajectoryComparator(std::shared_ptr<Dmp> traject1, std::shared_ptr<Dmp> traject2, arma::vec degOfFreedomWeights, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance);
 	DMPTrajectoryComparator(t_executor_res res1, t_executor_res res2, arma::vec degOfFreedomWeights);
 	
-	void setTrajectories(Dmp traj1, Dmp traj2, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance);
+    void setTrajectories(std::shared_ptr<Dmp> traj1, std::shared_ptr<Dmp> traj2, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance);
 	
 	double computeDistance();
 	

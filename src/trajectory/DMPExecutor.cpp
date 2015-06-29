@@ -3,26 +3,26 @@
 using namespace std;
 using namespace arma;
 
-DMPExecutor::DMPExecutor(Dmp traj, std::shared_ptr<ControlQueue> execQueue) {
+DMPExecutor::DMPExecutor(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQueue> execQueue) {
 	
     construct(traj, execQueue, 1);
 	
 }
 
-DMPExecutor::DMPExecutor(Dmp traj, std::shared_ptr<ControlQueue> execQueue, int suppressMessages) {
+DMPExecutor::DMPExecutor(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQueue> execQueue, int suppressMessages) {
 	
     construct(traj, execQueue, suppressMessages);
 	
 }
 
-DMPExecutor::DMPExecutor(Trajectory* traj, std::shared_ptr<ControlQueue> execQueue) {
+DMPExecutor::DMPExecutor(std::shared_ptr<Trajectory> traj, std::shared_ptr<ControlQueue> execQueue) {
 	
-	Dmp dmp = *((Dmp*) traj);
+    shared_ptr<Dmp> dmp = dynamic_pointer_cast<Dmp>(traj);
     construct(dmp, execQueue, suppressMessages);
 	
 }
 
-void DMPExecutor::construct(Dmp traj, std::shared_ptr<ControlQueue> execQueue, int suppressMessages) {
+void DMPExecutor::construct(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQueue> execQueue, int suppressMessages) {
     /*
 
 
@@ -39,11 +39,11 @@ void DMPExecutor::construct(Dmp traj, std::shared_ptr<ControlQueue> execQueue, i
     this->vecYs = arma::vec(1);
     this->stepSize = 0.014;
 
-    this->dmpCoeffs = traj.getDmpCoeffs();
-	this->baseDef = traj.getDmpBase();
+    this->dmpCoeffs = traj->getDmpCoeffs();
+    this->baseDef = traj->getDmpBase();
 
-    this->tau = traj.getTau(); this->az = traj.getAz(); this->bz = traj.getBz(); this->ax = traj.getAx(); this->gs = traj.getG();
-    this->y0s = this->currentJoints = traj.getY0(); this->dy0s = traj.getDy0(); this->ddy0s = traj.getDdy0();
+    this->tau = traj->getTau(); this->az = traj->getAz(); this->bz = traj->getBz(); this->ax = traj->getAx(); this->gs = traj->getG();
+    this->y0s = this->currentJoints = traj->getY0(); this->dy0s = traj->getDy0(); this->ddy0s = traj->getDdy0();
     this->trajGen = new DMPTrajectoryGenerator(this->baseDef, ax, tau);
 
     this->axDivTau = ax / tau;
@@ -66,7 +66,7 @@ void DMPExecutor::construct(Dmp traj, std::shared_ptr<ControlQueue> execQueue, i
 
 void DMPExecutor::setTrajectory(std::shared_ptr<Trajectory> traj) {
 	
-    Dmp dmp = *(std::dynamic_pointer_cast<Dmp>(traj));
+    std::shared_ptr<Dmp> dmp = dynamic_pointer_cast<Dmp>(traj);
     construct(dmp, controlQueue, suppressMessages);
 	
 	vec_t.clear();
@@ -109,7 +109,7 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
         double g = gs(currentSystem);
         arma::vec currentCoeffs = dmpCoeffs.at(currentSystem);
 		
-        if(t <= (dmp.getTmax() - 1)) {
+        if(t <= (dmp->getTmax() - 1)) {
 			
             double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
             f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm)  + this->addTerm(t, y, i / 2, controlQueue);
@@ -176,22 +176,20 @@ int DMPExecutor::jac(double t, const double* y, double *dfdy, double* dfdt, void
 	
 }
 
-t_executor_res DMPExecutor::executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr, int mode) {
+t_executor_res DMPExecutor::executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
 
-    this->controlMode=mode;
 	this->ac = ac;
 	this->simulate = EXECUTE_ROBOT;
-    return this->executeDMP(tStart, tEnd, stepSize, tolAbsErr, tolRelErr, mode);
+    return this->executeDMP(tStart, tEnd, stepSize, tolAbsErr, tolRelErr);
 	
 }
 
-t_executor_res DMPExecutor::simulateTrajectory(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr,  int mode) {
+t_executor_res DMPExecutor::simulateTrajectory(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
 
     this->simulate = SIMULATE_DMP;
-    this->controlMode=mode;
     auto begin = std::chrono::high_resolution_clock::now();
 
-    t_executor_res ret = this->executeDMP(tStart, tEnd, stepSize, tolAbsErr, tolRelErr, mode);
+    t_executor_res ret = this->executeDMP(tStart, tEnd, stepSize, tolAbsErr, tolRelErr);
 
     auto end = std::chrono::high_resolution_clock::now();
     std::cout << "(DMPExecutor) the simulation took " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() << " ns" << std::endl;
@@ -200,35 +198,20 @@ t_executor_res DMPExecutor::simulateTrajectory(double tStart, double tEnd, doubl
 
 }
 
-t_executor_res DMPExecutor::simulateTrajectory(int mode) {
-	
-    this->simulate = SIMULATE_DMP;
-    this->controlMode=mode;
-    return this->executeDMP(0, dmp.getTmax(), dmp.getStepSize(), dmp.getTolAbsErr(), dmp.getTolRelErr(), mode);
-	
-}
-
-t_executor_res DMPExecutor::executeTrajectory(int mode) {
-
-    this->simulate = EXECUTE_ROBOT;
-    this->controlMode=mode;
-    return this->executeDMP(0, dmp.getTmax(), dmp.getStepSize(), dmp.getTolAbsErr(), dmp.getTolRelErr(), mode);
-
-}
-
 t_executor_res DMPExecutor::simulateTrajectory() {
 
     this->simulate = SIMULATE_DMP;
-    return this->executeDMP(0, dmp.getTmax(), dmp.getStepSize(), dmp.getTolAbsErr(), dmp.getTolRelErr());
+    return this->executeDMP(0, dmp->getTmax(), dmp->getStepSize(), dmp->getTolAbsErr(), dmp->getTolRelErr());
 
 }
 
 t_executor_res DMPExecutor::executeTrajectory() {
 
     this->simulate = EXECUTE_ROBOT;
-    return this->executeDMP(0, dmp.getTmax(), dmp.getStepSize(), dmp.getTolAbsErr(), dmp.getTolRelErr());
+    return this->executeDMP(0, dmp->getTmax(), dmp->getStepSize(), dmp->getTolAbsErr(), dmp->getTolRelErr());
 
 }
+
 void DMPExecutor::initializeIntegration(double tStart, double stepSize, double tolAbsErr, double tolRelErr) {
 
 	t = tStart;
@@ -265,7 +248,7 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
 	arma::vec retJoints(degofFreedom);
 	retJoints.fill(0.0);
 	
-    if(t < dmp.getTmax()) {
+    if(t < dmp->getTmax()) {
 
         int s = gsl_odeiv2_driver_apply_fixed_step(d.get(), &t, stepSize, 1, ys);
 
@@ -295,7 +278,7 @@ void DMPExecutor::destroyIntegration() {
 
 }
 
-t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr, int mode) {
+t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
 
     // auto begin = std::chrono::high_resolution_clock::now();
 
@@ -308,19 +291,15 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
 
     vector<double> retT;
 
-    if (mode==KUKADU_EXEC_JOINT){
-    controlQueue->moveJoints(y0s);}
-    else {
-        controlQueue->switchMode(10);
-        controlQueue->moveCartesian(vectorarma2pose(&y0s));
-       sleep(2);
-        controlQueue->switchMode(20);
 
-    cout<<"movemetn cart to start done"<<endl;}
-       // controlQueue->addCartesianPosToQueue(vectorarma2pose(&y0s));}
+
+    if(!dmp->isCartesian())
+        controlQueue->moveJoints(y0s);
+    else
+        controlQueue->addCartesianPosToQueue(vectorarma2pose(&y0s));
+
 
     cout<<"movement start done"<<endl;
-
 
     initializeIntegration(0, stepSize, tolAbsErr, tolRelErr);
 
@@ -330,17 +309,12 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
     // execute dmps and compute linear combination
     for(int j = 0; j < stepCount; ++j, currentTime += stepSize) {
 
-        /**************actual computation of trajectory using coefficients***********/
-        for(int i = 0; i < 1; ++i) {
-
-            try {
-                nextJoints = doIntegrationStep(ac);
-            } catch(const char* s) {
-                puts(s);
-                cerr << ": stopped execution at time " << currentTime << endl;
-                break;
-            }
-
+        try {
+            nextJoints = doIntegrationStep(ac);
+        } catch(const char* s) {
+            puts(s);
+            cerr << ": stopped execution at time " << currentTime << endl;
+            break;
         }
 
         for(int i = 0; i < degofFreedom; ++i)
@@ -352,9 +326,11 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
         //    begin = end;
             controlQueue->synchronizeToControlQueue(1);
         }
-        if (mode==KUKADU_EXEC_JOINT){
-        controlQueue->addJointsPosToQueue(nextJoints);}
-        else  controlQueue->addCartesianPosToQueue(vectorarma2pose(&nextJoints));
+
+        if(!dmp->isCartesian())
+            controlQueue->addJointsPosToQueue(nextJoints);
+        else
+            controlQueue->addCartesianPosToQueue(vectorarma2pose(&nextJoints));
 
         retT.push_back(currentTime);
 

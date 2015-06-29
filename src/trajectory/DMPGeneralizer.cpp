@@ -28,7 +28,7 @@ int DMPGeneralizer::getQueryPointCount() {
 }
 
 // TODO: adapt DMPGeneralizer to new architecture
-Dmp DMPGeneralizer::generalizeDmp(GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, vec query, double beta) {
+std::shared_ptr<JointDmp> DMPGeneralizer::generalizeDmp(GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, vec query, double beta) {
 	
 	string errStr = "(DMPGeneralizer) not adapted to new implementation yet";
 	cerr << errStr << endl;
@@ -37,8 +37,8 @@ Dmp DMPGeneralizer::generalizeDmp(GenericKernel* trajectoryKernel, GenericKernel
 	vector<vec> dmpCoeffs;
 	
 	int queryCount = dictTraj->getQueryPoints().size();
-	int degreesOfFreedom = dictTraj->getQueryPoints().at(0).getDmp().getDegreesOfFreedom();
-	int samplePointCount = dictTraj->getQueryPoints().at(0).getDmp().getDesignMatrix(0).n_rows;
+    int degreesOfFreedom = dictTraj->getQueryPoints().at(0).getDmp()->getDegreesOfFreedom();
+    // int samplePointCount = dictTraj->getQueryPoints().at(0).getDmp()->getDesignMatrix(0).n_rows;
 	
 	vec g(degreesOfFreedom);
 
@@ -51,8 +51,8 @@ Dmp DMPGeneralizer::generalizeDmp(GenericKernel* trajectoryKernel, GenericKernel
 		vector<vec> sampleTs;
 	
 		for(int i = 0; i < queryCount; ++i) {
-			sampleTs.push_back(dictTraj->getQueryPoints().at(i).getDmp().getFitYs().at(j));
-			designMatrices.push_back(dictTraj->getQueryPoints().at(i).getDmp().getDesignMatrix(j));
+            sampleTs.push_back(dictTraj->getQueryPoints().at(i).getDmp()->getFitYs().at(j));
+            designMatrices.push_back(dictTraj->getQueryPoints().at(i).getDmp()->getDesignMatrix(j));
 		}
 		
 		LWRRegressor* reg = new LWRRegressor(sampleXs, sampleTs, trajectoryKernel, designMatrices);
@@ -65,15 +65,15 @@ Dmp DMPGeneralizer::generalizeDmp(GenericKernel* trajectoryKernel, GenericKernel
 	for(int j = 0; j < degreesOfFreedom; ++j) {
 		
 		vec gs(queryCount);
-		for(int i = 0; i < queryCount; ++i) gs(i) = dictTraj->getQueryPoints().at(i).getDmp().getG()(j);
+        for(int i = 0; i < queryCount; ++i) gs(i) = dictTraj->getQueryPoints().at(i).getDmp()->getG()(j);
 		GaussianProcessRegressor* reg = new GaussianProcessRegressor(sampleXs, gs, parameterKernel, beta);
 		double goal = reg->fitAtPosition(query)(0);
 		g(j) = goal;
 		
 	}
 	
-	return Dmp(vec(), vector<vec>(), vector<vec>(), dmpCoeffs, dictTraj->getQueryPoints().at(0).getDmp().getDmpBase(), vector<mat>(), dictTraj->getQueryPoints().at(0).getDmp().getTau(),
-		   dictTraj->getQueryPoints().at(0).getDmp().getAz(), dictTraj->getQueryPoints().at(0).getDmp().getBz(), dictTraj->getQueryPoints().at(0).getDmp().getAx());
+    return shared_ptr<JointDmp>(new JointDmp(vec(), vector<vec>(), vector<vec>(), dmpCoeffs, dictTraj->getQueryPoints().at(0).getDmp()->getDmpBase(), vector<mat>(), dictTraj->getQueryPoints().at(0).getDmp()->getTau(),
+           dictTraj->getQueryPoints().at(0).getDmp()->getAz(), dictTraj->getQueryPoints().at(0).getDmp()->getBz(), dictTraj->getQueryPoints().at(0).getDmp()->getAx()));
 
 }
 
@@ -94,7 +94,7 @@ vector<QueryPoint> DMPGeneralizer::mapFiles(vector<string> queryFiles, vector<st
 			string trajAppendix = currentTrajFile.substr(prefix2Size, currentTrajFile.size() - 1);
 			if(!queryAppendix.compare(trajAppendix)) {
 				// QueryPoint(std::string fileQueryPath, std::string fileDataPath, Dmp dmp, arma::vec queryPoint);
-                QueryPoint toAdd(queryFiles.at(i), trajFiles.at(j), string("dmp_") + trajAppendix + string(".txt"), Dmp(), vec());
+                QueryPoint toAdd(queryFiles.at(i), trajFiles.at(j), string("dmp_") + trajAppendix + string(".txt"), shared_ptr<JointDmp>(new JointDmp()), vec());
 				ret.push_back(toAdd);
 			}
 		}

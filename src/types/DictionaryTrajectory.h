@@ -4,7 +4,7 @@
 #include "DMPBase.h"
 #include "QueryPoint.h"
 #include "Trajectory.h"
-#include "../trajectory/TrajectoryDMPLearner.h"
+#include "../trajectory/JointDMPLearner.h"
 #include "../utils/utils.h"
 #include "../utils/types.h"
 #include "../utils/conversion_utils.h"

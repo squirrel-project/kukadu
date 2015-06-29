@@ -12,7 +12,7 @@
 #include "../types/DMPBase.h"
 #include "../types/QueryPoint.h"
 #include "../trajectory/DMPTrajectoryGenerator.h"
-#include "../trajectory/TrajectoryDMPLearner.h"
+#include "../trajectory/JointDMPLearner.h"
 #include "../learning/GenericKernel.h"
 #include "../learning/GaussianProcessRegressor.h"
 #include "../learning/LWRRegressor.h"
@@ -77,7 +77,7 @@ public:
 	 * \param query required query point
 	 * \param beta beta for Gaussian processes
 	 */
-	Dmp generalizeDmp(GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, arma::vec query, double beta);
+    std::shared_ptr<JointDmp> generalizeDmp(GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, arma::vec query, double beta);
     
 };
 

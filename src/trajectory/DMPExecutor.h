@@ -30,7 +30,7 @@
 #include "../utils/utils.h"
 #include "../trajectory/DMPTrajectoryGenerator.h"
 #include "../robot/ControlQueue.h"
-#include "../trajectory/TrajectoryDMPLearner.h"
+#include "../trajectory/JointDMPLearner.h"
 
 struct gsl_delete_expression {
     void operator()(gsl_odeiv2_driver* p) const {
@@ -60,7 +60,6 @@ protected:
     int odeSystemSizeMinOne;
 	
 	int simulate;
-    int controlMode=KUKADU_EXEC_JOINT;
     int odeSystemSize;
 	int degofFreedom;
 	
@@ -95,7 +94,7 @@ protected:
 	
 	arma::vec vecYs;
 	
-	Dmp dmp;
+    std::shared_ptr<Dmp> dmp;
 	
 	double t;
 	double stepSize;
@@ -106,7 +105,7 @@ protected:
 	static int static_func(double t, const double y[], double f[], void *params);
 	static int static_jac (double t, const double y[], double *dfdy, double dfdt[], void *params);
 
-    t_executor_res executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr,int mode=KUKADU_EXEC_JOINT);
+    t_executor_res executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr);
 
 protected:
 
@@ -120,20 +119,16 @@ public:
 	 * \brief constructor
 	 * \param dmp the dmp that should be executed
 	 */
-    DMPExecutor(Dmp dmp, std::shared_ptr<ControlQueue> execQueue);
-    DMPExecutor(Dmp dmp, std::shared_ptr<ControlQueue> execQueue, int suppressMessages);
+    DMPExecutor(std::shared_ptr<Trajectory> dmp, std::shared_ptr<ControlQueue> execQueue);
+    DMPExecutor(std::shared_ptr<Dmp> dmp, std::shared_ptr<ControlQueue> execQueue);
+    DMPExecutor(std::shared_ptr<Dmp> dmp, std::shared_ptr<ControlQueue> execQueue, int suppressMessages);
 	
-    DMPExecutor(Trajectory* traj, std::shared_ptr<ControlQueue> execQueue);
-	
-    void construct(Dmp dmp, std::shared_ptr<ControlQueue> execQueue, int suppressMessages);
+    void construct(std::shared_ptr<Dmp> dmp, std::shared_ptr<ControlQueue> execQueue, int suppressMessages);
 	
     void setTrajectory(std::shared_ptr<Trajectory> traj);
 	
-    t_executor_res simulateTrajectory(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr, int mode=KUKADU_EXEC_JOINT);
-    t_executor_res executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr, int mode=KUKADU_EXEC_JOINT);
-	
-    t_executor_res simulateTrajectory(int mode);
-    t_executor_res executeTrajectory(int mode);
+    t_executor_res simulateTrajectory(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr);
+    t_executor_res executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr);
 
     t_executor_res simulateTrajectory();
     t_executor_res executeTrajectory();

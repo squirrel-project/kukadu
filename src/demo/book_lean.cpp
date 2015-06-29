@@ -105,13 +105,13 @@ int main(int argc, char** args) {
     vector<double> leftHandJoints = {0, -0.38705404571511043, 0.7258474179992682, 0.010410616072391092, -1.2259735578027993, -0.4303327436948519, 0.8185967300722126};
     leftHand->publishSdhJoints(leftHandJoints);
 
-    shared_ptr<OrocosControlQueue> leftQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(kukaStepWaitTime, ROBOT_TYPE, ROBOT_SIDE + string("_arm"), *node));
+    shared_ptr<KukieControlQueue> leftQueue = shared_ptr<KukieControlQueue>(new KukieControlQueue(kukaStepWaitTime, ROBOT_TYPE, ROBOT_SIDE + string("_arm"), *node));
     shared_ptr<thread> lqThread = leftQueue->startQueueThread();
 
     leftQueue->setJntPtpThresh(2.5);
 
-    leftQueue->switchMode(OrocosControlQueue::KUKA_STOP_MODE);
-    leftQueue->switchMode(OrocosControlQueue::KUKA_JNT_IMP_MODE);
+    leftQueue->switchMode(KukieControlQueue::KUKA_STOP_MODE);
+    leftQueue->switchMode(KukieControlQueue::KUKA_JNT_IMP_MODE);
     //leftQueue->moveJoints(stdToArmadilloVec({-0.514099, 1.83194, 1.95971, -0.99676, -0.0903862, 0.987185, 1.16542}));
 
 
@@ -141,7 +141,7 @@ int main(int argc, char** args) {
     getchar();
     leftQueue->moveJoints(stdToArmadilloVec({-0.5591384172439575, 1.8514913320541382, 2.669778823852539, -1.981245756149292, -2.3048179149627686, 1.3562568426132202, 2.085831642150879}));
 
-    leftQueue->switchMode(OrocosControlQueue::KUKA_STOP_MODE);
+    leftQueue->switchMode(KukieControlQueue::KUKA_STOP_MODE);
     cout << "done" << endl;
 
     leftQueue->setFinish();

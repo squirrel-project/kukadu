@@ -1,5 +1,5 @@
-#ifndef OROCOSCONTROLQUEUE
-#define OROCOSCONTROLQUEUE
+#ifndef KUKIECONTROLQUEUE
+#define KUKIECONTROLQUEUE
 
 #include <unistd.h>
 #include <queue>
@@ -41,14 +41,14 @@
 
 #define COMMAND_NOT_SET -100
 
-/** \brief The OrocosControlQueue provides control capabilities for the Kuka LWR 4+ robotic arm
+/** \brief The KukieControlQueue provides control capabilities for the Kuka LWR 4+ robotic arm
  * 
- * This class implements the abstract ControlQueue class for the usage with the iisorocos system. It provides basic functionalities such as command mode control
+ * This class implements the abstract ControlQueue class for the usage with the iisKukie system. It provides basic functionalities such as command mode control
  * in joint space as well as point to point movement in cartesian and joint space. To use it, the additionally provided KRL script has to be selected on the robot
  * controller side. For further information how to use it, please see the sample programs and the kuka documentation
  * \ingroup RobotFramework
  */
-class OrocosControlQueue : public ControlQueue {
+class KukieControlQueue : public ControlQueue {
 
 private:
 	
@@ -60,6 +60,8 @@ private:
 	int monComMode;
 	int impMode;
 	int currentMode;
+
+    std::queue<arma::vec> movementQueue;
 	
     arma::vec startingJoints;
     arma::vec currentJoints;
@@ -69,7 +71,6 @@ private:
 	
 	double currentTime;
 	
-    std::queue<arma::vec> movementQueue;
 	std::mutex currentJointsMutex;
 	std::mutex currentCartsMutex;
     std::mutex cartFrcTrqMutex;
@@ -125,7 +126,7 @@ private:
 	
 	double computeDistance(float* a1, float* a2, int size);
 
-    /* orocos callback functions */
+    /* Kukie callback functions */
     void robotJointPosCallback(const sensor_msgs::JointState& msg);
     void robotCartPosCallback(const geometry_msgs::Pose& msg);
     void commandStateCallback(const std_msgs::Float32MultiArray& msg);
@@ -137,7 +138,7 @@ private:
 
 public:
 
-    OrocosControlQueue(int sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node);
+    KukieControlQueue(int sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node);
 
     void constructQueue(int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
                         std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,

@@ -24,7 +24,7 @@
 #include "../src/trajectory/DMPExecutor.h"
 #include "../src/trajectory/DMPTrajectoryGenerator.h"
 #include "../src/trajectory/PolyTrajectoryGenerator.h"
-#include "../src/trajectory/TrajectoryDMPLearner.h"
+#include "../src/trajectory/JointDMPLearner.h"
 #include "../src/trajectory/TrajectoryGenerator.h"
 #include "../src/trajectory/TrajectoryExecutor.h"
 #include "../src/learning/reinforcement_learning/CostComputer.h"
@@ -39,6 +39,8 @@
 #include "../src/trajectory/TrajectoryComparator.h"
 #include "../src/trajectory/DMPTrajectoryComparator.h"
 #include "../src/types/Trajectory.h"
+#include "../src/types/jointdmp.h"
+#include "../src/types/cartesiandmp.h"
 #include "../src/types/SingleSampleTrajectory.h"
 #include "../src/types/DMP.h"
 #include "../src/types/SensorData.h"
@@ -56,10 +58,9 @@
 #include "../src/robot/PlottingControlQueue.h"
 #include "../src/trajectory/TimeDepDictionaryGeneralizer.h"
 #include "../src/robot/SimInterface.h"
-#include "../src/manipulation/pushing/DMPExecutorPush.h"
 
 #ifdef ROS_SUPPORT
-#include "../src/robot/OrocosControlQueue.h"
+#include "../src/robot/KukieControlQueue.h"
 #endif
 
 #endif

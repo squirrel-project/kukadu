@@ -31,12 +31,12 @@ private:
 	std::string fileDataPath;
     std::string fileDmpPath;
 	
-	Dmp internalDmp;
+    std::shared_ptr<Dmp> internalDmp;
 	arma::vec queryPoint;
 	
 public:
 	
-    QueryPoint(std::string fileQueryPath, std::string fileDataPath, std::string fileDmpPath, Dmp dmp, arma::vec queryPoint);
+    QueryPoint(std::string fileQueryPath, std::string fileDataPath, std::string fileDmpPath, std::shared_ptr<Dmp> dmp, arma::vec queryPoint);
 	QueryPoint(const QueryPoint& qp);
 	
 	std::string getFileQueryPath();
@@ -46,8 +46,8 @@ public:
 	void setQueryPoint(arma::vec queryPoint);
 	arma::vec getQueryPoint();
 	
-	void setDmp(Dmp dmp);
-    Dmp& getDmp();
+    void setDmp(std::shared_ptr<Dmp> dmp);
+    std::shared_ptr<Dmp> getDmp();
 	
 	
 };

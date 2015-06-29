@@ -39,8 +39,6 @@ public:
 	
 	int operator==(SingleSampleTrajectory const& comp) const;
 	
-    virtual std::shared_ptr<Trajectory> copy() = 0;
-	
 };
 
 #endif

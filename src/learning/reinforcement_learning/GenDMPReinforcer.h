@@ -27,13 +27,13 @@ class GenDMPReinforcer : public DMPReinforcer {
 
 private:
 	
-	DMPGeneralizer* dmpGen;
+    std::shared_ptr<DMPGeneralizer> dmpGen;
 	GenericKernel* trajectoryKernel;
 	GenericKernel* parameterKernel;
 	arma::vec initialQueryPoint;
 	arma::vec lastQueryPoint;
 	
-	Dmp lastUpdate;
+    std::shared_ptr<Dmp> lastUpdate;
 	t_executor_res* genResults;
 	bool isFirstRolloutAfterInit;
 	
@@ -45,7 +45,7 @@ private:
 	/**
 	 * \brief plots feedback graphs
 	 */
-	void plotFeedback(DMPGeneralizer* dmpGen, Dmp rollout, t_executor_res currentRolloutRes);
+    void plotFeedback(std::shared_ptr<DMPGeneralizer> dmpGen, std::shared_ptr<Dmp> rollout, t_executor_res currentRolloutRes);
 
 public:
 
@@ -62,13 +62,13 @@ public:
 	 * \param tolAbsErr absolute tolerated error for numerical approximation
 	 * \param tolRelErr relative tolerated error for numerical approximation
 	 */
-    GenDMPReinforcer(arma::vec initialQueryPoint, CostComputer* cost, DMPGeneralizer* dmpGen, GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, std::shared_ptr<ControlQueue> movementQueue,
+    GenDMPReinforcer(arma::vec initialQueryPoint, CostComputer* cost, std::shared_ptr<DMPGeneralizer> dmpGen, GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, std::shared_ptr<ControlQueue> movementQueue,
 			 double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
 	
-	std::vector<Dmp> getInitialRollout();
-	std::vector<Dmp> computeRolloutParamters();
-	Dmp updateStep();
-	Dmp getLastUpdate();
+    std::vector<std::shared_ptr<Dmp>> getInitialRollout();
+    std::vector<std::shared_ptr<Dmp>> computeRolloutParamters();
+    std::shared_ptr<Dmp> updateStep();
+    std::shared_ptr<Dmp> getLastUpdate();
 	
 	/**
 	 * \brief returns maximum query point

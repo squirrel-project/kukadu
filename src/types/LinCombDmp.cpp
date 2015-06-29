@@ -70,12 +70,12 @@ void LinCombDmp::initializeMetric() {
 	
 	vector<QueryPoint> qps = getQueryPoints();
 	//Dmp traject1, Dmp traject2, arma::vec degOfFreedomWeights, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance
-	Dmp d1 = qps.at(0).getDmp();
-	Dmp d2 = qps.at(1).getDmp();
+    std::shared_ptr<Dmp> d1 = qps.at(0).getDmp();
+    std::shared_ptr<Dmp> d2 = qps.at(1).getDmp();
 	
-	double integrationStep = d1.getStepSize();
-	double tolAbsErr = d1.getTolAbsErr();
-	double tolRelErr = d1.getTolRelErr();
+    double integrationStep = d1->getStepSize();
+    double tolAbsErr = d1->getTolAbsErr();
+    double tolRelErr = d1->getTolRelErr();
 	double tTol = 0.5;
 	
 	DMPTrajectoryComparator trajComp(d1, d2, trajMetricWeights, integrationStep, tolAbsErr, tolRelErr, tTol);

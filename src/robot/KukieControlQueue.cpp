@@ -1,10 +1,10 @@
-#include "OrocosControlQueue.h"
+#include "KukieControlQueue.h"
 #include <tf/tf.h>
 
 using namespace std;
 using namespace arma;
 
-void OrocosControlQueue::constructQueue(int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
+void KukieControlQueue::constructQueue(int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
                     std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
                     std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic,
                     std::string cartPtpTopic, std::string cartPtpReachedTopic, std::string cartMoveRfQueueTopic, std::string cartMoveWfQueueTopic, std::string cartPoseRfTopic, std::string jntSetPtpThreshTopic, ros::NodeHandle node
@@ -43,14 +43,14 @@ void OrocosControlQueue::constructQueue(int sleepTime, std::string commandTopic,
     this->node = node;
     loop_rate = new ros::Rate(1.0 / sleepTime * 1e+6);
 
-    subJntPos = node.subscribe(retPosTopic, 2, &OrocosControlQueue::robotJointPosCallback, this);
-    subCartPos = node.subscribe(retCartPosTopic, 2, &OrocosControlQueue::robotCartPosCallback, this);
-    subComState = node.subscribe(commandStateTopic, 2, &OrocosControlQueue::commandStateCallback, this);
-    subPtpReached = node.subscribe(ptpReachedTopic, 2, &OrocosControlQueue::ptpReachedCallback, this);
-    subjntFrcTrq = node.subscribe(jntFrcTrqTopic, 2, &OrocosControlQueue::jntFrcTrqCallback, this);
-    subCartFrqTrq = node.subscribe(cartFrcTrqTopic, 2, &OrocosControlQueue::cartFrcTrqCallback, this);
-    subCartPtpReached = node.subscribe(cartPtpReachedTopic, 2, &OrocosControlQueue::cartPtpReachedCallback, this);
-    subCartPoseRf = node.subscribe(cartPoseRfTopic, 2, &OrocosControlQueue::cartPosRfCallback, this);
+    subJntPos = node.subscribe(retPosTopic, 2, &KukieControlQueue::robotJointPosCallback, this);
+    subCartPos = node.subscribe(retCartPosTopic, 2, &KukieControlQueue::robotCartPosCallback, this);
+    subComState = node.subscribe(commandStateTopic, 2, &KukieControlQueue::commandStateCallback, this);
+    subPtpReached = node.subscribe(ptpReachedTopic, 2, &KukieControlQueue::ptpReachedCallback, this);
+    subjntFrcTrq = node.subscribe(jntFrcTrqTopic, 2, &KukieControlQueue::jntFrcTrqCallback, this);
+    subCartFrqTrq = node.subscribe(cartFrcTrqTopic, 2, &KukieControlQueue::cartFrcTrqCallback, this);
+    subCartPtpReached = node.subscribe(cartPtpReachedTopic, 2, &KukieControlQueue::cartPtpReachedCallback, this);
+    subCartPoseRf = node.subscribe(cartPoseRfTopic, 2, &KukieControlQueue::cartPosRfCallback, this);
 
     pub_set_cart_stiffness = node.advertise<iis_robot_dep::CartesianImpedance>(stiffnessTopic, 1);
     pub_set_joint_stiffness = node.advertise<iis_robot_dep::FriJointImpedance>(jntStiffnessTopic, 1);
@@ -68,7 +68,7 @@ void OrocosControlQueue::constructQueue(int sleepTime, std::string commandTopic,
 
 }
 
-OrocosControlQueue::OrocosControlQueue(int sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node) : ControlQueue(LBR_MNJ) {
+KukieControlQueue::KukieControlQueue(int sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node) : ControlQueue(LBR_MNJ) {
 
     commandTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/move";
     retJointPosTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/get_state";
@@ -98,26 +98,26 @@ OrocosControlQueue::OrocosControlQueue(int sleepTime, std::string deviceType, st
 
 }
 
-void OrocosControlQueue::addCartesianPosToQueue(geometry_msgs::Pose pose) {
+void KukieControlQueue::addCartesianPosToQueue(geometry_msgs::Pose pose) {
     pubCartMoveWfQueue.publish(pose);
 }
 
-void OrocosControlQueue::cartPosRfCallback(const geometry_msgs::Pose msg) {
+void KukieControlQueue::cartPosRfCallback(const geometry_msgs::Pose msg) {
     currentCartPoseRf = msg;
 }
 
-geometry_msgs::Pose OrocosControlQueue::getCartesianPoseRf() {
+geometry_msgs::Pose KukieControlQueue::getCartesianPoseRf() {
     return currentCartPoseRf;
 }
 
-void OrocosControlQueue::setJntPtpThresh(double thresh) {
+void KukieControlQueue::setJntPtpThresh(double thresh) {
     std_msgs::Float64 th;
     th.data = thresh;
     pub_set_ptp_thresh.publish(th);
 }
 
 // relative pos in worldframe
-geometry_msgs::Pose OrocosControlQueue::moveCartesianRelativeWf(geometry_msgs::Pose basePoseRf, geometry_msgs::Pose offset) {
+geometry_msgs::Pose KukieControlQueue::moveCartesianRelativeWf(geometry_msgs::Pose basePoseRf, geometry_msgs::Pose offset) {
 
     double newTargetWorldPos[4] = {1, 1, 1, 1};
 
@@ -138,19 +138,19 @@ geometry_msgs::Pose OrocosControlQueue::moveCartesianRelativeWf(geometry_msgs::P
 
 }
 
-std::string OrocosControlQueue::getRobotFileName() {
+std::string KukieControlQueue::getRobotFileName() {
     return string("kuka_lwr_") + deviceType + string("_") + armPrefix;
 }
 
-std::string OrocosControlQueue::getRobotName() {
+std::string KukieControlQueue::getRobotName() {
     return string("KUKA LWR (") + deviceType + string(" ") + armPrefix + string(")");
 }
 
-std::vector<std::string> OrocosControlQueue::getJointNames() {
+std::vector<std::string> KukieControlQueue::getJointNames() {
     return {"A1", "A2", "E1", "A3", "A4", "A5", "A6"};
 }
 
-void OrocosControlQueue::cartFrcTrqCallback(const geometry_msgs::Wrench& msg) {
+void KukieControlQueue::cartFrcTrqCallback(const geometry_msgs::Wrench& msg) {
     cartFrcTrqMutex.lock();
         currentCartFrqTrq = vec(6);
         currentCartFrqTrq(0) = msg.force.x;
@@ -162,13 +162,13 @@ void OrocosControlQueue::cartFrcTrqCallback(const geometry_msgs::Wrench& msg) {
     cartFrcTrqMutex.unlock();
 }
 
-void OrocosControlQueue::jntFrcTrqCallback(const std_msgs::Float64MultiArray& msg) {
+void KukieControlQueue::jntFrcTrqCallback(const std_msgs::Float64MultiArray& msg) {
 
     currentJntFrqTrq = stdToArmadilloVec(msg.data);
 
 }
 
-void OrocosControlQueue::robotJointPosCallback(const sensor_msgs::JointState& msg) {
+void KukieControlQueue::robotJointPosCallback(const sensor_msgs::JointState& msg) {
 
 	currentJointsMutex.lock();
         currentJoints = arma::vec(msg.position.size());
@@ -177,7 +177,7 @@ void OrocosControlQueue::robotJointPosCallback(const sensor_msgs::JointState& ms
 
 }
 
-void OrocosControlQueue::robotCartPosCallback(const geometry_msgs::Pose& msg) {
+void KukieControlQueue::robotCartPosCallback(const geometry_msgs::Pose& msg) {
 
 	currentCartsMutex.lock();
 
@@ -196,26 +196,26 @@ void OrocosControlQueue::robotCartPosCallback(const geometry_msgs::Pose& msg) {
 
 }
 
-geometry_msgs::Pose OrocosControlQueue::getCartesianPose() {
+geometry_msgs::Pose KukieControlQueue::getCartesianPose() {
     return currentCartPose;
 }
 
-void OrocosControlQueue::commandStateCallback(const std_msgs::Float32MultiArray& msg) {
+void KukieControlQueue::commandStateCallback(const std_msgs::Float32MultiArray& msg) {
 	monComMode = msg.data[0];
 	impMode = msg.data[1];
 }
 
-void OrocosControlQueue::ptpReachedCallback(const std_msgs::Int32MultiArray& msg) {
+void KukieControlQueue::ptpReachedCallback(const std_msgs::Int32MultiArray& msg) {
     ptpReached = msg.data[0];
 }
 
-void OrocosControlQueue::cartPtpReachedCallback(const std_msgs::Int32MultiArray& msg) {
+void KukieControlQueue::cartPtpReachedCallback(const std_msgs::Int32MultiArray& msg) {
     cartesianPtpReached = msg.data[0];
 }
 
-void OrocosControlQueue::run() {
+void KukieControlQueue::run() {
 
-	setInitValues();
+    setInitValues();
 
     arma::vec movement = arma::vec(1);
 
@@ -229,23 +229,23 @@ void OrocosControlQueue::run() {
 	
 	while(!finish && ros::ok) {
 
-		if(movementQueue.size() > 0) {
-			
-			// move to position in queue
-			movement = movementQueue.front();
-			movementQueue.pop();
+        if(movementQueue.size() > 0) {
+
+            // move to position in queue
+            movement = movementQueue.front();
+            movementQueue.pop();
 
             std_msgs::Float64MultiArray nextCommand;
             for(int i = 0; i < getMovementDegreesOfFreedom(); ++i)
                 nextCommand.data.push_back(movement[i]);
 
-			pubCommand.publish(nextCommand);
+            pubCommand.publish(nextCommand);
 
-		} else {
+        } else {
 
-				movement = currentJoints;
+            movement = currentJoints;
 
-		}
+        }
 		currentTime += sleepTime * 1e-6;
 		usleep(sleepTime);
 		
@@ -256,19 +256,19 @@ void OrocosControlQueue::run() {
     cout << "thread finished" << endl;
 }
 
-void OrocosControlQueue::setInitValues() {
+void KukieControlQueue::setInitValues() {
 
 	isInit = false;
 	finish = 0;
 	
     currentJoints = arma::vec(1);
     currentCarts = arma::vec(1);
-	
-	while(!movementQueue.empty()) movementQueue.pop();
+
+    while(!movementQueue.empty()) movementQueue.pop();
 
 }
 
-mes_result OrocosControlQueue::getCurrentCartesianFrcTrq() {
+mes_result KukieControlQueue::getCurrentCartesianFrcTrq() {
 
     mes_result ret;
 
@@ -282,7 +282,7 @@ mes_result OrocosControlQueue::getCurrentCartesianFrcTrq() {
 
 }
 
-mes_result OrocosControlQueue::getCurrentJntFrcTrq() {
+mes_result KukieControlQueue::getCurrentJntFrcTrq() {
 
     mes_result ret;
 
@@ -293,18 +293,18 @@ mes_result OrocosControlQueue::getCurrentJntFrcTrq() {
 
 }
 
-void OrocosControlQueue::setFinish() {
+void KukieControlQueue::setFinish() {
 	finish = 1;
     startingJoints = arma::vec(1);
 }
 
-void OrocosControlQueue::addJointsPosToQueue(arma::vec joints) {
-	movementQueue.push(joints);
+void KukieControlQueue::addJointsPosToQueue(arma::vec joints) {
+    movementQueue.push(joints);
 }
 
-void OrocosControlQueue::switchMode(int mode) {
+void KukieControlQueue::switchMode(int mode) {
 	if(ros::ok) {
-		cout << "(OrocosControlQueue) switching to mode " << mode << endl;
+        cout << "(KukieControlQueue) switching to mode " << mode << endl;
 		std_msgs::Int32 newMode;
 		newMode.data = currentMode = mode;
 		if(ros::ok()) {
@@ -316,33 +316,35 @@ void OrocosControlQueue::switchMode(int mode) {
 			ros::spinOnce();
 		}
 	} else {
-		cout << "(OrocosControlQueue) ros error" << endl;
+        cout << "(KukieControlQueue) ros error" << endl;
 	}
 }
 
-void OrocosControlQueue::stopCurrentMode() {
+void KukieControlQueue::stopCurrentMode() {
+    switchMode(0);
+    switchMode(10);
 	switchMode(0);
 }
 
-void OrocosControlQueue::synchronizeToControlQueue(int maxNumJointsInQueue) {
-	while(movementQueue.size() > maxNumJointsInQueue);
+void KukieControlQueue::synchronizeToControlQueue(int maxNumJointsInQueue) {
+    while(movementQueue.size() > maxNumJointsInQueue);
 }
 
-void OrocosControlQueue::setStartingJoints(arma::vec joints) {
+void KukieControlQueue::setStartingJoints(arma::vec joints) {
 	startingJoints = joints;
 }
 
-void OrocosControlQueue::moveCartesianNb(geometry_msgs::Pose pos) {
+void KukieControlQueue::moveCartesianNb(geometry_msgs::Pose pos) {
     pubCartPtp.publish(pos);
 }
 
-void OrocosControlQueue::moveCartesian(geometry_msgs::Pose pos) {
+void KukieControlQueue::moveCartesian(geometry_msgs::Pose pos) {
 
     cartesianPtpReached = 0;
 
     if(ros::ok) {
 
-        cout << "(OrocosControlQueue) moving" << endl;
+        cout << "(KukieControlQueue) moving" << endl;
         pubCartPtp.publish(pos);
         ros::spinOnce();
 
@@ -357,24 +359,24 @@ void OrocosControlQueue::moveCartesian(geometry_msgs::Pose pos) {
             loop_rate->sleep();
             loop_rate->sleep();
             ros::spinOnce();
-            if (ros::Time().toSec()-start>30.0){
-                throw new std::string("(OrocosControlQueue) time limit reached; ptp movement not done ");
+            if (ros::Time().toSec()-start > 30.0){
+                throw new std::string("(KukieControlQueue) time limit reached; ptp movement not done ");
             }
         }
-        cout << "(OrocosControlQueue) ptp movement done" << endl;
+        cout << "(KukieControlQueue) ptp movement done" << endl;
 
     } else {
-        cout << "(OrocosControlQueue) ros error" << endl;
+        cout << "(KukieControlQueue) ros error" << endl;
     }
 
 }
 
-void OrocosControlQueue::moveJoints(arma::vec joints) {
+void KukieControlQueue::moveJoints(arma::vec joints) {
 	
 	ptpReached = 0;
 	
 	if(ros::ok) {
-		cout << "(OrocosControlQueue) moving" << endl;
+        cout << "(KukieControlQueue) moving" << endl;
 		std_msgs::Float64MultiArray newJoints;
 		for(int i = 0; i < getMovementDegreesOfFreedom(); ++i) newJoints.data.push_back(joints[i]);
 		newJoints.layout.dim.push_back(std_msgs::MultiArrayDimension());
@@ -397,15 +399,15 @@ void OrocosControlQueue::moveJoints(arma::vec joints) {
 			loop_rate->sleep();
 			ros::spinOnce();
 		}
-		cout << "(OrocosControlQueue) ptp movement done" << endl;
+        cout << "(KukieControlQueue) ptp movement done" << endl;
 		
 	} else {
-		cout << "(OrocosControlQueue) ros error" << endl;
+        cout << "(KukieControlQueue) ros error" << endl;
 	}
 	
 }
 
-double OrocosControlQueue::computeDistance(float* a1, float* a2, int size) {
+double KukieControlQueue::computeDistance(float* a1, float* a2, int size) {
 	double ret = 0.0;
 	for(int i = 0 ; i < size; ++i) {
 		ret = pow(a1[i] - a2[i], 2);
@@ -414,7 +416,7 @@ double OrocosControlQueue::computeDistance(float* a1, float* a2, int size) {
 	return ret;
 }
 
-void OrocosControlQueue::setAdditionalLoad(float loadMass, float loadPos) {
+void KukieControlQueue::setAdditionalLoad(float loadMass, float loadPos) {
 
 	std_msgs::Float32MultiArray msg;
 	msg.layout.dim.push_back(std_msgs::MultiArrayDimension());
@@ -432,7 +434,7 @@ void OrocosControlQueue::setAdditionalLoad(float loadMass, float loadPos) {
 
 }
 
-void OrocosControlQueue::setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq) {
+void KukieControlQueue::setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq) {
 
     iis_robot_dep::CartesianImpedance imp;
 	
@@ -455,36 +457,36 @@ void OrocosControlQueue::setStiffness(float cpstiffnessxyz, float cpstiffnessabc
 
 }
 
-mes_result OrocosControlQueue::getCartesianPos() {
+mes_result KukieControlQueue::getCartesianPos() {
     mes_result ret;
     ret.joints = currentCarts;
     ret.time = currentTime;
     return ret;
 }
 
-arma::vec OrocosControlQueue::getStartingJoints() {
+arma::vec KukieControlQueue::getStartingJoints() {
 	return startingJoints;
 }
 
-arma::vec OrocosControlQueue::retrieveJointsFromRobot() {
+arma::vec KukieControlQueue::retrieveJointsFromRobot() {
 	return currentJoints;
 }
 
-mes_result OrocosControlQueue::getCurrentJoints() {
+mes_result KukieControlQueue::getCurrentJoints() {
 	mes_result res;
 	res.time = currentTime;
 	res.joints = retrieveJointsFromRobot();
 	return res;
 }
 
-bool OrocosControlQueue::isInitialized() {
+bool KukieControlQueue::isInitialized() {
 	return isInit;
 }
 
-void OrocosControlQueue::safelyDestroy() {
+void KukieControlQueue::safelyDestroy() {
 }
 
-/*int OrocosControlQueue::getMode(){
+/*int KukieControlQueue::getMode(){
 
     return currentMode;
 }*/

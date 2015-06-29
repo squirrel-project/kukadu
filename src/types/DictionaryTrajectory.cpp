@@ -16,7 +16,7 @@ DictionaryTrajectory::DictionaryTrajectory(std::string baseFolder, double az, do
 
         // learn dmps
         queryPoints = mapFiles(queryFiles, trajFiles, "query", "traj");
-        TrajectoryDMPLearner* dmpLearner;
+        shared_ptr<JointDMPLearner> dmpLearner;
 
         vector<mat> jointsVec;
         double tMax = 0.0;
@@ -39,17 +39,18 @@ DictionaryTrajectory::DictionaryTrajectory(std::string baseFolder, double az, do
             QueryPoint currentQueryPoint = queryPoints.at(i);
             mat joints = jointsVec.at(i);
             joints = fillTrajectoryMatrix(joints, tMax);
-            dmpLearner = new TrajectoryDMPLearner(az, bz, joints);
+            dmpLearner = shared_ptr<JointDMPLearner>(new JointDMPLearner(az, bz, joints));
 
-            Dmp learnedDmps = dmpLearner->fitTrajectories();
-            learnedDmps.serialize(baseFolder + currentQueryPoint.getFileDmpPath());
+            shared_ptr<Dmp> learnedDmps = dmpLearner->fitTrajectories();
+            learnedDmps->serialize(baseFolder + currentQueryPoint.getFileDmpPath());
             queryPoints.at(i).setDmp(learnedDmps);
-            startingPos = queryPoints.at(i).getDmp().getY0();
+            startingPos = queryPoints.at(i).getDmp()->getY0();
 
             cout << "(DMPGeneralizer) goals for query point [" << currentQueryPoint.getQueryPoint().t() << "]" << endl << "\t [";
-            cout << currentQueryPoint.getDmp().getG().t() << "]" << endl;
+            cout << currentQueryPoint.getDmp()->getG().t() << "]" << endl;
 
-            delete dmpLearner;
+            //delete dmpLearner;
+            dmpLearner = nullptr;
 
         }
 
@@ -59,7 +60,7 @@ DictionaryTrajectory::DictionaryTrajectory(std::string baseFolder, double az, do
 
     }
 
-    degOfFreedom = queryPoints.at(0).getDmp().getDegreesOfFreedom();
+    degOfFreedom = queryPoints.at(0).getDmp()->getDegreesOfFreedom();
 
 }
 
@@ -122,10 +123,10 @@ vector<QueryPoint> DictionaryTrajectory::mapFiles(vector<string> queryFiles, vec
 			string currentTrajFile = string(trajFiles.at(j));
             string trajAppendix = currentTrajFile.substr(prefix2Size, currentTrajFile.size() - 1);
             if(!queryAppendix.compare(trajAppendix)) {
-                QueryPoint toAdd(queryFiles.at(i), trajFiles.at(j), string("dmp") + trajAppendix, Dmp(), vec());
+                QueryPoint toAdd(queryFiles.at(i), trajFiles.at(j), string("dmp") + trajAppendix, shared_ptr<Dmp>(new JointDmp()), vec());
                 ret.push_back(toAdd);
                 if(i == 0)
-                    startingPos = toAdd.getDmp().getY0();
+                    startingPos = toAdd.getDmp()->getY0();
             }
 		}
 	}
@@ -157,11 +158,11 @@ vector<QueryPoint> DictionaryTrajectory::mapFiles(vector<string> queryFiles, vec
                     string dmpAppendix = currentDmpFile.substr(prefix3Size, currentDmpFile.size() - 1);
                     if(!dmpAppendix.compare(queryAppendix)) {
                         // load dmp from file
-                        QueryPoint toAdd(queryFiles.at(i), trajFiles.at(j), prefix3 + trajAppendix, Dmp(baseFolder + prefix3 + trajAppendix), vec());
+                        QueryPoint toAdd(queryFiles.at(i), trajFiles.at(j), prefix3 + trajAppendix, shared_ptr<Dmp>(new JointDmp(baseFolder + prefix3 + trajAppendix)), vec());
                         toAdd.setQueryPoint(readQuery(string(baseFolder) + string(toAdd.getFileQueryPath())));
                         ret.push_back(toAdd);
                         if(i == 0)
-                            startingPos = toAdd.getDmp().getY0();
+                            startingPos = toAdd.getDmp()->getY0();
                     }
                 }
             }
@@ -175,13 +176,13 @@ vector<QueryPoint> DictionaryTrajectory::mapFiles(vector<string> queryFiles, vec
 void DictionaryTrajectory::setTmax(double tmax) {
 
     for(int i = 0; i < queryPoints.size(); ++i)
-        queryPoints.at(i).getDmp().setTmax(tmax);
+        queryPoints.at(i).getDmp()->setTmax(tmax);
 
 }
 
 double DictionaryTrajectory::getTmax() {
 
-    return queryPoints.at(0).getDmp().getTmax();
+    return queryPoints.at(0).getDmp()->getTmax();
 
 }
 

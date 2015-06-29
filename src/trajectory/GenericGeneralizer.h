@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 
-#include "../types/DMP.h"
+#include "../types/jointdmp.h"
 #include "../utils/types.h"
 
 /** \brief 
@@ -19,7 +19,7 @@ private:
 
 public:
 
-	virtual Dmp generalizeDmp(GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, arma::vec query, double beta) = 0;
+    virtual std::shared_ptr<JointDmp> generalizeDmp(GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, arma::vec query, double beta) = 0;
 	
 };
 

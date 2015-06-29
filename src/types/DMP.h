@@ -1,9 +1,10 @@
 #ifndef DMP
 #define DMP
 
-#include "SingleSampleTrajectory.h"
 #include "DMPBase.h"
+#include "SingleSampleTrajectory.h"
 #include "../utils/conversion_utils.h"
+
 #include <vector>
 #include <armadillo>
 
@@ -86,9 +87,10 @@ public:
 	
     double getTmax();
     void setTmax(double tmax);
+
+    virtual bool isCartesian() = 0;
 	
-	int operator==(Dmp const& comp) const;
-    std::shared_ptr<Trajectory> copy();
+    int operator==(std::shared_ptr<Dmp> const& comp) const;
 
 };
 

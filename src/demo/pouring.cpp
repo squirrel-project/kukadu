@@ -113,8 +113,8 @@ int main(int argc, char** args) {
 
     int kukaStepWaitTime = dmpStepSize * 1e6;
     shared_ptr<ControlQueue> simulationQueue = shared_ptr<ControlQueue>(new PlottingControlQueue(7, kukaStepWaitTime));
-    holderQueue = shared_ptr<ControlQueue>(new OrocosControlQueue(kukaStepWaitTime, simPrefix, "right_arm", *node));
-    shared_ptr<ControlQueue> executionQueue = shared_ptr<ControlQueue>(new OrocosControlQueue(kukaStepWaitTime, simPrefix, "left_arm", *node));
+    holderQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, simPrefix, "right_arm", *node));
+    shared_ptr<ControlQueue> executionQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, simPrefix, "left_arm", *node));
     shared_ptr<Gnuplot> g1;
     shared_ptr<thread> switchThr;
 
@@ -177,14 +177,14 @@ int main(int argc, char** args) {
 
     vec leftStartPos = {-1.3379182815551758, 1.1682424545288086, 1.1133999824523926, -1.7567673921585083, -1.0026493072509766, 0.8772866725921631, 0.6723997592926025};
 
-    holderQueue->switchMode(OrocosControlQueue::KUKA_JNT_POS_MODE);
+    holderQueue->switchMode(KukieControlQueue::KUKA_JNT_POS_MODE);
     holderQueue->moveCartesian(rightStartPos);
 
     simulationQueue->startQueueThread();
-    simulationQueue->switchMode(OrocosControlQueue::KUKA_JNT_POS_MODE);
+    simulationQueue->switchMode(KukieControlQueue::KUKA_JNT_POS_MODE);
 
     executionQueue->startQueueThread();
-    executionQueue->switchMode(OrocosControlQueue::KUKA_JNT_POS_MODE);
+    executionQueue->switchMode(KukieControlQueue::KUKA_JNT_POS_MODE);
 
 
     simulationQueue->moveJoints(leftStartPos);
@@ -250,7 +250,7 @@ int main(int argc, char** args) {
     }
 
     cout << "(PouringExperiment) switching mode for holding arm" << endl;
-    holderQueue->switchMode(OrocosControlQueue::KUKA_JNT_POS_MODE);
+    holderQueue->switchMode(KukieControlQueue::KUKA_JNT_POS_MODE);
 
     cout << "(PouringExperiment) execution of trajectory at new position" << endl;
 

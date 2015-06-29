@@ -6,7 +6,7 @@
 using namespace std;
 using namespace arma;
 
-GenDMPReinforcer::GenDMPReinforcer(vec initialQueryPoint, CostComputer* cost, DMPGeneralizer* dmpGen, GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, std::shared_ptr<ControlQueue> movementQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : DMPReinforcer(cost, movementQueue, ac, dmpStepSize, tolAbsErr, tolRelErr) {
+GenDMPReinforcer::GenDMPReinforcer(vec initialQueryPoint, CostComputer* cost, std::shared_ptr<DMPGeneralizer> dmpGen, GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, std::shared_ptr<ControlQueue> movementQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : DMPReinforcer(cost, movementQueue, ac, dmpStepSize, tolAbsErr, tolRelErr) {
 	this->dmpGen = dmpGen;
 	this->trajectoryKernel = trajectoryKernel;
 	this->parameterKernel = parameterKernel;
@@ -22,21 +22,21 @@ GenDMPReinforcer::GenDMPReinforcer(vec initialQueryPoint, CostComputer* cost, DM
 
 }
 
-std::vector<Dmp> GenDMPReinforcer::getInitialRollout() {
+std::vector<std::shared_ptr<Dmp>> GenDMPReinforcer::getInitialRollout() {
 	
 	cout << "(GenDMPReinforcer) initial query point: " << initialQueryPoint(0) << endl;
 	
 	genResults = new t_executor_res[dmpGen->getQueryPointCount()];
 	for(int i = 0; i < dmpGen->getQueryPointCount(); ++i) {
-		Dmp queryDmp = dmpGen->getQueryPointByIndex(i).getDmp();
+        std::shared_ptr<Dmp> queryDmp = dmpGen->getQueryPointByIndex(i).getDmp();
         DMPExecutor dmpsim(queryDmp, simQueue);
-		genResults[i] = dmpsim.simulateTrajectory(0, queryDmp.getTmax(), getDmpStepSize(), getTolAbsErr(), getTolRelErr());
+        genResults[i] = dmpsim.simulateTrajectory(0, queryDmp->getTmax(), getDmpStepSize(), getTolAbsErr(), getTolRelErr());
 	}
 	
-	vector<Dmp> ret;
-	Dmp rollout = dmpGen->generalizeDmp(trajectoryKernel, parameterKernel, initialQueryPoint, 100000);
+    vector<std::shared_ptr<Dmp>> ret;
+    std::shared_ptr<Dmp> rollout = dmpGen->generalizeDmp(trajectoryKernel, parameterKernel, initialQueryPoint, 100000);
     DMPExecutor dmpsim(rollout, simQueue);
-	t_executor_res dmpResult = dmpsim.simulateTrajectory(0, rollout.getTmax(), getDmpStepSize(), getTolAbsErr(), getTolRelErr());
+    t_executor_res dmpResult = dmpsim.simulateTrajectory(0, rollout->getTmax(), getDmpStepSize(), getTolAbsErr(), getTolRelErr());
 	
 	if(DEBUGGENDMPREINFORCER) {
 		
@@ -78,7 +78,7 @@ double GenDMPReinforcer::getQMax() {
 	
 }
 
-Dmp GenDMPReinforcer::updateStep() {
+std::shared_ptr<Dmp> GenDMPReinforcer::updateStep() {
 	
 	double lastCost = getLastRolloutCost().at(0);
 	double q;
@@ -113,11 +113,11 @@ Dmp GenDMPReinforcer::updateStep() {
 	
 	cout << "(GenDMPReinforcer) next rollout query point: " << q << endl;
 	
-	vector<Dmp> ret;
-	Dmp rollout = dmpGen->generalizeDmp(trajectoryKernel, parameterKernel, lastQueryPoint, 100000);
+    vector<std::shared_ptr<Dmp>> ret;
+    std::shared_ptr<Dmp> rollout = dmpGen->generalizeDmp(trajectoryKernel, parameterKernel, lastQueryPoint, 100000);
 	
     DMPExecutor dmpsim(rollout, simQueue);
-	t_executor_res dmpResult = dmpsim.simulateTrajectory(0, rollout.getTmax(), getDmpStepSize(), getTolAbsErr(), getTolRelErr());
+    t_executor_res dmpResult = dmpsim.simulateTrajectory(0, rollout->getTmax(), getDmpStepSize(), getTolAbsErr(), getTolRelErr());
 	
 	if(DEBUGGENDMPREINFORCER) {
 		
@@ -132,24 +132,24 @@ Dmp GenDMPReinforcer::updateStep() {
 	
 }
 
-Dmp GenDMPReinforcer::getLastUpdate() {
+std::shared_ptr<Dmp> GenDMPReinforcer::getLastUpdate() {
 	return getLastRolloutParameters().at(0);
 }
 
-std::vector<Dmp> GenDMPReinforcer::computeRolloutParamters() {
+std::vector<std::shared_ptr<Dmp>> GenDMPReinforcer::computeRolloutParamters() {
 	
-	vector<Dmp> ret;
+    vector<std::shared_ptr<Dmp>> ret;
 	ret.push_back(lastUpdate);
 	return ret;
 	
 }
 
-void GenDMPReinforcer::plotFeedback(DMPGeneralizer* dmpGen, Dmp rollout, t_executor_res currentRolloutRes) {
+void GenDMPReinforcer::plotFeedback(std::shared_ptr<DMPGeneralizer> dmpGen, std::shared_ptr<Dmp> rollout, t_executor_res currentRolloutRes) {
 	
 	vector<Gnuplot*> gs;
 	Gnuplot* g1;
 	
-	for(int plotTraj = 0; plotTraj < rollout.getDegreesOfFreedom(); ++plotTraj) {
+    for(int plotTraj = 0; plotTraj < rollout->getDegreesOfFreedom(); ++plotTraj) {
 				
 		ostringstream convert;   // stream used for the conversion
 		convert << plotTraj;

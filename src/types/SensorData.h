@@ -47,6 +47,8 @@ public:
     arma::vec cartPosRow(int rowIdx);
     arma::vec cartFrcTrqsRow(int rowIdx);
 
+    void removeDuplicateTimes();
+
 };
 
 #endif

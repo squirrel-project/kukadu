@@ -14,8 +14,8 @@
 #include <ctime>
 #include <cmath>
 #include <vector>
-
 #include <RedundantKin.h>
+#include <boost/program_options.hpp>
 
 #include "ros/ros.h"
 #include "std_msgs/Int32.h"
@@ -27,6 +27,7 @@
 
 using namespace std;
 using namespace arma;
+namespace po = boost::program_options;
 
 Gnuplot* g1 = NULL;
 
@@ -123,69 +124,104 @@ double tEnd = 7.5;
 
 int main(int argc, char** args) {
 
-    cout << "0" << args[0] << endl;
-    cout << "1" << args[1] << endl;
-    cout << "2" << args[2] << endl;
+    int importanceSamplingCount;
+    double tau, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ac, as, alpham;
+    string inDir, cfFile, dataFolder, trajFile;
+    vector<double> rlExploreSigmas;
 
-    ros::init(argc, args, "kukadu"); node = new ros::NodeHandle(); usleep(1e6);
+    // Declare the supported options.
+    po::options_description desc("Allowed options");
+    desc.add_options()
+            ("metric.database", po::value<string>(), "database folder")
+            ("metric.goldStandard", po::value<string>(), "gold standard file")
+            ("metric.alpham", po::value<double>(), "alpham")
+            ("metric.exploreSigmas", po::value<string>(), "reinforcement learning exploration sigmas")
+            ("metric.importanceSamplingCount", po::value<int>(), "size of importance sampling vector")
+            ("metric.as", po::value<double>(), "as")
+            ("dmp.tau", po::value<double>(), "tau")
+            ("dmp.az", po::value<double>(), "az")
+            ("dmp.bz", po::value<double>(), "bz")
+            ("dmp.dmpStepSize", po::value<double>(), "dmp time step size")
+            ("dmp.tolAbsErr", po::value<double>(), "tolerated absolute error")
+            ("dmp.tolRelErr", po::value<double>(), "tolerated relative error")
+            ("dmp.ac", po::value<double>(), "ac")
+            ("mes.folder", po::value<string>(), "measurment data folder")
+            ("pick.trajectory", po::value<string>(), "data for measured trajectory")
+    ;
 
-    if(!strcmp(args[1], "right") || !strcmp(args[1], "left"))
-        hardware = string(args[1]) + "_arm";
-    else
-        throw "(mainScrewOrocos) arm not defined";
+    ifstream parseFile(resolvePath("$KUKADU_HOME/cfg/book_pick.prop"), std::ifstream::in);
+    po::variables_map vm;
+    po::store(po::parse_config_file(parseFile, desc), vm);
+    po::notify(vm);
 
-    outFile = args[2];
-    cout << "outfile: " << outFile << endl;
+    if (vm.count("dmp.tau")) tau = vm["dmp.tau"].as<double>();
+    else return 1;
+    if (vm.count("dmp.az")) az = vm["dmp.az"].as<double>();
+    else return 1;
+    if (vm.count("dmp.bz")) bz = vm["dmp.bz"].as<double>();
+    else return 1;
+    if (vm.count("dmp.dmpStepSize")) dmpStepSize = vm["dmp.dmpStepSize"].as<double>();
+    else return 1;
+    if (vm.count("dmp.tolAbsErr")) tolAbsErr = vm["dmp.tolAbsErr"].as<double>();
+    else return 1;
+    if (vm.count("dmp.tolRelErr")) tolRelErr = vm["dmp.tolRelErr"].as<double>();
+    else return 1;
+    if (vm.count("dmp.ac")) ac = vm["dmp.ac"].as<double>();
+    else return 1;
 
-    std::shared_ptr<OrocosControlQueue> laQueue = std::shared_ptr<OrocosControlQueue>(nullptr);
-    std::shared_ptr<std::thread> raThr = std::shared_ptr<std::thread>(nullptr);
-
-    // execute guided measurement
-    laQueue = std::shared_ptr<OrocosControlQueue>(new OrocosControlQueue(kukaStepWaitTime, prefix, hardware, *node));
-
-    laQueue->stopCurrentMode();
-    raThr = laQueue->startQueueThread();
-    laQueue->setStiffness(0.2, 0.01, 0.2, 15000, 150, pickMaxAxisTorque);
-
-    laQueue->switchMode(30);
-
-    ofstream oFile;
-    oFile.open(outFile);
-
-    double time = 0.0;
-    double lastTime = -1.0;
-    arma::vec joints;
-
-    std::thread* inputThr = NULL;
-    inputThr = new std::thread(consoleInputter);
-
-    while(consoleInput == 0) {
-
-        mes_result mesRes = laQueue->getCurrentJoints();
-
-        time = mesRes.time;
-        joints = mesRes.joints;
-
-        usleep(0.5 * 1e4);
-        if(joints.n_elem > 1 && lastTime != time) {
-
-            oFile << time;
-            for(int i = 0; i < columns - 1; ++i) { oFile << "\t" << joints[i]; }
-            oFile << endl;
-            lastTime = time;
-
+    if (vm.count("metric.as")) as = vm["metric.as"].as<double>();
+    else return 1;
+    if (vm.count("metric.database")) inDir = resolvePath(vm["metric.database"].as<string>());
+    else return 1;
+    if (vm.count("metric.goldStandard")) cfFile = resolvePath(vm["metric.goldStandard"].as<string>());
+    else return 1;
+    if (vm.count("metric.alpham")) alpham = vm["metric.alpham"].as<double>();
+    else return 1;
+    if (vm.count("metric.exploreSigmas")) {
+        string tokens = vm["metric.exploreSigmas"].as<string>();
+        stringstream parseStream(tokens);
+        char bracket;
+        double dToken;
+        parseStream >> bracket;
+        while(bracket != '}') {
+            parseStream >> dToken >> bracket;
+            rlExploreSigmas.push_back(dToken);
         }
+    } else return 1;
+    if (vm.count("metric.importanceSamplingCount")) importanceSamplingCount = vm["metric.importanceSamplingCount"].as<int>();
+    else return 1;
 
+    if (vm.count("mes.folder")) dataFolder = resolvePath(vm["mes.folder"].as<string>());
+    else return 1;
 
+    if (vm.count("pick.trajectory")) trajFile = resolvePath(vm["pick.trajectory"].as<string>());
+    else return 1;
+
+    cout << "all properties loaded" << endl;
+    int kukaStepWaitTime = dmpStepSize * 1e6;
+
+    ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
+    shared_ptr<ControlQueue> leftQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, "real", "left_arm", *node));
+    vector<shared_ptr<ControlQueue>> queueVectors;
+    queueVectors.push_back(leftQueue);
+
+    leftQueue->stopCurrentMode();
+    std::shared_ptr<std::thread> raThr = leftQueue->startQueueThread();
+    leftQueue->setStiffness(0.2, 0.01, 0.2, 15000, 150, 1500);
+
+    leftQueue->switchMode(30);
+
+    SensorStorage scaredOfSenka(queueVectors, std::vector<std::shared_ptr<GenericHand>>(), 1000);
+    scaredOfSenka.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS);
+    scaredOfSenka.startDataStorage("/home/c7031109/tmp/pushing_data2/");
+    ros::Rate r(1);
+    for(int i = 0; i < 20; ++i) {
+        r.sleep();
+        cout << i << endl;
     }
+    scaredOfSenka.stopDataStorage();
 
-    laQueue->stopCurrentMode();
-    laQueue->switchMode(10);
-    laQueue->stopCurrentMode();
-
-    getchar();
-
-    return 0;
+    leftQueue->stopCurrentMode();
 
 }
 

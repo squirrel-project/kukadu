@@ -47,10 +47,13 @@ std::string environment = "simulation";
 string headTopic = "/"+environment+"/"+"kit_head/joint_control/move";
 
 
+
 void collectDataReal(std::shared_ptr<OrocosControlQueue> queue, string fileR, string fileO, string fileS);
 void collectDataSim(std::shared_ptr<OrocosControlQueue> queue,std::shared_ptr<SimInterface> sim, string objecId, string fileR, string fileO, string fileS);
+void collectDataReal(std::shared_ptr<KukieControlQueue> queue, string fileR, string fileO, string fileS);
+
 geometry_msgs::Pose vectordouble2pose(std::vector<double>* vectorpose);
-t_executor_res executePush(shared_ptr<OrocosControlQueue> movementQu, string file, double az, double bz);
+t_executor_res executePush(shared_ptr<KukieControlQueue> movementQu, string file, double az, double bz);
 
 
 ros::Publisher headMove;
@@ -77,10 +80,10 @@ int main(int argc, char** args) {
 
     ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
 
-    std::shared_ptr<OrocosControlQueue> queue = std::shared_ptr<OrocosControlQueue>(new OrocosControlQueue(kukaStepWaitTime, environment, arm, *node));
+    std::shared_ptr<KukieControlQueue> queue = std::shared_ptr<KukieControlQueue>(new KukieControlQueue(kukaStepWaitTime, environment, arm, *node));
     std::shared_ptr<std::thread> raThr = std::shared_ptr<std::thread>(nullptr);
 
-    queue = std::shared_ptr<OrocosControlQueue>(new OrocosControlQueue(kukaStepWaitTime, environment, arm, *node));
+    queue = std::shared_ptr<KukieControlQueue>(new KukieControlQueue(kukaStepWaitTime, environment, arm, *node));
 
     RosSchunk* handQ=new RosSchunk(*node, environment, hand);
     cout<<"hand interface created"<<endl;
@@ -406,7 +409,9 @@ void arCallback(tf::tfMessage msg) {
 
 
 
+
 void collectDataSim(std::shared_ptr<OrocosControlQueue> queue,std::shared_ptr<SimInterface> sim, string objectId, string fileR, string fileO, string fileS){
+
 
     ofstream oFile;
     ofstream sFile;
@@ -484,7 +489,7 @@ void collectDataSim(std::shared_ptr<OrocosControlQueue> queue,std::shared_ptr<Si
 
 }
 
-void collectDataReal(std::shared_ptr<OrocosControlQueue> queue, string fileR, string fileO, string fileS){
+void collectDataReal(std::shared_ptr<KukieControlQueue> queue, string fileR, string fileO, string fileS){
     ofstream oFile;
     ofstream sFile;
     ofstream rFile;
@@ -557,7 +562,7 @@ char consoleInputter() {
     return consoleInput;
 }
 
-t_executor_res executePush(shared_ptr<OrocosControlQueue> movementQu, string file, double az, double bz) {
+t_executor_res executePush(shared_ptr<KukieControlQueue> movementQu, string file, double az, double bz) {
 
     Gnuplot* g1 = NULL;
 
@@ -579,19 +584,21 @@ t_executor_res executePush(shared_ptr<OrocosControlQueue> movementQu, string fil
 
     vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
 
-    TrajectoryDMPLearner dmpLearner(baseDef, tau, az, bz, ax, carts);
-    Dmp learnedDmps = dmpLearner.fitTrajectories();
-    arma::vec startP=learnedDmps.getY0();
+    JointDMPLearner dmpLearner(baseDef, tau, az, bz, ax, carts);
+    shared_ptr<Dmp> learnedDmps = dmpLearner.fitTrajectories();
+    arma::vec startP = learnedDmps->getY0();
 
     movementQu->moveCartesian(vectorarma2pose(&startP));
     movementQu->stopCurrentMode();
     movementQu->switchMode(20);
 
     DMPExecutor dmpexec(learnedDmps, movementQu, 0);
+
     record = true;
     t_executor_res dmpResult = dmpexec.executeTrajectory(2);
 
     record = false;
+
 
 
     return dmpResult;

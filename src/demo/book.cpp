@@ -104,15 +104,15 @@ int main(int argc, char** args) {
 
     int kukaStepWaitTime = dmpStepSize * 1e6;
 
-    shared_ptr<OrocosControlQueue> leftQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(kukaStepWaitTime, ROBOT_TYPE, ROBOT_SIDE + string("_arm"), *node));
+    shared_ptr<KukieControlQueue> leftQueue = shared_ptr<KukieControlQueue>(new KukieControlQueue(kukaStepWaitTime, ROBOT_TYPE, ROBOT_SIDE + string("_arm"), *node));
     shared_ptr<thread> lqThread = leftQueue->startQueueThread();
 
-    shared_ptr<OrocosControlQueue> rightQueue = nullptr;
+    shared_ptr<KukieControlQueue> rightQueue = nullptr;
     shared_ptr<thread> rqThread = nullptr;
 
     if(CONTROL_RIGHT) {
 
-        rightQueue = shared_ptr<OrocosControlQueue>(new OrocosControlQueue(kukaStepWaitTime, ROBOT_TYPE, "right_arm", *node));
+        rightQueue = shared_ptr<KukieControlQueue>(new KukieControlQueue(kukaStepWaitTime, ROBOT_TYPE, "right_arm", *node));
         rqThread = rightQueue->startQueueThread();
 
     }
@@ -148,10 +148,10 @@ int main(int argc, char** args) {
     cout << "(main) press key to continue" << endl;
     getchar();
 
-    leftQueue->switchMode(OrocosControlQueue::KUKA_JNT_IMP_MODE);
+    leftQueue->switchMode(KukieControlQueue::KUKA_JNT_IMP_MODE);
 
     if(CONTROL_RIGHT) {
-        rightQueue->switchMode(OrocosControlQueue::KUKA_JNT_IMP_MODE);
+        rightQueue->switchMode(KukieControlQueue::KUKA_JNT_IMP_MODE);
         rightQueue->moveJoints(stdToArmadilloVec({-2.3800294399261475, 1.5282957553863525, -2.280046224594116, 1.884490966796875, 2.1091063022613525, -1.4556314945220947, -0.7266652584075928}));
     }
 
@@ -164,12 +164,12 @@ int main(int argc, char** args) {
     leftQueue->moveJoints(stdToArmadilloVec({-0.40275293588638306, 1.7016545534133911, 1.8671916723251343, -0.6587858200073242, 0.0556875579059124, 1.1993221044540405, -1.9818705320358276}));
 
     /*
-    leftQueue->switchMode(OrocosControlQueue::KUKA_STOP_MODE);
+    leftQueue->switchMode(KukieControlQueue::KUKA_STOP_MODE);
 
     cout << "(main) search for book? press key to continue" << endl;
     getchar();
-    // leftQueue->switchMode(OrocosControlQueue::KUKA_CART_IMP_MODE);
-    leftQueue->switchMode(OrocosControlQueue::KUKA_JNT_IMP_MODE);
+    // leftQueue->switchMode(KukieControlQueue::KUKA_CART_IMP_MODE);
+    leftQueue->switchMode(KukieControlQueue::KUKA_JNT_IMP_MODE);
 
     int maxMovementDuration = 10;
     Pose currentPose = leftQueue->getCartesianPose();
