@@ -19,38 +19,7 @@ int main(int argc, char** args) {
     return 0;
 }
 
-void func(double t, const double* y, double* f, void* params){
-    // TODO: remove equation for z' and merge the first two equations
-    // y' = z / tau
-    // z' = 1 / tau * ( az * (bz * (g - y) - z) + f);
-    // x' = -ax / tau * x
 
-    for(int i = 0; i < odeSystemSizeMinOne / 2; i = i + 2) {
-
-        double yPlusOne = y[i + 1];
-
-        int currentSystem = (int) (i / 2);
-        f[i] = yPlusOne * oneDivTau;
-        double g = gs(currentSystem);
-        arma::vec currentCoeffs = dmpCoeffs.at(currentSystem);
-
-        if(t <= (dmp.getTmax() - 1)) {
-
-            double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
-            f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm)  + this->addTerm(t, y, i / 2, controlQueue);
-
-        } else {
-            f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne));
-        }
-
-    }
-
-    double logG = log(tf::Quaternion(gs(3), gs(4), gs(5), gs(6)) * tf::Quaternion(y[6], y[8], y[10], y[12]).inverse());
-
-
-
-
-}
 
 
 double * log(tf::Quaternion quat) {
@@ -119,6 +88,47 @@ double distQuat(tf::Quaternion q1, tf::Quaternion q2){
     return d;
 
 }
+
+arma::mat learnerDMP (arma::mat y,arma::mat y_1, arma::mat g, arma::mat pq, double az, double bz, double tau, mat D, arma:: vec T) {
+
+    arma::mat data(6, y.n_cols);
+    arma::mat eta(3, y.n_cols);
+    arma::mat deta(3, y.n_cols);
+    arma::mat omega(3, y.n_cols);
+    arma::mat domega(3, y.n_cols);
+
+
+
+    //for quaternions
+    //y= tau * omega
+    //y_1= tau * omega'
+    // q' = 0.5 * omega * q
+
+    for (int j = 0; j < y.n_cols -1; j++) {
+
+       double * logL= log(tf::Quaternion(pq(3, j), pq(4, j), pq(5, j), pq(6, j)) * tf::Quaternion(pq(3, j + 1), pq(4, j + 1), pq(5, j + 1), pq(6, j + 1)).inverse());
+       for (int i = 0; i < 3; i++) omega(i, j) = 2 * logL[i];
+    }
+    eta = tau * omega;
+
+    for (int j = 1; j < eta.n_cols -1; j++) {
+
+       double * logL= log(tf::Quaternion(pq(3, j), pq(4, j), pq(5, j), pq(6, j)) * tf::Quaternion(pq(3, j + 1), pq(4, j + 1), pq(5, j + 1), pq(6, j + 1)).inverse());
+       for (int i = 0; i < 3; i++) domega(i, j) = (omega(i, j + 1) - omega(i, j)) / (T(j+1) - T(j));
+    }
+
+    deta = tau * domega;
+
+    for (int j = 0; j < y.n_cols; j++) {
+       double * logL= log(tf::Quaternion(g(3, j), g(4, j), g(5, j), g(6, j)) * tf::Quaternion(pq(3, j), pq(4, j), pq(5, j), pq(6, j)).inverse());
+      // for (int i = 3; i < 7; i++) data(i, j) = D (i, j) * (tau * y_1 (i, j) - az * (bz * 2 * logL[i-3] - y(i, j)));
+       for (int i = 3; i < 7; i++) data(i, j) = D (i, j) * (tau * deta (i-3, j) - az * (bz * 2 * logL[i-3] - eta(i-3, j)));
+    }
+
+    return data;
+}
+
+
 
 
 /*geometry_msgs::Vector3 log(const geometry_msgs::Quaternion quat) {
