@@ -11,9 +11,11 @@ class SingleSampleTrajectory : public Trajectory {
 	
 private:
 	
-	arma::vec supervisedTs;
-	std::vector<arma::vec> sampleYs;
-	
+protected:
+
+    std::vector<arma::vec> sampleYs;
+    arma::vec supervisedTs;
+
 public:
 	
 	SingleSampleTrajectory(arma::vec supervisedTs, std::vector<arma::vec> sampleYs);

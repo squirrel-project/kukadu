@@ -2,6 +2,7 @@
 #define CARTESIANDMP_H
 
 #include "DMP.h"
+#include <tf/transform_datatypes.h>
 
 class CartesianDMP : public Dmp {
 public:
@@ -18,6 +19,14 @@ public:
 
 
     bool isCartesian();
+
+    tf::Quaternion getQ0();
+    tf::Quaternion getQg();
+    tf::Quaternion getQByIdx(int idx);
+
+    arma::vec getEta0();
+    arma::vec getEtaByIdx(int idx);
+
 
     std::shared_ptr<Trajectory> copy();
 };

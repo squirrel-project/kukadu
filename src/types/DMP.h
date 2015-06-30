@@ -12,7 +12,6 @@ class Dmp : public SingleSampleTrajectory {
 	
 private:
 	
-	std::vector<arma::vec> fitYs;
 	std::vector<arma::vec> dmpCoeffs;
 	arma::vec y0;
 	arma::vec dy0;
@@ -39,6 +38,10 @@ private:
 	
 	void construct(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<arma::vec> fitYs, std::vector<arma::vec> dmpCoeffs, std::vector<DMPBase> dmpBase, std::vector<arma::mat> designMatrices,
 		double tau, double az, double bz, double ax, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
+
+protected:
+
+    std::vector<arma::vec> fitYs;
 	
 public:
 
@@ -52,6 +55,8 @@ public:
 		double tau, double az, double bz, double ax);
 
     void serialize(std::string dmpFile);
+
+    int getSampleCount();
 	
 	double getY0(int freedomIdx);
 	double getDy0(int freedomIdx);
@@ -75,6 +80,8 @@ public:
 	arma::mat getDesignMatrix(int freedomIdx);
     int getDesignMatrixCount();
 	std::vector<DMPBase> getDmpBase();
+
+    double getDeltaTByIdx(int idx);
 	
 	double getTau();
 	double getAz();

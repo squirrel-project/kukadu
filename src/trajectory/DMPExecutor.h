@@ -25,6 +25,7 @@
 #include "../types/Trajectory.h"
 #include "TrajectoryExecutor.h"
 #include "../types/DMP.h"
+#include "../types/CartesianDMP.h"
 #include "../types/DMPBase.h"
 #include "../utils/types.h"
 #include "../utils/utils.h"
@@ -47,6 +48,8 @@ struct gsl_delete_expression {
 class DMPExecutor : public TrajectoryExecutor {
 
 protected:
+
+    bool isCartesian;
 
 	double tau;
 	double az;
@@ -99,6 +102,11 @@ protected:
 	double t;
 	double stepSize;
 
+    arma::vec dEta0;
+    tf::Quaternion dQ0;
+    tf::Quaternion qG;
+    tf::Quaternion currentQ;
+
     double computeDistance(const arma::vec yDes, arma::vec yCurr);
 	
 	// needed for workaround (see here http://stackoverflow.com/questions/10687397/static-virtual-workaround-in-gsl)
@@ -134,6 +142,7 @@ public:
     t_executor_res executeTrajectory();
 	
 	void initializeIntegration(double tStart, double stepSize, double tolAbsErr, double tolRelErr);
+    void initializeIntegrationQuat();
 	void destroyIntegration();
 	
 	void useExternalError(int external);

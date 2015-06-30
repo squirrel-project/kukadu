@@ -1,4 +1,5 @@
 #include "DMPExecutor.h"
+#include "tf/transform_datatypes.h"
 
 using namespace std;
 using namespace arma;
@@ -32,6 +33,7 @@ void DMPExecutor::construct(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQu
 
     */
 
+    this->isCartesian = traj->isCartesian();
     this->controlQueue = execQueue;
 
 	this->dmp = traj;
@@ -51,8 +53,10 @@ void DMPExecutor::construct(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQu
 
 	this->simulate = SIMULATE_DMP;
     this->degofFreedom = y0s.n_elem;
-    if (this->dmp->isCartesian())  this->odeSystemSize = 2 * this->degofFreedom + 1;
-        else this->odeSystemSize = 2 * this->degofFreedom + 1;
+    if(isCartesian)
+        this->odeSystemSize = 3 * 3 + 1;
+    else
+        this->odeSystemSize = 2 * this->degofFreedom + 1;
 	this->suppressMessages = suppressMessages;
 
     previousDesiredJoints = y0s;
@@ -97,29 +101,73 @@ double DMPExecutor::addTerm(double t, const double* currentDesiredYs, int jointN
 
 int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 
-    // TODO: remove equation for z' and merge the first two equations
-	// y' = z / tau
-	// z' = 1 / tau * ( az * (bz * (g - y) - z) + f); 
-	// x' = -ax / tau * x
-    for(int i = 0; i < odeSystemSizeMinOne; i = i + 2) {
+    if(!isCartesian) {
 
-        double yPlusOne = y[i + 1];
-		
-		int currentSystem = (int) (i / 2);
-        f[i] = yPlusOne * oneDivTau;
-        double g = gs(currentSystem);
-        arma::vec currentCoeffs = dmpCoeffs.at(currentSystem);
-		
-        if(t <= (dmp->getTmax() - 1)) {
-			
-            double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
-            f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm)  + this->addTerm(t, y, i / 2, controlQueue);
-			
-		} else {
-        //	cout << "(DMPExecutor) executing dmp over teaching duration" << endl;
-        //    throw "stopped dmp execution";
-            f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne));
-		}
+        // joint / cartesian position
+
+        // TODO: remove equation for z' and merge the first two equations
+        // y' = z / tau
+        // z' = 1 / tau * ( az * (bz * (g - y) - z) + f);
+        // x' = -ax / tau * x
+        for(int i = 0; i < odeSystemSizeMinOne; i = i + 2) {
+
+            double yPlusOne = y[i + 1];
+
+            int currentSystem = (int) (i / 2);
+            f[i] = yPlusOne * oneDivTau;
+            double g = gs(currentSystem);
+            arma::vec currentCoeffs = dmpCoeffs.at(currentSystem);
+
+            if(t <= (dmp->getTmax() - 1)) {
+
+                double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
+                f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm)  + this->addTerm(t, y, currentSystem, controlQueue);
+
+            } else {
+                f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne));
+            }
+
+        }
+
+    } else {
+
+        vec vecOrientationY(3);
+        vec vecF0(3);
+        for(int i = 0, dim = 3; i < odeSystemSizeMinOne; i = i + 3, ++dim) {
+            vecOrientationY(dim) = y[i + 2];
+            int currentSystem = (int) (i / 3);
+            arma::vec currentCoeffs = dmpCoeffs.at(currentSystem);
+            vecF0(dim) = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
+        }
+
+        vec nextDEta(3);
+        if(t <= (dmp->getTmax() - 1))
+            nextDEta = oneDivTau * az * (2.0 * bz * log(qG * currentQ.inverse()) - vecOrientationY) + vecF0;
+        else
+            nextDEta = oneDivTau * az * (2.0 * bz * log(qG * currentQ.inverse()) - vecOrientationY);
+
+        // cartesian position and orientation
+        for(int i = 0; i < odeSystemSizeMinOne; i = i + 3) {
+
+            double yPlusOne = y[i + 1];
+
+            int currentSystem = (int) (i / 3);
+            f[i] = yPlusOne * oneDivTau;
+            double g = gs(currentSystem);
+            arma::vec currentCoeffs = dmpCoeffs.at(currentSystem);
+
+            if(t <= (dmp->getTmax() - 1)) {
+
+                double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
+                f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm)  + this->addTerm(t, y, currentSystem, controlQueue);
+
+            } else {
+                f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne));
+            }
+
+            f[i + 2] = nextDEta(currentSystem);
+
+        }
 
     }
 
@@ -216,16 +264,27 @@ t_executor_res DMPExecutor::executeTrajectory() {
 void DMPExecutor::initializeIntegration(double tStart, double stepSize, double tolAbsErr, double tolRelErr) {
 
 	t = tStart;
+
+    initializeIntegrationQuat();
+
     vec_y.clear();
 	double ys[odeSystemSize];
 	vecYs = vec(odeSystemSize);
 	
-    int iHalf;
-	for(int i = 0; i < (odeSystemSize - 1); i = i + 2) {
-        iHalf = (int) i / 2;
-        ys[i + 0] = y0s((int) iHalf);
-        ys[i + 1] = tau * dy0s((int) iHalf);
-	}
+    if(!isCartesian) {
+        for(int i = 0; i < (odeSystemSize - 1); i = i + 2) {
+            int iHalf = (int) i / 2;
+            ys[i + 0] = y0s((int) iHalf);
+            ys[i + 1] = tau * dy0s((int) iHalf);
+        }
+    } else {
+        for(int i = 0, dim = 0; i < (odeSystemSize - 1); i = i + 3, ++dim) {
+            int iHalf = (int) i / 2;
+            ys[i + 0] = y0s((int) iHalf);
+            ys[i + 1] = tau * dy0s((int) iHalf);
+            ys[i + 2] = dEta0(dim);
+        }
+    }
 	
 	ys[odeSystemSize - 1] = 1;
 	
@@ -238,7 +297,34 @@ void DMPExecutor::initializeIntegration(double tStart, double stepSize, double t
 		vecYs(i) = ys[i];
 	
 }
-	
+
+void DMPExecutor::initializeIntegrationQuat() {
+
+    if(t > 0.0) {
+        throw "(DMPExecutor) t > 0 is not considered yet with cartesian dmp";
+    }
+
+    if(isCartesian) {
+
+        shared_ptr<CartesianDMP> cartDmp = dynamic_pointer_cast<CartesianDMP>(dmp);
+        vec eta0 = cartDmp->getEta0();
+        vec eta1 = cartDmp->getEtaByIdx(1);
+        vec alteredEta0 = 1.0 / (2.0 * cartDmp->getTau()) * eta0;
+        tf::Quaternion eta0Quat(alteredEta0(0), alteredEta0(1), alteredEta0(2), 0);
+        tf::Quaternion q0 = cartDmp->getQ0();
+        currentQ = q0;
+
+        dQ0 =  eta0Quat * q0;
+
+        double firstDt = cartDmp->getDeltaTByIdx(0);
+        dEta0 = 1.0 / (firstDt * cartDmp->getTau()) * (eta1 - eta0);
+
+        qG = cartDmp->getQg();
+
+    }
+
+}
+
 arma::vec DMPExecutor::doIntegrationStep(double ac) {
 	
 	double ys[odeSystemSize];
@@ -253,8 +339,6 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
 
         int s = gsl_odeiv2_driver_apply_fixed_step(d.get(), &t, stepSize, 1, ys);
 
-//        cout << t << " " << ys[0] << endl;
-//        getchar();
 	
         if (s != GSL_SUCCESS) {
             cout << "(DMPExecutor) error: driver returned " << s << endl;
@@ -263,8 +347,26 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
 
     }
 	
-	for(int i = 0; i < degofFreedom; ++i)
-		retJoints(i) = ys[2 * i];
+    if(!isCartesian) {
+
+        for(int i = 0; i < degofFreedom; ++i)
+            retJoints(i) = ys[2 * i];
+
+    } else {
+
+        vec nextEta(3);
+        for(int i = 0; i < 3; ++i) {
+            retJoints(i) = ys[3 * i];
+            nextEta(i) = ys[3 * i + 2];
+        }
+
+        nextEta = stepSize / 2.0 * oneDivTau * nextEta;
+        tf::Quaternion nextEtaQuat(nextEta(0), nextEta(1), nextEta(2), 0.0);
+        currentQ = exp(nextEtaQuat) * currentQ;
+
+        retJoints(3) = currentQ.x(); retJoints(4) = currentQ.y(); retJoints(5) = currentQ.z(); retJoints(6) = currentQ.w();
+
+    }
 	
 	for(int i = 0; i < odeSystemSize; ++i)
         vecYs(i) = ys[i];
@@ -294,7 +396,7 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
 
 
 
-    if(!dmp->isCartesian())
+    if(!isCartesian)
         controlQueue->moveJoints(y0s);
     else
         controlQueue->addCartesianPosToQueue(vectorarma2pose(&y0s));
@@ -328,7 +430,7 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
             controlQueue->synchronizeToControlQueue(1);
         }
 
-        if(!dmp->isCartesian())
+        if(!isCartesian)
             controlQueue->addJointsPosToQueue(nextJoints);
         else
             controlQueue->addCartesianPosToQueue(vectorarma2pose(&nextJoints));

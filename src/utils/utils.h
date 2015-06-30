@@ -123,7 +123,7 @@ double absolute(double val);
 
 geometry_msgs::Pose vectorarma2pose(arma::vec* vectorpose);
 
-double * log(const tf::Quaternion quat);
+arma::vec log(const tf::Quaternion quat);
 tf::Quaternion exp(const double* logQuat);
 double distQuat(tf::Quaternion q1, tf::Quaternion q2);
 

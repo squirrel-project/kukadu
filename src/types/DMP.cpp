@@ -136,6 +136,14 @@ void Dmp::serialize(string dmpFile) {
 
 }
 
+int Dmp::getSampleCount() {
+    return sampleYs.size();
+}
+
+double Dmp::getDeltaTByIdx(int idx) {
+    return (supervisedTs(idx + 1) - supervisedTs(idx));
+}
+
 void Dmp::construct(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<arma::vec> fitYs, std::vector<arma::vec> dmpCoeffs, std::vector<DMPBase> dmpBase, std::vector<arma::mat> designMatrices,
 		double tau, double az, double bz, double ax, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) {
 

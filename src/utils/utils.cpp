@@ -863,22 +863,22 @@ geometry_msgs::Pose vectorarma2pose(arma::vec* vectorpose){
 
 
 
-double * log(tf::Quaternion quat) {
+arma::vec log(tf::Quaternion quat) {
 
-    double logQuat[3];
+    vec logQuat(3);
     double modU = sqrt(quat.x() * quat.x()  + quat.y() * quat.y() + quat.z() * quat.z());
 
     if (modU > 0) {
 
-        logQuat[0]= quat.x() / modU;
-        logQuat[1] = quat.y() / modU;
-        logQuat[2] = quat.z() / modU;
+        logQuat(0) = quat.x() / modU;
+        logQuat(1) = quat.y() / modU;
+        logQuat(2) = quat.z() / modU;
 
     } else {
 
-        logQuat[0] = 0.0;
-        logQuat[1] = 0.0;
-        logQuat[2] = 0.0;
+        logQuat(0) = 0.0;
+        logQuat(1) = 0.0;
+        logQuat(2) = 0.0;
 
     }
 
@@ -916,13 +916,13 @@ double distQuat(tf::Quaternion q1, tf::Quaternion q2){
 
     double d;
     const tf::Quaternion q = q1 * q2.inverse();
-    double *logQuat = log(q);
+    vec logQuat = log(q);
 
     if ((q.x() == 0) && (q.y() == 0) && (q.z() == 0) && (q.w() == -1)) d = 2 * M_PI;
 
     else {
 
-        d = 2 * sqrt(logQuat[0] * logQuat[0] + logQuat[1] * logQuat[1] + logQuat[2] * logQuat[2]);
+        d = 2 * sqrt(logQuat(0) * logQuat(0) + logQuat(1) * logQuat(1) + logQuat(2) * logQuat(2));
 
     }
 
