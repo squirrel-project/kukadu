@@ -51,7 +51,8 @@ void DMPExecutor::construct(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQu
 
 	this->simulate = SIMULATE_DMP;
     this->degofFreedom = y0s.n_elem;
-	this->odeSystemSize = 2 * this->degofFreedom + 1;
+    if (this->dmp->isCartesian())  this->odeSystemSize = 2 * this->degofFreedom + 1;
+        else this->odeSystemSize = 2 * this->degofFreedom + 1;
 	this->suppressMessages = suppressMessages;
 
     previousDesiredJoints = y0s;

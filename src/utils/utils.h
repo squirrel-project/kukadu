@@ -29,6 +29,9 @@
 #include <gsl/gsl_poly.h>
 #include <gsl/gsl_linalg.h>
 
+#include <tf/transform_datatypes.h>
+#include <geometry_msgs/Quaternion.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -43,6 +46,8 @@
 #include "Tokenizer.h"
 
 #include "gnuplot-cpp/gnuplot_i.hpp"
+
+
 
 int createDirectory(std::string path);
 
@@ -117,5 +122,9 @@ arma::mat armaJoinRows(arma::mat m1, arma::mat m2);
 double absolute(double val);
 
 geometry_msgs::Pose vectorarma2pose(arma::vec* vectorpose);
+
+double * log(const tf::Quaternion quat);
+tf::Quaternion exp(const double* logQuat);
+double distQuat(tf::Quaternion q1, tf::Quaternion q2);
 
 #endif
