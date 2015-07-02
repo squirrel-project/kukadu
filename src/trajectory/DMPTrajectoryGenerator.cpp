@@ -43,8 +43,8 @@ double DMPTrajectoryGenerator::evaluateByCoefficientsSingleNonExponential(double
 	double val = 0.0;
 
     if(previousX != x) {
-//        cout << "(" << x << ", " << previousX << ")    ";
-//        cout << this << " " << x << endl;
+      //  cout << "(" << x << ", " << previousX << ")    ";
+       // cout << this << " " << x << endl;
         for(int i = 0; i < coeffDegree; ++i) {
             prevBasFun(i) = evaluateBasisFunctionNonExponential(x, i);
             previousX = x;

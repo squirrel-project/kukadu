@@ -138,6 +138,7 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
             int currentSystem = (int) (i / 3);
             arma::vec currentCoeffs = dmpCoeffs.at(currentSystem);
             vecF0(dim) = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
+            cout<<"DMPGE orient "<<y[odeSystemSizeMinOne]<<endl;
         }
 
         vec nextDEta(3);
@@ -151,14 +152,17 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 
             double yPlusOne = y[i + 1];
 
+
             int currentSystem = (int) (i / 3);
             f[i] = yPlusOne * oneDivTau;
             double g = gs(currentSystem);
             arma::vec currentCoeffs = dmpCoeffs.at(currentSystem);
 
+
             if(t <= (dmp->getTmax() - 1)) {
 
                 double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
+                cout<<"DMPGE cart "<<y[odeSystemSizeMinOne]<<endl;
                 f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm)  + this->addTerm(t, y, currentSystem, controlQueue);
 
             } else {
@@ -198,6 +202,9 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
         }
 
         f[odeSystemSizeMinOne] = - axDivTau * y[odeSystemSizeMinOne] / corrector;
+
+        cout<< "(DMPGExecutor) corrector "<< corrector<< endl;
+        cout<< "(DMPGExecutor) corrector "<< f[odeSystemSizeMinOne]<<endl;
 
     }
 
@@ -289,11 +296,14 @@ void DMPExecutor::initializeIntegration(double tStart, double stepSize, double t
             ys[i + 1] = tau * dy0s((int) iHalf);
         }
     } else {
-        for(int i = 0, dim = 0; i < (odeSystemSize - 1); i = i + 3, ++dim) {
+        for(int i = 0, dim = 0; i < (odeSystemSize - 3); i = i + 3, ++dim) {
             int iHalf = (int) i / 3;
             ys[i + 0] = y0s((int) iHalf);
             ys[i + 1] = tau * dy0s((int) iHalf);
             ys[i + 2] = dEta0(dim);
+            /*ys[i + 0] = y0s(dim);
+            ys[i + 1] = tau * dy0s(dim);
+            ys[i + 2] = dEta0(dim);*/
         }
     }
 	
@@ -304,9 +314,10 @@ void DMPExecutor::initializeIntegration(double tStart, double stepSize, double t
 	
 	this->stepSize = stepSize;
 	
-	for(int i = 0; i < odeSystemSize; ++i)
+    for(int i = 0; i < odeSystemSize; ++i) {
 		vecYs(i) = ys[i];
-	
+        cout<<"start vector "<<ys[i]<< endl;
+    }
 }
 
 void DMPExecutor::initializeIntegrationQuat() {
@@ -328,7 +339,8 @@ void DMPExecutor::initializeIntegrationQuat() {
         dQ0 =  eta0Quat * q0;
 
         double firstDt = cartDmp->getDeltaTByIdx(0);
-        dEta0 = 1.0 / (firstDt * cartDmp->getTau()) * (eta1 - eta0);
+       // dEta0 = 1.0 / (firstDt * cartDmp->getTau()) * (eta1 - eta0); this os domega0?
+        dEta0 = 1.0 / firstDt * (eta1 - eta0);
 
         qG = cartDmp->getQg();
     }
@@ -377,10 +389,9 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
         retJoints(3) = currentQ.x(); retJoints(4) = currentQ.y(); retJoints(5) = currentQ.z(); retJoints(6) = currentQ.w();
 
     }
-     cout<<"DMPGExecutor ys "<<endl;
-    for(int i = 0; i < odeSystemSize; ++i){
+    for(int i = 0; i < odeSystemSize; ++i)
         vecYs(i) = ys[i];
-    cout<<ys[i]<<endl;}
+
 	
 	return retJoints;
 	
@@ -405,7 +416,7 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
 
     vector<double> retT;
 
-    cout<<"(FMPGExecutor) start position "<<y0s<<endl;
+    //cout<<"(DMPGExecutor) start position "<<y0s<<endl;
 
     if(!isCartesian)
         controlQueue->moveJoints(y0s);

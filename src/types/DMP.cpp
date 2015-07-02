@@ -333,7 +333,7 @@ void Dmp::initializeDdy0() {
 	ddy0 = vec(degOfFreemdom);
 	for(int i = 0; i < degOfFreemdom; ++i) {
 		double dy = ( getDataPoint(i, 2) - getDataPoint(i, 1) ) / ( getT(2) - getT(1) );
-		ddy0(i) = ( dy - dy0(i) ) / ( getT(2) - getT(0) );
+        ddy0(i) = ( dy - dy0(i) ) / ( getT(2) - getT(0) );
 	}
 	
 }
