@@ -131,6 +131,8 @@ int main(int argc, char** args) {
     arma::vec times = data->getTimes();
     arma::mat jointPos = data->getJointPos();
 
+    data->cartPos();
+
     JointDMPLearner learner(az, bz, join_rows(times, jointPos));
     std::shared_ptr<Dmp> leftDmp = learner.fitTrajectories();
     DMPExecutor leftExecutor(leftDmp, leftQueue);

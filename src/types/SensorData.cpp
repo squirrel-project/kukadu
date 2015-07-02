@@ -20,20 +20,36 @@ SensorData::SensorData(std::string timeLabel, std::vector<std::string> jointPosL
     this->cartForceAbsLabel = cartForceAbsLabel;
 
     labels.push_back(timeLabel);
-    for(int i = 0; jointPos.n_cols > 1 && i < jointPosLabels.size(); ++i)
-        labels.push_back(jointPosLabels.at(i));
 
-    for(int i = 0; jointFrc.n_cols > 1 && i < jointFrcLabels.size(); ++i)
-        labels.push_back(jointFrcLabels.at(i));
+    if(jointPos.n_cols > 1) {
+        for(int i = 0; i < jointPosLabels.size(); ++i)
+            labels.push_back(jointPosLabels.at(i));
+    } else
+        this->jointPosLabels.clear();
 
-    for(int i = 0; cartPos.n_cols > 1 && i < cartPosLabels.size(); ++i)
-        labels.push_back(cartPosLabels.at(i));
+    if(jointFrc.n_cols > 1) {
+        for(int i = 0; i < jointFrcLabels.size(); ++i)
+            labels.push_back(jointFrcLabels.at(i));
+    } else
+        this->jointFrcLabels.clear();
 
-    for(int i = 0; cartFrcTrq.n_cols > 1 && i < cartFrcTrqLabels.size(); ++i)
-        labels.push_back(cartFrcTrqLabels.at(i));
+    if(cartPos.n_cols > 1) {
+        for(int i = 0; i < cartPosLabels.size(); ++i)
+            labels.push_back(cartPosLabels.at(i));
+    } else
+        this->cartPosLabels.clear();
 
-    for(int i = 0; cartForceAbs.n_cols > 1 && i < cartForceAbsLabel.size(); ++i)
-        labels.push_back(cartForceAbsLabel.at(i));
+    if(cartFrcTrq.n_cols > 1) {
+        for(int i = 0; i < cartFrcTrqLabels.size(); ++i)
+            labels.push_back(cartFrcTrqLabels.at(i));
+    } else
+        this->cartFrcTrqLabels.clear();
+
+    if(cartForceAbs.n_cols > 1) {
+        for(int i = 0; i < cartForceAbsLabel.size(); ++i)
+            labels.push_back(cartForceAbsLabel.at(i));
+    } else
+        this->cartForceAbsLabel.clear();
 
     if(time.n_elem > 1)
         values = armaJoinRows(time, jointPos);
