@@ -346,7 +346,7 @@ void KukieControlQueue::stopCurrentMode() {
 }
 
 void KukieControlQueue::synchronizeToControlQueue(int maxNumJointsInQueue) {
-    if(currentMode == KUKA_JNT_IMP_MODE || currentMode == KUKA_CART_IMP_MODE)
+    if(currentMode == KUKA_JNT_IMP_MODE || currentMode == KUKA_JNT_POS_MODE)
         while(movementQueue.size() > maxNumJointsInQueue);
     else if(currentMode == KUKA_CART_IMP_MODE)
         while(cartesianMovementQueue.size() > maxNumJointsInQueue);
