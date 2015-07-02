@@ -290,7 +290,7 @@ void DMPExecutor::initializeIntegration(double tStart, double stepSize, double t
         }
     } else {
         for(int i = 0, dim = 0; i < (odeSystemSize - 1); i = i + 3, ++dim) {
-            int iHalf = (int) i / 2;
+            int iHalf = (int) i / 3;
             ys[i + 0] = y0s((int) iHalf);
             ys[i + 1] = tau * dy0s((int) iHalf);
             ys[i + 2] = dEta0(dim);
