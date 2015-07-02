@@ -231,8 +231,9 @@ double DMPExecutor::computeDistance(const arma::vec yDes, arma::vec yCurr) {
 
     //distance for quaternion has to be introduced if this is enabled
 
-    arma::vec tmp = (yDes - yCurr).t() * (yDes - yCurr);
-    return tmp(0);
+    //arma::vec tmp = (yDes - yCurr).t() * (yDes - yCurr);
+    //return tmp(0);
+    return 0.0;
 
 }
      
