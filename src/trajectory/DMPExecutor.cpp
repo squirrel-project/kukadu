@@ -377,9 +377,10 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
         retJoints(3) = currentQ.x(); retJoints(4) = currentQ.y(); retJoints(5) = currentQ.z(); retJoints(6) = currentQ.w();
 
     }
-	
-	for(int i = 0; i < odeSystemSize; ++i)
+     cout<<"DMPGExecutor ys "<<endl;
+    for(int i = 0; i < odeSystemSize; ++i){
         vecYs(i) = ys[i];
+    cout<<ys[i]<<endl;}
 	
 	return retJoints;
 	
@@ -409,8 +410,8 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
     if(!isCartesian)
         controlQueue->moveJoints(y0s);
     else
-       controlQueue->addCartesianPosToQueue(vectorarma2pose(&y0s));
-      //  controlQueue->moveCartesian(vectorarma2pose(&y0s));
+     //  controlQueue->addCartesianPosToQueue(vectorarma2pose(&y0s));
+       controlQueue->moveCartesian(vectorarma2pose(&y0s));
 
 
     cout<<" (DMPExecutor) movement start done"<<endl;
@@ -451,10 +452,10 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
             cout<<endl<<"current actual pose "<<controlQueue->getCartesianPose()<<endl;
             cout<<endl<<"next pose "<<newP<<endl<<endl;
             //newP.orientation=vectorarma2pose(&y0s).orientation;
-            controlQueue->addCartesianPosToQueue(vectorarma2pose(&nextJoints));
+           // controlQueue->addCartesianPosToQueue(vectorarma2pose(&nextJoints));
            // controlQueue->addCartesianPosToQueue(newP);
 
-             //controlQueue->moveCartesian(newP);
+             controlQueue->moveCartesian(newP);
         }
 
        // cout<< " (DMPExecutor) next pose "<<qG.x()<< " "<<qG.y()<< " "<<qG.z()<< " "<<qG.w()<< " "<<endl;

@@ -136,8 +136,8 @@ int main(int argc, char** args) {
 
     leftQueue->moveJoints(stdToArmadilloVec({-1.12146, 1.08345, 2.26498, -1.91921, -1.12978, 1.42622, -1.67004}));
 
-    leftQueue->stopCurrentMode();
-    leftQueue->switchMode(20);
+   // leftQueue->stopCurrentMode();
+    //leftQueue->switchMode(20);
 
 
     //JointDMPLearner learner(az, bz, join_rows(times, jointPos));
