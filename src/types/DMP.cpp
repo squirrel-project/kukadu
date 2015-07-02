@@ -137,7 +137,7 @@ void Dmp::serialize(string dmpFile) {
 }
 
 int Dmp::getSampleCount() {
-    return sampleYs.size();
+    return sampleYs.at(0).size();
 }
 
 double Dmp::getDeltaTByIdx(int idx) {
@@ -310,6 +310,8 @@ void Dmp::setTmax(double tmax) {
 void Dmp::initializeY0() {
 	
 	int degOfFreemdom = getDegreesOfFreedom();
+
+   // cout<< "(DMP) DoF "<< degOfFreemdom<<endl;
 	y0 = vec(degOfFreemdom);
 	for(int i = 0; i < degOfFreemdom; ++i)
 		y0(i) = getDataPoint(i, 0);

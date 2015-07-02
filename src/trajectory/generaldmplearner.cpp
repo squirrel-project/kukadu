@@ -112,12 +112,13 @@ std::shared_ptr<Dmp> GeneralDmpLearner::fitTrajectories() {
         dy0(i) = all_dy.col(i)(0);
         ddy0(i) = all_ddy.col(i)(0);
         dmpCoeffs.push_back(dmpCoeff);
-        sampleYs.push_back(all_y.col(i));
+       // sampleYs.push_back(all_y.col(i));
         fitYs.push_back(fity);
         designMatrices.push_back(dmpRes.desMat);
 
     }
 
+    for (int i = 0; i < all_y.n_cols; ++i) sampleYs.push_back(all_y.col(i));
     return createDmpInstance(timeVec, sampleYs, fitYs, dmpCoeffs, dmpBase, designMatrices, tau, az, bz, ax);
 
 }

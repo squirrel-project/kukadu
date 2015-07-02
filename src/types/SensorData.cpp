@@ -146,7 +146,9 @@ arma::mat SensorData::getJointForces() {
 }
 
 arma::mat SensorData::cartPos() {
-    return values.cols(1 + jointPosLabels.size() + jointFrcLabels.size(), 1 + jointPosLabels.size() + jointFrcLabels.size() + cartPosLabels.size() - 1);
+  //  return values.cols( 1 + jointPosLabels.size() + jointFrcLabels.size(), 1 + jointPosLabels.size() + jointFrcLabels.size() + cartPosLabels.size() - 1);
+    return values.cols( 1 + jointPosLabels.size(), 1 + jointPosLabels.size() + cartPosLabels.size() - 1);
+
 }
 
 arma::mat SensorData::cartFrcTrqs() {
