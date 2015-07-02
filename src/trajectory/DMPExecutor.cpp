@@ -138,7 +138,6 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
             int currentSystem = (int) (i / 3);
             arma::vec currentCoeffs = dmpCoeffs.at(currentSystem);
             vecF0(dim) = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
-            cout<<"DMPGE orient "<<y[odeSystemSizeMinOne]<<endl;
         }
 
         vec nextDEta(3);
@@ -162,7 +161,6 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
             if(t <= (dmp->getTmax() - 1)) {
 
                 double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
-                cout<<"DMPGE cart "<<y[odeSystemSizeMinOne]<<endl;
                 f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm)  + this->addTerm(t, y, currentSystem, controlQueue);
 
             } else {
@@ -201,10 +199,7 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
             corrector = 1.0 + ac * getExternalError();
         }
 
-        f[odeSystemSizeMinOne] = - axDivTau * y[odeSystemSizeMinOne] / corrector;
-
-        cout<< "(DMPGExecutor) corrector "<< corrector<< endl;
-        cout<< "(DMPGExecutor) corrector "<< f[odeSystemSizeMinOne]<<endl;
+        f[odeSystemSizeMinOne] = -axDivTau * y[odeSystemSizeMinOne] / corrector;
 
     }
 
@@ -229,10 +224,13 @@ double DMPExecutor::computeDistance(const arma::vec yDes, arma::vec yCurr) {
     return dist;
     */
 
-    //distance for quaternion has to be introduced if this is enabled
-
-    arma::vec tmp = (yDes - yCurr).t() * (yDes - yCurr);
-    return tmp(0);
+    if(!isCartesian) {
+        // distance for quaternion has to be introduced if this is enabled
+        arma::vec tmp = (yDes - yCurr).t() * (yDes - yCurr);
+        return tmp(0);
+    }
+    else
+        return 0;
 
 }
      
@@ -316,7 +314,6 @@ void DMPExecutor::initializeIntegration(double tStart, double stepSize, double t
 	
     for(int i = 0; i < odeSystemSize; ++i) {
 		vecYs(i) = ys[i];
-        cout<<"start vector "<<ys[i]<< endl;
     }
 }
 
@@ -416,20 +413,15 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
 
     vector<double> retT;
 
-    //cout<<"(DMPGExecutor) start position "<<y0s<<endl;
-
     if(!isCartesian)
         controlQueue->moveJoints(y0s);
-    else
+    else {
+
      //  controlQueue->addCartesianPosToQueue(vectorarma2pose(&y0s));
-       controlQueue->moveCartesian(vectorarma2pose(&y0s));
-
-
-    cout<<" (DMPExecutor) movement start done"<<endl;
+     //  controlQueue->moveCartesian(vectorarma2pose(&y0s));
+    }
 
     initializeIntegration(0, stepSize, tolAbsErr, tolRelErr);
-
-     cout<<"(DMPExecutor) initializeIntegration done"<<endl;
 
     vec nextJoints(degofFreedom);
     nextJoints.fill(0.0);
@@ -459,17 +451,10 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
         if(!isCartesian)
             controlQueue->addJointsPosToQueue(nextJoints);
         else {
-            geometry_msgs::Pose newP=vectorarma2pose(&nextJoints);
-            cout<<endl<<"current actual pose "<<controlQueue->getCartesianPose()<<endl;
-            cout<<endl<<"next pose "<<newP<<endl<<endl;
-            //newP.orientation=vectorarma2pose(&y0s).orientation;
-           // controlQueue->addCartesianPosToQueue(vectorarma2pose(&nextJoints));
-           // controlQueue->addCartesianPosToQueue(newP);
-
-             controlQueue->moveCartesian(newP);
+            geometry_msgs::Pose newP = vectorarma2pose(&nextJoints);
+            cout << currentTime << " " << newP.position.x << " " << newP.position.y << " " << newP.position.z << " " << newP.orientation.x << " " << newP.orientation.y << " " << newP.orientation.z << " " << newP.orientation.w << endl;
+            controlQueue->addCartesianPosToQueue(newP);
         }
-
-       // cout<< " (DMPExecutor) next pose "<<qG.x()<< " "<<qG.y()<< " "<<qG.z()<< " "<<qG.w()<< " "<<endl;
 
 
         retT.push_back(currentTime);

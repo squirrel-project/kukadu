@@ -123,9 +123,10 @@ int main(int argc, char** args) {
 
     shared_ptr<thread> lqThread = leftQueue->startQueueThread();
     leftQueue->switchMode(10);
-   // leftQueue->moveJoints(stdToArmadilloVec({-0.142816, 1.02806, 1.38676, 0.855349, -0.611948, -1.11719, -1.87344}));
+    //leftQueue->moveJoints(stdToArmadilloVec({-0.142816, 1.02806, 1.38676, 0.855349, -0.611948, -1.11719, -1.87344}));
 
-    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031098/testing/push_data/pushing_data/kuka_lwr_real_left_arm_0");
+    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031109/tmp/pushing_data/kuka_lwr_real_left_arm_0");
+    // shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031098/testing/push_data/pushing_data/kuka_lwr_real_left_arm_0");
     data->removeDuplicateTimes();
 
     arma::vec times = data->getTimes();
@@ -136,11 +137,11 @@ int main(int argc, char** args) {
 
     leftQueue->moveJoints(stdToArmadilloVec({-1.12146, 1.08345, 2.26498, -1.91921, -1.12978, 1.42622, -1.67004}));
 
-   // leftQueue->stopCurrentMode();
-    //leftQueue->switchMode(20);
+    leftQueue->stopCurrentMode();
+    leftQueue->switchMode(20);
 
 
-    //JointDMPLearner learner(az, bz, join_rows(times, jointPos));
+    // JointDMPLearner learner(az, bz, join_rows(times, cartPos));
     CartesianDMPLearner learner(az, bz, join_rows(times, cartPos));
     cout <<" (testing) learner created" <<endl;
     cout <<" (testing) fitting trajectories now" <<endl;
