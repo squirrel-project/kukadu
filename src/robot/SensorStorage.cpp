@@ -199,7 +199,7 @@ void SensorStorage::storeData(bool storeHeader, std::vector<std::shared_ptr<std:
 
                 if(storeCartPos) {
                     cartPos.time = time;
-                    cartPos.joints = data.at(i)->cartPosRow(dataPointIdx);
+                    cartPos.joints = data.at(i)->getCartPosRow(dataPointIdx);
                 }
 
                 if(storeJntFrc) {
@@ -209,12 +209,12 @@ void SensorStorage::storeData(bool storeHeader, std::vector<std::shared_ptr<std:
 
                 if(storeCartFrcTrq) {
                     cartPos.time = time;
-                    cartFrcTrq.joints = data.at(i)->cartFrcTrqsRow(dataPointIdx);
+                    cartFrcTrq.joints = data.at(i)->getCartFrcTrqsRow(dataPointIdx);
                 }
 
                 if(storeCartAbsFrc) {
                     cartPos.time = time;
-                    cartAbsFrcTrq.joints = data.at(i)->cartFrcTrqsRow(dataPointIdx);
+                    cartAbsFrcTrq.joints = data.at(i)->getCartFrcTrqsRow(dataPointIdx);
                     absCartFrc = 0.0;
                     for(int i = 0; i < 3; ++i) {
                         absCartFrc += pow(cartAbsFrcTrq.joints(i), 2);

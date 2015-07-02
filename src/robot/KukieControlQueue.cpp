@@ -321,9 +321,9 @@ void KukieControlQueue::switchMode(int mode) {
 }
 
 void KukieControlQueue::stopCurrentMode() {
-    switchMode(0);
-    switchMode(10);
-	switchMode(0);
+    switchMode(KUKA_STOP_MODE);
+    switchMode(KUKA_JNT_POS_MODE);
+    switchMode(KUKA_STOP_MODE);
 }
 
 void KukieControlQueue::synchronizeToControlQueue(int maxNumJointsInQueue) {

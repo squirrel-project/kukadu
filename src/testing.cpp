@@ -125,13 +125,13 @@ int main(int argc, char** args) {
     leftQueue->switchMode(10);
    // leftQueue->moveJoints(stdToArmadilloVec({-0.142816, 1.02806, 1.38676, 0.855349, -0.611948, -1.11719, -1.87344}));
 
-    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031098/testing/push_data/pushing_data/kuka_lwr_real_left_arm_0");
+    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031109/tmp/pushing_data2   /kuka_lwr_real_left_arm_0");
     data->removeDuplicateTimes();
 
     arma::vec times = data->getTimes();
     arma::mat jointPos = data->getJointPos();
     cout <<" (testing) get data " <<endl;
-    arma::mat cartPos = data->cartPos();
+    arma::mat cartPos = data->getCartPos();
     cout <<" (testing) data loaded" <<endl;
 
     leftQueue->moveJoints(stdToArmadilloVec({-1.12146, 1.08345, 2.26498, -1.91921, -1.12978, 1.42622, -1.67004}));
