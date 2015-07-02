@@ -161,11 +161,11 @@ arma::mat SensorData::getJointForces() {
     return values.cols(1 + jointPosLabels.size(), 1 + jointPosLabels.size() + jointFrcLabels.size() - 1);
 }
 
-arma::mat SensorData::cartPos() {
+arma::mat SensorData::getCartPos() {
     return values.cols(1 + jointPosLabels.size() + jointFrcLabels.size(), 1 + jointPosLabels.size() + jointFrcLabels.size() + cartPosLabels.size() - 1);
 }
 
-arma::mat SensorData::cartFrcTrqs() {
+arma::mat SensorData::getCartFrcTrqs() {
     return values.cols(1 + jointPosLabels.size() + jointFrcLabels.size() + cartPosLabels.size(), 1 + jointPosLabels.size() + jointFrcLabels.size() + cartPosLabels.size() + cartFrcTrqLabels.size() - 1);
 }
 
@@ -187,14 +187,14 @@ arma::vec SensorData::getJointForcesRow(int rowIdx) {
     return retVal;
 }
 
-arma::vec SensorData::cartPosRow(int rowIdx) {
+arma::vec SensorData::getCartPosRow(int rowIdx) {
     vec retVal(cartPosLabels.size());
     for(int i = 0; i < cartPosLabels.size(); ++i)
         retVal(i) = values(rowIdx, i + 1 + jointPosLabels.size() + jointFrcLabels.size());
     return retVal;
 }
 
-arma::vec SensorData::cartFrcTrqsRow(int rowIdx) {
+arma::vec SensorData::getCartFrcTrqsRow(int rowIdx) {
     vec retVal(cartFrcTrqLabels.size());
     for(int i = 0; i < cartFrcTrqLabels.size(); ++i)
         retVal(i) = values(rowIdx, i + 1 + jointPosLabels.size() + jointFrcLabels.size() + cartPosLabels.size());

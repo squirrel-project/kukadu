@@ -1,5 +1,6 @@
 #include "CartesianDMP.h"
 #include "../utils/utils.h"
+#include <iostream>
 
 CartesianDMP::CartesianDMP(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<arma::vec> fitYs, std::vector<arma::vec> dmpCoeffs, std::vector<DMPBase> dmpBase, std::vector<arma::mat> designMatrices,
                         double tau, double az, double bz, double ax, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : Dmp(supervisedTs, sampleYs, fitYs, dmpCoeffs, dmpBase, designMatrices,
@@ -30,7 +31,7 @@ tf::Quaternion CartesianDMP::getQ0() {
 }
 
 tf::Quaternion CartesianDMP::getQByIdx(int idx) {
-    return tf::Quaternion(fitYs.at(idx)(3), fitYs.at(idx)(4), fitYs.at(idx)(5), fitYs.at(idx)(6));
+    return tf::Quaternion(sampleYs.at(3)(idx), sampleYs.at(4)(idx), sampleYs.at(5)(idx), sampleYs.at(6)(idx));
 }
 
 arma::vec CartesianDMP::getEta0() {

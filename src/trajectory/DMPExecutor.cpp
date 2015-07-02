@@ -133,7 +133,7 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 
         vec vecOrientationY(3);
         vec vecF0(3);
-        for(int i = 0, dim = 3; i < odeSystemSizeMinOne; i = i + 3, ++dim) {
+        for(int i = 0, dim = 0; i < odeSystemSizeMinOne; i = i + 3, ++dim) {
             vecOrientationY(dim) = y[i + 2];
             int currentSystem = (int) (i / 3);
             arma::vec currentCoeffs = dmpCoeffs.at(currentSystem);
@@ -173,7 +173,16 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 
     if(this->simulate == EXECUTE_ROBOT) {
 
-        currentJoints = controlQueue->getCurrentJoints().joints;
+        if(!isCartesian) currentJoints = controlQueue->getCurrentJoints().joints;
+        else {
+            geometry_msgs::Pose currentPose = controlQueue->getCartesianPose();
+            currentJoints(0) = currentPose.position.x;
+            currentJoints(1) = currentPose.position.y;
+            currentJoints(2) = currentPose.position.x;
+            arma::vec currentOrient = log(tf::Quaternion(currentPose.orientation.x, currentPose.orientation.y, currentPose.orientation.z, currentPose.orientation.w));
+            for (int i=0; i < 3; i++) currentJoints(i+3) = currentOrient(i);
+
+        }
         double corrector = 0.0;
 
         if(!usesExternalError()) {
@@ -212,6 +221,8 @@ double DMPExecutor::computeDistance(const arma::vec yDes, arma::vec yCurr) {
 	}
     return dist;
     */
+
+    //distance for quaternion has to be introduced if this is enabled
 
     arma::vec tmp = (yDes - yCurr).t() * (yDes - yCurr);
     return tmp(0);
@@ -279,7 +290,7 @@ void DMPExecutor::initializeIntegration(double tStart, double stepSize, double t
         }
     } else {
         for(int i = 0, dim = 0; i < (odeSystemSize - 1); i = i + 3, ++dim) {
-            int iHalf = (int) i / 2;
+            int iHalf = (int) i / 3;
             ys[i + 0] = y0s((int) iHalf);
             ys[i + 1] = tau * dy0s((int) iHalf);
             ys[i + 2] = dEta0(dim);
@@ -320,7 +331,6 @@ void DMPExecutor::initializeIntegrationQuat() {
         dEta0 = 1.0 / (firstDt * cartDmp->getTau()) * (eta1 - eta0);
 
         qG = cartDmp->getQg();
-
     }
 
 }
@@ -361,8 +371,8 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
         }
 
         nextEta = stepSize / 2.0 * oneDivTau * nextEta;
-        tf::Quaternion nextEtaQuat(nextEta(0), nextEta(1), nextEta(2), 0.0);
-        currentQ = exp(nextEtaQuat) * currentQ;
+       // tf::Quaternion nextEtaQuat(nextEta(0), nextEta(1), nextEta(2), 0.0);
+        currentQ = exp(nextEta) * currentQ;
 
         retJoints(3) = currentQ.x(); retJoints(4) = currentQ.y(); retJoints(5) = currentQ.z(); retJoints(6) = currentQ.w();
 
@@ -394,17 +404,20 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
 
     vector<double> retT;
 
-
+    cout<<"(FMPGExecutor) start position "<<y0s<<endl;
 
     if(!isCartesian)
         controlQueue->moveJoints(y0s);
     else
-        controlQueue->addCartesianPosToQueue(vectorarma2pose(&y0s));
+       controlQueue->addCartesianPosToQueue(vectorarma2pose(&y0s));
+      //  controlQueue->moveCartesian(vectorarma2pose(&y0s));
 
 
-    cout<<"movement start done"<<endl;
+    cout<<" (DMPExecutor) movement start done"<<endl;
 
     initializeIntegration(0, stepSize, tolAbsErr, tolRelErr);
+
+     cout<<"(DMPExecutor) initializeIntegration done"<<endl;
 
     vec nextJoints(degofFreedom);
     nextJoints.fill(0.0);
@@ -414,6 +427,7 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
 
         try {
             nextJoints = doIntegrationStep(ac);
+
         } catch(const char* s) {
             puts(s);
             cerr << ": stopped execution at time " << currentTime << endl;
@@ -432,8 +446,19 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
 
         if(!isCartesian)
             controlQueue->addJointsPosToQueue(nextJoints);
-        else
+        else {
+            geometry_msgs::Pose newP=vectorarma2pose(&nextJoints);
+            cout<<endl<<"current actual pose "<<controlQueue->getCartesianPose()<<endl;
+            cout<<endl<<"next pose "<<newP<<endl<<endl;
+            //newP.orientation=vectorarma2pose(&y0s).orientation;
             controlQueue->addCartesianPosToQueue(vectorarma2pose(&nextJoints));
+           // controlQueue->addCartesianPosToQueue(newP);
+
+             //controlQueue->moveCartesian(newP);
+        }
+
+       // cout<< " (DMPExecutor) next pose "<<qG.x()<< " "<<qG.y()<< " "<<qG.z()<< " "<<qG.w()<< " "<<endl;
+
 
         retT.push_back(currentTime);
 

@@ -8,3 +8,4 @@ logs/*
 experiments/*
 logs
 *.log
+*.orig

@@ -1,5 +1,6 @@
 #include "CartesianDMPLearner.h"
 #include "../types/CartesianDMP.h"
+#include "../utils/utils.h"
 
 using namespace std;
 using namespace arma;
@@ -29,6 +30,7 @@ std::shared_ptr<Dmp> CartesianDMPLearner::createDmpInstance(arma::vec supervised
 
 arma::mat CartesianDMPLearner::computeFitY(arma::vec& time, arma::mat &y, arma::mat &dy, arma::mat &ddy, arma::vec& vec_g) {
 
+
     //position
     mat retMat(y.n_cols - 1, y.n_rows);
 
@@ -45,7 +47,6 @@ arma::mat CartesianDMPLearner::computeFitY(arma::vec& time, arma::mat &y, arma::
 
     }
 
-
     //orientation
     arma::mat omega (y.n_rows, 3);
     arma::mat domega;
@@ -53,11 +54,13 @@ arma::mat CartesianDMPLearner::computeFitY(arma::vec& time, arma::mat &y, arma::
     arma::mat deta;
 
 
-    for (int j = 0; j < y.n_rows - 1; j++) {
+    for (int j = 0; j < y.n_rows - 1; ++j) {
 
-        vec logL= log(tf::Quaternion(y(j, 3), y(j, 4), y(j, 5), y(j, 6)) * tf::Quaternion(y(j + 1, 3), y(j + 1, 4), y(j + 1, 5), y(j + 1, 6)).inverse());
+         vec logL= log(tf::Quaternion(y(j + 1, 3), y(j +1,  4), y(j + 1, 5), y(j + 1, 6)) * tf::Quaternion(y(j, 3), y(j, 4), y(j, 5), y(j, 6)).inverse());
+        //vec logL= log(tf::Quaternion(vec_g(3), vec_g(4), vec_g(5), vec_g(6)) * tf::Quaternion(y(j, 3), y(j, 4), y(j, 5), y(j, 6)).inverse());
         for (int i = 0; i < 3; i++) omega(j, i) = 2 * logL[i];
         if (j == y.n_rows - 2) for (int i = 0; i < 3; i++) omega(y.n_rows - 1, i) = 2 * logL[i];
+
 
     }
 
@@ -73,7 +76,6 @@ arma::mat CartesianDMPLearner::computeFitY(arma::vec& time, arma::mat &y, arma::
 
     eta = tau * omega;
     deta = tau * domega;
-
 
     for (int i = 0; i < y.n_rows; ++i) {
 

@@ -38,14 +38,14 @@ public:
     arma::vec getTimes();
     arma::mat getJointPos();
     arma::mat getJointForces();
-    arma::mat cartPos();
-    arma::mat cartFrcTrqs();
+    arma::mat getCartPos();
+    arma::mat getCartFrcTrqs();
 
     double getTime(int rowIdx);
     arma::vec getJointPosRow(int rowIdx);
     arma::vec getJointForcesRow(int rowIdx);
-    arma::vec cartPosRow(int rowIdx);
-    arma::vec cartFrcTrqsRow(int rowIdx);
+    arma::vec getCartPosRow(int rowIdx);
+    arma::vec getCartFrcTrqsRow(int rowIdx);
 
     void removeDuplicateTimes();
 

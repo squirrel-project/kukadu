@@ -867,12 +867,17 @@ arma::vec log(tf::Quaternion quat) {
 
     vec logQuat(3);
     double modU = sqrt(quat.x() * quat.x()  + quat.y() * quat.y() + quat.z() * quat.z());
+    double acosw;
 
-    if (modU > 0) {
+    acosw = acos(quat.w());
+    if(std::isnan(acosw)) acosw = 0.0;
 
-        logQuat(0) = quat.x() / modU;
-        logQuat(1) = quat.y() / modU;
-        logQuat(2) = quat.z() / modU;
+
+    if (modU > 0.0) {
+
+        logQuat(0) = acosw * quat.x() / modU;
+        logQuat(1) = acosw * quat.y() / modU;
+        logQuat(2) = acosw * quat.z() / modU;
 
     } else {
 
@@ -882,21 +887,23 @@ arma::vec log(tf::Quaternion quat) {
 
     }
 
+    //cout<<"logQuat"<< logQuat;
+
     return logQuat;
 
 }
 
-tf::Quaternion exp(const double* logQuat) {
+tf::Quaternion exp(arma::vec logQuat) {
 
     double x, y, z, w;
-    double modR = sqrt(logQuat[0] * logQuat[0] + logQuat[1] * logQuat[1] + logQuat[2] * logQuat[2]);
+    double modR = sqrt(logQuat(0) * logQuat(0) + logQuat(1) * logQuat(1) + logQuat(2) * logQuat(2));
 
     if (modR > 0) {
 
         w = cos(modR);
-        x = sin(modR) * logQuat[0] / modR;
-        y = sin(modR) * logQuat[1] / modR;
-        z = sin(modR) * logQuat[2] / modR;
+        x = sin(modR) * logQuat(0) / modR;
+        y = sin(modR) * logQuat(1) / modR;
+        z = sin(modR) * logQuat(2) / modR;
 
     } else {
 

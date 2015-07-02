@@ -115,7 +115,7 @@ int main(int argc, char** args) {
     int kukaStepWaitTime = dmpStepSize * 1e6;
 
     ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
-    shared_ptr<ControlQueue> leftQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, "simulation", "right_arm", *node));
+    shared_ptr<ControlQueue> leftQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, "simulation", "left_arm", *node));
     vector<shared_ptr<ControlQueue>> queueVectors;
     queueVectors.push_back(leftQueue);
 
@@ -123,19 +123,32 @@ int main(int argc, char** args) {
 
     shared_ptr<thread> lqThread = leftQueue->startQueueThread();
     leftQueue->switchMode(10);
-    leftQueue->moveJoints(stdToArmadilloVec({-0.142816, 1.02806, 1.38676, 0.855349, -0.611948, -1.11719, -1.87344}));
+   // leftQueue->moveJoints(stdToArmadilloVec({-0.142816, 1.02806, 1.38676, 0.855349, -0.611948, -1.11719, -1.87344}));
 
-    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031109/tmp/data/kuka_lwr_real_right_arm_0");
+    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031109/tmp/pushing_data2   /kuka_lwr_real_left_arm_0");
     data->removeDuplicateTimes();
 
     arma::vec times = data->getTimes();
     arma::mat jointPos = data->getJointPos();
+    cout <<" (testing) get data " <<endl;
+    arma::mat cartPos = data->getCartPos();
+    cout <<" (testing) data loaded" <<endl;
 
-    data->cartPos();
+    leftQueue->moveJoints(stdToArmadilloVec({-1.12146, 1.08345, 2.26498, -1.91921, -1.12978, 1.42622, -1.67004}));
 
-    JointDMPLearner learner(az, bz, join_rows(times, jointPos));
+    leftQueue->stopCurrentMode();
+    leftQueue->switchMode(20);
+
+
+    //JointDMPLearner learner(az, bz, join_rows(times, jointPos));
+    CartesianDMPLearner learner(az, bz, join_rows(times, cartPos));
+    cout <<" (testing) learner created" <<endl;
+    cout <<" (testing) fitting trajectories now" <<endl;
     std::shared_ptr<Dmp> leftDmp = learner.fitTrajectories();
+    cout <<" (testing) trajectories fitted" <<endl;
+    cout <<" (testing) creating executor" <<endl;
     DMPExecutor leftExecutor(leftDmp, leftQueue);
+    cout <<" (testing) executing starting" <<endl;
     leftExecutor.executeTrajectory(ac, 0, leftDmp->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
 
     /*
