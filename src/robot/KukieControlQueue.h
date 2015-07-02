@@ -62,6 +62,7 @@ private:
 	int currentMode;
 
     std::queue<arma::vec> movementQueue;
+    std::queue<geometry_msgs::Pose> cartesianMovementQueue;
 	
     arma::vec startingJoints;
     arma::vec currentJoints;
