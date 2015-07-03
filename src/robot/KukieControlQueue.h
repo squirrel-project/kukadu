@@ -179,6 +179,8 @@ public:
 	bool isInitialized();
 	void safelyDestroy();
 	void setInitValues();
+
+    double getTimeStep();
 	
     std::string getRobotName();
     std::string getRobotFileName();

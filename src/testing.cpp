@@ -125,8 +125,8 @@ int main(int argc, char** args) {
     leftQueue->switchMode(10);
     //leftQueue->moveJoints(stdToArmadilloVec({-0.142816, 1.02806, 1.38676, 0.855349, -0.611948, -1.11719, -1.87344}));
 
-   // shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031109/tmp/pushing_data/kuka_lwr_real_left_arm_0");
-    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031098/testing/push_data/pushing_data/kuka_lwr_real_left_arm_0");
+    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031109/tmp/pushing_data/kuka_lwr_real_left_arm_0");
+    //shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031098/testing/push_data/pushing_data/kuka_lwr_real_left_arm_0");
     data->removeDuplicateTimes();
 
     arma::vec times = data->getTimes();
@@ -135,11 +135,11 @@ int main(int argc, char** args) {
     arma::mat cartPos = data->getCartPos();
     cout <<" (testing) data loaded" <<endl;
 
-    leftQueue->moveJoints(stdToArmadilloVec({-1.12146, 1.08345, 2.26498, -1.91921, -1.12978, 1.42622, -1.67004}));
+    cout << jointPos.row(0) << endl;
+    leftQueue->moveJoints(jointPos.row(0).t());
 
     leftQueue->stopCurrentMode();
     leftQueue->switchMode(20);
-
 
     // JointDMPLearner learner(az, bz, join_rows(times, cartPos));
     CartesianDMPLearner learner(az, bz, join_rows(times, cartPos));
@@ -150,6 +150,7 @@ int main(int argc, char** args) {
     cout <<" (testing) creating executor" <<endl;
     DMPExecutor leftExecutor(leftDmp, leftQueue);
     cout <<" (testing) executing starting" <<endl;
+
     leftExecutor.executeTrajectory(ac, 0, leftDmp->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
 
     /*
@@ -166,26 +167,6 @@ int main(int argc, char** args) {
 
 
     leftQueue->stopCurrentMode();
-    leftQueue->switchMode(10);
-
-    leftQueue->moveJoints(stdToArmadilloVec({-1.12146, 1.08345, 2.26498, -1.91921, -1.12978, 1.42622, -1.67004}));
-
-
-    leftQueue->stopCurrentMode();
-    leftQueue->switchMode(20);
-
-    int timeCount = data->getTimes().n_elem;
-    ros::Rate r(75);
-    arma::vec currentRow;
-    for(int i = 0; i < timeCount; ++i) {
-        currentRow = data->getCartPosRow(i);
-        leftQueue->addCartesianPosToQueue(vectorarma2pose(&currentRow));
-        //leftQueue->synchronizeToControlQueue(1);
-        r.sleep();
-    }
-
-    leftQueue->stopCurrentMode();
-    getchar();
 
     /*
 

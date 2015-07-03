@@ -21,6 +21,10 @@ void PlottingControlQueue::setInitValues() {
 
 }
 
+double PlottingControlQueue::getTimeStep() {
+    return sleepTime * 1e-6;
+}
+
 std::string PlottingControlQueue::getRobotFileName() {
     return "simulation_plotting_control_queue";
 }

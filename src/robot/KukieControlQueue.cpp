@@ -98,6 +98,10 @@ KukieControlQueue::KukieControlQueue(int sleepTime, std::string deviceType, std:
 
 }
 
+double KukieControlQueue::getTimeStep() {
+    return sleepTime * 1e-6;
+}
+
 void KukieControlQueue::addCartesianPosToQueue(geometry_msgs::Pose pose) {
     cartesianMovementQueue.push(pose);
 }

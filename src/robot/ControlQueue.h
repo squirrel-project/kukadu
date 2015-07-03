@@ -48,6 +48,8 @@ public:
 	 * \brief This method is started in a new thread by startQueue
 	 */
 	virtual void run() = 0;
+
+    virtual double getTimeStep() = 0;
 	
 	/**
 	 * \brief Sets a flag to stop the control thread after current iteration is executed

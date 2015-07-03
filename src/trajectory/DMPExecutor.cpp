@@ -39,7 +39,7 @@ void DMPExecutor::construct(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQu
     this->dmp = traj;
     this->ac = 0.0;
     this->vecYs = arma::vec(1);
-    this->stepSize = 0.014;
+    this->stepSize = execQueue->getTimeStep();
 
     this->dmpCoeffs = traj->getDmpCoeffs();
     this->baseDef = traj->getDmpBase();
