@@ -5,22 +5,22 @@ using namespace std;
 using namespace arma;
 
 DMPExecutor::DMPExecutor(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQueue> execQueue) {
-	
+
     construct(traj, execQueue, 1);
-	
+
 }
 
 DMPExecutor::DMPExecutor(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQueue> execQueue, int suppressMessages) {
-	
+
     construct(traj, execQueue, suppressMessages);
-	
+
 }
 
 DMPExecutor::DMPExecutor(std::shared_ptr<Trajectory> traj, std::shared_ptr<ControlQueue> execQueue) {
-	
+
     shared_ptr<Dmp> dmp = dynamic_pointer_cast<Dmp>(traj);
     construct(dmp, execQueue, suppressMessages);
-	
+
 }
 
 void DMPExecutor::construct(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQueue> execQueue, int suppressMessages) {
@@ -36,7 +36,7 @@ void DMPExecutor::construct(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQu
     this->isCartesian = traj->isCartesian();
     this->controlQueue = execQueue;
 
-	this->dmp = traj;
+    this->dmp = traj;
     this->ac = 0.0;
     this->vecYs = arma::vec(1);
     this->stepSize = 0.014;
@@ -51,48 +51,48 @@ void DMPExecutor::construct(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQu
     this->axDivTau = ax / tau;
     this->oneDivTau = 1 / tau;
 
-	this->simulate = SIMULATE_DMP;
+    this->simulate = SIMULATE_DMP;
     this->degofFreedom = y0s.n_elem;
     if(isCartesian)
         this->odeSystemSize = 3 * 3 + 1;
     else
         this->odeSystemSize = 2 * this->degofFreedom + 1;
-	this->suppressMessages = suppressMessages;
+    this->suppressMessages = suppressMessages;
 
     previousDesiredJoints = y0s;
 
-	externalErrorUsing = 0;
-	externalError = 0.0;
-	t = 0.0;
+    externalErrorUsing = 0;
+    externalError = 0.0;
+    t = 0.0;
 
     this->odeSystemSizeMinOne = odeSystemSize - 1;
-	
+
 }
 
 void DMPExecutor::setTrajectory(std::shared_ptr<Trajectory> traj) {
-	
+
     std::shared_ptr<Dmp> dmp = dynamic_pointer_cast<Dmp>(traj);
     construct(dmp, controlQueue, suppressMessages);
-	
-	vec_t.clear();
+
+    vec_t.clear();
     vec_y.clear();
-	
+
 }
 
 void DMPExecutor::useExternalError(int external) {
-	externalErrorUsing = external;
+    externalErrorUsing = external;
 }
 
 void DMPExecutor::setExternalError(double error) {
-	externalError = error;
+    externalError = error;
 }
 
 int DMPExecutor::usesExternalError() {
-	return externalErrorUsing;
+    return externalErrorUsing;
 }
 
 double DMPExecutor::getExternalError() {
-	return externalError;
+    return externalError;
 }
 
 double DMPExecutor::addTerm(double t, const double* currentDesiredYs, int jointNumber, std::shared_ptr<ControlQueue> queue) {
@@ -142,16 +142,15 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 
         vec nextDEta(3);
         if(t <= (dmp->getTmax() - 1))
-            nextDEta = oneDivTau * az * (2.0 * bz * log(qG * currentQ.inverse()) - vecOrientationY) + vecF0;
+            nextDEta = oneDivTau * (az * (2.0 * bz * log(qG * currentQ.inverse()) - vecOrientationY) + vecF0);
         else
             nextDEta = oneDivTau * az * (2.0 * bz * log(qG * currentQ.inverse()) - vecOrientationY);
+
 
         // cartesian position and orientation
         for(int i = 0; i < odeSystemSizeMinOne; i = i + 3) {
 
             double yPlusOne = y[i + 1];
-
-
             int currentSystem = (int) (i / 3);
             f[i] = yPlusOne * oneDivTau;
             double g = gs(currentSystem);
@@ -210,17 +209,17 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 
     }
 
-	return GSL_SUCCESS;
+    return GSL_SUCCESS;
 
 }
 
 double DMPExecutor::computeDistance(const arma::vec yDes, arma::vec yCurr) {
 
     /*
-	double dist = 0.0;
-	for(int i = 0; i < degofFreedom; ++i) {
-		dist += pow( yDes[i] - yCurr[i]  , 2);
-	}
+    double dist = 0.0;
+    for(int i = 0; i < degofFreedom; ++i) {
+        dist += pow( yDes[i] - yCurr[i]  , 2);
+    }
     return dist;
     */
     if(!isCartesian) {
@@ -231,20 +230,20 @@ double DMPExecutor::computeDistance(const arma::vec yDes, arma::vec yCurr) {
     else
         return 0;
 }
-     
+
 int DMPExecutor::jac(double t, const double* y, double *dfdy, double* dfdt, void* params) {
-	
-	// not implemented (not required for most of the ode solvers)
-	return GSL_SUCCESS;
-	
+
+    // not implemented (not required for most of the ode solvers)
+    return GSL_SUCCESS;
+
 }
 
 t_executor_res DMPExecutor::executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
 
-	this->ac = ac;
-	this->simulate = EXECUTE_ROBOT;
+    this->ac = ac;
+    this->simulate = EXECUTE_ROBOT;
     return this->executeDMP(tStart, tEnd, stepSize, tolAbsErr, tolRelErr);
-	
+
 }
 
 t_executor_res DMPExecutor::simulateTrajectory(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
@@ -277,14 +276,14 @@ t_executor_res DMPExecutor::executeTrajectory() {
 
 void DMPExecutor::initializeIntegration(double tStart, double stepSize, double tolAbsErr, double tolRelErr) {
 
-	t = tStart;
+    t = tStart;
 
     initializeIntegrationQuat();
 
     vec_y.clear();
-	double ys[odeSystemSize];
-	vecYs = vec(odeSystemSize);
-	
+    double ys[odeSystemSize];
+    vecYs = vec(odeSystemSize);
+
     if(!isCartesian) {
         for(int i = 0; i < (odeSystemSize - 1); i = i + 2) {
             int iHalf = (int) i / 2;
@@ -302,16 +301,16 @@ void DMPExecutor::initializeIntegration(double tStart, double stepSize, double t
             ys[i + 2] = dEta0(dim);*/
         }
     }
-	
-	ys[odeSystemSize - 1] = 1;
-	
-	sys = {static_func, NULL, odeSystemSize, this};
+
+    ys[odeSystemSize - 1] = 1;
+
+    sys = {static_func, NULL, odeSystemSize, this};
     d = std::shared_ptr<gsl_odeiv2_driver>(gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rkf45, stepSize, tolAbsErr, tolRelErr), gsl_delete_expression());
-	
-	this->stepSize = stepSize;
-	
+
+    this->stepSize = stepSize;
+
     for(int i = 0; i < odeSystemSize; ++i) {
-		vecYs(i) = ys[i];
+        vecYs(i) = ys[i];
     }
 }
 
@@ -334,7 +333,7 @@ void DMPExecutor::initializeIntegrationQuat() {
         dQ0 =  eta0Quat * q0;
 
         double firstDt = cartDmp->getDeltaTByIdx(0);
-       // dEta0 = 1.0 / (firstDt * cartDmp->getTau()) * (eta1 - eta0); this os domega0?
+        // dEta0 = 1.0 / (firstDt * cartDmp->getTau()) * (eta1 - eta0); this os domega0?
         dEta0 = 1.0 / firstDt * (eta1 - eta0);
 
         qG = cartDmp->getQg();
@@ -343,27 +342,27 @@ void DMPExecutor::initializeIntegrationQuat() {
 }
 
 arma::vec DMPExecutor::doIntegrationStep(double ac) {
-	
-	double ys[odeSystemSize];
-	
-	for(int i = 0; i < odeSystemSize; ++i)
-		ys[i] = vecYs(i);
-	
-	arma::vec retJoints(degofFreedom);
-	retJoints.fill(0.0);
-	
+
+    double ys[odeSystemSize];
+
+    for(int i = 0; i < odeSystemSize; ++i)
+        ys[i] = vecYs(i);
+
+    arma::vec retJoints(degofFreedom);
+    retJoints.fill(0.0);
+
     if(t < dmp->getTmax()) {
 
         int s = gsl_odeiv2_driver_apply_fixed_step(d.get(), &t, stepSize, 1, ys);
 
-	
+
         if (s != GSL_SUCCESS) {
             cout << "(DMPExecutor) error: driver returned " << s << endl;
             throw "(DMPExecutor) error: driver returned " + s;
         }
 
     }
-	
+
     if(!isCartesian) {
 
         for(int i = 0; i < degofFreedom; ++i)
@@ -377,8 +376,9 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
             nextEta(i) = ys[3 * i + 2];
         }
 
+
         nextEta = stepSize / 2.0 * oneDivTau * nextEta;
-       // tf::Quaternion nextEtaQuat(nextEta(0), nextEta(1), nextEta(2), 0.0);
+        // tf::Quaternion nextEtaQuat(nextEta(0), nextEta(1), nextEta(2), 0.0);
         currentQ = exp(nextEta) * currentQ;
 
         retJoints(3) = currentQ.x(); retJoints(4) = currentQ.y(); retJoints(5) = currentQ.z(); retJoints(6) = currentQ.w();
@@ -387,13 +387,13 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
     for(int i = 0; i < odeSystemSize; ++i)
         vecYs(i) = ys[i];
 
-	
-	return retJoints;
-	
+
+    return retJoints;
+
 }
 
 void DMPExecutor::destroyIntegration() {
-	
+
     d = std::shared_ptr<gsl_odeiv2_driver>(nullptr);
 
 }
@@ -415,8 +415,8 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
         controlQueue->moveJoints(y0s);
     else {
 
-     //  controlQueue->addCartesianPosToQueue(vectorarma2pose(&y0s));
-     //  controlQueue->moveCartesian(vectorarma2pose(&y0s));
+        //  controlQueue->addCartesianPosToQueue(vectorarma2pose(&y0s));
+        //  controlQueue->moveCartesian(vectorarma2pose(&y0s));
     }
 
     initializeIntegration(0, stepSize, tolAbsErr, tolRelErr);
@@ -440,9 +440,9 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
             ret.y.at(i)(j) = nextJoints(i);
 
         if(simulate == EXECUTE_ROBOT) {
-        //    auto end = std::chrono::high_resolution_clock::now();
-        //    std::cout << "(DMPExecutor) the simulation took " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() * 1e-9 << " s" << std::endl;
-        //    begin = end;
+            //    auto end = std::chrono::high_resolution_clock::now();
+            //    std::cout << "(DMPExecutor) the simulation took " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() * 1e-9 << " s" << std::endl;
+            //    begin = end;
             controlQueue->synchronizeToControlQueue(1);
         }
 
@@ -450,7 +450,6 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
             controlQueue->addJointsPosToQueue(nextJoints);
         else {
             geometry_msgs::Pose newP = vectorarma2pose(&nextJoints);
-            cout << currentTime << " " << newP.position.x << " " << newP.position.y << " " << newP.position.z << " " << newP.orientation.x << " " << newP.orientation.y << " " << newP.orientation.z << " " << newP.orientation.w << endl;
             controlQueue->addCartesianPosToQueue(newP);
         }
 
@@ -466,9 +465,9 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
 }
 
 int DMPExecutor::static_func(double t, const double y[], double f[], void *params) {
-	return ((DMPExecutor*)params)->func(t, y, f, NULL);
+    return ((DMPExecutor*)params)->func(t, y, f, NULL);
 }
 
 int DMPExecutor::static_jac (double t, const double y[], double *dfdy, double dfdt[], void *params) {
-	return ((DMPExecutor*)params)->jac(t, y, dfdy, dfdt, NULL);
+    return ((DMPExecutor*)params)->jac(t, y, dfdy, dfdt, NULL);
 }
