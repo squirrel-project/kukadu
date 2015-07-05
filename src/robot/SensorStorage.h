@@ -8,6 +8,7 @@
 #include <armadillo>
 #include <memory>
 #include <ros/ros.h>
+#include <string>
 
 // Custom librairies
 #include "ControlQueue.h"
@@ -15,6 +16,7 @@
 #include "../utils/utils.h"
 #include "../types/SensorData.h"
 #include "mounted/GenericHand.h"
+#include "SimInterface.h"
 
 #define STORE_TIME 64
 #define STORE_RBT_JNT_POS 1
@@ -24,6 +26,7 @@
 #define STORE_HND_JNT_POS 16
 #define STORE_HND_TCTLE 32
 #define STORE_CART_ABS_FRC 64
+#define STORE_SIM_OBJECT 128
 
 class SensorStorage {
 
@@ -31,6 +34,8 @@ private:
 
     bool stopped;
     bool storageStopped;
+
+    bool simulation;
 
     bool storeTime;
     bool storeJntPos;
@@ -40,16 +45,20 @@ private:
     bool storeCartAbsFrc;
     bool storeHndJntPos;
     bool storeHndTctle;
+    bool storeSimObject;
 
     double pollingFrequency;
+    std::string objectID;
 
     std::shared_ptr<std::thread> thr;
 
     std::vector<std::shared_ptr<ControlQueue>> queues;
     std::vector<std::shared_ptr<GenericHand>> hands;
+    std::shared_ptr<SimInterface> sim;
 
     std::vector<std::shared_ptr<std::ofstream>> queueStreams;
     std::vector<std::shared_ptr<std::ofstream>> handStreams;
+    std::shared_ptr<std::ofstream> simStream;
 
     void store();
     void writeVectorInLine(std::shared_ptr<std::ofstream> stream, arma::vec writeVec);
@@ -60,6 +69,8 @@ private:
 public:
 
     SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands, double pollingFrequency);
+    SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands, std::shared_ptr<SimInterface> sim, std::string objectID, double pollingFrequency);
+
     std::shared_ptr<std::thread> startDataStorage(std::string folderName);
 
     void stopDataStorage();

@@ -20,7 +20,30 @@ SensorStorage::SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, 
 
     storeTime = storeJntPos = storeCartPos = storeJntFrc = storeCartFrcTrq = storeHndJntPos = storeHndTctle = true;
 
+    simulation = false;
+
 }
+
+SensorStorage::SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands, std::shared_ptr<SimInterface> sim, std::string objectID, double pollingFrequency) {
+    //SensorStorage(queues, hands, pollingFrequency);
+    simulation = true;
+    this->sim = sim;
+    this->objectID = objectID;
+
+    this->queues = queues;
+    this->hands = hands;
+
+    this->pollingFrequency = pollingFrequency;
+
+    stopped = false;
+    storageStopped = true;
+
+    thr = nullptr;
+
+    storeTime = storeJntPos = storeCartPos = storeJntFrc = storeCartFrcTrq = storeHndJntPos = storeHndTctle = storeSimObject = true;
+}
+
+
 
 void SensorStorage::setExportMode(int mode) {
 
@@ -50,6 +73,7 @@ void SensorStorage::setExportMode(int mode) {
     if(mode & STORE_CART_ABS_FRC)
         storeCartAbsFrc = true;
 
+
 }
 
 std::shared_ptr<std::thread> SensorStorage::startDataStorage(std::string folderName) {
@@ -73,6 +97,13 @@ std::shared_ptr<std::thread> SensorStorage::startDataStorage(std::string folderN
             queueFile->open(folderName + string("/") + hands.at(i)->getHandName() + string("_") + s.str());
             handStreams.push_back(queueFile);
         }
+
+        if(simulation){
+            std::shared_ptr<std::ofstream> queueFile = std::shared_ptr<std::ofstream>(new ofstream());
+            queueFile->open(folderName + string("/") + "simulation");
+            simStream = queueFile;
+        }
+
 
         thr = shared_ptr<thread>(nullptr);
         thr = std::shared_ptr<std::thread>(new std::thread(&SensorStorage::store, this));
@@ -104,6 +135,10 @@ void SensorStorage::stopDataStorage() {
         handStreams.at(i)->close();
     handStreams.clear();
 
+
+    simStream->close();
+
+
 }
 
 void SensorStorage::writeVectorInLine(std::shared_ptr<ofstream> stream, arma::vec writeVec) {
@@ -115,7 +150,7 @@ void SensorStorage::writeMatrixInLine(std::shared_ptr<ofstream> stream, arma::ma
     for(int i = 0; i < writeMat.n_rows; ++i)
         for(int j = 0; j < writeMat.n_cols; ++j)
             *stream << writeMat(i, j) << "\t";
-     *stream << "|\t";
+    *stream << "|\t";
 }
 
 void SensorStorage::writeLabels(std::shared_ptr<std::ofstream> stream, std::vector<std::string> labels) {
@@ -286,6 +321,8 @@ void SensorStorage::storeData(bool storeHeader, std::vector<std::shared_ptr<std:
 
                 writeLabels(currentOfStream, labels);
 
+
+
             }
 
             if(storeTime)
@@ -348,6 +385,52 @@ void SensorStorage::storeData(bool storeHeader, std::vector<std::shared_ptr<std:
 
             if(queues.size() == 0)
                 currentTime += waitTime;
+
+        }
+
+        if(simulation){
+
+            shared_ptr<ofstream> currentOfStream = simStream;
+
+
+            if(firstTime && storeHeader) {
+
+                vector<string> labels;
+
+                labels.push_back("time");
+
+                if(storeSimObject) {
+
+                    labels.push_back("cart_pos_x");
+                    labels.push_back("cart_pos_y");
+                    labels.push_back("cart_pos_z");
+                    labels.push_back("cart_quat_x");
+                    labels.push_back("cart_quat_y");
+                    labels.push_back("cart_quat_z");
+                    labels.push_back("cart_quat_w");
+
+                }
+
+                writeLabels(currentOfStream, labels);
+
+            }
+            else{
+
+
+                *currentOfStream << currentTime << "\t";
+
+                if(storeSimObject){
+
+                    geometry_msgs::Pose currentPose = sim->getObjPose(objectID);
+                    writeVectorInLine(simStream, pose2vectorarma(currentPose));
+
+                }
+
+                 *currentOfStream << endl;
+
+            }
+
+
 
         }
 

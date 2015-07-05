@@ -862,6 +862,21 @@ geometry_msgs::Pose vectorarma2pose(arma::vec* vectorpose){
 
 }
 
+arma::vec pose2vectorarma(geometry_msgs::Pose posepose){
+
+    vec armapose(7);
+    armapose(0) = posepose.position.x;
+    armapose(1) = posepose.position.y;
+    armapose(2) = posepose.position.z;
+    armapose(3) = posepose.orientation.x;
+    armapose(4) = posepose.orientation.y;
+    armapose(5) = posepose.orientation.z;
+    armapose(6) = posepose.orientation.w;
+    return armapose;
+
+}
+
+
 
 
 arma::vec log(tf::Quaternion quat) {

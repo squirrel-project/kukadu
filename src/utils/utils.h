@@ -122,9 +122,12 @@ arma::mat armaJoinRows(arma::mat m1, arma::mat m2);
 double absolute(double val);
 
 geometry_msgs::Pose vectorarma2pose(arma::vec* vectorpose);
+arma::vec pose2vectorarma(geometry_msgs::Pose posepose);
 
 arma::vec log(const tf::Quaternion quat);
 tf::Quaternion exp(arma::vec logQuat);
 double distQuat(tf::Quaternion q1, tf::Quaternion q2);
+
+
 
 #endif

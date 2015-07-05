@@ -115,7 +115,7 @@ int main(int argc, char** args) {
     int kukaStepWaitTime = dmpStepSize * 1e6;
 
     ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
-    shared_ptr<ControlQueue> leftQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, "simulation", "left_arm", *node));
+    shared_ptr<ControlQueue> leftQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, "real", "left_arm", *node));
     vector<shared_ptr<ControlQueue>> queueVectors;
     queueVectors.push_back(leftQueue);
 
@@ -125,8 +125,8 @@ int main(int argc, char** args) {
     leftQueue->switchMode(10);
     //leftQueue->moveJoints(stdToArmadilloVec({-0.142816, 1.02806, 1.38676, 0.855349, -0.611948, -1.11719, -1.87344}));
 
-    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031109/tmp/pushing_data/kuka_lwr_real_left_arm_0");
-    //shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031098/testing/push_data/pushing_data/kuka_lwr_real_left_arm_0");
+   // shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031109/tmp/pushing_data/kuka_lwr_real_left_arm_0");
+    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031098/testing/push_data/pushing_data/kuka_lwr_real_left_arm_0");
     data->removeDuplicateTimes();
 
     arma::vec times = data->getTimes();

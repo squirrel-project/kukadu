@@ -80,6 +80,7 @@ AUX_SOURCE_DIRECTORY(src/types/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/utils/easyloggingpp/src/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/learning/reinforcement_learning/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/learning/metric_learning/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/manipulation/pushing/ KUKADUSRC)
 
 add_library(kukadulib
     ${KUKADUSRC}
@@ -119,6 +120,9 @@ target_link_libraries(kukadu_mes kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES
 
 add_executable(quat src/QuatDMPTest.cpp)
 target_link_libraries(quat kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
+
+add_executable(coll src/collectData.cpp)
+target_link_libraries(coll kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
 
 #add_executable(DMPcart_test src/testingDMPcart.cpp)
 #target_link_libraries(DMPcart_test kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
