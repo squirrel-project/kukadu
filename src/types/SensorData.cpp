@@ -51,14 +51,19 @@ SensorData::SensorData(std::string timeLabel, std::vector<std::string> jointPosL
     } else
         this->cartForceAbsLabel.clear();
 
-    if(time.n_elem > 1)
+    if((time.n_elem > 1)&&(jointPos.n_elem > 1))
         values = armaJoinRows(time, jointPos);
+    else values = time;
+
 
     if(jointFrc.n_cols > 1)
         values = armaJoinRows(values, jointFrc);
 
-    if(cartPos.n_cols > 1)
-        values = armaJoinRows(values, cartPos);
+    if(cartPos.n_cols > 1){
+        cout<<" values rows "<<values.n_rows<<"cols "<<values.n_cols<<endl;
+        cout<<" cart pos rows "<<cartPos.n_rows<<"cols "<<cartPos.n_cols<<endl;
+
+        values = armaJoinRows(values, cartPos);}
 
     if(cartFrcTrq.n_cols > 1)
         values = armaJoinRows(values, cartFrcTrq);

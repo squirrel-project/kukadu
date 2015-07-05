@@ -1,3 +1,4 @@
+
 #include "../include/kukadu.h"
 
 #include <memory>
@@ -99,24 +100,24 @@ int main(int argc, char** args) {
     cout<<"hand interface created"<<endl;
 
     //moving hand to staring position
-
     vector<double> newPos = {0, -1.57, 0, -1.57, 0, -1.57, 0};
     handQ->publishSdhJoints(newPos);
 
 
     //moving arm
-
     leftQueue->stopCurrentMode();
 
     shared_ptr<thread> lqThread = leftQueue->startQueueThread();
     leftQueue->switchMode(10);
 
-    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031098/testing/push_data/pushing_data/kuka_lwr_real_left_arm_0");
+    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031098/testing/SimData/pushing_data1/kuka_lwr_simulation_left_arm_0");
     data->removeDuplicateTimes();
+
+    shared_ptr<SensorData> dataO = SensorStorage::readStorage(leftQueue, "/home/c7031098/testing/SimData/pushing_data1/simulation");
+   // dataO->removeDuplicateTimes();
 
 
     //loading data for learner
-
     arma::vec times = data->getTimes();
     arma::mat jointPos = data->getJointPos();
     arma::mat cartPos = data->getCartPos();
@@ -125,17 +126,7 @@ int main(int argc, char** args) {
     cout << jointPos.row(0) << endl;
     leftQueue->moveJoints(jointPos.row(0).t());
 
-    leftQueue->stopCurrentMode();
-    leftQueue->switchMode(20);
-
-    // JointDMPLearner learner(az, bz, join_rows(times, cartPos));
-
-    CartesianDMPLearner learner(az, bz, join_rows(times, cartPos));
-    std::shared_ptr<Dmp> leftDmp = learner.fitTrajectories();
-    DMPExecutor leftExecutor(leftDmp, leftQueue);
-
     //creatin simulation interface
-
     std::shared_ptr<SimInterface> simI= std::shared_ptr<SimInterface>(new SimInterface (argc, args, kukaStepWaitTime, *node));
     cout<<"simulator interface created"<<endl;
 
@@ -155,11 +146,19 @@ int main(int argc, char** args) {
     simI->addPrimShape(1, objectId, newP1, newO1, dim1, 1);
     cout <<"box imported " << endl;
 
-    //collecting data
+    leftQueue->stopCurrentMode();
+    leftQueue->switchMode(20);
+
+    // JointDMPLearner learner(az, bz, join_rows(times, cartPos));
+    CartesianDMPLearner learner(az, bz, join_rows(times, cartPos));
+    std::shared_ptr<Dmp> leftDmp = learner.fitTrajectories();
+    DMPExecutorPush leftExecutor(leftDmp, leftQueue, environment, simI, objectId);
+    leftExecutor.setObjectData(dataO->getTimes(), dataO->getCartPos() );
+
 
     SensorStorage storeData(queueVectors, std::vector<std::shared_ptr<GenericHand>>(), simI, objectId, 1000);
     storeData.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS);
-    storeData.startDataStorage("/home/c7031098/testing/SimData/pushing_data1/");
+    storeData.startDataStorage("/home/c7031098/testing/SimData/performing_push1/");
 
     leftExecutor.executeTrajectory(ac, 0, leftDmp->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
     storeData.stopDataStorage();
