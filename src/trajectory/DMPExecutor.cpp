@@ -133,11 +133,13 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 
         vec vecOrientationY(3);
         vec vecF0(3);
+        vec vecExtAdd(3);
         for(int i = 0, dim = 0; i < odeSystemSizeMinOne; i = i + 3, ++dim) {
             vecOrientationY(dim) = y[i + 2];
             int currentSystem = (int) (i / 3);
             arma::vec currentCoeffs = dmpCoeffs.at(currentSystem);
             vecF0(dim) = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
+            vecExtAdd(dim) =  this->addTerm(t, y, currentSystem, controlQueue);
         }
 
         vec nextDEta(3);

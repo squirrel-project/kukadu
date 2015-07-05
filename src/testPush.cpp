@@ -114,23 +114,23 @@ int main(int argc, char** args) {
     data->removeDuplicateTimes();
 
     shared_ptr<SensorData> dataO = SensorStorage::readStorage(leftQueue, "/home/c7031098/testing/SimData/pushing_data1/simulation");
-   // dataO->removeDuplicateTimes();
+    dataO->removeDuplicateTimes();
 
 
     //loading data for learner
     arma::vec times = data->getTimes();
     arma::mat jointPos = data->getJointPos();
     arma::mat cartPos = data->getCartPos();
-    cout <<" (testing) data loaded" <<endl;
+    cout <<"  data loaded" <<endl;
 
-    cout << jointPos.row(0) << endl;
     leftQueue->moveJoints(jointPos.row(0).t());
 
     //creatin simulation interface
     std::shared_ptr<SimInterface> simI= std::shared_ptr<SimInterface>(new SimInterface (argc, args, kukaStepWaitTime, *node));
     cout<<"simulator interface created"<<endl;
 
-    float newP[3] = {0.5, 0.7, 0.01};
+ //   float newP[3] = {0.5, 0.7, 0.01}; //orig
+    float newP[3] = {0.6, 0.7, 0.01};
     float newO[4] = {0, 0, 0, 0};
     float dim[3] = {1, 2 , 0.08};
 
@@ -165,5 +165,6 @@ int main(int argc, char** args) {
 
 
     leftQueue->stopCurrentMode();
+
 
 }
