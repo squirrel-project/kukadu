@@ -42,6 +42,7 @@ private:
     geometry_msgs::Pose currentObjPose;
 
     void getPoseSim();
+    int findIndex(double t, vec times);
 
 
 public:

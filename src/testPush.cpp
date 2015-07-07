@@ -149,11 +149,13 @@ int main(int argc, char** args) {
     leftQueue->stopCurrentMode();
     leftQueue->switchMode(20);
 
+    times = times - times(0);
+
     // JointDMPLearner learner(az, bz, join_rows(times, cartPos));
     CartesianDMPLearner learner(az, bz, join_rows(times, cartPos));
     std::shared_ptr<Dmp> leftDmp = learner.fitTrajectories();
     DMPExecutorPush leftExecutor(leftDmp, leftQueue, environment, simI, objectId);
-    leftExecutor.setObjectData(dataO->getTimes(), dataO->getCartPos() );
+    leftExecutor.setObjectData(times, dataO->getCartPos() );
 
 
     SensorStorage storeData(queueVectors, std::vector<std::shared_ptr<GenericHand>>(), simI, objectId, 1000);

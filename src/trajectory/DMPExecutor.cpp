@@ -122,7 +122,6 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 
                 double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
                 f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm)  + this->addTerm(t, y, currentSystem, controlQueue);
-
             } else {
                 f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne));
             }

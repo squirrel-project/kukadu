@@ -21,6 +21,8 @@
 #include "../src/robot/ControlQueue.h"
 #include "../src/robot/SensorStorage.h"
 #include "../src/robot/KukieSimulator.h"
+#include "../src/robot/SimInterface.h"
+#include "../src/robot/VisionInterface.h"
 #include "../src/trajectory/DMPExecutor.h"
 #include "../src/trajectory/DMPTrajectoryGenerator.h"
 #include "../src/trajectory/PolyTrajectoryGenerator.h"
@@ -58,7 +60,6 @@
 #include "../src/learning/reinforcement_learning/DmpRewardComputer.h"
 #include "../src/robot/PlottingControlQueue.h"
 #include "../src/trajectory/TimeDepDictionaryGeneralizer.h"
-#include "../src/robot/SimInterface.h"
 #include "../src/manipulation/pushing/DMPGExecutorPush.h"
 
 

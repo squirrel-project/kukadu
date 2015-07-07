@@ -19,25 +19,15 @@ DMPExecutorPush::DMPExecutorPush( std::shared_ptr<Dmp> dmpL, std::shared_ptr<Con
 }
 double DMPExecutorPush::addTerm(double t, const double* currentDesiredYs, int jointNumber, std::shared_ptr<ControlQueue> queue){
 
-    if(!setT0) {
-        T0 = t;
-        setT0 = true;
-    }
-
     double corr = 0;
-    double Kx = 0.2;
+
+    double Kx = 0.5;
 
 
     if (jointNumber == 1) {
 
-        if (ObjTimes(ObjTimes.n_elem -1) > t - T0 -Ts)
-            corr = Kx * (ObjCartPos((int) (t - T0) / Ts, 0) - currentObjPose.position.x);
-        cout <<" (int) (t - T0) / Ts "<< (int) (t - T0) / Ts<<endl;
-        cout<<"ObjTimes.n_elem "<<ObjTimes.n_elem<<endl;
-        cout<<"ObjTimes(ObjTimes.n_elem -1) "<<ObjTimes(ObjTimes.n_elem -1) <<endl;
-        cout<<t - T0 -Ts<<endl;
-
-
+        if (findIndex(t, ObjTimes))
+            corr = - Kx * (ObjCartPos(findIndex(t, ObjTimes), 0) - currentObjPose.position.x);
 
     }
 
@@ -60,4 +50,13 @@ void DMPExecutorPush::getPoseSim(){
     }
 
 
+}
+
+int DMPExecutorPush::findIndex(double t, vec times){
+
+    int ind = 0;
+    for (int i = 0; i < times.n_elem; ++i){
+        if (t >= times(i)) ind = i;
+    }
+    return ind;
 }

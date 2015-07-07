@@ -17,6 +17,7 @@
 #include "../types/SensorData.h"
 #include "mounted/GenericHand.h"
 #include "SimInterface.h"
+#include "VisionInterface.h"
 
 #define STORE_TIME 64
 #define STORE_RBT_JNT_POS 1
@@ -27,6 +28,7 @@
 #define STORE_HND_TCTLE 32
 #define STORE_CART_ABS_FRC 64
 #define STORE_SIM_OBJECT 128
+#define STORE_VIS_OBJECT 256
 
 class SensorStorage {
 
@@ -36,6 +38,7 @@ private:
     bool storageStopped;
 
     bool simulation;
+    bool vision;
 
     bool storeTime;
     bool storeJntPos;
@@ -46,6 +49,7 @@ private:
     bool storeHndJntPos;
     bool storeHndTctle;
     bool storeSimObject;
+    bool storeVisObject;
 
     double pollingFrequency;
     std::string objectID;
@@ -55,10 +59,12 @@ private:
     std::vector<std::shared_ptr<ControlQueue>> queues;
     std::vector<std::shared_ptr<GenericHand>> hands;
     std::shared_ptr<SimInterface> sim;
+    std::shared_ptr<VisionInterface> vis;
 
     std::vector<std::shared_ptr<std::ofstream>> queueStreams;
     std::vector<std::shared_ptr<std::ofstream>> handStreams;
     std::shared_ptr<std::ofstream> simStream;
+    std::shared_ptr<std::ofstream> visStream;
 
     void store();
     void writeVectorInLine(std::shared_ptr<std::ofstream> stream, arma::vec writeVec);
@@ -70,6 +76,7 @@ public:
 
     SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands, double pollingFrequency);
     SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands, std::shared_ptr<SimInterface> sim, std::string objectID, double pollingFrequency);
+    SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands, std::shared_ptr<VisionInterface> vis, double pollingFrequency);
 
     std::shared_ptr<std::thread> startDataStorage(std::string folderName);
 

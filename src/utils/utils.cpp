@@ -972,3 +972,24 @@ double distQuat(tf::Quaternion q1, tf::Quaternion q2){
     return d;
 }
 
+tf::Transform Matrix4f2Transform(Eigen::Matrix4f Tm){
+    tf::Vector3 origin;
+    origin.setValue(static_cast<double>(Tm(0,3)),static_cast<double>(Tm(1,3)),static_cast<double>(Tm(2,3)));
+
+
+    tf::Matrix3x3 tf3d;
+    tf3d.setValue(static_cast<double>(Tm(0,0)), static_cast<double>(Tm(0,1)), static_cast<double>(Tm(0,2)),
+                  static_cast<double>(Tm(1,0)), static_cast<double>(Tm(1,1)), static_cast<double>(Tm(1,2)),
+                  static_cast<double>(Tm(2,0)), static_cast<double>(Tm(2,1)), static_cast<double>(Tm(2,2)));
+
+    tf::Quaternion tfqt;
+    tf3d.getRotation(tfqt);
+
+    tf::Transform transform;
+    transform.setOrigin(origin);
+    transform.setRotation(tfqt);
+
+    return transform;
+
+}
+

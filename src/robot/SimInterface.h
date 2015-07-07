@@ -28,8 +28,7 @@
 
 #define REF_FRAME_ORIGIN 166
 
-class SimInterface
-{
+class SimInterface {
 private:
     int argc;
     int sleepTime;

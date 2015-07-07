@@ -31,6 +31,7 @@
 
 #include <tf/transform_datatypes.h>
 #include <geometry_msgs/Quaternion.h>
+#include "Eigen/Dense"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -128,6 +129,7 @@ arma::vec log(const tf::Quaternion quat);
 tf::Quaternion exp(arma::vec logQuat);
 double distQuat(tf::Quaternion q1, tf::Quaternion q2);
 
+tf::Transform Matrix4f2Transform(Eigen::Matrix4f Tm);
 
 
 #endif

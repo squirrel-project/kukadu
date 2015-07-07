@@ -134,35 +134,39 @@ int main(int argc, char** args) {
     std::shared_ptr<Dmp> leftDmp = learner.fitTrajectories();
     DMPExecutor leftExecutor(leftDmp, leftQueue);
 
-    //creatin simulation interface
 
-    std::shared_ptr<SimInterface> simI= std::shared_ptr<SimInterface>(new SimInterface (argc, args, kukaStepWaitTime, *node));
-    cout<<"simulator interface created"<<endl;
+    if(environment == "simulation"){
 
-    float newP[3] = {0.5, 0.7, 0.01};
-    float newO[4] = {0, 0, 0, 0};
-    float dim[3] = {1, 2 , 0.08};
+        //creatin simulation interface
 
-    simI->addPrimShape(1,"sponge", newP, newO, dim, 10.0);
-    simI->setObjMaterial("sponge","highFrictionMaterial");
-    cout<< "sponge imported "<< endl;
+        std::shared_ptr<SimInterface> simI= std::shared_ptr<SimInterface>(new SimInterface (argc, args, kukaStepWaitTime, *node));
+        cout<<"simulator interface created"<<endl;
 
-    float newP1[3] = {0.30, 0.7, 0.2};
-    float newO1[4] = {0, 0, 0, 0};
-    float dim1[3] = {0.2, 0.2, 0.1};
+        float newP[3] = {0.5, 0.7, 0.01};
+        float newO[4] = {0, 0, 0, 0};
+        float dim[3] = {1, 2 , 0.08};
 
-    string objectId = "box";
-    simI->addPrimShape(1, objectId, newP1, newO1, dim1, 1);
-    cout <<"box imported " << endl;
+        simI->addPrimShape(1,"sponge", newP, newO, dim, 10.0);
+        simI->setObjMaterial("sponge","highFrictionMaterial");
+        cout<< "sponge imported "<< endl;
 
-    //collecting data
+        float newP1[3] = {0.30, 0.7, 0.2};
+        float newO1[4] = {0, 0, 0, 0};
+        float dim1[3] = {0.2, 0.2, 0.1};
 
-    SensorStorage storeData(queueVectors, std::vector<std::shared_ptr<GenericHand>>(), simI, objectId, 1000);
-    storeData.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS);
-    storeData.startDataStorage("/home/c7031098/testing/SimData/pushing_data1/");
+        string objectId = "box";
+        simI->addPrimShape(1, objectId, newP1, newO1, dim1, 1);
+        cout <<"box imported " << endl;
 
-    leftExecutor.executeTrajectory(ac, 0, leftDmp->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
-    storeData.stopDataStorage();
+        //collecting data
+
+        SensorStorage storeData(queueVectors, std::vector<std::shared_ptr<GenericHand>>(), simI, objectId, 1000);
+        storeData.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS);
+        storeData.startDataStorage("/home/c7031098/testing/SimData/pushing_data3/");
+        leftExecutor.executeTrajectory(ac, 0, leftDmp->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+        storeData.stopDataStorage();
+
+    }
 
 
     leftQueue->stopCurrentMode();

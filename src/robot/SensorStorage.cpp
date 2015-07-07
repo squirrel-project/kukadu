@@ -8,6 +8,8 @@ using namespace arma;
 
 SensorStorage::SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands, double pollingFrequency) {
 
+    this->simulation = false;
+    this->vision = false;
     this->queues = queues;
     this->hands = hands;
 
@@ -41,7 +43,28 @@ SensorStorage::SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, 
     thr = nullptr;
 
     storeTime = storeJntPos = storeCartPos = storeJntFrc = storeCartFrcTrq = storeHndJntPos = storeHndTctle = storeSimObject = true;
+    storeSimObject = storeVisObject = false;
 }
+
+SensorStorage::SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands, std::shared_ptr<VisionInterface> vis, double pollingFrequency){
+
+    this->simulation = false;
+    this->vision = true;
+
+    this->queues = queues;
+    this->hands = hands;
+    this->vis = vis;
+
+    this->pollingFrequency = pollingFrequency;
+
+    stopped = false;
+    storageStopped = true;
+
+    thr = nullptr;
+
+    storeTime = storeJntPos = storeCartPos = storeJntFrc = storeCartFrcTrq = storeHndJntPos = storeHndTctle = storeVisObject = true;
+}
+
 
 
 
@@ -102,6 +125,13 @@ std::shared_ptr<std::thread> SensorStorage::startDataStorage(std::string folderN
             std::shared_ptr<std::ofstream> queueFile = std::shared_ptr<std::ofstream>(new ofstream());
             queueFile->open(folderName + string("/") + "simulation");
             simStream = queueFile;
+        }
+
+        if(vision){
+            std::shared_ptr<std::ofstream> queueFile = std::shared_ptr<std::ofstream>(new ofstream());
+            queueFile->open(folderName + string("/") + "vision");
+            visStream = queueFile;
+
         }
 
 
@@ -426,11 +456,51 @@ void SensorStorage::storeData(bool storeHeader, std::vector<std::shared_ptr<std:
 
                 }
 
-                 *currentOfStream << endl;
+                *currentOfStream << endl;
 
             }
+        }
+        if(vision){
+
+            shared_ptr<ofstream> currentOfStream = visStream;
 
 
+            if(firstTime && storeHeader) {
+
+                vector<string> labels;
+
+                labels.push_back("time");
+
+                if(storeVisObject) {
+
+                    labels.push_back("cart_pos_x");
+                    labels.push_back("cart_pos_y");
+                    labels.push_back("cart_pos_z");
+                    labels.push_back("cart_quat_x");
+                    labels.push_back("cart_quat_y");
+                    labels.push_back("cart_quat_z");
+                    labels.push_back("cart_quat_w");
+
+                }
+
+                writeLabels(currentOfStream, labels);
+
+            }
+            else{
+
+
+                *currentOfStream << currentTime << "\t";
+
+                if(storeVisObject){
+
+                    geometry_msgs::Pose currentPose = vis->getArPose();
+                    writeVectorInLine(simStream, pose2vectorarma(currentPose));
+
+                }
+
+                *currentOfStream << endl;
+
+            }
 
         }
 
