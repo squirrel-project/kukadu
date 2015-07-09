@@ -56,7 +56,7 @@ void DMPExecutor::construct(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQu
     if(isCartesian)
         this->odeSystemSize = 3 * 3 + 1;
     else
-        this->odeSystemSize = 2 * this->degofFreedom + 1;
+    this->odeSystemSize = 2 * this->degofFreedom + 1;
     this->suppressMessages = suppressMessages;
 
     previousDesiredJoints = y0s;
