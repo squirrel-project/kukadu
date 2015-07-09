@@ -1,5 +1,9 @@
 #include "VisionInterface.h"
 
+#include<iostream>
+#include<string>
+
+using namespace std;
 
 VisionInterface::VisionInterface(int argc, char** argv, int sleepTime, ros::NodeHandle node)  {
 
@@ -20,12 +24,21 @@ VisionInterface::VisionInterface(int argc, char** argv, int sleepTime, std::stri
     this->node = node;
     this->currentCameraTag = cameraTag;
 
+    this->construct();
+
     this->arTagTracker = false;
 }
 
 void VisionInterface::setArTagTracker(){
     this->arTagTracker = true;
-    this->subArTag = node.subscribe(arTagTopic, 2, &VisionInterface::arTagCallback, this);
+    this->subArTag = node.subscribe(arTagTopic, 1, &VisionInterface::arTagCallback, this);
+
+    this->firstSet = false;
+    ros::Rate lRate(sleepTime);
+    while(!firstSet){
+        ros::spinOnce();
+        lRate.sleep();
+    }
 
 }
 
@@ -47,6 +60,8 @@ void VisionInterface::construct(){
 
 void VisionInterface::arTagCallback(const tf::tfMessage& msg){
 
+    firstSet = true;
+
     geometry_msgs::TransformStamped t = msg.transforms.at(0);
     tf::Vector3 origin;
     origin.setValue(t.transform.translation.x, t.transform.translation.y, t.transform.translation.z);
@@ -56,7 +71,7 @@ void VisionInterface::arTagCallback(const tf::tfMessage& msg){
     pose.setOrigin(origin);
     pose.setRotation(rotation);
 
-    pose = tfChestKin * pose;
+    pose = tfChestKin.inverse() * pose;
 
     currentArPose.position.x = pose.getOrigin().getX();
     currentArPose.position.y = pose.getOrigin().getY();
@@ -66,10 +81,10 @@ void VisionInterface::arTagCallback(const tf::tfMessage& msg){
     currentArPose.orientation.z = pose.getRotation().getZ();
     currentArPose.orientation.w = pose.getRotation().getW();
 
-
 }
 
  geometry_msgs::Pose VisionInterface::getArPose(){
      return currentArPose;
 
  }
+

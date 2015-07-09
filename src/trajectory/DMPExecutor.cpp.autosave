@@ -299,8 +299,7 @@ void DMPExecutor::initializeIntegration(double tStart, double stepSize, double t
 //            ys[i + 2] = dEta0(dim);
             ys[i + 0] = y0s(dim);
             ys[i + 1] = tau * dy0s(dim);
-            ys[i + 2] = 100.0;
-            //ys[i + 2] = Eta0(dim);
+            ys[i + 2] = dEta0(dim);
 
             cout<<"(DMPGE) dim "<< dim<< " val eta0 "<<Eta0(dim)<<endl;
         }

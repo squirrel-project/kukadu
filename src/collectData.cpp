@@ -107,11 +107,10 @@ int main(int argc, char** args) {
     //moving arm
 
     leftQueue->stopCurrentMode();
-
     shared_ptr<thread> lqThread = leftQueue->startQueueThread();
     leftQueue->switchMode(10);
 
-    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031098/testing/push_data/pushing_data/kuka_lwr_real_left_arm_0");
+    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031098/testing/Push0709/taught/kuka_lwr_real_left_arm_0");
     data->removeDuplicateTimes();
 
 
@@ -126,6 +125,7 @@ int main(int argc, char** args) {
     leftQueue->moveJoints(jointPos.row(0).t());
 
     leftQueue->stopCurrentMode();
+    leftQueue->setStiffness(2000, 150, 0.7, 7.0,70.0, 2.0);
     leftQueue->switchMode(20);
 
     // JointDMPLearner learner(az, bz, join_rows(times, cartPos));
@@ -133,6 +133,7 @@ int main(int argc, char** args) {
     CartesianDMPLearner learner(az, bz, join_rows(times, cartPos));
     std::shared_ptr<Dmp> leftDmp = learner.fitTrajectories();
     DMPExecutor leftExecutor(leftDmp, leftQueue);
+    shared_ptr<thread> storeThread;
 
 
     if(environment == "simulation"){
@@ -162,13 +163,51 @@ int main(int argc, char** args) {
 
         SensorStorage storeData(queueVectors, std::vector<std::shared_ptr<GenericHand>>(), simI, objectId, 1000);
         storeData.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS);
-        storeData.startDataStorage("/home/c7031098/testing/SimData/pushing_data3/");
+        storeThread = storeData.startDataStorage("/home/c7031098/testing/SimData/push0709/execution1_box/");
         leftExecutor.executeTrajectory(ac, 0, leftDmp->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+        leftQueue->stopCurrentMode();
         storeData.stopDataStorage();
 
     }
 
+    if(environment == "real"){
+
+        //vision interface
+
+        shared_ptr<VisionInterface> vis = shared_ptr<VisionInterface>(new VisionInterface(argc, args, kukaStepWaitTime, *node));
+        cout<<"vision interface created"<<endl;
+
+        vis->setArTagTracker();
+        cout<<"ArTagTracke started"<<endl;
+
+
+        //collecting data
+
+        SensorStorage storeData(queueVectors, std::vector<std::shared_ptr<GenericHand>>(), vis, 1000);
+        storeData.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS | STORE_RBT_JNT_FTRQ);
+        storeThread = storeData.startDataStorage("/home/c7031098/testing/Push0709/execution2_box/");
+
+        cout <<" (collectData) executing starting" <<endl;
+
+        leftExecutor.executeTrajectory(ac, 0, leftDmp->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+        leftQueue->stopCurrentMode();
+        cout<<" (collectData) execution done "<<endl;
+        storeData.stopDataStorage();
+
+    }
+
+    storeThread->join();
+
+    cout<<"(collectData) moving to start position "<<endl;
 
     leftQueue->stopCurrentMode();
+    leftQueue->switchMode(10);
+    leftQueue->moveJoints(jointPos.row(0).t());
+    leftQueue->stopCurrentMode();
+
+    getchar();
+
+    return 0;
+
 
 }

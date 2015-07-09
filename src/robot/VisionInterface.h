@@ -28,6 +28,7 @@ private:
     ros::Subscriber subArTag;
 
     bool arTagTracker;
+    bool firstSet;
 
     geometry_msgs::Pose currentArPose;
     tf::Transform tfChestKin;

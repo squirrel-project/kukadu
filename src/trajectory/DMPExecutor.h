@@ -103,6 +103,7 @@ protected:
 	double stepSize;
 
     arma::vec dEta0;
+    arma::vec Eta0;
     tf::Quaternion dQ0;
     tf::Quaternion qG;
     tf::Quaternion currentQ;

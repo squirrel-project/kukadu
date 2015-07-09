@@ -29,6 +29,7 @@ SensorStorage::SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, 
 SensorStorage::SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands, std::shared_ptr<SimInterface> sim, std::string objectID, double pollingFrequency) {
     //SensorStorage(queues, hands, pollingFrequency);
     simulation = true;
+    this->vision = false;
     this->sim = sim;
     this->objectID = objectID;
 
@@ -62,7 +63,8 @@ SensorStorage::SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, 
 
     thr = nullptr;
 
-    storeTime = storeJntPos = storeCartPos = storeJntFrc = storeCartFrcTrq = storeHndJntPos = storeHndTctle = storeVisObject = true;
+    storeTime = storeJntPos = storeCartPos = storeJntFrc = storeCartFrcTrq = storeHndJntPos = storeHndTctle  = false;
+    storeVisObject = true;
 }
 
 
@@ -165,8 +167,8 @@ void SensorStorage::stopDataStorage() {
         handStreams.at(i)->close();
     handStreams.clear();
 
-
-    simStream->close();
+    if(simulation) simStream->close();
+    if(vision) visStream->close();
 
 
 }
@@ -452,6 +454,7 @@ void SensorStorage::storeData(bool storeHeader, std::vector<std::shared_ptr<std:
                 if(storeSimObject){
 
                     geometry_msgs::Pose currentPose = sim->getObjPose(objectID);
+                    cout << currentPose<< endl;
                     writeVectorInLine(simStream, pose2vectorarma(currentPose));
 
                 }
@@ -494,7 +497,7 @@ void SensorStorage::storeData(bool storeHeader, std::vector<std::shared_ptr<std:
                 if(storeVisObject){
 
                     geometry_msgs::Pose currentPose = vis->getArPose();
-                    writeVectorInLine(simStream, pose2vectorarma(currentPose));
+                    writeVectorInLine(currentOfStream, pose2vectorarma(currentPose));
 
                 }
 

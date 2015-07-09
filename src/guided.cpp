@@ -86,6 +86,8 @@ double ac = 10;
 
 string left_hardware = "left_arm";
 string right_hardware = "right_arm";
+std::string hand = "left";
+
 
 string hardware = right_hardware;
 
@@ -204,16 +206,23 @@ int main(int argc, char** args) {
     shared_ptr<ControlQueue> leftQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, "real", "left_arm", *node));
     vector<shared_ptr<ControlQueue>> queueVectors;
     queueVectors.push_back(leftQueue);
+    RosSchunk* handQ=new RosSchunk(*node, "real", hand);
+    cout<<"hand interface created"<<endl;
+
+    //moving hand to staring position
+    vector<double> newPos = {0, -1.57, 0, -1.57, 0, -1.57, 0};
+    handQ->publishSdhJoints(newPos);
 
     leftQueue->stopCurrentMode();
     std::shared_ptr<std::thread> raThr = leftQueue->startQueueThread();
+
     leftQueue->setStiffness(0.2, 0.01, 0.2, 15000, 150, 1500);
 
     leftQueue->switchMode(30);
 
     SensorStorage scaredOfSenka(queueVectors, std::vector<std::shared_ptr<GenericHand>>(), 1000);
     scaredOfSenka.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS);
-    scaredOfSenka.startDataStorage("/home/c7031109/tmp/pushing_data2/");
+    scaredOfSenka.startDataStorage("/home/c7031098/testing/Push0709/taught2/");
     ros::Rate r(1);
     for(int i = 0; i < 20; ++i) {
         r.sleep();
