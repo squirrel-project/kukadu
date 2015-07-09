@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
     pcl_ros
     pcl_conversions
     sensor_msgs
+    vrep_common
 )
 
 set(CURSES_USE_NCURSES TRUE)

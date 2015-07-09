@@ -9,3 +9,4 @@ experiments/*
 logs
 *.log
 *.orig
+*.autosave

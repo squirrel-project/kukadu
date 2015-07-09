@@ -383,6 +383,7 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
 
 
         nextEta = stepSize / 2.0 * oneDivTau * nextEta;
+        cout << t << "\t" << nextEta.t();
         // tf::Quaternion nextEtaQuat(nextEta(0), nextEta(1), nextEta(2), 0.0);
         currentQ = exp(nextEta) * currentQ;
 

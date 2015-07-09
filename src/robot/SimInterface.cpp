@@ -2,8 +2,7 @@
 
 using namespace std;
 
-SimInterface::SimInterface(int argc, char** argv, int sleepTime, ros::NodeHandle node)
-{
+SimInterface::SimInterface(int argc, char** argv, int sleepTime, ros::NodeHandle node) {
     currentTime = 0.0;
     this->sleepTime= sleepTime;
 
@@ -38,8 +37,7 @@ The 'dimensions' parameter specifies the required dimensions, based on given sha
   CYLINDER 	- dimensions: [CYLINDER_HEIGHT, CYLINDER_RADIUS]
   CONE	   	- dimensions: [CONE_HEIGHT, CONE_RADIUS] */
 //void SimInterface::addPrimShape(string shape_id, float *dim)
-void SimInterface::addPrimShape(int type,string object_id,float* position, float *orientation, float* dimen, float mass)
-{
+void SimInterface::addPrimShape(int type,string object_id,float* position, float *orientation, float* dimen, float mass) {
 
     planning_scene_plugin::AddPrimitiveShape primObj;
     primObj.object_id=object_id;
@@ -63,8 +61,8 @@ void SimInterface::addPrimShape(int type,string object_id,float* position, float
     cout << "object created" << endl;
 
 }
-void SimInterface::addPrimShape(int type,string object_id)
-{
+
+void SimInterface::addPrimShape(int type,string object_id) {
 
     planning_scene_plugin::AddPrimitiveShape primObj;
     primObj.object_id=object_id;
@@ -80,8 +78,7 @@ void SimInterface::addPrimShape(int type,string object_id)
 
     primObj.mass=0.4;
 
-    if(type==1)
-    {
+    if(type==1) {
 
         primObj.type=1;
         vector<double> dim;
@@ -90,15 +87,13 @@ void SimInterface::addPrimShape(int type,string object_id)
         dim.push_back(0.2);
         primObj.dimensions=dim;
     }
-    else if(type==2)
-    {
+    else if(type==2) {
         primObj.type=2;
         vector<double> dim;
         dim.push_back(0.2);
         primObj.dimensions=dim;
     }
-    else if(type==3)
-    {
+    else if(type==3) {
 
         primObj.type=3;
         vector<double> dim;
@@ -106,8 +101,7 @@ void SimInterface::addPrimShape(int type,string object_id)
         dim.push_back(0.05);
         primObj.dimensions=dim;
     }
-    else if(type==4)
-    {
+    else if(type==4) {
 
         primObj.type=4;
         vector<double> dim;
@@ -127,8 +121,7 @@ void SimInterface::addPrimShape(int type,string object_id)
     goemtry_msgs/Pose pose	The target pose of the imported mesh (currently only position data is considered)
     float64 scale_factor	An optional scale factor. Can be left 0.
     float64 massThe mass of the imported object. If set to 0 a default value of 1.0kg will be used. */
-void SimInterface::importMesh(string object_id, string path,float* position, float* orientation, float scale, float mass)
-{
+void SimInterface::importMesh(string object_id, string path,float* position, float* orientation, float scale, float mass) {
     planning_scene_plugin::ImportMeshFile srv;
     srv.request.file_path=path;
     srv.request.object_id=object_id;
@@ -147,8 +140,7 @@ void SimInterface::importMesh(string object_id, string path,float* position, flo
     cout << "object imported" << endl;
 
 }
-void SimInterface::importMesh(string object_id, string path,float* position, float* orientation)
-{
+void SimInterface::importMesh(string object_id, string path,float* position, float* orientation) {
     planning_scene_plugin::ImportMeshFile srv;
     srv.request.file_path=path;
     srv.request.object_id=object_id;
@@ -166,8 +158,7 @@ void SimInterface::importMesh(string object_id, string path,float* position, flo
 
 }
 
-void SimInterface::importMesh(string object_id, string path)
-{
+void SimInterface::importMesh(string object_id, string path) {
     planning_scene_plugin::ImportMeshFile srv;
     srv.request.file_path=path;
     srv.request.object_id=object_id;
@@ -184,7 +175,7 @@ void SimInterface::importMesh(string object_id, string path)
 
 //getting pose of the object
 
-geometry_msgs::Pose SimInterface::getObjPose(string object_id){
+geometry_msgs::Pose SimInterface::getObjPose(string object_id) {
 
     geometry_msgs::Pose objPose;
     vrep_common::simRosGetObjectHandle handleSrv;
@@ -200,8 +191,7 @@ geometry_msgs::Pose SimInterface::getObjPose(string object_id){
     return objPose;
 }
 
-void SimInterface::setObjPose(string object_id, float* position, float* orientation)
-{
+void SimInterface::setObjPose(string object_id, float* position, float* orientation) {
     planning_scene_plugin::SetObjectPose srv;
     srv.request.object_id=object_id;
     srv.request.pose.position.x=position[0];
@@ -215,8 +205,7 @@ void SimInterface::setObjPose(string object_id, float* position, float* orientat
     setPoseClient.call(srv);
 }
 
-void SimInterface::removeObj(string object_id)
-{
+void SimInterface::removeObj(string object_id) {
     cout << "removing object "<<object_id<<endl;
     vrep_common::simRosGetObjectHandle handleSrv;
     vrep_common::simRosRemoveObject remObj, remObjVis;
@@ -260,7 +249,7 @@ material to use. Possible values are:
     rosservice call /simulation/scene/SetObjectMaterial "object_id: 'octopus'
     material_id: 'highFrictionMaterial'"*/
 
-void SimInterface::setObjMaterial(string object_id,string material_id){
+void SimInterface::setObjMaterial(string object_id,string material_id) {
     planning_scene_plugin::SetObjectMaterial srv;
     srv.request.material_id=material_id;
     srv.request.object_id=object_id;

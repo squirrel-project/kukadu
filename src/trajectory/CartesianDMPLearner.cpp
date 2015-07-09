@@ -40,7 +40,7 @@ arma::mat CartesianDMPLearner::computeFitY(arma::vec& time, arma::mat &y, arma::
             double yVal = y(i, j);
             double dyVal = dy(i, j);
             double ddyVal = ddy(i, j);
-            retMat(j, i) = tau * tau * ddyVal - az * (bz * (vec_g(j) - yVal) - tau * dyVal);
+            retMat(j, i) = /*1 / (vec_g(j) - y(0, j)) */ tau * tau * ddyVal - az * (bz * (vec_g(j) - yVal) - tau * dyVal);
 
         }
 
