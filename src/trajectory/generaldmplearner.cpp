@@ -79,6 +79,10 @@ std::shared_ptr<Dmp> GeneralDmpLearner::fitTrajectories() {
     vector<mat> designMatrices;
     vec timeVec = joints.col(0);
 
+    mat all_y;
+    mat all_dy;
+    mat all_ddy;
+
     // retrieve all columns for different degrees of freedom
     vector<vec> trajectories;
     for(int i = 1; i <= degFreedom; ++i) {
@@ -89,16 +93,26 @@ std::shared_ptr<Dmp> GeneralDmpLearner::fitTrajectories() {
         vec vec_dy = computeDiscreteDerivatives(timeVec, trajectory);
         vec vec_ddy = computeDiscreteDerivatives(timeVec, vec_dy);
 
-        trajectory_learner_internal dmpRes = fitTrajectory(timeVec, trajectory, vec_dy, vec_ddy);
+        all_y = join_rows(all_y, trajectory);
+        all_dy = join_rows(all_dy, vec_dy);
+        all_ddy = join_rows(all_ddy, vec_ddy);
+
+    }
+
+    vector<trajectory_learner_internal> dmpResAll = fitTrajectory(timeVec, all_y, all_dy, all_ddy);
+
+    for(int i = 0; i < dmpResAll.size(); ++i) {
+
+        trajectory_learner_internal dmpRes = dmpResAll.at(i);
         vec dmpCoeff = dmpRes.coeff;
         vec fity = dmpRes.fity;
 
-        g(i - 1) = trajectory(dataPointsNum - 1);
-        y0(i - 1) = trajectory(0);
-        dy0(i - 1) = vec_dy(0);
-        ddy0(i - 1) = vec_ddy(0);
+        g(i) = (all_y.col(i))(dataPointsNum - 1);
+        y0(i) = all_y.col(i)(0);
+        dy0(i) = all_dy.col(i)(0);
+        ddy0(i) = all_ddy.col(i)(0);
         dmpCoeffs.push_back(dmpCoeff);
-        sampleYs.push_back(trajectory);
+        sampleYs.push_back(all_y.col(i));
         fitYs.push_back(fity);
         designMatrices.push_back(dmpRes.desMat);
 
@@ -108,8 +122,42 @@ std::shared_ptr<Dmp> GeneralDmpLearner::fitTrajectories() {
 
 }
 
-trajectory_learner_internal GeneralDmpLearner::fitTrajectory(vec time, vec y, vec dy, vec ddy) {
+std::vector<trajectory_learner_internal> GeneralDmpLearner::fitTrajectory(vec time, mat y, mat dy, mat ddy) {
 
+    int dataPointsNum = time.n_elem;
+
+    trajectory_learner_internal ret;
+    vec vec_g = y.row(dataPointsNum - 1).t();
+
+    mat fity = computeFitY(time, y, dy, ddy, vec_g);
+
+    vector<trajectory_learner_internal> retVec;
+
+    for(int i = 0; i < fity.n_rows; ++i) {
+
+        trajectory_learner_internal ret;
+        DMPTrajectoryGenerator dmpTrajGen(dmpBase, ax, tau);
+        GeneralFitter dmpGenFit(time, fity.row(i).t(), dataPointsNum, &dmpTrajGen);
+        mat designMatrix = dmpGenFit.computeDesignMatrix();
+        vec dmpCoeff = dmpGenFit.computeLinFitCoefficients(designMatrix);
+
+        ret.fity = fity.row(i).t();
+        ret.coeff = dmpCoeff;
+        ret.desMat = designMatrix;
+
+        retVec.push_back(ret);
+
+    }
+
+    return retVec;
+
+    /*
+
+
+    return ret;
+    */
+
+    /*
     int dataPointsNum = time.n_elem;
 
     trajectory_learner_internal ret;
@@ -128,6 +176,7 @@ trajectory_learner_internal GeneralDmpLearner::fitTrajectory(vec time, vec y, ve
     ret.desMat = designMatrix;
 
     return ret;
+    */
 
 }
 

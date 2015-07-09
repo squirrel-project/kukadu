@@ -68,71 +68,21 @@ add_definitions(-shared)
 add_definitions(-pthread)
 add_definitions(-DROS_SUPPORT)
 
-add_library(kukadulib src/robot/robotDriver/src/kuka/friRemote.cpp
-src/robot/robotDriver/src/kuka/friUdp.cpp
-src/robot/robotDriver/src/friMain.cpp
-src/robot/robotDriver/src/friMisc.cpp
-src/utils/utils.cpp
-src/utils/conversion_utils.cpp
-src/utils/Tokenizer.cpp
-src/learning/GeneralFitter.cpp
-src/trajectory/DMPExecutor.cpp
-src/trajectory/TrajectoryGenerator.cpp
-src/trajectory/DMPTrajectoryGenerator.cpp
-src/trajectory/PolyTrajectoryGenerator.cpp
-src/trajectory/JointDMPLearner.cpp
-src/trajectory/generaldmplearner.cpp
-src/trajectory/DMPGeneralizer.cpp
-src/learning/GenericKernel.cpp
-src/learning/TricubeKernel.cpp
-src/learning/KernelRegressor.cpp
-src/learning/GaussianProcessRegressor.cpp
-src/learning/LWRRegressor.cpp
-src/utils/DestroyableObject.cpp
-src/robot/mounted/GenericHand.cpp
-src/robot/mounted/RosSchunk.cpp
-src/learning/QuadraticKernel.cpp
-src/learning/GaussianKernel.cpp
-src/learning/reinforcement_learning/GenDMPReinforcer.cpp
-src/utils/gnuplot-cpp/gnuplot_i.cpp
-src/robot/ControlQueue.cpp
-src/robot/KukieSimulator.cpp
-src/learning/reinforcement_learning/DMPReinforcer.cpp
-src/learning/reinforcement_learning/TerminalCostComputer.cpp
-src/robot/KukieControlQueue.cpp
-src/trajectory/DictionaryGeneralizer.cpp
-src/trajectory/TrajectoryComparator.cpp
-src/trajectory/DMPTrajectoryComparator.cpp
-src/types/Trajectory.cpp
-src/types/SingleSampleTrajectory.cpp
-src/types/DMP.cpp
-src/types/QueryPoint.cpp
-src/types/DMPBase.cpp
-src/types/LinCombDmp.cpp
-src/types/jointdmp.cpp
-src/types/cartesiandmp.cpp
-src/types/SensorData.cpp
-src/types/DictionaryTrajectory.cpp
-src/learning/metric_learning/Mahalanobis.cpp
-src/learning/metric_learning/MahalanobisLearner.cpp
-src/learning/metric_learning/InfTheoMetricLearner.cpp
-src/learning/metric_learning/InfTheoConstraints.cpp
-src/learning/metric_learning/TogersonMetricLearner.cpp
-src/learning/reinforcement_learning/PoWER.cpp
-src/learning/reinforcement_learning/TrajectoryBasedReward.cpp
-src/learning/reinforcement_learning/SampleRewardComputer.cpp
-src/learning/reinforcement_learning/GaussianObstacleRewardComputer.cpp
-src/learning/reinforcement_learning/GeneralReinforcer.cpp
-src/learning/reinforcement_learning/GradientDescent.cpp
-src/learning/reinforcement_learning/DmpRewardComputer.cpp
-src/trajectory/TrajectoryExecutor.cpp
-src/robot/PlottingControlQueue.cpp
-src/robot/SensorStorage.cpp
-src/robot/SimInterface.cpp
-src/trajectory/TimeDepDictionaryGeneralizer.cpp
-src/utils/CustomSet.cpp
-src/utils/easyloggingpp/src/easylogging++.h
-src/manipulation/pushing/DMPExecutorPush.cpp
+AUX_SOURCE_DIRECTORY(src/utils/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/trajectory/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/robot/robotDriver/src/kuka/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/robot/robotDriver/src/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/learning/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/robot/mounted/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/utils/gnuplot-cpp/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/robot/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/types/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/utils/easyloggingpp/src/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/learning/reinforcement_learning/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/learning/metric_learning/ KUKADUSRC)
+
+add_library(kukadulib
+    ${KUKADUSRC}
 )
 
 find_package(Eigen REQUIRED)
@@ -164,11 +114,11 @@ target_link_libraries(kukadu_humanoids kukadulib ${catkin_LIBRARIES} ${Boost_LIB
 add_executable(kukadu_mes src/guided.cpp)
 target_link_libraries(kukadu_mes kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
 
-add_executable(DMPcart_test src/testingDMPcart.cpp)
-target_link_libraries(DMPcart_test kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
-
 add_executable(SimInt_test src/SimInterfaceExample.cpp)
 target_link_libraries(SimInt_test kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
 
-add_executable(t_push src/teachingPush.cpp)
-target_link_libraries(t_push kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
+#add_executable(DMPcart_test src/testingDMPcart.cpp)
+#target_link_libraries(DMPcart_test kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
+
+#add_executable(t_push src/teachingPush.cpp)
+#target_link_libraries(t_push kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
