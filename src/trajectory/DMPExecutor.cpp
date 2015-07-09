@@ -337,7 +337,7 @@ void DMPExecutor::initializeIntegrationQuat() {
         dQ0 =  eta0Quat * q0;
 
         double firstDt = cartDmp->getDeltaTByIdx(0);
-         dEta0 = 1.0 / (firstDt * cartDmp->getTau()) * (eta1 - eta0); //his os domega0?
+        dEta0 = 1.0 / (firstDt * cartDmp->getTau()) * (eta1 - eta0); //his os domega0?
         //dEta0 = 1.0 / firstDt * (eta1 - eta0);
         Eta0 = eta0;
 

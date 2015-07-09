@@ -110,7 +110,9 @@ int main(int argc, char** args) {
     shared_ptr<thread> lqThread = leftQueue->startQueueThread();
     leftQueue->switchMode(10);
 
-    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031098/testing/Push0709/taught/kuka_lwr_real_left_arm_0");
+//    string loadDataPath = "/home/c7031098/testing/Push0709/taught/kuka_lwr_real_left_arm_0";
+    string loadDataPath = "/home/c7031109/tmp/pushing_data/kuka_lwr_real_left_arm_0";
+    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, loadDataPath);
     data->removeDuplicateTimes();
 
 
@@ -163,7 +165,9 @@ int main(int argc, char** args) {
 
         SensorStorage storeData(queueVectors, std::vector<std::shared_ptr<GenericHand>>(), simI, objectId, 1000);
         storeData.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS);
-        storeThread = storeData.startDataStorage("/home/c7031098/testing/SimData/push0709/execution1_box/");
+        // string loadDataPath = "/home/c7031098/testing/SimData/push0709/execution1_box/";
+        string saveDataPath = "/home/c7031109/tmp/blub";
+        storeThread = storeData.startDataStorage(saveDataPath);
         leftExecutor.executeTrajectory(ac, 0, leftDmp->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
         leftQueue->stopCurrentMode();
         storeData.stopDataStorage();
@@ -185,7 +189,9 @@ int main(int argc, char** args) {
 
         SensorStorage storeData(queueVectors, std::vector<std::shared_ptr<GenericHand>>(), vis, 1000);
         storeData.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS | STORE_RBT_JNT_FTRQ);
-        storeThread = storeData.startDataStorage("/home/c7031098/testing/Push0709/execution2_box/");
+        // string filePath = "/home/c7031098/testing/Push0709/execution2_box/";
+        string filePath = "/home/c7031109/tmp/blub";
+        storeThread = storeData.startDataStorage(filePath);
 
         cout <<" (collectData) executing starting" <<endl;
 
