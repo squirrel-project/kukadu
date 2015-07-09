@@ -110,7 +110,7 @@ int main(int argc, char** args) {
     shared_ptr<thread> lqThread = leftQueue->startQueueThread();
     leftQueue->switchMode(10);
 
-    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031098/testing/Push0709/taught/kuka_lwr_real_left_arm_0");
+    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031098/testing/test/kuka_lwr_real_left_arm_0");
     data->removeDuplicateTimes();
 
 
