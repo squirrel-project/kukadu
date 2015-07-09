@@ -76,11 +76,13 @@ arma::mat CartesianDMPLearner::computeFitY(arma::vec& time, arma::mat &y, arma::
 
         vec domegaV = computeDiscreteDerivatives(time, trajectory);
         domega = join_rows(domega, domegaV);
-
     }
+
+    domega = join_rows(domega, time);
 
     eta = tau * omega;
     deta = tau * domega;
+
 
     for (int i = 0; i < y.n_rows; ++i) {
 
@@ -90,7 +92,6 @@ arma::mat CartesianDMPLearner::computeFitY(arma::vec& time, arma::mat &y, arma::
 
     }
 
-    //cout << time.t() << endl;
     cout << retMat << endl;
     return retMat;
 

@@ -10,3 +10,6 @@ logs
 *.log
 *.orig
 *.autosave
+*BACKUP*
+*BASE*
+*LOCAL*

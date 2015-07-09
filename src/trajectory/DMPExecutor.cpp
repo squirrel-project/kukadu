@@ -56,7 +56,7 @@ void DMPExecutor::construct(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQu
     if(isCartesian)
         this->odeSystemSize = 3 * 3 + 1;
     else
-        this->odeSystemSize = 2 * this->degofFreedom + 1;
+    this->odeSystemSize = 2 * this->degofFreedom + 1;
     this->suppressMessages = suppressMessages;
 
     previousDesiredJoints = y0s;
@@ -299,8 +299,7 @@ void DMPExecutor::initializeIntegration(double tStart, double stepSize, double t
 //            ys[i + 2] = dEta0(dim);
             ys[i + 0] = y0s(dim);
             ys[i + 1] = tau * dy0s(dim);
-            ys[i + 2] = 100.0;
-            //ys[i + 2] = Eta0(dim);
+            ys[i + 2] = dEta0(dim);
 
             cout<<"(DMPGE) dim "<< dim<< " val eta0 "<<Eta0(dim)<<endl;
         }
@@ -380,6 +379,7 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
             retJoints(i) = ys[3 * i];
             nextEta(i) = ys[3 * i + 2];
         }
+        cout<<nextEta(0)<<" "<<nextEta(1)<<" "<<nextEta(2)<<" "<<t<<endl;
 
 
         nextEta = stepSize / 2.0 * oneDivTau * nextEta;
