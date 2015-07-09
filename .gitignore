@@ -9,3 +9,6 @@ experiments/*
 logs
 *.log
 *.orig
+*BACKUP*
+*BASE*
+*LOCAL*
