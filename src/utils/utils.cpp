@@ -883,8 +883,7 @@ arma::vec log(tf::Quaternion quat) {
 
     vec logQuat(3);
     double modU = sqrt(quat.x() * quat.x()  + quat.y() * quat.y() + quat.z() * quat.z());
-    if (modU>M_PI) cout<<"(utils) mod "<< modU << endl;
-    /*double acosw;
+    double acosw;
 
     acosw = acos(quat.w());
      if(std::isnan(acosw)) acosw = 0.0;
@@ -901,26 +900,26 @@ arma::vec log(tf::Quaternion quat) {
         logQuat(1) = 0.0;
         logQuat(2) = 0.0;
 
-    }*/
-    if ((quat.w() == 1.0) || (modU == 0.00)) {
-        logQuat(0) = 0.0;
-        logQuat(1) = 0.0;
-        logQuat(2) = 0.0;
     }
-    else if (quat.w() == 0.0 ){
+//    if (modU == 0) {
+//        logQuat(0) = 0.0;
+//        logQuat(1) = 0.0;
+//        logQuat(2) = 0.0;
+//    }
+//    else if (quat.w() == 0.0 ){
 
-        logQuat(0) = M_PI / 2* quat.x() / modU;
-        logQuat(1) = M_PI / 2* quat.y() / modU;
-        logQuat(2) = M_PI / 2* quat.z() / modU;
-    }
+//        logQuat(0) = M_PI / 2* quat.x() / modU;
+//        logQuat(1) = M_PI / 2* quat.y() / modU;
+//        logQuat(2) = M_PI / 2* quat.z() / modU;
+//    }
 
-    else  {
+//    else  {
 
-        logQuat(0) = atan(modU / quat.w()) * quat.x() / modU;
-        logQuat(1) = atan(modU / quat.w()) * quat.y() / modU;
-        logQuat(2) = atan(modU / quat.w()) * quat.z() / modU;
+//        logQuat(0) = atan(modU / quat.w()) * quat.x() / modU;
+//        logQuat(1) = atan(modU / quat.w()) * quat.y() / modU;
+//        logQuat(2) = atan(modU / quat.w()) * quat.z() / modU;
 
-    }
+//    }
 
 
     //cout<<"logQuat"<< logQuat;
@@ -933,6 +932,7 @@ tf::Quaternion exp(arma::vec logQuat) {
 
     double x, y, z, w;
     double modR = sqrt(logQuat(0) * logQuat(0) + logQuat(1) * logQuat(1) + logQuat(2) * logQuat(2));
+    if (modR > M_PI / 2) cout<< "(utils) mod out of limits "<< modR << endl;
 
     if (modR > 0) {
 

@@ -59,11 +59,11 @@ arma::mat CartesianDMPLearner::computeFitY(arma::vec& time, arma::mat &y, arma::
       //  vec logL= log(tf::Quaternion(vec_g(3), vec_g(4), vec_g(5), vec_g(6)) * tf::Quaternion(y(j, 3), y(j, 4), y(j, 5), y(j, 6)).inverse());
 
         for (int i = 0; i < 3; i++)
-            omega(j, i) = 2 * logL(i);
+            omega(j, i) = 2 * logL(i) / (time(1)-time(0));
 
         if (j == y.n_rows - 2)
             for (int i = 0; i < 3; i++)
-                omega(y.n_rows - 1, i) = 2 * logL(i);
+                omega(y.n_rows - 1, i) = 2 * logL(i) / (time(1)-time(0));
 
 
     }
@@ -78,10 +78,14 @@ arma::mat CartesianDMPLearner::computeFitY(arma::vec& time, arma::mat &y, arma::
         domega = join_rows(domega, domegaV);
     }
 
-    domega = join_rows(domega, time);
+
 
     eta = tau * omega;
     deta = tau * domega;
+
+    eta = join_rows(eta, time);
+
+   // cout <<eta<<endl;
 
 
     for (int i = 0; i < y.n_rows; ++i) {
@@ -92,7 +96,7 @@ arma::mat CartesianDMPLearner::computeFitY(arma::vec& time, arma::mat &y, arma::
 
     }
 
-    cout << retMat << endl;
+
     return retMat;
 
 }

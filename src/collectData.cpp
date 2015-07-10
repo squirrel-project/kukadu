@@ -110,8 +110,9 @@ int main(int argc, char** args) {
     shared_ptr<thread> lqThread = leftQueue->startQueueThread();
     leftQueue->switchMode(10);
 
-//    string loadDataPath = "/home/c7031098/testing/Push0709/taught/kuka_lwr_real_left_arm_0";
-    string loadDataPath = "/home/c7031109/tmp/pushing_data/kuka_lwr_real_left_arm_0";
+
+    string loadDataPath = "/home/c7031098/testing/test/kuka_lwr_real_left_arm_0";
+    //string loadDataPath = "/home/c7031109/tmp/pushing_data/kuka_lwr_real_left_arm_0";
     shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, loadDataPath);
     data->removeDuplicateTimes();
 
