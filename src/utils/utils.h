@@ -131,5 +131,4 @@ double distQuat(tf::Quaternion q1, tf::Quaternion q2);
 
 tf::Transform Matrix4f2Transform(Eigen::Matrix4f Tm);
 
-
 #endif

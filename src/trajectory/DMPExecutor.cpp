@@ -380,6 +380,8 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
             retJoints(i) = ys[3 * i];
             nextEta(i) = ys[3 * i + 2];
         }
+        cout<<nextEta(0)<<" "<<nextEta(1)<<" "<<nextEta(2)<<" "<<t<<endl;
+
 
 
         vec alteredCurrentEta(3);

@@ -13,7 +13,7 @@ _INITIALIZE_EASYLOGGINGPP
 #include "../../include/kukadu.h"
 
 
-#define ROBOT_TYPE "real"
+#define ROBOT_TYPE "simulation"
 #define ROBOT_SIDE "left"
 
 #define CONTROL_RIGHT false

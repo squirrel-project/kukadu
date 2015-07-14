@@ -16,7 +16,7 @@ string environment = "simulation";
 std::string hand = "left";
 
 
-int main(int argc, char** args) {
+int main(int argc, char ** args) {
     // Declare the supported options.
     po::options_description desc("Allowed options");
     desc.add_options()
@@ -96,7 +96,7 @@ int main(int argc, char** args) {
     queueVectors.push_back(leftQueue);
 
     RosSchunk* handQ=new RosSchunk(*node, environment, hand);
-    cout<<"hand interface created"<<endl;
+    cout << "hand interface created" << endl;
 
     //moving hand to staring position
 
