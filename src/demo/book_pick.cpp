@@ -13,7 +13,7 @@ _INITIALIZE_EASYLOGGINGPP
 #define ROBOT_TYPE "simulation"
 #define ROBOT_SIDE "left"
 
-#define CONTROL_RIGHT true
+#define CONTROL_RIGHT false
 
 using namespace std;
 using namespace arma;

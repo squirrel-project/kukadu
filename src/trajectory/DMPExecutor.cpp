@@ -379,15 +379,15 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
             retJoints(i) = ys[3 * i];
             nextEta(i) = ys[3 * i + 2];
         }
-        cout<<nextEta(0)<<" "<<nextEta(1)<<" "<<nextEta(2)<<" "<<t<<endl;
+        //cout<<nextEta(0)<<" "<<nextEta(1)<<" "<<nextEta(2)<<" "<<t<<endl;
 
 
         nextEta = stepSize / 2.0 * oneDivTau * nextEta;
-        cout << t << "\t" << nextEta.t();
         // tf::Quaternion nextEtaQuat(nextEta(0), nextEta(1), nextEta(2), 0.0);
         currentQ = exp(nextEta) * currentQ;
 
         retJoints(3) = currentQ.x(); retJoints(4) = currentQ.y(); retJoints(5) = currentQ.z(); retJoints(6) = currentQ.w();
+        cout << t << "\t" << retJoints.t();
 
     }
     for(int i = 0; i < odeSystemSize; ++i)
