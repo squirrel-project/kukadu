@@ -168,8 +168,8 @@ int main(int argc, char ** args) {
         SensorStorage storeData(queueVectors, std::vector<std::shared_ptr<GenericHand>>(), simI, objectId, 1000);
         storeData.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS);
         // string loadDataPath = "/home/c7031098/testing/SimData/push0709/execution1_box/";
-        string saveDataPath = "/home/c7031098/testing/testDataJoint/data02/";
-        storeThread = storeData.startDataStorage(saveDataPath);
+        //string saveDataPath = "/home/c7031098/testing/testDataJoint/data02/";
+        //storeThread = storeData.startDataStorage(saveDataPath);
         leftExecutor.executeTrajectory(ac, 0, leftDmp->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
         leftQueue->stopCurrentMode();
         storeData.stopDataStorage();

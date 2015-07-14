@@ -134,13 +134,12 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
         vec vecF0(3);
         vec vecExtAdd(3);
 
-        //currentEta = nextEta;
 
         for(int i = 0, dim = 0; i < odeSystemSizeMinOne; i = i + 3, ++dim) {
             arma::vec currentCoeffs = dmpCoeffs.at(dim + 3);
             vecF0(dim) = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
             vecExtAdd(dim) =  this->addTerm(t, y, dim + 3, controlQueue);
-            // AT(dim + 3) = vecF0(dim);
+
         }
 
         if(t <= (dmp->getTmax() - 1))
@@ -162,7 +161,7 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
             if(t <= (dmp->getTmax() - 1)) {
 
                 double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
-                // AT(currentSystem) = addTerm;
+
                 f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm)  + this->addTerm(t, y, currentSystem, controlQueue);
 
             } else {
@@ -380,9 +379,6 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
             retJoints(i) = ys[3 * i];
             nextEta(i) = ys[3 * i + 2];
         }
-        cout<<nextEta(0)<<" "<<nextEta(1)<<" "<<nextEta(2)<<" "<<t<<endl;
-
-
 
         vec alteredCurrentEta(3);
         alteredCurrentEta = stepSize / 2.0 * oneDivTau * nextEta;
