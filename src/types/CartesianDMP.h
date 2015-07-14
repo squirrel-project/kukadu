@@ -3,6 +3,9 @@
 
 #include "DMP.h"
 #include <tf/transform_datatypes.h>
+#include <math.h>
+#include <armadillo>
+
 
 class CartesianDMP : public Dmp {
 public:

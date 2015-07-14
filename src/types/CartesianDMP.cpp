@@ -3,13 +3,13 @@
 #include <iostream>
 
 CartesianDMP::CartesianDMP(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<arma::vec> fitYs, std::vector<arma::vec> dmpCoeffs, std::vector<DMPBase> dmpBase, std::vector<arma::mat> designMatrices,
-                        double tau, double az, double bz, double ax, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : Dmp(supervisedTs, sampleYs, fitYs, dmpCoeffs, dmpBase, designMatrices,
-                                                                                                                                              tau, az, bz, ax, ac, dmpStepSize, tolAbsErr, tolRelErr) {
+                           double tau, double az, double bz, double ax, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : Dmp(supervisedTs, sampleYs, fitYs, dmpCoeffs, dmpBase, designMatrices,
+                                                                                                                                                 tau, az, bz, ax, ac, dmpStepSize, tolAbsErr, tolRelErr) {
 
 }
 
 CartesianDMP::CartesianDMP(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<arma::vec> fitYs, std::vector<arma::vec> dmpCoeffs, std::vector<DMPBase> dmpBase, std::vector<arma::mat> designMatrices,
-                   double tau, double az, double bz, double ax) : Dmp(supervisedTs, sampleYs, fitYs, dmpCoeffs, dmpBase, designMatrices, tau, az, bz, ax) {
+                           double tau, double az, double bz, double ax) : Dmp(supervisedTs, sampleYs, fitYs, dmpCoeffs, dmpBase, designMatrices, tau, az, bz, ax) {
 
 }
 
@@ -43,18 +43,16 @@ arma::vec CartesianDMP::getEta0() {
 arma::vec CartesianDMP::getEtaByIdx(int idx) {
 
     arma::vec omega(3);
+    omega.fill(0.0);
+
     if(idx < getSampleCount()) {
         tf::Quaternion q0 = getQByIdx(idx);
         tf::Quaternion q1 = getQByIdx(idx + 1);
 
-        arma::vec logL= log(q1 * q0.inverse());
-        for (int i = 0; i < 3; i++)
-            omega(i) = 2 * logL[i];
-    } else {
-        omega.fill(0.0);
+        omega = 2 * log(q1 * q0.inverse());
     }
 
-    return getTau() * omega;
+    return getTau() * omega / this->dmpStepSize;
 }
 
 tf::Quaternion CartesianDMP::getQg() {

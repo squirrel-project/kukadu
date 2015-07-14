@@ -26,7 +26,6 @@ private:
 	double bz;
 	double ax;
 	double ac;
-	double dmpStepSize;
 	double tolAbsErr;
 	double tolRelErr;
     double tmax;
@@ -40,6 +39,7 @@ private:
 		double tau, double az, double bz, double ax, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
 
 protected:
+    double dmpStepSize;
 
     std::vector<arma::vec> fitYs;
 	

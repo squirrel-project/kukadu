@@ -111,8 +111,9 @@ int main(int argc, char** args) {
     leftQueue->switchMode(10);
 
 
-    string loadDataPath = "/home/c7031098/testing/test/kuka_lwr_real_left_arm_0";
+    //string loadDataPath = "/home/c7031098/testing/test/kuka_lwr_real_left_arm_01";
     //string loadDataPath = "/home/c7031109/tmp/pushing_data/kuka_lwr_real_left_arm_0";
+    string loadDataPath ="/home/c7031098/testing/testDataJoint/data02/kuka_lwr_simulation_left_arm_0";
     shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, loadDataPath);
     data->removeDuplicateTimes();
 
@@ -124,7 +125,7 @@ int main(int argc, char** args) {
     arma::mat cartPos = data->getCartPos();
     cout <<" (testing) data loaded" <<endl;
 
-    cout << jointPos.row(0) << endl;
+   // cout << jointPos.row(0) << endl;
     leftQueue->moveJoints(jointPos.row(0).t());
 
     leftQueue->stopCurrentMode();
@@ -167,7 +168,7 @@ int main(int argc, char** args) {
         SensorStorage storeData(queueVectors, std::vector<std::shared_ptr<GenericHand>>(), simI, objectId, 1000);
         storeData.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS);
         // string loadDataPath = "/home/c7031098/testing/SimData/push0709/execution1_box/";
-        string saveDataPath = "/home/c7031109/tmp/blub";
+        string saveDataPath = "/home/c7031098/testing/testDataJoint/data02/";
         storeThread = storeData.startDataStorage(saveDataPath);
         leftExecutor.executeTrajectory(ac, 0, leftDmp->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
         leftQueue->stopCurrentMode();
@@ -208,9 +209,9 @@ int main(int argc, char** args) {
     cout<<"(collectData) moving to start position "<<endl;
 
     leftQueue->stopCurrentMode();
-    leftQueue->switchMode(10);
-    leftQueue->moveJoints(jointPos.row(0).t());
-    leftQueue->stopCurrentMode();
+//    leftQueue->switchMode(10);
+//    leftQueue->moveJoints(jointPos.row(0).t());
+//    leftQueue->stopCurrentMode();
 
     getchar();
 
