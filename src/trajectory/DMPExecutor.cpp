@@ -140,6 +140,7 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
             vecF0(dim) = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
             vecExtAdd(dim) =  this->addTerm(t, y, currentSystem, controlQueue);
         }
+        //cout<<vecF0 <<endl;
 
         vec nextDEta(3);
         if(t <= (dmp->getTmax() - 1))
@@ -172,6 +173,8 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
         }
 
     }
+
+
 
     if(this->simulate == EXECUTE_ROBOT) {
 
@@ -299,9 +302,8 @@ void DMPExecutor::initializeIntegration(double tStart, double stepSize, double t
 //            ys[i + 2] = dEta0(dim);
             ys[i + 0] = y0s(dim);
             ys[i + 1] = tau * dy0s(dim);
-            ys[i + 2] = dEta0(dim);
+            ys[i + 2] = Eta0(dim);
 
-            cout<<"(DMPGE) dim "<< dim<< " val eta0 "<<Eta0(dim)<<endl;
         }
     }
 
@@ -326,8 +328,8 @@ void DMPExecutor::initializeIntegrationQuat() {
     if(isCartesian) {
 
         shared_ptr<CartesianDMP> cartDmp = dynamic_pointer_cast<CartesianDMP>(dmp);
-        vec eta0 = cartDmp->getEta0();
-        vec eta1 = cartDmp->getEtaByIdx(1);
+        vec eta0 = cartDmp->getEta0() / stepSize;
+        vec eta1 = cartDmp->getEtaByIdx(1) / stepSize;
         vec alteredEta0 = stepSize / 2.0 * oneDivTau  * eta0;
         tf::Quaternion eta0Quat(alteredEta0(0), alteredEta0(1), alteredEta0(2), 0);
         tf::Quaternion q0 = cartDmp->getQ0();
@@ -336,9 +338,9 @@ void DMPExecutor::initializeIntegrationQuat() {
         dQ0 =  eta0Quat * q0;
 
         double firstDt = cartDmp->getDeltaTByIdx(0);
-        dEta0 = 1.0 / (firstDt * cartDmp->getTau()) * (eta1 - eta0); //his os domega0?
-        //dEta0 = 1.0 / firstDt * (eta1 - eta0);
-        Eta0 = eta0;
+        //dEta0 = 1.0 / (firstDt * cartDmp->getTau()) * (eta1 - eta0); //his os domega0?
+        dEta0 = 1.0 / firstDt * (eta1 - eta0);
+        Eta0 = eta0 ;
 
         qG = cartDmp->getQg();
     }
@@ -379,15 +381,18 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
             retJoints(i) = ys[3 * i];
             nextEta(i) = ys[3 * i + 2];
         }
-        //cout<<nextEta(0)<<" "<<nextEta(1)<<" "<<nextEta(2)<<" "<<t<<endl;
+        cout<<nextEta(0)<<" "<<nextEta(1)<<" "<<nextEta(2)<<" "<<t<<endl;
 
 
         nextEta = stepSize / 2.0 * oneDivTau * nextEta;
+        // cout << t << "\t" << nextEta.t();
         // tf::Quaternion nextEtaQuat(nextEta(0), nextEta(1), nextEta(2), 0.0);
         currentQ = exp(nextEta) * currentQ;
 
+
+
         retJoints(3) = currentQ.x(); retJoints(4) = currentQ.y(); retJoints(5) = currentQ.z(); retJoints(6) = currentQ.w();
-        cout << t << "\t" << retJoints.t();
+       // cout << t << "\t" << retJoints.t();
 
     }
     for(int i = 0; i < odeSystemSize; ++i)
@@ -421,6 +426,7 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
         controlQueue->moveJoints(y0s);
     else {
          controlQueue->addCartesianPosToQueue(vectorarma2pose(&y0s));
+         cout<<" in starting position "<< endl;
           //controlQueue->moveCartesian(vectorarma2pose(&y0s));
     }
 
