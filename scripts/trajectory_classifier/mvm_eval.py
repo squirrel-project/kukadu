@@ -1,22 +1,23 @@
 ######################
 ## Version 0.1 #######
 ## /**********************************************************************
-##   Copyright 2014, Sandor Szedmak  
+##   Copyright 2015, Sandor Szedmak  
 ##   email: sandor.szedmak@uibk.ac.at
+##          szedmak777@gmail.com
 ##
 ##   This file is part of Maximum Margin Multi-valued Regression code(MMMVR).
 ##
 ##   MMMVR is free software: you can redistribute it and/or modify
-##   it under the terms of the GNU Lesser General Public License as published by
+##   it under the terms of the GNU General Public License as published by
 ##   the Free Software Foundation, either version 3 of the License, or
 ##   (at your option) any later version. 
 ##
 ##   MMMVR is distributed in the hope that it will be useful,
 ##   but WITHOUT ANY WARRANTY; without even the implied warranty of
 ##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##   GNU Lesser General Public License for more details.
+##   GNU General Public License for more details.
 ##
-##   You should have received a copy of the GNU Lesser General Public License
+##   You should have received a copy of the GNU General Public License
 ##   along with MMMVR.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ## ***********************************************************************/
@@ -44,8 +45,13 @@ def mvm_eval(ieval_type,nrow,xdatacls,ZrowT):
   Output:
   deval             accuracy in the corresponding error measure
   """
-  xranges_tes=xdatacls.xranges_rel_test
-  xdata_tes=xdatacls.xdata_tes
+  if xdatacls.testontrain==0:
+    xranges_tes=xdatacls.xranges_rel_test
+    xdata_tes=xdatacls.xdata_tes
+  else:
+    xranges_tes=xdatacls.xranges_rel
+    xdata_tes=xdatacls.xdata_tra
+    
   txdim=xdata_tes[2].shape
   if len(txdim)==1:
     nxdim=1
@@ -115,7 +121,7 @@ def mvm_eval(ieval_type,nrow,xdatacls,ZrowT):
     else:
       cEval.accuracy=(tp+tn)/nall
     cEval.xconfusion=xconfusion
-    ## print(xconfusion)
+    cEval.deval=cEval.accuracy
     
     if tp+fp>0:
       cEval.precision=float(tp)/(tp+fp)
@@ -189,16 +195,13 @@ def mvm_eval(ieval_type,nrow,xdatacls,ZrowT):
             xbest=xconfidence
             icandidate_b=istart_tes+i
         nall+=nlength_tes*nxdim
-        ## for i in range(nlength_tes):
-        ##   lpredict.append([irow,xdata_tes[1][istart_tes+i], \
-        ##                    xdata_tes[2][istart_tes+i],ZrowT[irow][0][i]])
         
     if nall==0:
       nall=1
     deval=float(nright)/nall
     cEval.mae=deval
     cEval.deval=deval
-    ## cEval.xpredict=np.array(lpredict)
+    cEval.accuracy=deval
 
   elif ieval_type==3:   # median absolute error
     nall=0
@@ -221,15 +224,13 @@ def mvm_eval(ieval_type,nrow,xdatacls,ZrowT):
             xbest=xconfidence
             icandidate_b=istart_tes+i
         nall+=nlength_tes
-        ## for i in range(nlength_tes):
-        ##   lpredict.append([irow,xdata_tes[1][istart_tes+i], \
-        ##                    xdata_tes[2][istart_tes+i],ZrowT[irow][0][i]])
         
     if nall==0:
       nall=1
     deval=np.median(np.array(lpredict))
     cEval.mae=deval
     cEval.deval=deval
+    cEval.accuracy=deval
     # cEval.xpredict=np.array(lpredict)
 
   if ieval_type==10:  ## \{0,1,2,3\}^n
@@ -292,6 +293,88 @@ def mvm_eval(ieval_type,nrow,xdatacls,ZrowT):
       cEval.f1=2*cEval.precision*cEval.recall/(cEval.recall+cEval.precision)
     else:
       cEval.f1=0.0
+
+  ## sign comparison of the residues of test and prediction
+  elif ieval_type==11:  ## 0/1 loss
+    Y0=xdatacls.Y0
+    ncategory=len(Y0)
+
+    nall=0
+    nright=0
+    tp=0    ## true positive
+    tn=0    ## true negative
+    fp=0    ## false positive
+    fn=0    ## false negative
+    xworst=10**3
+    xbest=-xworst
+
+    xconfusion=np.zeros((ncategory+1,ncategory+1))
+    for irow in range(nrow):
+      if xranges_tes[irow,1]>0:
+        istart_tes=xranges_tes[irow,0]
+        nlength_tes=xranges_tes[irow,1]
+        xobserved=xdata_tes[2][istart_tes:istart_tes+nlength_tes]
+        ## xpredicted=ZrowT[irow][0]+0.0
+        xobserved=np.sign(xobserved-ZrowT[irow][0]+ZrowT[irow][1])
+        xpredicted=np.sign(ZrowT[irow][1]+0.0)
+        
+        for i in range(nlength_tes):
+          if xdatacls.category==0 or xdatacls.category==3:    ## rank
+            ipredicted=Y0[np.abs(Y0-xpredicted[i]).argmin()]
+          else:
+            ipredicted=xpredicted[i]
+          ## we have values -1,0,+1 to make them be correct index 1 is added
+          xconfusion[xobserved[i]+1,ipredicted+1]+=1
+          if xdatacls.ibinary==0:
+            if ipredicted==xobserved[i]:
+              nright+=1
+          else:  ## Y0=[-1,+1]
+            if ipredicted==1:
+              if xobserved[i]==1:
+                tp+=1
+              else:
+                fp+=1
+            else:
+              if xobserved[i]==1:
+                fn+=1
+              else:
+                tn+=1
+          
+          xconfidence=ZrowT[irow][2][i]
+          if xconfidence<xworst:
+            xworst=xconfidence
+            icandidate_w=istart_tes+i
+          if xconfidence>xbest:
+            xbest=xconfidence
+            icandidate_b=istart_tes+i
+            
+        nall+=nlength_tes
+
+    if nall==0:
+      nall=1
+    deval=float(nright)/nall
+    if xdatacls.ibinary==0:
+      cEval.accuracy=deval
+    else:
+      cEval.accuracy=(tp+tn)/nall
+    cEval.xconfusion=xconfusion
+    cEval.deval=cEval.accuracy
+    
+    if tp+fp>0:
+      cEval.precision=float(tp)/(tp+fp)
+    else:
+      cEval.precision=0.0
+    if tp+fn>0:
+      cEval.recall=float(tp)/(tp+fn)
+    else:
+      cEval.recall=0.0
+
+    if cEval.recall+cEval.precision>0:
+      cEval.f1=2*cEval.precision*cEval.recall/(cEval.recall+cEval.precision)
+    else:
+      cEval.f1=0.0
+      
+    
       
   return(cEval,icandidate_w,icandidate_b)
 
@@ -335,7 +418,7 @@ def confusion_latex(xconfusion,lfiles):
   accuracy_full,accuracy_no0=confusion_toys(xconfusion_mean)
   ndim=xconfusion_mean.shape[0]
 
-  xsum=np.sum(xconfusion_mean)
+  ## xsum=np.sum(xconfusion_mean)
   for i in range(ndim):
     xtable=xconfusion_mean[i]
     xsumt=np.sum(xtable)
@@ -343,7 +426,7 @@ def confusion_latex(xconfusion,lfiles):
     for jr in range(mt):
       for jc in range(nt):
         v=100*xtable[jr,jc]/xsumt
-        print('(changed by simon because it didnt compile)')
+        print('%6.2f'%v,sep=' ',end='')
       print()
     print()
       
@@ -378,8 +461,13 @@ def confusion_latex(xconfusion,lfiles):
 ## #############################################################3
 def makearray(xdatacls,ZrowT):
 
-  xranges_tes=xdatacls.xranges_rel_test
-  xdata_tes=xdatacls.xdata_tes
+  if xdatacls.testontrain==0:
+    xranges_tes=xdatacls.xranges_rel_test
+    xdata_tes=xdatacls.xdata_tes
+  else:
+    xranges_tes=xdatacls.xranges_rel
+    xdata_tes=xdatacls.xdata_tra
+    
   nrow=xdatacls.nrow
   ncol=xdatacls.ncol
 
@@ -391,20 +479,23 @@ def makearray(xdatacls,ZrowT):
 
   ytest=np.zeros((nrow,ncol,nxdim))
   ypred=np.zeros((nrow,ncol,nxdim))
+  ypred0=np.zeros((nrow,ncol,nxdim))
   
   for irow in range(nrow):
-      if xranges_tes[irow,1]>0:
-        istart_tes=xranges_tes[irow,0]
-        nlength_tes=xranges_tes[irow,1]
-        for i in range(nlength_tes):
-          ii=istart_tes+i
-          ytest[xdata_tes[0][ii],xdata_tes[1][ii]]=xdata_tes[2][ii]
-          ypred[xdata_tes[0][ii],xdata_tes[1][ii]]=ZrowT[irow][0][i]
+    if xranges_tes[irow,1]>0:
+      istart_tes=xranges_tes[irow,0]
+      nlength_tes=xranges_tes[irow,1]
+      for i in range(nlength_tes):
+        ii=istart_tes+i
+        ytest[xdata_tes[0][ii],xdata_tes[1][ii]]=xdata_tes[2][ii]
+        ypred[xdata_tes[0][ii],xdata_tes[1][ii]]=ZrowT[irow][0][i]
+        ypred0[xdata_tes[0][ii],xdata_tes[1][ii]]=ZrowT[irow][1][i]
 
   ytest=np.squeeze(ytest)
   ypred=np.squeeze(ypred)
+  ypred0=np.squeeze(ypred0)
   
-  return(ytest,ypred)
+  return(ytest,ypred,ypred0)
 ## ###############################################################
           
   

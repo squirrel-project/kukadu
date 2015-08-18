@@ -63,7 +63,7 @@ protected:
     int odeSystemSizeMinOne;
 	
 	int simulate;
-    int odeSystemSize;
+    long unsigned int odeSystemSize;
 	int degofFreedom;
 	
 	int externalErrorUsing;

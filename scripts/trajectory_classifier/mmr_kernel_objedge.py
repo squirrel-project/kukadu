@@ -10,7 +10,7 @@ from mmr_base_classes import cls_crossval, cls_kernel_params, cls_norm
 from mmr_multic_label import mmr_multic_label
 from mmr_kernel_eval import kernel_eval_kernel, kernel_eval_nl, kernel_center
 from mmr_normalization_new import mmr_normalization, mmr_geometricmedian_ker
-from mmr_solver import mmr_solver
+import mmr_solver_cls
 ## ###############################
 class cls_feature:
 
@@ -157,6 +157,7 @@ class cls_kernel_objectedge:
     nitem=3
 
     self.ddiag=np.zeros(m)
+    csolver=mmr_solver_cls.cls_mmr_solver()
 
     ## read the edges
     for iview in range(m):
@@ -182,7 +183,7 @@ class cls_kernel_objectedge:
         (Kx,dx1,dx2)=kernel_eval_kernel(xdata,None,None,params_spec)
         C=1
         D=0
-        xalpha=mmr_solver(Kx,Ky,C,D,1,1,1,1)
+        xalpha=csolver.mmr_solver(Kx,Ky,C,D,1,1,1,1)
         self.dalpha[iview]=xalpha
       else:
         xalpha=np.ones(len(y))/len(y)

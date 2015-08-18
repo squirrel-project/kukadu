@@ -52,7 +52,7 @@
 #include "../src/types/QueryPoint.h"
 #include "../src/types/DMPBase.h"
 #include "../src/utils/DestroyableObject.h"
-#include "../src/utils/Tokenizer.h"
+#include "../src/utils/KukaduTokenizer.h"
 #include "../src/utils/types.h"
 #include "../src/utils/utils.h"
 #include "../src/utils/conversion_utils.h"

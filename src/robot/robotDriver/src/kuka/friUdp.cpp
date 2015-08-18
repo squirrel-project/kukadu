@@ -182,7 +182,7 @@ int friUdp::Recv(tFriMsrData *packet)
         }
         else
         {
-            printf("received something, but wrong size %d (expected %d)...\n",received, sizeof(tFriMsrData));
+            printf("received something, but wrong size %d (expected %zu)...\n", received, sizeof(tFriMsrData));
             fflush(stdout);
         }
     }

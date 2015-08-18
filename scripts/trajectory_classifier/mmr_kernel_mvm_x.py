@@ -1,8 +1,29 @@
 ######################
 ## Version 0.1 #######
+## /**********************************************************************
+##   Copyright 2015, Sandor Szedmak  
+##   email: sandor.szedmak@uibk.ac.at
+##          szedmak777@gmail.com
+##
+##   This file is part of Maximum Margin Multi-valued Regression code(MMMVR).
+##
+##   MMMVR is free software: you can redistribute it and/or modify
+##   it under the terms of the GNU General Public License as published by
+##   the Free Software Foundation, either version 3 of the License, or
+##   (at your option) any later version. 
+##
+##   MMMVR is distributed in the hope that it will be useful,
+##   but WITHOUT ANY WARRANTY; without even the implied warranty of
+##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##   GNU General Public License for more details.
+##
+##   You should have received a copy of the GNU General Public License
+##   along with MMMVR.  If not, see <http://www.gnu.org/licenses/>.
+##
+## ***********************************************************************/
 ######################
 
-import numpy as np
+## import numpy as np
 ## ###########################################################
 from mmr_base_classes import cls_crossval, cls_kernel_params, cls_norm
 from mmr_multic_label import mmr_multic_label
@@ -44,10 +65,7 @@ class cls_feature:
     self.kernel_params=cls_kernel_params()
     self.prekernel_params=None
 
-    self.ioperator_valued=0
     self.title='mvm_x'
-    self.kernel_computed=0
-
     self.xbias=0.0
 
     return
@@ -84,20 +102,20 @@ class cls_feature:
   def get_train_norm(self,itrain):
 
     if self.XTrainNorm is None:
-      (self.XTrainNorm,self.XTestNorm,opar)= \
+      (self.XTrainNorm,self.XTestNorm)= \
               mmr_normalization(self.norm.ilocal,self.norm.iscale, \
                                 self.data[self.itrain], \
-                                self.data[self.itest],0)
+                                self.data[self.itest],0)[:2]
     return(self.XTrainNorm)
 
 ## --------------------------------------------------------------
   def get_test_norm(self,itest):
 
     if self.XTestNorm is None:
-      (self.XTrainNorm,self.XTestNorm,opar)= \
+      (self.XTrainNorm,self.XTestNorm)= \
               mmr_normalization(self.norm.ilocal,self.norm.iscale, \
                                 self.data[self.itrain], \
-                                self.data[self.itest],0)
+                                self.data[self.itest],0)[:2]
 
     return(self.XTestNorm)
 ## ---------------------------------------------------------------
@@ -123,7 +141,7 @@ class cls_feature:
     
     return
 ## ---------------------------------------------------------------
-  def get_kernel(self,itrain,itest,itraintest=0):
+  def get_kernel(self,itrain,itest,ioutput=0,itraintest=0,itraindata=1):
 
     return(self.K,self.d1,self.d2)
 
@@ -140,6 +158,7 @@ class cls_feature:
       new_obj.prekernel_params=self.prekernel_params
     new_obj.crossval=self.crossval
     new_obj.norm=self.norm
+    new_obj.xbias=self.xbias
     
     return(new_obj)
- ## #####################################################3 
+## #####################################################3 

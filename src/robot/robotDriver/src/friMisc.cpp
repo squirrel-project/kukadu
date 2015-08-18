@@ -19,7 +19,7 @@ void fri_throwError(const char *message) {
   #ifdef MATLAB
     mexErrMsgTxt(message);
   #else
-    printf(message); printf("\n"); exit(-1);
+    printf("%s", message); printf("\n"); exit(-1);
   #endif
 }
 
@@ -30,7 +30,7 @@ void fri_throwWarning(const char *message) {
   #ifdef MATLAB
     mexWarnMsgTxt(message);
   #else
-    printf("WARNING: "); printf(message); printf("\n");
+    printf("WARNING: "); printf("%s", message); printf("\n");
   #endif
 }
 

@@ -1,5 +1,26 @@
 ######################
 ## Version 0.1 #######
+## /**********************************************************************
+##   Copyright 2015, Sandor Szedmak  
+##   email: sandor.szedmak@uibk.ac.at
+##          szedmak777@gmail.com
+##
+##   This file is part of Maximum Margin Multi-valued Regression code(MMMVR).
+##
+##   MMMVR is free software: you can redistribute it and/or modify
+##   it under the terms of the GNU General Public License as published by
+##   the Free Software Foundation, either version 3 of the License, or
+##   (at your option) any later version. 
+##
+##   MMMVR is distributed in the hope that it will be useful,
+##   but WITHOUT ANY WARRANTY; without even the implied warranty of
+##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##   GNU General Public License for more details.
+##
+##   You should have received a copy of the GNU General Public License
+##   along with MMMVR.  If not, see <http://www.gnu.org/licenses/>.
+##
+## ***********************************************************************/
 ######################
 
 ## import sys
@@ -135,7 +156,7 @@ class cls_perceptron_param:
 ## #########################################################
 class cls_penalty:
 
-  def __init__(self,C=1,D=0):
+  def __init__(self,C=1.0,D=0.0):
 
     self.c=C
     self.d=D
@@ -147,9 +168,9 @@ class cls_penalty:
   def set_crossval(self):
 
     dcross={ 'par1min' : 1 , 'par1max' : 1,  \
-                               'par1step' : 1, \
-                               'par2min' : 0 , 'par2max' : 0, \
-                               'par2step' : 0.5, \
+                               'par1step' : 0.1, \
+                               'par2min' : 0.0 , 'par2max' : 0.0, \
+                               'par2step' : 0.1, \
                                'nrange': 0 }
     self.crossval.set(dcross)
   

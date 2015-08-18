@@ -44,7 +44,7 @@
 #include "../robot/ControlQueue.h"
 #include "../types/DMPBase.h"
 #include "types.h"
-#include "Tokenizer.h"
+#include "KukaduTokenizer.h"
 
 #include "gnuplot-cpp/gnuplot_i.hpp"
 

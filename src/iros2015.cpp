@@ -4,7 +4,12 @@
 #include <iostream>
 #include <Python.h>
 #include <stdlib.h>
+#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+
+#include "learning/projective_simulation/core/psevaluator.h"
+#include "learning/projective_simulation/core/projectivesimulator.h"
+#include "learning/projective_simulation/application/neverendingcolorreward.h"
 
 /*
 #include <pcl/common/common.h>
@@ -21,8 +26,10 @@
 */
 
 namespace po = boost::program_options;
+namespace pf = boost::filesystem;
 
 using namespace std;
+
 //using namespace pcl;
 
 /*
@@ -40,6 +47,7 @@ FitCube fitBox(PointCloud<PointXYZ>::Ptr cloud);
 
 string environment = "simulation";
 
+string tmpDataFolder = resolvePath("$HOME/tmp/");
 string pushDataFolder = resolvePath("$KUKADU_HOME/movements/iros2015/");
 
 int doHapticTest(std::shared_ptr<ControlQueue> leftQueue, shared_ptr<RosSchunk> leftHand);
@@ -115,12 +123,29 @@ int main(int argc, char** args) {
     string inDir, cfFile, dataFolder, trajFile;
     vector<double> rlExploreSigmas;
 
-    int classifierRes = callClassifier(resolvePath("$KUKADU_HOME/scripts/trajectory_classifier"),
-                                       "trajlab_main", "runClassifier",
-                                          resolvePath("$KUKADU_HOME/scripts/2015-05-11_data_with_labels/"),
-                                          resolvePath("$HOME/tmp/next_data"));
+    int seed = 100;
+    std::mt19937* generator = new std::mt19937(seed);
 
-    cout << "result is: " << classifierRes << endl;
+    /*
+    std::shared_ptr<NeverendingColorReward> trafficReward = nullptr;
+    std::shared_ptr<ProjectiveSimulator> currentProjSim = nullptr;
+
+    trafficReward = std::shared_ptr<NeverendingColorReward>(new NeverendingColorReward(generator, 2, 2, false));
+    currentProjSim = std::shared_ptr<ProjectiveSimulator>(new ProjectiveSimulator(trafficReward, generator, 0.01, PS_USE_GEN, false));
+
+    ofstream statFile; statFile.open("/home/c7031109/tmp/psgen.txt");
+    PSEvaluator::produceStatistics(currentProjSim, trafficReward, 10, 0, NEVERENDINGCOLORREWARD_SUCCESSFUL_REWARD, statFile);
+    currentProjSim->storePS("/home/c7031109/tmp/storedPS.txt");
+
+    cout << "stored ps" << endl;
+
+    std::shared_ptr<ProjectiveSimulator> loadedProjSim = std::shared_ptr<ProjectiveSimulator>(new ProjectiveSimulator(trafficReward, generator, "/home/c7031109/tmp/storedPS.txt"));
+
+    cout << "loaded ps" << endl;
+
+    loadedProjSim->storePS("/home/c7031109/tmp/storedPS2.txt");
+    cout << "stored loaded ps" << endl;
+    */
 
     // Declare the supported options.
     po::options_description desc("Allowed options");
@@ -193,13 +218,6 @@ int main(int argc, char** args) {
     cout << "all properties loaded" << endl;
     int kukaStepWaitTime = dmpStepSize * 1e6;
 
-    cout << classifierRes << endl;
-
-    int ch;
-    while ((ch = fgetc(stdin)) != EOF && ch != '\n') {
-        /* null body */;
-    }
-
     ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
     shared_ptr<ControlQueue> leftQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, environment, "left_arm", *node));
     shared_ptr<ControlQueue> rightQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, environment, "right_arm", *node));
@@ -228,7 +246,7 @@ int main(int argc, char** args) {
 
     int hapticCat = -1;
 
-    while(hapticCat != 1) {
+    while(hapticCat != 2) {
 
         vector<double> rightHandJoints = {0, -0.5238237461313833, 0.2120872918378427, 0.8655742259109377, 1.5389379959387146, -0.6260686922290597, 0.218843743489235877};
         rightHand->publishSdhJoints(rightHandJoints);
@@ -254,23 +272,20 @@ int main(int argc, char** args) {
 
         leftHand->publishSdhJoints(pushHandPos);
 
-
         // do pushing stuff here
         if(hapticCat == 1) {
-            // nothing to do --> pick book up
-            break;
+            // found bottom side --> rotate 270 degrees (later, execution time can be included in reward function of ps, which should find that counter clock wise rotation of 90 degrees is better)
+            executeRotHor270Deg(leftQueue);
         } else if(hapticCat == 2) {
-            // rotate book accordingly
+            // found closed side --> nothing to do; pick up
+            break;
         } else if(hapticCat == 3) {
-            // rotate book accordingly
+            // found open side --> rotate 180 degrees
+            executeRotHor180Deg(leftQueue);
         } else if(hapticCat == 4) {
-            // rotate book accordingly
+            // found top side --> rotate 90 degrees
+            executeRotVert90Deg(leftQueue);
         }
-        // executeRotHor90Deg(leftQueue);
-        // executeRotHor270Deg(leftQueue);
-        // executeTransBody(leftQueue);
-        // executeFinalPush(leftQueue);
-        // executeTransLeft(leftQueue, 7.0);
 
         // move left arm away (DO NOT REMOVE THIS!!!)
         goToStartPos(leftQueue);
@@ -394,20 +409,39 @@ int doHapticTest(std::shared_ptr<ControlQueue> leftQueue, shared_ptr<RosSchunk> 
     leftHand->publishSdhJoints(handJoints);
     leftQueue->moveJoints(stdToArmadilloVec({-0.40275293588638306, 1.7016545534133911, 1.8671916723251343, -0.6587858200073242, 0.0556875579059124, 1.1993221044540405, -1.9818705320358276}));
 
-//    SensorStorage store(queues, hands, 100);
-//    shared_ptr<thread> storageThread = store.startDataStorage("/home/c7031109/tmp/testdaszeug");
+    SensorStorage store(queues, hands, 100);
+    shared_ptr<thread> storageThread = store.startDataStorage(tmpDataFolder + "hapticTest");
 
     sleep(1);
 
     vector<double> newHandJoints = {SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0.4, 1.2, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
     leftHand->publishSdhJoints(newHandJoints);
 
-    sleep(2);
+    sleep(1);
 
-//    store.stopDataStorage();
-//    storageThread->join();
+    store.stopDataStorage();
+    storageThread->join();
 
-    return 2;
+    /*
+    int classifierRes = callClassifier(resolvePath("$KUKADU_HOME/scripts/trajectory_classifier"),
+                                       "trajlab_main", "runClassifier",
+                                          resolvePath("$KUKADU_HOME/scripts/2015-05-11_data_with_labels/"),
+                                          resolvePath(tmpDataFolder + "hapticTest/kuka_lwr_real_left_arm_0"));
+
+    cout << "haptic test result is: " << classifierRes << endl;
+    */
+
+    /*
+    int classifierRes;
+    cout << "what was the haptic result?" << endl;
+    cin >> classifierRes;
+    */
+
+    int classifierRes = 1;
+
+    pf::remove_all(tmpDataFolder + "hapticTest");
+
+    return classifierRes;
 
 }
 

@@ -1,5 +1,26 @@
 ######################
 ## Version 0.1 #######
+## /**********************************************************************
+##   Copyright 2015, Sandor Szedmak  
+##   email: sandor.szedmak@uibk.ac.at
+##          szedmak777@gmail.com
+##
+##   This file is part of Maximum Margin Multi-valued Regression code(MMMVR).
+##
+##   MMMVR is free software: you can redistribute it and/or modify
+##   it under the terms of the GNU General Public License as published by
+##   the Free Software Foundation, either version 3 of the License, or
+##   (at your option) any later version. 
+##
+##   MMMVR is distributed in the hope that it will be useful,
+##   but WITHOUT ANY WARRANTY; without even the implied warranty of
+##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##   GNU General Public License for more details.
+##
+##   You should have received a copy of the GNU General Public License
+##   along with MMMVR.  If not, see <http://www.gnu.org/licenses/>.
+##
+## ***********************************************************************/
 ######################
 
 ## import sys
@@ -9,7 +30,7 @@ import numpy as np
 import mmr_base_classes as base
 from mmr_kernel import mmr_kernel 
 ## from mmr_kernel_eval import kernel_operator_valued
-from mmr_solver import mmr_solver
+import mmr_solver_cls
 from mmr_tools import mmr_perceptron_primal, mmr_perceptron_dual
 ## from mmr_kernel_explicit import cls_feature
 
@@ -38,7 +59,7 @@ class cls_mmr(base.cls_data):
     self.dual=None
 
     ## self.xbias=-0.6
-    self.xbias=-0.71
+    self.xbias=0.0
 
     self.kmode=1   ## =0 additive (feature concatenation)
                     ## =1 multiplicative (fetaure tensor product)
@@ -46,18 +67,20 @@ class cls_mmr(base.cls_data):
     self.ifixtrain=None
     self.ifixtest=None
 
-    self.crossval_mode=1   ## =0 random cross folds =1 fixtraining
-    self.itestmode=2        ## 2 agains the training with knn, 10 vectorwise
+    self.crossval_mode=0   ## =0 random cross folds =1 fixtraining
+    ## itestmode can be 2 if YKernel is linear !!!
+    self.itestmode=0        ## 2 agains the training with knn, 10 vectorwise
                             ## 20 Y0 is available
     ## ##################################################
     ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
-    ## number of repititions
     self.nrepeat=1
-    self.nfold=1
+    self.nfold=5
     ## ##################################################
-    self.testknn=1
+    self.testknn=5
 
     self.ieval_type=0   
+    self.mdata=0
+    
 ## ---------------------------------------------------------
   def set_validation(self):
 
@@ -92,25 +115,21 @@ class cls_mmr(base.cls_data):
       self.XKernel[ikernel].compute_kernel(self.itrain,self.itest)
 
 ## ---------------------------------------------------------
-  def mmr_train(self,params):
-	  
-    ## added by simon as standard value to make it compile
-    YTrain=self.YKernel.get_train_norm(self.itrain)
+  def mmr_train(self):
 
     if self.iperceptron==0:
       mtra=self.mtrain
 
-      (KX,d1,d2)=mmr_kernel(self,self.itrain,self.itrain,ioutput=0, \
-                            itraintest=0,itraindata=0,itensor=self.kmode)
-      (KY,d1,d2)=mmr_kernel(self,self.itrain,self.itrain,ioutput=1, \
-                            itraintest=0,itraindata=0)
+      KX=mmr_kernel(self,self.itrain,self.itrain,ioutput=0, \
+                            itraintest=0,itraindata=0,itensor=self.kmode)[0]
+      KY=mmr_kernel(self,self.itrain,self.itrain,ioutput=1, \
+                            itraintest=0,itraindata=0)[0]
 
       cOptDual=base.cls_dual(None,None)
       self.dual=cOptDual
-      self.dual.alpha=mmr_solver(KX,KY, \
-                          self.penalty.c,self.penalty.d, \
-                          params.solver.normx1,params.solver.normx2, \
-                          params.solver.normy1,params.solver.normy2)
+      self.csolver=mmr_solver_cls.cls_mmr_solver()
+      self.dual.alpha=self.csolver.mmr_solver(KX,KY,self.penalty.c, \
+                                              self.penalty.d)
     ## estimate the bias for linear output kernel
 
       if self.YKernel.ifeature==0:
@@ -147,21 +166,21 @@ class cls_mmr(base.cls_data):
     return(cOptDual)
 
 ## ------------------------------------------------------------------
-  def mmr_test(self,cOptDual,params,itraindata=1):
+  def mmr_test(self,cOptDual,itraindata=1):
 
-     ## added by simon as standard value to make it compile
-    YTrain=self.YKernel.get_train_norm(self.itrain)
-
+    if self.YKernel.kernel_params.kernel_type>0:
+      self.itestmode=0
+      
     if itraindata==0:
       itest=self.itrain
     else:
       itest=self.itest
     if self.iperceptron in (0,2):
-      (KXcross,d1,d2)=mmr_kernel(self,self.itrain,itest,ioutput=0, \
+      KXcross=mmr_kernel(self,self.itrain,itest,ioutput=0, \
                                  itraintest=1, itraindata=itraindata, \
-                                 itensor=self.kmode)
-      (KYcross,d1,d2)=mmr_kernel(self,self.itrain,self.itrain,ioutput=1, \
-                                 itraintest=1,itraindata=itraindata)
+                                 itensor=self.kmode)[0]
+      KYcross=mmr_kernel(self,self.itrain,self.itrain,ioutput=1, \
+                                 itraintest=1,itraindata=itraindata)[0]
       mtest=KXcross.shape[1]
       
       cPredict=base.cls_predict()
@@ -171,7 +190,7 @@ class cls_mmr(base.cls_data):
           YTrain=self.YKernel.get_train_norm(self.itrain)
           Zw0=np.dot(YTrain.T,(np.outer(cOptDual.alpha, \
                                       np.ones(mtest))*KXcross))
-          if params.solver.ibias_estim==1:
+          if self.csolver.ibias_estim==1:
             Zw0=Zw0+np.outer(cOptDual.bias,np.ones(mtest))
 
           xnorm=np.sqrt(np.sum(Zw0**2,axis=0))
@@ -183,7 +202,7 @@ class cls_mmr(base.cls_data):
           Zw0=np.dot(KYcross.T, \
                      (np.outer(cOptDual.alpha,np.ones(mtest))*KXcross))
           cPredict.ZTest=Zw0
-          if params.solver.ibias_estim==1:
+          if self.csolver.ibias_estim==1:
             cPredict.bias=cOptDual.bias
           else:
             cPredict.bias=0
@@ -196,7 +215,7 @@ class cls_mmr(base.cls_data):
           cPredict.zPremax=cPredict.ZTest.max(0)
           cPredict.iPredCat=cPredict.ZTest.argmax(0)
           cPredict.zPred=Y0[cPredict.iPredCat]
-          if self.itestmode==2:
+          if self.itestmode==2 and self.YKernel.kernel_params.kernel_type==0:
             cPredict.knnPredCat=np.argsort \
                               (-cPredict.ZTest,axis=0)[:self.testknn,:]
           elif self.itestmode==3:
@@ -245,7 +264,8 @@ class cls_mmr(base.cls_data):
       cPredict=base.cls_predict()
       xmean=np.mean(X)
       mtest=X.shape[0]
-      Zw=np.dot(cOptDual.W, np.hstack((X,np.ones((mtest,1))*xmean)).T)
+      Zw=np.dot(cOptDual.W, \
+                 np.hstack((X,np.ones((mtest,1))*xmean)).T)
       cPredict.ZTest=np.dot(YTrain,Zw)
       cPredict.zPremax=cPredict.ZTest.max(0)
       cPredict.iPredCat=cPredict.ZTest.argmax(0)
@@ -255,6 +275,35 @@ class cls_mmr(base.cls_data):
                                        axis=0)[:self.testknn,:]
     
     return(cPredict)
+## ------------------------------------------------------------------
+  def prepare_repetition_folding(self):
+
+    return
+## ------------------------------------------------------------------
+  def prepare_repetition_training(self,nfold0):
+
+    ## split data into training and test
+    if self.crossval_mode==0:  ## random selection
+      self.xselector=np.zeros(self.mdata)
+      ifold=0
+      for i in range(self.mdata):
+        self.xselector[i]=ifold
+        ifold+=1
+        if ifold>=nfold0:
+          ifold=0
+      np.random.shuffle(self.xselector)
+      ## xselector=np.floor(np.random.random(self.mdata)*nfold0)
+      ## xselector=xselector-(xselector==nfold0)
+    elif self.crossval_mode==1: ## preddefined training and test
+      self.xselector=np.zeros(self.mdata)
+      self.xselector[self.ifixtrain]=1
+
+    return
+## ------------------------------------------------------------------
+  def prepare_fold_training(self,ifold):
+
+    self.split_train_test(self.xselector,ifold)
+  
 ## ------------------------------------------------------------------
   def glm_norm_in(self,X):
 

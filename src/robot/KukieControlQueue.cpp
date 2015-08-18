@@ -220,6 +220,7 @@ void KukieControlQueue::cartPtpReachedCallback(const std_msgs::Int32MultiArray& 
 void KukieControlQueue::run() {
 
     setInitValues();
+    ros::Rate sleepRate(1e6 / sleepTime);
 
     arma::vec movement = arma::vec(1);
     geometry_msgs::Pose movementPose;
@@ -235,6 +236,7 @@ void KukieControlQueue::run() {
 	while(!finish && ros::ok) {
 
         if(currentMode == KUKA_JNT_IMP_MODE || currentMode == KUKA_JNT_POS_MODE) {
+
             if(movementQueue.size() > 0) {
 
                 // move to position in queue
@@ -252,6 +254,7 @@ void KukieControlQueue::run() {
                 movement = currentJoints;
 
             }
+
         } else if(currentMode == KUKA_CART_IMP_MODE) {
 
             if(cartesianMovementQueue.size() > 0) {
@@ -269,10 +272,11 @@ void KukieControlQueue::run() {
             }
 
         }
+
 		currentTime += sleepTime * 1e-6;
-		usleep(sleepTime);
+        sleepRate.sleep();
 		
-		ros::spinOnce();
+        ros::spinOnce();
 
 	}
 
@@ -350,10 +354,11 @@ void KukieControlQueue::stopCurrentMode() {
 }
 
 void KukieControlQueue::synchronizeToControlQueue(int maxNumJointsInQueue) {
-    if(currentMode == KUKA_JNT_IMP_MODE || currentMode == KUKA_JNT_POS_MODE)
+    if(currentMode == KUKA_JNT_IMP_MODE || currentMode == KUKA_JNT_POS_MODE) {
         while(movementQueue.size() > maxNumJointsInQueue);
-    else if(currentMode == KUKA_CART_IMP_MODE)
+    } else if(currentMode == KUKA_CART_IMP_MODE) {
         while(cartesianMovementQueue.size() > maxNumJointsInQueue);
+    }
 }
 
 void KukieControlQueue::setStartingJoints(arma::vec joints) {

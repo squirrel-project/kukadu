@@ -557,7 +557,7 @@ std::shared_ptr<SensorData> SensorStorage::readStorage(std::shared_ptr<ControlQu
     inFile.open(file, ios::in | ios::app | ios::binary);
 
     getline(inFile, line);
-    Tokenizer tok(line);
+    KukaduTokenizer tok(line);
     bool foundDimension = false;
     int jointsPosStartIdx = -1;
     int jointsForceStartIdx = -1;

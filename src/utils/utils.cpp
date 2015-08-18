@@ -403,13 +403,13 @@ arma::mat readMovements(std::ifstream& inFile) {
 
             if(line != "") {
 
-                Tokenizer tok(line);
+                KukaduTokenizer tok(line);
 
                 if(firstIteration) {
                     int i = 0;
                     for(i = 0; tok.next() != ""; ++i);
                     fileColumns = i;
-                    tok = Tokenizer(line);
+                    tok = KukaduTokenizer(line);
                     firstIteration = false;
                     joints = mat(1, fileColumns);
                 }
@@ -460,7 +460,7 @@ std::pair<std::vector<std::string>, arma::mat> readSensorStorage(std::string fil
     inFile.open(file, ios::in | ios::app | ios::binary);
     getline(inFile, line);
 
-    Tokenizer tok(line);
+    KukaduTokenizer tok(line);
     while((token = tok.next()) != "")
         labels.push_back(token);
 
@@ -484,7 +484,7 @@ vec readQuery(string file) {
         cout << string("(utils) query file ") + file + " opened\n";
         if(inFile.good()) {
             getline(inFile, line);
-            Tokenizer tok(line);
+            KukaduTokenizer tok(line);
             while((token = tok.next()) != "") {
                 dn = string_to_double(token);
                 ret(i) = dn;

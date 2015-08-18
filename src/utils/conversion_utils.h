@@ -5,7 +5,7 @@
 #include <armadillo>
 #include <iostream>
 #include <fstream>
-#include "../utils/Tokenizer.h"
+#include "../utils/KukaduTokenizer.h"
 
 int compareArmadilloVec(arma::vec vec1, arma::vec vec2);
 int compareVectorOfArmadillos(std::vector<arma::vec> vec1, std::vector<arma::vec> vec2);

@@ -15,7 +15,7 @@ import mmr_mmr_cls
 import argparse
 ## from mmr_load_data_state import load_data_state
 import trajlab_load_data
-from mmr_validation import mmr_validation
+import mmr_validation_cls 
 from mmr_kernel import mmr_kernel
 ## from mmr_train import mmr_train
 from mmr_test import inverse_knn
@@ -28,14 +28,8 @@ from mmr_eval import mmr_eval_binvector
 def mmr_main(iworkmode, trainingBase, evalFile):
 
   params=mmr_setparams.cls_params()
-  params.setvalidation()
-  params.setsolver()
-  params.setgeneral()
-  params.setoutput()
-  params.setinput()
-  params.setinputraw()
   
-  np.set_printoptions(precision=4)
+  ## np.set_printoptions(precision=4)
   
   dresult={}
   nview=1
@@ -80,7 +74,8 @@ def mmr_main(iworkmode, trainingBase, evalFile):
 
       xcross=np.zeros((mdata,mdata))
 
-      params.validation.rkernel=cMMR.XKernel[0].title
+      ## !!!!!!!!!!!!!!!!!!
+      ## params.validation.rkernel=cMMR.XKernel[0].title
 
       xtime=np.zeros(5)
     ## ############################################################
@@ -101,7 +96,7 @@ def mmr_main(iworkmode, trainingBase, evalFile):
                 ifold=0
             np.random.shuffle(xselector)
           elif cMMR.crossval_mode==1: ## preddefined training and test
-			# (added by simon) train with all data but the last one (not elegant, but works)
+      # (added by simon) train with all data but the last one (not elegant, but works)
             cMMR.ifixtrain = list(range(mdata - 1))
             xselector = np.zeros(mdata)
             xselector[cMMR.ifixtrain] = 1
@@ -111,23 +106,12 @@ def mmr_main(iworkmode, trainingBase, evalFile):
 
             ## validation to choose the best parameters
             t0 = time.clock()
-            ## select the kernel to be validated
-            cMMR.set_validation()
-            ## params.validation.rkernel=cMMR.XKernel[0].title
-            if params.validation.rkernel in cMMR.dkernels:
-              kernbest = cMMR.dkernels[params.validation.rkernel].kernel_params
-            else:
-              kernbest = cMMR.XKernel[0].kernel_params
 
-            if params.validation.ivalid == 1:
-              best_param = mmr_validation(cMMR,params)
-            else:
-              best_param = mmr_base_classes.cls_empty_class()
-              best_param.par1 = kernbest.ipar1
-              best_param.par2 = kernbest.ipar2
-              ## common params
-              best_param.c = cMMR.penalty.c
-              best_param.d = cMMR.penalty.d
+            ## !!!!!!!!!!!!!!!!!!!!!!!!!
+            cMMR.set_validation()
+            cvalidation=mmr_validation_cls.cls_mmr_validation()
+            ## !!!!!!!!!!!!!!!!!!!!!!!!! no parameter "params"
+            best_param = cvalidation.mmr_validation(cMMR)
               
             xtime[0] = time.clock() - t0
             xbest_param[irepeat,ifold,0]=best_param.c
@@ -135,22 +119,18 @@ def mmr_main(iworkmode, trainingBase, evalFile):
             xbest_param[irepeat,ifold,2]=best_param.par1
             xbest_param[irepeat,ifold,3]=best_param.par2
 
-            kernbest.ipar1=best_param.par1
-            kernbest.ipar2=best_param.par2
-			## common params
-            cMMR.penalty.c=best_param.c
-            cMMR.penalty.d=best_param.d
             cMMR.compute_kernels()
             cMMR.Y0=cMMR.YKernel.get_train(cMMR.itrain)   ## candidates
-              
             
             t0=time.clock()
-            cOptDual=cMMR.mmr_train(params)
+            ## !!!!!!!!!!!!!!!!!!!!!!! np "params"
+            cOptDual=cMMR.mmr_train()
             xtime[1]=time.clock()-t0
       ## cls transfers the dual variables to the test procedure
       ## compute tests 
       ## check the train accuracy
-            cPredictTra = cMMR.mmr_test(cOptDual,params,itraindata=0)
+            ## !!!!!!!!!!!!!!!!!!!!!!! np "params"
+            cPredictTra = cMMR.mmr_test(cOptDual,itraindata=0)
       ## counts the proportion the ones predicted correctly    
       ## ######################################
             if cMMR.itestmode==2:
@@ -165,7 +145,8 @@ def mmr_main(iworkmode, trainingBase, evalFile):
       ## ######################################     
       ## check the test accuracy
             t0=time.clock()
-            cPredictTes = cMMR.mmr_test(cOptDual,params,itraindata=1)
+            ## !!!!!!!!!!!!!!!!!!!!!!! np "params"
+            cPredictTes = cMMR.mmr_test(cOptDual,itraindata=1)
       ## counts the proportion the ones predicted correctly
             if cMMR.itestmode==2:
               ypred=inverse_knn(cMMR.YKernel.get_Y0(cMMR.itrain), \
@@ -201,9 +182,10 @@ def mmr_main(iworkmode, trainingBase, evalFile):
               xclassconfusion=np.zeros((n,n))
               xclassconfusion+=cEvaluationTes.classconfusion
             ## mmr_eval_label(ZW,iPre,YTesN,Y0,kit_data,itest,params)
-
-
-
+            mmr_report.mmr_report('Result on one fold',
+                   xresult_train[iipar,irepeat,ifold], \
+                   xresult_test[iipar,irepeat,ifold], \
+                   xpr[iipar,irepeat,ifold,:])
 
         sys.stdout.flush()
 
@@ -220,3 +202,12 @@ def runClassifier(trainingBase, evalFile):
   iworkmode = 0
   return mmr_main(iworkmode, trainingBase, evalFile)
 
+## ################################################################
+if __name__ == "__main__":
+  if len(sys.argv)==1:
+    iworkmode=0
+  elif len(sys.argv)>=2:
+    iworkmode=eval(sys.argv[1])
+  trainingBase='../2015-05-11_data_with_labels/'
+  evalFile='../2015-05-11_data_with_labels/N5309222_top_1'
+  mmr_main(iworkmode, trainingBase, evalFile)

@@ -1,5 +1,26 @@
 ######################
 ## Version 0.1 #######
+## /**********************************************************************
+##   Copyright 2015, Sandor Szedmak  
+##   email: sandor.szedmak@uibk.ac.at
+##          szedmak777@gmail.com
+##
+##   This file is part of Maximum Margin Multi-valued Regression code(MMMVR).
+##
+##   MMMVR is free software: you can redistribute it and/or modify
+##   it under the terms of the GNU General Public License as published by
+##   the Free Software Foundation, either version 3 of the License, or
+##   (at your option) any later version. 
+##
+##   MMMVR is distributed in the hope that it will be useful,
+##   but WITHOUT ANY WARRANTY; without even the implied warranty of
+##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##   GNU General Public License for more details.
+##
+##   You should have received a copy of the GNU General Public License
+##   along with MMMVR.  If not, see <http://www.gnu.org/licenses/>.
+##
+## ***********************************************************************/
 ######################
 import sys
 import numpy as np
@@ -84,7 +105,7 @@ def kernel_eval_gauss(X1,X2,params_spec):
   d2=np.sum(X2**2,axis=1)
 
   xmean=np.mean(X1,axis=0)
-  ndim=len(xmean)
+  ## ndim=len(xmean)
   X1n=X1-np.outer(e1,xmean)
   Xcov=np.dot(X1n.T,X1n)/m1
   Xcovinv=np_lin.pinv(Xcov)
@@ -305,7 +326,7 @@ def kernel_operator_valued(KX,KXcross,d1,d2,Y1,params_spec,u=None):
   if u is None:
     u=np.ones(m1)
 
-  KY1=np.dot(Y1,Y1.T)
+  ## KY1=np.dot(Y1,Y1.T)
     
   ## distance between X1 and X2 rows
   DX=np.outer(d1,np.ones(m1))+ \
@@ -332,7 +353,7 @@ def kernel_operator_valued(KX,KXcross,d1,d2,Y1,params_spec,u=None):
     d2=d1
     KY=kernel_eval_nl(KY,d1,d2,params_spec)
     KY=kernel_center(KY)
-    (seig,veig)=mmr_kpca.kpca(KY,params_spec.neig)
+    veig=mmr_kpca.kpca(KY,params_spec.neig)[1]
     ytrans=np.dot(veig.T,yboro)
     ytrans1+=u[i]*ytrans
     d1mom[i]=ytrans
@@ -349,7 +370,7 @@ def kernel_operator_valued(KX,KXcross,d1,d2,Y1,params_spec,u=None):
       d2=d1
       KY=kernel_eval_nl(KY,d1,d2,params_spec)
       KY=kernel_center(KY)
-      (seig,veig)=mmr_kpca.kpca(KY,params_spec.neig)
+      veig=mmr_kpca.kpca(KY,params_spec.neig)[1]
       Ttarget=np.dot(veig.T,yboro)
       ytrans=np.dot(Ttarget.T,ytrans1)
       d2mom[i]=ytrans
@@ -423,8 +444,8 @@ def cross_table_kernel(X):
 ## #################################
 def tanimoto(X1,X2):
 
-  (m1,n)=X1.shape
-  (m2,n)=X2.shape
+  m1=X1.shape[0]
+  m2=X2.shape[0]
   K=np.dot(X1,X2.T)   ## column intersections
   xrowsum1=np.sum(X1,axis=1)  
   xrowsum2=np.sum(X2,axis=1)  
@@ -494,11 +515,7 @@ def kernel_localscale(K,KY0,itrain,itest,params_spec,ilocal=-1,iscale=-1):
 ## #########################################################
 def gaussian_process_type_kernel(X,ipar1):
 
-  (m,n)=X.shape
-
-  xmax=X.max()
-  xmin=X.min()
-
+  m=X.shape[0]
   K=np.zeros((m,m))
 
   ## for i in range(m):

@@ -14,3 +14,4 @@ logs
 *BASE*
 *LOCAL*
 *.orig
+*.pyc

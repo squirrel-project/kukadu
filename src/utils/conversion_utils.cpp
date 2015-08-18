@@ -52,7 +52,7 @@ mat readMat(std::ifstream& inStream) {
         while(inStream.good()) {
             getline(inStream, line);
             if(line != "" && line != "=") {
-                Tokenizer tok(line);
+                KukaduTokenizer tok(line);
                 int i = 0;
                 for(i = 0; (token = tok.next()) != ""; ++i) {
                     dn = string_to_double(token);

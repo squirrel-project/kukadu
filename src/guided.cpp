@@ -113,10 +113,10 @@ std::vector<double> catchTmpmys{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
 std::vector<double> genTmpmys{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 std::vector<double> tmpsigmas{0.2, 0.8};
 
-char* handPort = "/dev/ttyUSB1";
+string handPort = "/dev/ttyUSB1";
 // char* screwFile = "/home/shangl/catkin_ws/src/kukadu/src/kukadu_core/movements/orocos_demo/screw3.txt";
 // char* screwFile = "/home/shangl/leftscrew.txt";
-char* screwFile = "/home/shangl/newest.txt";
+string screwFile = "/home/shangl/newest.txt";
 // char* screwFile = "/home/shangl/blub.txt";
 
 string storeFolder = "/home/c7031109/tmp/pushTransRightToLeft";
