@@ -56,7 +56,7 @@ void DMPExecutor::construct(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQu
     if(isCartesian)
         this->odeSystemSize = 3 * 3 + 1;
     else
-    this->odeSystemSize = 2 * this->degofFreedom + 1;
+        this->odeSystemSize = 2 * this->degofFreedom + 1;
     this->suppressMessages = suppressMessages;
 
     previousDesiredJoints = y0s;
@@ -101,6 +101,7 @@ double DMPExecutor::addTerm(double t, const double* currentDesiredYs, int jointN
 
 int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 
+
     if(!isCartesian) {
 
         // joint / cartesian position
@@ -130,23 +131,21 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 
     } else {
 
-        vec vecOrientationY(3);
         vec vecF0(3);
         vec vecExtAdd(3);
-        for(int i = 0, dim = 0; i < odeSystemSizeMinOne; i = i + 3, ++dim) {
-            vecOrientationY(dim) = y[i + 2];
-            int currentSystem = (int) (i / 3);
-            arma::vec currentCoeffs = dmpCoeffs.at(currentSystem);
-            vecF0(dim) = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
-            vecExtAdd(dim) =  this->addTerm(t, y, currentSystem, controlQueue);
-        }
-        //cout<<vecF0 <<endl;
 
-        vec nextDEta(3);
+
+        for(int i = 0, dim = 0; i < odeSystemSizeMinOne; i = i + 3, ++dim) {
+            arma::vec currentCoeffs = dmpCoeffs.at(dim + 3);
+            vecF0(dim) = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
+            vecExtAdd(dim) =  this->addTerm(t, y, dim + 3, controlQueue);
+
+        }
+
         if(t <= (dmp->getTmax() - 1))
-            nextDEta = oneDivTau * (az * (2.0 * bz * log(qG * currentQ.inverse()) - vecOrientationY) + vecF0);
+            nextDEta = oneDivTau * (az * (2.0 * bz * log(qG * currentQ.inverse()) - currentEta) + vecF0);
         else
-            nextDEta = oneDivTau * az * (2.0 * bz * log(qG * currentQ.inverse()) - vecOrientationY);
+            nextDEta = oneDivTau * az * (2.0 * bz * log(qG * currentQ.inverse()) - currentEta);
 
 
         // cartesian position and orientation
@@ -154,14 +153,15 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 
             double yPlusOne = y[i + 1];
             int currentSystem = (int) (i / 3);
+
             f[i] = yPlusOne * oneDivTau;
             double g = gs(currentSystem);
             arma::vec currentCoeffs = dmpCoeffs.at(currentSystem);
 
-
             if(t <= (dmp->getTmax() - 1)) {
 
                 double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
+
                 f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm)  + this->addTerm(t, y, currentSystem, controlQueue);
 
             } else {
@@ -296,10 +296,7 @@ void DMPExecutor::initializeIntegration(double tStart, double stepSize, double t
         }
     } else {
         for(int i = 0, dim = 0; i < (odeSystemSize - 3); i = i + 3, ++dim) {
-            int iHalf = (int) i / 3;
-//            ys[i + 0] = y0s((int) iHalf);
-//            ys[i + 1] = tau * dy0s((int) iHalf);
-//            ys[i + 2] = dEta0(dim);
+
             ys[i + 0] = y0s(dim);
             ys[i + 1] = tau * dy0s(dim);
             ys[i + 2] = Eta0(dim);
@@ -328,19 +325,20 @@ void DMPExecutor::initializeIntegrationQuat() {
     if(isCartesian) {
 
         shared_ptr<CartesianDMP> cartDmp = dynamic_pointer_cast<CartesianDMP>(dmp);
-        vec eta0 = cartDmp->getEta0() / stepSize;
-        vec eta1 = cartDmp->getEtaByIdx(1) / stepSize;
-        vec alteredEta0 = stepSize / 2.0 * oneDivTau  * eta0;
-        tf::Quaternion eta0Quat(alteredEta0(0), alteredEta0(1), alteredEta0(2), 0);
+        double firstDt = cartDmp->getDeltaTByIdx(0);
+        vec eta0 = cartDmp->getEta0();
+        vec eta1 = cartDmp->getEtaByIdx(1);
+
         tf::Quaternion q0 = cartDmp->getQ0();
         currentQ = q0;
+        currentEta = eta0;
+        nextEta = eta0;
 
-        dQ0 =  eta0Quat * q0;
+        //dQ0 = oneDivTau * 0.5 * eta0Quat * q0;
 
-        double firstDt = cartDmp->getDeltaTByIdx(0);
-        //dEta0 = 1.0 / (firstDt * cartDmp->getTau()) * (eta1 - eta0); //his os domega0?
         dEta0 = 1.0 / firstDt * (eta1 - eta0);
-        Eta0 = eta0 ;
+        Eta0 = eta0;
+        nextDEta = dEta0;
 
         qG = cartDmp->getQg();
     }
@@ -376,28 +374,24 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
 
     } else {
 
-        vec nextEta(3);
+
         for(int i = 0; i < 3; ++i) {
             retJoints(i) = ys[3 * i];
             nextEta(i) = ys[3 * i + 2];
         }
-        cout<<nextEta(0)<<" "<<nextEta(1)<<" "<<nextEta(2)<<" "<<t<<endl;
 
+        vec alteredCurrentEta(3);
+        alteredCurrentEta = stepSize / 2.0 * oneDivTau * nextEta;
 
-        nextEta = stepSize / 2.0 * oneDivTau * nextEta;
-        // cout << t << "\t" << nextEta.t();
-        // tf::Quaternion nextEtaQuat(nextEta(0), nextEta(1), nextEta(2), 0.0);
-        currentQ = exp(nextEta) * currentQ;
+        currentQ = exp(alteredCurrentEta) * currentQ;
 
-
-
-        retJoints(3) = currentQ.x(); retJoints(4) = currentQ.y(); retJoints(5) = currentQ.z(); retJoints(6) = currentQ.w();
-       // cout << t << "\t" << retJoints.t();
+        retJoints(3) = currentQ.getX(); retJoints(4) = currentQ.getY(); retJoints(5) = currentQ.getZ(); retJoints(6) = currentQ.getW();
+        // cout << t << "\t" << currentQ.getX()<<"\t" << currentQ.getY()<<"\t" << currentQ.getZ()<<"\t" << currentQ.getW()<<endl;
+        currentEta = nextEta;
 
     }
     for(int i = 0; i < odeSystemSize; ++i)
         vecYs(i) = ys[i];
-
 
     return retJoints;
 
@@ -425,9 +419,8 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
     if(!isCartesian)
         controlQueue->moveJoints(y0s);
     else {
-         controlQueue->addCartesianPosToQueue(vectorarma2pose(&y0s));
-         cout<<" in starting position "<< endl;
-          //controlQueue->moveCartesian(vectorarma2pose(&y0s));
+        controlQueue->addCartesianPosToQueue(vectorarma2pose(&y0s));
+        //cout<<" in starting position "<< y0s<<endl;
     }
 
     initializeIntegration(0, stepSize, tolAbsErr, tolRelErr);
@@ -461,6 +454,7 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
             controlQueue->addJointsPosToQueue(nextJoints);
         else {
             geometry_msgs::Pose newP = vectorarma2pose(&nextJoints);
+            //out<<newP<<endl;
             controlQueue->addCartesianPosToQueue(newP);
         }
 

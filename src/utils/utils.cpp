@@ -949,6 +949,7 @@ tf::Quaternion exp(arma::vec logQuat) {
 
     }
 
+
     return tf::Quaternion(x, y, z, w);
 
 }

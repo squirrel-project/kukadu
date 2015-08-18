@@ -47,6 +47,8 @@ double DMPTrajectoryGenerator::evaluateByCoefficientsSingleNonExponential(double
        // cout << this << " " << x << endl;
         for(int i = 0; i < coeffDegree; ++i) {
             prevBasFun(i) = evaluateBasisFunctionNonExponential(x, i);
+//            cout << x << " " << i << " " << prevBasFun(i) << endl;
+//            cout<<prevBasFun(i);
             previousX = x;
         }
     }
@@ -128,6 +130,8 @@ double DMPTrajectoryGenerator::evaluateBasisFunctionNonExponential(double x, int
 	double sigma = baseDef.at(mypos).getSigmas().at(sigmapos);
     double base = exp( -pow( x - my , 2 ) / (2 * pow(sigma, 2)) ) * x;
 	double normVal = computeNormalization(x);
+
+    //cout << my << " " << sigma << " " << base << " " << normVal << endl;
 
 	return base / normVal;
 

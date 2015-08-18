@@ -30,6 +30,11 @@ std::shared_ptr<Dmp> CartesianDMPLearner::createDmpInstance(arma::vec supervised
 
 arma::mat CartesianDMPLearner::computeFitY(arma::vec& time, arma::mat &y, arma::mat &dy, arma::mat &ddy, arma::vec& vec_g) {
 
+//    cout<<"Learner parameters "<<endl;
+//    cout<<"tau "<<tau<<" az "<<az<<" bz "<<bz<<" deltat "<<time(1)-time(0)<<endl;
+//    cout<< "goal" <<vec_g.t()<<endl;
+//    cout<< "start"<<y.row(0)<<endl;
+
     // position
     mat retMat(y.n_cols - 1, y.n_rows);
 
@@ -53,10 +58,25 @@ arma::mat CartesianDMPLearner::computeFitY(arma::vec& time, arma::mat &y, arma::
     arma::mat deta;
 
 
-    for (int j = 0; j < y.n_rows - 1; ++j) {
+
+//    for (int j = 0; j < y.n_rows - 1; ++j) {
+//        tf::Quaternion g = tf::Quaternion(y(j, 3), y(j, 4), y(j, 5), y(j, 6));
+//        cout<< g.getX()<< "  "<<g.getY()<< "  "<<g.getZ()<< "  "<<g.getW()<<endl;
+
+//        t=log(tf::Quaternion(y(j, 3), y(j, 4), y(j, 5), y(j, 6)));
+
+//        g= exp(t);
+//        cout<< g.getX()<< "  "<<g.getY()<< "  "<<g.getZ()<< "  "<<g.getW()<<endl<<endl;
+
+//    }
+
+
+
+
+  for (int j = 0; j < y.n_rows - 1; ++j) {
 
         vec logL= log(tf::Quaternion(y(j + 1, 3), y(j + 1,  4), y(j + 1, 5), y(j + 1, 6)) * tf::Quaternion(y(j, 3), y(j, 4), y(j, 5), y(j, 6)).inverse());
-      //  vec logL= log(tf::Quaternion(vec_g(3), vec_g(4), vec_g(5), vec_g(6)) * tf::Quaternion(y(j, 3), y(j, 4), y(j, 5), y(j, 6)).inverse());
+        //vec logL= log(tf::Quaternion(vec_g(3), vec_g(4), vec_g(5), vec_g(6)) * tf::Quaternion(y(j, 3), y(j, 4), y(j, 5), y(j, 6)).inverse());
 
         for (int i = 0; i < 3; i++)
             omega(j, i) = 2 * logL(i) / (time(1)-time(0));
@@ -64,8 +84,6 @@ arma::mat CartesianDMPLearner::computeFitY(arma::vec& time, arma::mat &y, arma::
         if (j == y.n_rows - 2)
             for (int i = 0; i < 3; i++)
                 omega(y.n_rows - 1, i) = 2 * logL(i) / (time(1)-time(0));
-
-
     }
 
     for(int i = 0; i < 3 ; ++i) {
@@ -73,28 +91,31 @@ arma::mat CartesianDMPLearner::computeFitY(arma::vec& time, arma::mat &y, arma::
     //    vec trajectory = arma::zeros(y.n_rows);
     //    for (int j = 0; j < y.n_rows; ++j) trajectory(j) = omega(j, i);
         vec trajectory = omega.col(i);
-
         vec domegaV = computeDiscreteDerivatives(time, trajectory);
         domega = join_rows(domega, domegaV);
     }
 
 
-
     eta = tau * omega;
     deta = tau * domega;
 
-    eta = join_rows(eta, time);
+//    eta = join_rows(eta, time);
 
-   // cout <<eta<<endl;
+//    cout <<eta<<endl<<endl;
+//     cout<< "start eta"<<eta.row(0)<<endl;
+//     cout<< "start deta"<<deta.row(0)<<endl;
 
 
     for (int i = 0; i < y.n_rows; ++i) {
 
         vec logL = log(tf::Quaternion(vec_g(3), vec_g(4), vec_g(5), vec_g(6)) * tf::Quaternion(y(i, 3), y(i, 4), y(i, 5), y(i, 6)).inverse());
         //retMat.row(i) = (tau * deta.col(i) - az * (2 * bz * logL) - eta.col(i)).t();
-        for (int j = 3; j < retMat.n_rows; ++j) retMat(j, i) = tau * deta (i, j - 3) - az * (bz * 2 * logL(j - 3) - eta(i, j - 3));
+        for (int j = 3; j < retMat.n_rows; ++j) { retMat(j, i) = tau * deta (i, j - 3) - az * (bz * 2 * logL(j - 3) - eta(i, j - 3)); }
 
     }
+//    arma::mat retMatT = join_rows(retMat.t(), time);
+
+//    cout<<retMatT<<endl;
 
 
     return retMat;
