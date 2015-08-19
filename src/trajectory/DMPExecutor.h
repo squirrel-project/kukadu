@@ -104,9 +104,13 @@ protected:
 
     arma::vec dEta0;
     arma::vec Eta0;
+    arma::vec currentEta;
+    arma::vec nextEta;
+    arma::vec nextDEta;
     tf::Quaternion dQ0;
     tf::Quaternion qG;
     tf::Quaternion currentQ;
+    tf::Quaternion nextQ;
 
     double computeDistance(const arma::vec yDes, arma::vec yCurr);
 	

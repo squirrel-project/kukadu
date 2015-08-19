@@ -181,6 +181,11 @@ void KukieControlQueue::robotJointPosCallback(const sensor_msgs::JointState& msg
 
 }
 
+arma::vec KukieControlQueue::getFrcTrqCart(){
+    return currentCartFrqTrq;
+}
+
+
 void KukieControlQueue::robotCartPosCallback(const geometry_msgs::Pose& msg) {
 
 	currentCartsMutex.lock();

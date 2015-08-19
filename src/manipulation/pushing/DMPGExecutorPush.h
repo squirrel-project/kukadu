@@ -3,6 +3,7 @@
 
 #include "../../../kukadu/include/kukadu.h"
 #include "../../../kukadu/src/types/DMP.h"
+#include "../../../kukadu/src/utils/utils.h"
 
 #include <cstdio>
 #include <iostream>
@@ -24,15 +25,29 @@ private:
 
     string objectID;
     std::shared_ptr<SimInterface>  simI;
+    std::shared_ptr<VisionInterface> visI;
+    //std::shared_ptr<ControlQueue> queue;
     std::shared_ptr<std::thread> thr;
 
     bool doSimulation;
     bool stopObj;
     bool setT0;
+    bool startMov;
+
+    bool contPosition;
+    bool contOrient;
+    bool contForce;
+    bool orientTerm;
 
     int timeCount;
     double Ts;
     double T0;
+    double Th0;
+
+    bool setOrientCorr;
+    bool setPosCorr;
+
+    string environment;
 
 
     mat DesPos;
@@ -40,16 +55,60 @@ private:
     mat ObjCartPos;
 
     geometry_msgs::Pose currentObjPose;
+    geometry_msgs::Pose currentRobPose;
+    geometry_msgs::Pose oldRobPose;
 
-    void getPoseSim();
+
+    vector<double> thO;
+    vector<double> xO;
+    vector<double> yO;
+    vector<double> thR;
+    vector<double> xR;
+    vector<double> yR;
+    vector<double> eThO;
+    vector<double> eXo;
+    vector<double> eYo;
+    vector<double> Fcart;
+    vector<double> vEFcart;
+    vector<double> distO;
+    vector<double> time;
+
+
+    double EthO;
+    double EeThO;
+    double EeXo;
+    double EeYo;
+    double EFcart;
+    double EFdmin;
+    double vareXo;
+    double vareYo;
+    double vareThO;
+    double varFcart;
+    vector<double> gradFx;
+    double oldF, newF;
+
+    arma::vec pcF;
+    arma::vec pcDist;
+    arma::mat pcFdist;
+
+
+    double Lx1, Ly1, Lx2, Ly2;
+
+    void updateData();
     int findIndex(double t, vec times);
+    void constructPush(string env);
+
+
 
 
 public:
 
     DMPExecutorPush( std::shared_ptr<Dmp> dmp, std::shared_ptr<ControlQueue> execQueue, string env, std::shared_ptr<SimInterface> simI,string objectID);
-    double addTerm(double t, const double* currentDesiredYs, int jointNumber, std::shared_ptr<ControlQueue> queue) override ;
+    DMPExecutorPush( std::shared_ptr<Dmp> dmp, std::shared_ptr<ControlQueue> execQueue, string env, std::shared_ptr<VisionInterface> visI);
+    double addTerm(double t, const double* currentDesiredYs, int jointNumber, std::shared_ptr<ControlQueue> queue);
     void setObjectData(arma::vec times, arma::mat cartPos);
+    void saveData(string path);
+    void stopObject();
 
 };
 

@@ -1,8 +1,11 @@
 #include "DMPExecutor.h"
 #include "tf/transform_datatypes.h"
+#include <math.h>
+#include<stdio.h>
 
 using namespace std;
 using namespace arma;
+
 
 DMPExecutor::DMPExecutor(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQueue> execQueue) {
 
@@ -122,7 +125,9 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
             if(t <= (dmp->getTmax() - 1)) {
 
                 double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
-                f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm)  + this->addTerm(t, y, currentSystem, controlQueue);
+                double x= this->addTerm(t, y, currentSystem, controlQueue);
+               if(!std::isnan(x)) f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm) + x; // + this->addTerm(t, y, currentSystem, controlQueue);
+                else f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm);
             } else {
                 f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne));
             }
@@ -134,12 +139,13 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
         vec vecF0(3);
         vec vecExtAdd(3);
 
+        //currentEta = nextEta;
 
         for(int i = 0, dim = 0; i < odeSystemSizeMinOne; i = i + 3, ++dim) {
             arma::vec currentCoeffs = dmpCoeffs.at(dim + 3);
             vecF0(dim) = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
             vecExtAdd(dim) =  this->addTerm(t, y, dim + 3, controlQueue);
-
+            // AT(dim + 3) = vecF0(dim);
         }
 
         if(t <= (dmp->getTmax() - 1))
@@ -161,9 +167,12 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
             if(t <= (dmp->getTmax() - 1)) {
 
                 double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
-
-                f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm)  + this->addTerm(t, y, currentSystem, controlQueue);
-
+                // AT(currentSystem) = addTerm;
+               // if (currentSystem == 1) cout << oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm) <<endl ;
+                double x= this->addTerm(t, y, currentSystem, controlQueue);
+                if (currentSystem==1) cout<<oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm)<< " x is "<< x <<endl;
+                if(!std::isnan(x)) f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm) + x; // + this->addTerm(t, y, currentSystem, controlQueue);
+                 else f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm);
             } else {
                 f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne));
             }
@@ -380,6 +389,7 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
             nextEta(i) = ys[3 * i + 2];
         }
 
+
         vec alteredCurrentEta(3);
         alteredCurrentEta = stepSize / 2.0 * oneDivTau * nextEta;
 
@@ -415,12 +425,19 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
         ret.y.push_back(arma::vec(stepCount));
 
     vector<double> retT;
+    geometry_msgs::Pose start;
 
     if(!isCartesian)
         controlQueue->moveJoints(y0s);
     else {
+         start=controlQueue->getCartesianPose();
+        cout<<controlQueue->getCartesianPose()<<endl;
         controlQueue->addCartesianPosToQueue(vectorarma2pose(&y0s));
+        //controlQueue->addCartesianPosToQueue(start);
         //cout<<" in starting position "<< y0s<<endl;
+        //cout<<" in starting position "<< start<<endl;
+
+
     }
 
     initializeIntegration(0, stepSize, tolAbsErr, tolRelErr);
@@ -453,8 +470,12 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
         if(!isCartesian)
             controlQueue->addJointsPosToQueue(nextJoints);
         else {
+            const double * y;
             geometry_msgs::Pose newP = vectorarma2pose(&nextJoints);
-            //out<<newP<<endl;
+//            double x= this->addTerm(t, y, 1, controlQueue);
+//            cout<<" x "<< x<<endl;
+//            //cout<<"old x "<<newP.position.y<<" newx "<< x <<endl;
+//            if(!std::isnan(x)) newP.position.x = newP.position.x + x;
             controlQueue->addCartesianPosToQueue(newP);
         }
 

@@ -1,6 +1,7 @@
 #include "utils.h"
 #include "../trajectory/DMPExecutor.h"
 
+
 using namespace std;
 using namespace arma;
 
@@ -993,3 +994,33 @@ tf::Transform Matrix4f2Transform(Eigen::Matrix4f Tm){
 
 }
 
+tf::Quaternion axisAngle2Quat(const double xx, const double &yy, const double &zz, const double &a){
+
+    double result = sin( a / 2.0 );
+
+    double x = xx * result;
+    double y = yy * result;
+    double z = zz * result;
+
+    double w = cos( a / 2.0 );
+
+    return tf::Quaternion(x, y, z, w).normalize();
+}
+
+double distancePoint2Line(double xp,double yp,double x1,double y1,double x2,double y2){
+return abs((y2 - y1) * xp - (x2 -x1) * yp + x2 * y1 - x1 * y2) / sqrt((y2-y1) * (y2-y1) + (x2 -x1) * (x2 -x1));
+}
+
+arma::vec pointOnLine2Point(double xp,double yp,double x1,double y1,double x2,double y2){
+    double a = x2 - x1;
+    double b = y1 - y2;
+    double c = -y1 * a - x1 * b;
+    double x = (b * (b * xp - a * yp) - a * c) / sqrt(a * a + b * b);
+    double y = (a * (a * yp - b * xp) - b * c) / sqrt(a * a + b * b);
+
+    arma::vec p(2);
+    p(0) = x * 2;
+    p(1) = y * 2;
+
+    return p;
+}

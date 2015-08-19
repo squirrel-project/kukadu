@@ -89,7 +89,7 @@ string right_hardware = "right_arm";
 std::string hand = "left";
 
 
-string hardware = left_hardware;
+string hardware = right_hardware;
 
 string prefix = "real";
 
@@ -118,8 +118,6 @@ string handPort = "/dev/ttyUSB1";
 // char* screwFile = "/home/shangl/leftscrew.txt";
 string screwFile = "/home/shangl/newest.txt";
 // char* screwFile = "/home/shangl/blub.txt";
-
-string storeFolder = "/home/c7031109/tmp/pushTransRightToLeft";
 
 
 // with current implementation tStart has to be 0.0
@@ -205,9 +203,15 @@ int main(int argc, char** args) {
     int kukaStepWaitTime = dmpStepSize * 1e6;
 
     ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
-    shared_ptr<ControlQueue> leftQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, prefix, hardware, *node));
+    shared_ptr<ControlQueue> leftQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, "real", "left_arm", *node));
     vector<shared_ptr<ControlQueue>> queueVectors;
     queueVectors.push_back(leftQueue);
+    RosSchunk* handQ=new RosSchunk(*node, "real", hand);
+    cout<<"hand interface created"<<endl;
+
+    //moving hand to staring position
+    vector<double> newPos = {0, -1.57, 0, -1.57, 0, -1.57, 0};
+    handQ->publishSdhJoints(newPos);
 
     leftQueue->stopCurrentMode();
     std::shared_ptr<std::thread> raThr = leftQueue->startQueueThread();
@@ -218,7 +222,7 @@ int main(int argc, char** args) {
 
     SensorStorage scaredOfSenka(queueVectors, std::vector<std::shared_ptr<GenericHand>>(), 1000);
     scaredOfSenka.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS);
-    scaredOfSenka.startDataStorage(storeFolder);
+    scaredOfSenka.startDataStorage("/home/c7031098/testing/Push0709/taught2/");
     ros::Rate r(1);
     for(int i = 0; i < 20; ++i) {
         r.sleep();

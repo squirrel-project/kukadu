@@ -98,6 +98,12 @@ void SensorStorage::setExportMode(int mode) {
     if(mode & STORE_CART_ABS_FRC)
         storeCartAbsFrc = true;
 
+    if(mode & STORE_SIM_OBJECT)
+        storeSimObject =true;
+
+    if(mode & STORE_VIS_OBJECT)
+        storeVisObject =true;
+
 
 }
 
@@ -454,7 +460,6 @@ void SensorStorage::storeData(bool storeHeader, std::vector<std::shared_ptr<std:
                 if(storeSimObject){
 
                     geometry_msgs::Pose currentPose = sim->getObjPose(objectID);
-                    cout << currentPose<< endl;
                     writeVectorInLine(simStream, pose2vectorarma(currentPose));
 
                 }

@@ -18,6 +18,17 @@ std::string hand = "left";
 
 
 int main(int argc, char** args) {
+
+
+
+    //    string saveDataPath = "/home/c7031098/testing/SimData/TwoFingers_raw/pushTransLeftToRight_planePart/";
+    //    string loadDataPath = "/home/c7031098/testing/RealData/TwoFingers_raw/pushTransLeftToRight_planePart/kuka_lwr_real_left_arm_0";
+    //    string loadObjectDataPath = "/home/c7031098/testing/RealData/TwoFingers_raw/pushTransLeftToRight_planePart/vision";
+    string loadDataPath = "/home/c7031098/testing/data_gen/RealData/raw/kuka_lwr_real_left_arm_0";
+
+    string saveDataPath = "/home/c7031098/testing/data_gen/RealData/boxNew";
+
+
     // Declare the supported options.
     po::options_description desc("Allowed options");
     desc.add_options()
@@ -92,103 +103,144 @@ int main(int argc, char** args) {
     int kukaStepWaitTime = dmpStepSize * 1e6;
 
 
-
-
-
     ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
 
-    shared_ptr<VisionInterface> vis = shared_ptr<VisionInterface>(new VisionInterface(argc, args, kukaStepWaitTime, *node));
-    SensorStorage storeData(std::vector<std::shared_ptr<ControlQueue>>(), std::vector<std::shared_ptr<GenericHand>>(), vis, 1000);
-   // storeData.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS);
 
-    vis->setArTagTracker();
-    storeData.startDataStorage("/home/c7031098/testing/Push0709/eta1/");
+    shared_ptr<ControlQueue> leftQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, environment, "left_arm", *node));
+    vector<shared_ptr<ControlQueue>> queueVectors;
+    queueVectors.push_back(leftQueue);
 
-        while(1){
-            sleep (1.0);
-            ros::spinOnce();
-            geometry_msgs::Pose arPose = vis->getArPose();
-            cout << arPose << endl;}
+        RosSchunk* handQ=new RosSchunk(*node, environment, hand);
+        cout<<"hand interface created"<<endl;
 
-
-    //    shared_ptr<ControlQueue> leftQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, environment, "left_arm", *node));
-//    vector<shared_ptr<ControlQueue>> queueVectors;
-//    queueVectors.push_back(leftQueue);
-
-//    RosSchunk* handQ=new RosSchunk(*node, environment, hand);
-//    cout<<"hand interface created"<<endl;
-
-//    //moving hand to staring position
-//    vector<double> newPos = {0, -1.57, 0, -1.57, 0, -1.57, 0};
-//    handQ->publishSdhJoints(newPos);
+        //moving hand to staring position
+        vector<double> newPos = {0, -1.57, 0, -1.57, 0, -1.57, 0};
+        handQ->publishSdhJoints(newPos);
 
 
-//    //moving arm
-//    leftQueue->stopCurrentMode();
+    //moving arm
+    leftQueue->stopCurrentMode();
 
-//    shared_ptr<thread> lqThread = leftQueue->startQueueThread();
-//    leftQueue->switchMode(10);
-
-//    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, "/home/c7031098/testing/SimData/pushing_data1/kuka_lwr_simulation_left_arm_0");
-//    data->removeDuplicateTimes();
-
-//    shared_ptr<SensorData> dataO = SensorStorage::readStorage(leftQueue, "/home/c7031098/testing/SimData/pushing_data1/simulation");
-//    dataO->removeDuplicateTimes();
+    shared_ptr<thread> lqThread = leftQueue->startQueueThread();
+    leftQueue->switchMode(10);
 
 
-//    //loading data for learner
-//    arma::vec times = data->getTimes();
-//    arma::mat jointPos = data->getJointPos();
-//    arma::mat cartPos = data->getCartPos();
-//    cout <<"  data loaded" <<endl;
+    shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, loadDataPath);
+    data->removeDuplicateTimes();
 
-//    leftQueue->moveJoints(jointPos.row(0).t());
-
-//    //creatin simulation interface
-//    std::shared_ptr<SimInterface> simI= std::shared_ptr<SimInterface>(new SimInterface (argc, args, kukaStepWaitTime, *node));
-//    cout<<"simulator interface created"<<endl;
-
-// //   float newP[3] = {0.5, 0.7, 0.01}; //orig
-//    float newP[3] = {0.6, 0.7, 0.01};
-//    float newO[4] = {0, 0, 0, 0};
-//    float dim[3] = {1, 2 , 0.08};
-
-//    simI->addPrimShape(1,"sponge", newP, newO, dim, 10.0);
-//    simI->setObjMaterial("sponge","highFrictionMaterial");
-//    cout<< "sponge imported "<< endl;
-
-//    float newP1[3] = {0.30, 0.7, 0.2};
-//    float newO1[4] = {0, 0, 0, 0};
-//    float dim1[3] = {0.2, 0.2, 0.1};
-
-//    string objectId = "box";
-//    simI->addPrimShape(1, objectId, newP1, newO1, dim1, 1);
-//    cout <<"box imported " << endl;
-
-//    leftQueue->stopCurrentMode();
-//    leftQueue->switchMode(20);
-
-//    times = times - times(0);
-
-//    // JointDMPLearner learner(az, bz, join_rows(times, cartPos));
-//    CartesianDMPLearner learner(az, bz, join_rows(times, cartPos));
-//    std::shared_ptr<Dmp> leftDmp = learner.fitTrajectories();
-//    DMPExecutorPush leftExecutor(leftDmp, leftQueue, environment, simI, objectId);
-//    leftExecutor.setObjectData(times, dataO->getCartPos() );
+    //    shared_ptr<SensorData> dataO = SensorStorage::readStorage(leftQueue, loadObjectDataPath);
+    //    dataO->removeDuplicateTimes();
 
 
-//    SensorStorage storeData(queueVectors, std::vector<std::shared_ptr<GenericHand>>(), simI, objectId, 1000);
-//    storeData.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS);
-//    storeData.startDataStorage("/home/c7031098/testing/SimData/performing_push1/");
+    //loading data for learner
+    arma::vec times = data->getTimes();
+    arma::mat jointPos = data->getJointPos();
+    arma::mat cartPos = data->getCartPos();
+    cout <<"  data loaded" <<endl;
 
-//    leftExecutor.executeTrajectory(ac, 0, leftDmp->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
-//    storeData.stopDataStorage();
+    CartesianDMPLearner learner(az, bz, join_rows(times, cartPos));
+    std::shared_ptr<Dmp> leftDmp = learner.fitTrajectories();
+    shared_ptr<thread> storeThread;
 
+    leftQueue->moveJoints(jointPos.row(0).t());
 
-//    leftQueue->stopCurrentMode();
+    leftQueue->stopCurrentMode();
+    leftQueue->setStiffness(1800, 150, 0.7, 7.0,70.0, 2.0);
+    leftQueue->switchMode(20);
 
 
 
+    if(environment == "simulation"){
+
+        //creatin simulation interface
+        std::shared_ptr<SimInterface> simI= std::shared_ptr<SimInterface>(new SimInterface (argc, args, kukaStepWaitTime, *node));
+        cout<<"simulator interface created"<<endl;
+
+        //   float newP[3] = {0.5, 0.7, 0.01}; //orig
+        float newP[3] = {0.6, 0.7, 0.01};
+        float newO[4] = {0, 0, 0, 0};
+        float dim[3] = {1, 2 , 0.08};
+
+        simI->addPrimShape(1,"sponge", newP, newO, dim, 10.0);
+        simI->setObjMaterial("sponge","highFrictionMaterial");
+        cout<< "sponge imported "<< endl;
+
+        float newP1[3] = {0.30, 0.7, 0.2};
+        float newO1[4] = {0, 0, 0, 0};
+        float dim1[3] = {0.2, 0.2, 0.1};
+
+        string objectId = "box";
+        simI->addPrimShape(1, objectId, newP1, newO1, dim1, 1);
+        cout <<"box imported " << endl;
+
+
+        DMPExecutorPush leftExecutor(leftDmp, leftQueue, environment, simI, objectId);
+
+        //leftExecutor.setObjectData(dataO->getTimes(), dataO->getCartPos());
+        leftExecutor.setObjectData(data->getTimes(), data->getCartPos());
+
+        SensorStorage storeData(queueVectors, std::vector<std::shared_ptr<GenericHand>>(), simI, objectId, 1000);
+        storeData.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS | STORE_SIM_OBJECT);
+
+        storeThread = storeData.startDataStorage(saveDataPath);
+
+        leftExecutor.executeTrajectory(ac, 0, leftDmp->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+        storeData.stopDataStorage();
+
+        storeThread->join();
+        leftExecutor.saveData(saveDataPath);
+
+
+
+    }
+    if (environment == "real"){
+
+        shared_ptr<VisionInterface> vis = shared_ptr<VisionInterface>(new VisionInterface(argc, args, kukaStepWaitTime, *node));
+        SensorStorage storeData(std::vector<std::shared_ptr<ControlQueue>>(), std::vector<std::shared_ptr<GenericHand>>(), vis, 1000);
+        storeData.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS | STORE_VIS_OBJECT);
+
+        vis->setArTagTracker();
+        cout<<"ArTagTracke started"<<endl;
+
+        DMPExecutorPush leftExecutor(leftDmp, leftQueue, environment, vis);
+
+        //        while(1){
+        //        cout<<leftQueue->getCartesianPose()<<endl;
+        //        sleep(0.5);
+        //        }
+
+        sleep(1.0);
+
+        leftExecutor.setObjectData(data->getTimes(), data->getCartPos());
+
+
+        storeThread = storeData.startDataStorage(saveDataPath);
+
+        cout <<" (collectData) executing starting" <<endl;
+
+        leftExecutor.executeTrajectory(ac, 0, leftDmp->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+
+        leftQueue->stopCurrentMode();
+        leftExecutor.stopObject();
+
+        cout<<" (collectData) execution done "<<endl;
+        storeData.stopDataStorage();
+
+        storeThread->join();
+        leftExecutor.saveData(saveDataPath);
+    }
+
+
+
+    cout<<"(collectData) moving to start position "<<endl;
+
+    leftQueue->stopCurrentMode();
+    leftQueue->switchMode(10);
+    leftQueue->moveJoints(jointPos.row(0).t());
+    // leftQueue->moveCartesian(vectorarma2pose(&startP));
+    leftQueue->stopCurrentMode();
+
+    getchar();
 
 
     return 0;
