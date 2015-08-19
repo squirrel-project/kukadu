@@ -12,11 +12,25 @@ double tau, az, bz, dmpStepSize, tolAbsErr, tolRelErr, ac, as, alpham;
 string inDir, cfFile, dataFolder, trajFile;
 vector<double> rlExploreSigmas;
 
-string environment = "simulation";
+string environment = "real";
 std::string hand = "left";
 
 
-int main(int argc, char ** args) {
+int main(int argc, char** args) {
+
+    //string loadDataPath = "/home/c7031098/testing/test/kuka_lwr_real_left_arm_01";
+    //string loadDataPath = "/home/c7031109/tmp/pushing_data/kuka_lwr_real_left_arm_0";
+    //string loadDataPath ="/home/c7031098/testing/testDataJoint/data02/kuka_lwr_simulation_left_arm_0";
+    //string loadDataPath = "/home/c7031098/testing/push simon/iros2015/pushTransLeftToRight/kuka_lwr_real_left_arm_0";
+    //string loadDataPath = "/home/c7031098/testing/data_gen/s2";
+    string loadDataPath = "/home/c7031098/testing/data_gen/RealData/raw/kuka_lwr_real_left_arm_0";
+
+    // string loadDataPath = "/home/c7031098/testing/SimData/pushTransLeftToRight/";
+    //string saveDataPath = "/home/c7031098/testing/RealData/SingleFinger_raw/pushTransLeftToRight_boxOrange/";
+    string saveDataPath = "/home/c7031098/testing/data_gen/RealData/raw2";
+
+
+
     // Declare the supported options.
     po::options_description desc("Allowed options");
     desc.add_options()
@@ -96,12 +110,10 @@ int main(int argc, char ** args) {
     queueVectors.push_back(leftQueue);
 
     RosSchunk* handQ=new RosSchunk(*node, environment, hand);
-    cout << "hand interface created" << endl;
+    cout<<"hand interface created"<<endl;
 
-    //moving hand to staring position
 
-    vector<double> newPos = {0, -1.57, 0, -1.57, 0, -1.57, 0};
-    handQ->publishSdhJoints(newPos);
+
 
 
     //moving arm
@@ -111,9 +123,7 @@ int main(int argc, char ** args) {
     leftQueue->switchMode(10);
 
 
-    //string loadDataPath = "/home/c7031098/testing/test/kuka_lwr_real_left_arm_01";
-    //string loadDataPath = "/home/c7031109/tmp/pushing_data/kuka_lwr_real_left_arm_0";
-    string loadDataPath ="/home/c7031098/testing/testDataJoint/data02/kuka_lwr_simulation_left_arm_0";
+
     shared_ptr<SensorData> data = SensorStorage::readStorage(leftQueue, loadDataPath);
     data->removeDuplicateTimes();
 
@@ -125,10 +135,21 @@ int main(int argc, char ** args) {
     arma::mat cartPos = data->getCartPos();
     cout <<" (testing) data loaded" <<endl;
 
-   // cout << jointPos.row(0) << endl;
+
+    //cout << jointPos.row(0) << endl;
     leftQueue->moveJoints(jointPos.row(0).t());
+    //arma:: vec startP = cartPos.row(0).t();
+    //leftQueue->moveCartesian(vectorarma2pose(&startP));
 
     leftQueue->stopCurrentMode();
+
+    // moving hand to staring position
+
+     vector<double> newPos = {0, -1.57, 0, -1.57, 0, -1.57, 0};
+     handQ->publishSdhJoints(newPos);
+     cout<<"hand movement done"<<endl;
+
+
     leftQueue->setStiffness(2000, 150, 0.7, 7.0,70.0, 2.0);
     leftQueue->switchMode(20);
 
@@ -166,10 +187,9 @@ int main(int argc, char ** args) {
         //collecting data
 
         SensorStorage storeData(queueVectors, std::vector<std::shared_ptr<GenericHand>>(), simI, objectId, 1000);
-        storeData.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS);
-        // string loadDataPath = "/home/c7031098/testing/SimData/push0709/execution1_box/";
-        //string saveDataPath = "/home/c7031098/testing/testDataJoint/data02/";
-        //storeThread = storeData.startDataStorage(saveDataPath);
+        storeData.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS | STORE_SIM_OBJECT);
+        storeThread = storeData.startDataStorage(saveDataPath);
+
         leftExecutor.executeTrajectory(ac, 0, leftDmp->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
         leftQueue->stopCurrentMode();
         storeData.stopDataStorage();
@@ -184,16 +204,14 @@ int main(int argc, char ** args) {
         cout<<"vision interface created"<<endl;
 
         vis->setArTagTracker();
-        cout<<"ArTagTracke started"<<endl;
-
+        cout<<"ArTagTracker started"<<endl;
 
         //collecting data
 
         SensorStorage storeData(queueVectors, std::vector<std::shared_ptr<GenericHand>>(), vis, 1000);
-        storeData.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS | STORE_RBT_JNT_FTRQ);
-        // string filePath = "/home/c7031098/testing/Push0709/execution2_box/";
-        string filePath = "/home/c7031109/tmp/blub";
-        storeThread = storeData.startDataStorage(filePath);
+        storeData.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS | STORE_RBT_JNT_FTRQ | STORE_VIS_OBJECT);
+
+        storeThread = storeData.startDataStorage(saveDataPath);
 
         cout <<" (collectData) executing starting" <<endl;
 
@@ -209,9 +227,10 @@ int main(int argc, char ** args) {
     cout<<"(collectData) moving to start position "<<endl;
 
     leftQueue->stopCurrentMode();
-//    leftQueue->switchMode(10);
-//    leftQueue->moveJoints(jointPos.row(0).t());
-//    leftQueue->stopCurrentMode();
+    leftQueue->switchMode(10);
+    leftQueue->moveJoints(jointPos.row(0).t());
+   // leftQueue->moveCartesian(vectorarma2pose(&startP));
+    leftQueue->stopCurrentMode();
 
     getchar();
 

@@ -28,7 +28,6 @@ set(CURSES_USE_NCURSES TRUE)
 find_package(Curses)
 find_package(Boost REQUIRED)
 find_package(PCL REQUIRED)
-find_package(PythonLibs 3.4 REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -59,7 +58,6 @@ include_directories(
     ${Eigen_INCLUDE_DIRS}
     $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/
     $ENV{IIS_INCLUDE_PATH}/external_rosmake_ws/motion_control/motion_control_msgs/msg_gen/cpp/include
-    /usr/include/python3.4m
 )
 
 set(CMAKE_BUILD_TYPE Debug)
@@ -70,26 +68,6 @@ add_definitions(-fPIC)
 add_definitions(-shared)
 add_definitions(-pthread)
 add_definitions(-DROS_SUPPORT)
-
-
-## python definitions
-add_definitions(-Wno-unused-result)
-add_definitions(-Werror=declaration-after-statement)
-add_definitions(-g)
-add_definitions(-fstack-protector)
-add_definitions(--param=ssp-buffer-size=4)
-add_definitions(-Wformat)
-add_definitions(-Werror=format-security)
-add_definitions(-DNDEBUG)
-add_definitions(-g)
-add_definitions(-fwrapv)
-add_definitions(-O3)
-add_definitions(-Wall)
-add_definitions(-Xlinker)
-add_definitions(-export-dynamic)
-add_definitions(-Wl,-O1)
-add_definitions(-Wl,-Bsymbolic-functions)
-link_directories(/usr/lib/python3.4/config-3.4m-x86_64-linux-gnu /usr/lib)
 
 AUX_SOURCE_DIRECTORY(src/utils/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/trajectory/ KUKADUSRC)
@@ -128,9 +106,6 @@ target_link_libraries(book_lean kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES}
 
 add_executable(testing src/testing.cpp)
 target_link_libraries(testing kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a)
-
-#add_executable(iros2015 src/iros2015.cpp)
-#target_link_libraries(iros2015 kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a pthread dl util m python3.4m)
 
 add_executable(kukadu_screwing src/intellactScrewing.cpp)
 target_link_libraries(kukadu_screwing kukadulib ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})

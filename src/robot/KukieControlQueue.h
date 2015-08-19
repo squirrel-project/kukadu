@@ -174,6 +174,7 @@ public:
     geometry_msgs::Pose getCartesianPoseRf();
     arma::vec getStartingJoints();
     arma::vec retrieveJointsFromRobot();
+    arma::vec getFrcTrqCart();
 	
 	mes_result getCurrentJoints();
 	bool isInitialized();
