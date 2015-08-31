@@ -113,17 +113,29 @@ std::shared_ptr<Dmp> dmpPick;
 
 int main(int argc, char** args) {
 
-    int seed = 100;
+    int usePs = 0;
+    int loadPs = 0;
     int simMode = 1;
-    std::mt19937* generator = new std::mt19937(seed);
+    int numberOfActions = 0;
+    int numberOfPercepts = 0;
 
-    string pickTrajectoryPath = "";
+    double gamma = 0.0;
+    double stdReward = 0.0;
+
+    std::mt19937* generator = new std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
+
+    string psFile = "";
+    string prepFinalPush = "";
     string prepRotHorPath = "";
     string prepRotVertPath = "";
-    string prepFinalPush = "";
+    string pickTrajectoryPath = "";
     string prepRotHortPushBack = "";
     string prepRotVertPushBack = "";
     string prepTransPushForward = "";
+
+
+    shared_ptr<ManualReward> manualRew = nullptr;
+    shared_ptr<ProjectiveSimulator> projSim = nullptr;
 
     // Declare the supported options.
     po::options_description desc("Allowed options");
@@ -142,6 +154,13 @@ int main(int argc, char** args) {
             ("prep.rotvert90degpushback", po::value<string>(), "translation push for vertical rotation")
             ("prep.transfinalpush", po::value<string>(), "final push")
             ("prep.transpushforward", po::value<string>(), "first push forward")
+            ("ps.useprojectivesimulation", po::value<int>(), "use projective simulation or fixed mapping")
+            ("ps.loadps", po::value<int>(), "load pre-trained projective simulator")
+            ("ps.numberofactions", po::value<int>(), "number of actions")
+            ("ps.numberofpercepts", po::value<int>(), "number of percepts")
+            ("ps.gamma", po::value<double>(), "gamma of ps")
+            ("ps.stdreward", po::value<double>(), "standard reward for successful execution")
+            ("ps.psfile", po::value<string>(), "path to store and load the ps model")
             ("control.simulation", po::value<int>(), "use simulator")
             ("control.hapticmode", po::value<int>(), "mode for determining the haptic category")
     ;
@@ -183,6 +202,20 @@ int main(int argc, char** args) {
     else return 1;
     if (vm.count("control.hapticmode")) hapticMode = vm["control.hapticmode"].as<int>();
     else return 1;
+    if (vm.count("ps.useprojectivesimulation")) usePs = vm["ps.useprojectivesimulation"].as<int>();
+    else return 1;
+    if (vm.count("ps.loadps")) loadPs = vm["ps.loadps"].as<int>();
+    else return 1;
+    if (vm.count("ps.numberofactions")) numberOfActions = vm["ps.numberofactions"].as<int>();
+    else return 1;
+    if (vm.count("ps.numberofpercepts")) numberOfPercepts = vm["ps.numberofpercepts"].as<int>();
+    else return 1;
+    if (vm.count("ps.gamma")) gamma = vm["ps.gamma"].as<double>();
+    else return 1;
+    if (vm.count("ps.stdreward")) stdReward = vm["ps.stdreward"].as<double>();
+    else return 1;
+    if (vm.count("ps.psfile")) psFile = resolvePath(vm["ps.psfile"].as<string>());
+    else return 1;
 
     environment = (simMode == 0) ? "real" : "simulation";
 
@@ -205,6 +238,15 @@ int main(int argc, char** args) {
     vector<shared_ptr<ControlQueue>> queueVectors;
     queueVectors.push_back(leftQueue);
 
+    if(usePs) {
+        manualRew = shared_ptr<ManualReward>(new ManualReward(generator, numberOfActions, numberOfPercepts, false, stdReward));
+
+        if(!loadPs)
+            projSim = shared_ptr<ProjectiveSimulator>(new ProjectiveSimulator(manualRew, generator, gamma, PS_USE_ORIGINAL, false));
+        else
+            projSim = shared_ptr<ProjectiveSimulator>(new ProjectiveSimulator(manualRew, generator, psFile));
+    }
+
     if(simMode) {
 
         // add sponge
@@ -216,8 +258,8 @@ int main(int argc, char** args) {
         r.sleep();
 
         // add book
-        simInterface->addPrimShape(1, "book", {0.15, 0.72, 0.2}, {0, 0, 0, 0}, {0.25, 0.17, 0.04}, 10.0);
-        simInterface->setObjMaterial("book", SimInterface::FRICTION_NO);
+    //    simInterface->addPrimShape(1, "book", {0.15, 0.72, 0.2}, {0, 0, 0, 0}, {0.25, 0.17, 0.04}, 10.0);
+    //    simInterface->setObjMaterial("book", SimInterface::FRICTION_NO);
 
     }
 
@@ -229,7 +271,6 @@ int main(int argc, char** args) {
     learnTransPushForward(rightQueue, prepTransPushForward);
     learnPick(leftQueue, pickTrajectoryPath);
 
-
     leftQueue->stopCurrentMode();
     leftQueue->switchMode(KukieControlQueue::KUKA_JNT_POS_MODE);
 
@@ -239,9 +280,9 @@ int main(int argc, char** args) {
     shared_ptr<thread> lqThread = leftQueue->startQueueThread();
     shared_ptr<thread> rqThread = rightQueue->startQueueThread();
 
-    int hapticCat = -1;
+    int performFurtherRound = -1;
 
-    while(hapticCat != 2) {
+    while(performFurtherRound) {
 
         vector<double> rightHandJoints = {2.57271414799788e-05, -0.5270757987175063, 0.20988086261097294, 0.8659628476930076, 1.537404015150829, -0.5575713234648674, 0.22337989354436658};
         rightHand->publishSdhJoints(rightHandJoints);
@@ -257,34 +298,53 @@ int main(int argc, char** args) {
         goToBlockingPos(rightQueue);
 
         cout << "(main) do haptic test" << endl;
-        hapticCat = doHapticTest(leftQueue, leftHand);
+        int hapticCat = doHapticTest(leftQueue, leftHand);
         cout << "(main) retrieved haptic category: " << hapticCat << endl;
 
         cout << "(main) moving left arm to starting position" << endl;
         goToStartPos(leftQueue);
 
-        // get right arm out of the way (DO NOT REMOVE THIS!!!)
-        cout << "(main) moving right arm out of the way" << endl;
-        rightQueue->moveJoints(stdToArmadilloVec({-2.3800294399261475, 1.5282957553863525, -2.280046224594116, 1.884490966796875, 2.1091063022613525, -0.4556314945220947, -0.7266652584075928}));
-        rightQueue->moveJoints(stdToArmadilloVec({-2.123462677001953, -0.39331260323524475, -2.3785765171051025, 1.9372291564941406, 1.784393310546875, -1.440358281135559, 2.408474922180176}));
-
         cout << "(main) moving left arm to pushing initial position" << endl;
         leftHand->publishSdhJoints(pushHandPos);
 
+        int nextActionId = 0;
+        if(!usePs) {
+
+            // fixed mapping between haptic categories and preparation controllers
+            // next action id = haptic cat (action ids are ordered such that they match the haptic categories)
+            nextActionId = hapticCat;
+
+        } else {
+
+            // use projective simulation to learn mapping between haptic categories and preparation controllers
+            // haptic category is input percept
+            manualRew->setNextPerceptId(hapticCat);
+            shared_ptr<ActionClip> nextAction = projSim->performRandomWalk();
+            nextActionId = nextAction->getActionId();
+
+        }
+
         // do pushing stuff here
-        cout << "(main) performing preparation action" << endl;
-        if(hapticCat == 1) {
+        cout << "(main) performing preparation action " << nextActionId << endl;
+        if(nextActionId == 1) {
             // found bottom side --> rotate 270 degrees (later, execution time can be included in reward function of ps, which should find that counter clock wise rotation of 90 degrees is better)
             executeRotVert270Deg(leftQueue, rightQueue);
-        } else if(hapticCat == 2) {
-            // found closed side --> nothing to do; pick up
-            break;
-        } else if(hapticCat == 3) {
+        } else if(nextActionId == 2) {
+            // found closed side --> nothing to do
+        } else if(nextActionId == 3) {
             // found open side --> rotate 180 degrees
             executeRotHor180Deg(leftQueue, rightQueue);
-        } else if(hapticCat == 4) {
+        } else if(nextActionId == 4) {
             // found top side --> rotate 90 degrees
             executeRotVert90Deg(leftQueue, rightQueue);
+        }
+
+        // then do book peeling
+        cout << "(main) try to pick up book now" << endl;
+        executePick(leftQueue);
+
+        if(usePs) {
+            projSim->performRewarding();
         }
 
         // move left arm away (DO NOT REMOVE THIS!!!)
@@ -295,10 +355,12 @@ int main(int argc, char** args) {
         cout << "(main) moving right arm back to starting position" << endl;
         goToBlockingPos(rightQueue);
 
+        cout << "(main) want to do one more round of training? (0 = no / 1 = yes)" << endl;
+        cin >> performFurtherRound;
+
     }
 
-    // then do book peeling
-    executePick(leftQueue);
+    cout << "(main) stop further training" << endl;
 
     leftQueue->stopCurrentMode();
     leftQueue->switchMode(KukieControlQueue::KUKA_JNT_POS_MODE);
@@ -437,10 +499,12 @@ int doHapticTest(std::shared_ptr<ControlQueue> leftQueue, shared_ptr<RosSchunk> 
         throw "haptic mode not known";
     }
 
+    /*
     cout << callClassifier(resolvePath("$KUKADU_HOME/scripts/trajectory_classifier"),
                                                    "trajlab_main", "runClassifier",
                                                       resolvePath("$KUKADU_HOME/scripts/2015-05-11_data_with_labels/"),
                                                       resolvePath(tmpDataFolder + "hapticTest/kuka_lwr_real_left_arm_0")) << endl;
+                                                      */
 
     leftQueue->stopCurrentMode();
     leftQueue->switchMode(KukieControlQueue::KUKA_JNT_POS_MODE);
@@ -578,6 +642,8 @@ void executeRotHor90Deg(std::shared_ptr<ControlQueue> leftQueue, std::shared_ptr
     DMPExecutor execRotHortPushBack(dmpRotHortPushBack, leftQueue);
     execRotHortPushBack.executeTrajectory(ac, 0, dmpRotHortPushBack->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
 
+    goToStartPos(leftQueue);
+
     DMPExecutor executeFinalPush(dmpFinalPush, leftQueue);
     executeFinalPush.executeTrajectory(ac, 0, dmpFinalPush->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
 
@@ -602,6 +668,7 @@ void executeRotVert90Deg(std::shared_ptr<ControlQueue> leftQueue, std::shared_pt
 void executeRotHor180Deg(std::shared_ptr<ControlQueue> leftQueue, std::shared_ptr<ControlQueue> rightQueue) {
 
     executeRotHor90Deg(leftQueue, rightQueue);
+    goToStartPos(leftQueue);
     executeRotVert90Deg(leftQueue, rightQueue);
 
 }
@@ -609,6 +676,7 @@ void executeRotHor180Deg(std::shared_ptr<ControlQueue> leftQueue, std::shared_pt
 void executeRotVert180Deg(std::shared_ptr<ControlQueue> leftQueue, std::shared_ptr<ControlQueue> rightQueue) {
 
     executeRotVert90Deg(leftQueue, rightQueue);
+    goToStartPos(leftQueue);
     executeRotHor90Deg(leftQueue, rightQueue);
 
 }

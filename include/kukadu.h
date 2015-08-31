@@ -10,6 +10,8 @@
 #include "../src/learning/LWRRegressor.h"
 #include "../src/learning/QuadraticKernel.h"
 #include "../src/learning/TricubeKernel.h"
+#include "../src/learning/projective_simulation/application/manualreward.h"
+#include "../src/learning/projective_simulation/core/projectivesimulator.h"
 #include "../src/learning/metric_learning/Mahalanobis.h"
 #include "../src/learning/metric_learning/MahalanobisLearner.h"
 #include "../src/learning/metric_learning/InfTheoMetricLearner.h"
