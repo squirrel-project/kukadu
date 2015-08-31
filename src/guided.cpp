@@ -203,15 +203,15 @@ int main(int argc, char** args) {
     int kukaStepWaitTime = dmpStepSize * 1e6;
 
     ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
-    shared_ptr<ControlQueue> leftQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, "real", "left_arm", *node));
+    shared_ptr<ControlQueue> leftQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, "real", "right_arm", *node));
     vector<shared_ptr<ControlQueue>> queueVectors;
     queueVectors.push_back(leftQueue);
     RosSchunk* handQ=new RosSchunk(*node, "real", hand);
     cout<<"hand interface created"<<endl;
 
     //moving hand to staring position
-    vector<double> newPos = {0, -1.57, 0, -1.57, 0, -1.57, 0};
-    handQ->publishSdhJoints(newPos);
+    //vector<double> newPos = {0, -1.57, 0, -1.57, 0, -1.57, 0};
+    //handQ->publishSdhJoints(newPos);
 
     leftQueue->stopCurrentMode();
     std::shared_ptr<std::thread> raThr = leftQueue->startQueueThread();
@@ -222,9 +222,9 @@ int main(int argc, char** args) {
 
     SensorStorage scaredOfSenka(queueVectors, std::vector<std::shared_ptr<GenericHand>>(), 1000);
     scaredOfSenka.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS);
-    scaredOfSenka.startDataStorage("/home/c7031098/testing/Push0709/taught2/");
+    scaredOfSenka.startDataStorage("/home/c7031109/tmp/blockingpushforward");
     ros::Rate r(1);
-    for(int i = 0; i < 20; ++i) {
+    for(int i = 0; i < 15; ++i) {
         r.sleep();
         cout << i << endl;
     }

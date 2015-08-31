@@ -157,20 +157,13 @@ int main(int argc, char** args) {
         cout<<"simulator interface created"<<endl;
 
         //   float newP[3] = {0.5, 0.7, 0.01}; //orig
-        float newP[3] = {0.6, 0.7, 0.01};
-        float newO[4] = {0, 0, 0, 0};
-        float dim[3] = {1, 2 , 0.08};
 
-        simI->addPrimShape(1,"sponge", newP, newO, dim, 10.0);
-        simI->setObjMaterial("sponge","highFrictionMaterial");
+        simI->addPrimShape(1,"sponge", {0.6, 0.7, 0.01}, {0, 0, 0, 0}, {1, 2 , 0.08}, 10.0);
+        simI->setObjMaterial("sponge", SimInterface::FRICTION_HIGH);
         cout<< "sponge imported "<< endl;
 
-        float newP1[3] = {0.30, 0.7, 0.2};
-        float newO1[4] = {0, 0, 0, 0};
-        float dim1[3] = {0.2, 0.2, 0.1};
-
         string objectId = "box";
-        simI->addPrimShape(1, objectId, newP1, newO1, dim1, 1);
+        simI->addPrimShape(1, objectId, {0.30, 0.7, 0.2}, {0, 0, 0, 0}, {0.2, 0.2, 0.1}, 1);
         cout <<"box imported " << endl;
 
 

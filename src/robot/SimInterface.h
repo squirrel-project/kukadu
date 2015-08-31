@@ -29,6 +29,7 @@
 #define REF_FRAME_ORIGIN 166
 
 class SimInterface {
+
 private:
     int argc;
     int sleepTime;
@@ -52,19 +53,25 @@ private:
 
 public:
 
-   SimInterface(int argc, char** argv, int sleepTime, ros::NodeHandle node);
+    enum sim_friction {
+        FRICTION_HIGH, FRICTION_LOW, FRICTION_NO, FRICTION_BULLET, FRICTION_STACKGRASP
+    };
 
-   void addPrimShape(int type,std::string object_id,float* position, float *orientation, float* dim, float mass);
-   void addPrimShape(int type, std::string object_id);
-   void importMesh(std::string object_id,std:: string path,float* position, float* orientation, float scale, float mass);
-   void importMesh(std::string object_id,std:: string path,float* position, float* orientation);
-   void importMesh(std::string object_id,std::string path);
+    SimInterface(int argc, char** argv, int sleepTime, ros::NodeHandle node);
 
-   geometry_msgs::Pose getObjPose(std::string object_id);
-   void removeObj(std::string object_id);
-   void setObjPose(std::string object_id, float* position, float* orientation);
-   void setObjMaterial(std::string object_id,std::string material_id);
-   void setObjColor(std::string object_id,std::string material_id);
+    void addPrimShape(int type, std::string object_id);
+    void addPrimShape(int type, std::string object_id, std::vector<double> position, std::vector<double> orientation, std::vector<double> dim, double mass);
+
+    void importMesh(std::string object_id, std::string path);
+    void importMesh(std::string object_id, std:: string path, std::vector<double> position, std::vector<double> orientation);
+    void importMesh(std::string object_id, std:: string path, std::vector<double> position, std::vector<double> orientation, float scale, float mass);
+
+    void removeObj(std::string object_id);
+    void setObjMaterial(std::string object_id, sim_friction material_id);
+    void setObjPose(std::string object_id, std::vector<double> position, std::vector<double> orientation);
+
+    geometry_msgs::Pose getObjPose(std::string object_id);
+
 };
 
 #endif // SIMINTERFACE_H
