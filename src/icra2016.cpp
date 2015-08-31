@@ -298,7 +298,8 @@ int main(int argc, char** args) {
         goToBlockingPos(rightQueue);
 
         cout << "(main) do haptic test" << endl;
-        int hapticCat = doHapticTest(leftQueue, leftHand);
+        // - 1 because classifier returns values in [1, 4]
+        int hapticCat = doHapticTest(leftQueue, leftHand) - 1;
         cout << "(main) retrieved haptic category: " << hapticCat << endl;
 
         cout << "(main) moving left arm to starting position" << endl;
@@ -324,6 +325,7 @@ int main(int argc, char** args) {
 
         }
 
+        /*
         // do pushing stuff here
         cout << "(main) performing preparation action " << nextActionId << endl;
         if(nextActionId == 1) {
@@ -342,6 +344,7 @@ int main(int argc, char** args) {
         // then do book peeling
         cout << "(main) try to pick up book now" << endl;
         executePick(leftQueue);
+        */
 
         if(usePs) {
             projSim->performRewarding();
@@ -361,6 +364,11 @@ int main(int argc, char** args) {
     }
 
     cout << "(main) stop further training" << endl;
+
+    if(usePs) {
+        cout << "(main) storing trained projective simulator" << endl;
+        projSim->storePS(psFile);
+    }
 
     leftQueue->stopCurrentMode();
     leftQueue->switchMode(KukieControlQueue::KUKA_JNT_POS_MODE);
@@ -498,13 +506,6 @@ int doHapticTest(std::shared_ptr<ControlQueue> leftQueue, shared_ptr<RosSchunk> 
     } else {
         throw "haptic mode not known";
     }
-
-    /*
-    cout << callClassifier(resolvePath("$KUKADU_HOME/scripts/trajectory_classifier"),
-                                                   "trajlab_main", "runClassifier",
-                                                      resolvePath("$KUKADU_HOME/scripts/2015-05-11_data_with_labels/"),
-                                                      resolvePath(tmpDataFolder + "hapticTest/kuka_lwr_real_left_arm_0")) << endl;
-                                                      */
 
     leftQueue->stopCurrentMode();
     leftQueue->switchMode(KukieControlQueue::KUKA_JNT_POS_MODE);
