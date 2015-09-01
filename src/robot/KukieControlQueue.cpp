@@ -1,4 +1,6 @@
 #include "KukieControlQueue.h"
+#include "../utils/KukaduTokenizer.h"
+
 #include <tf/tf.h>
 
 using namespace std;
@@ -98,6 +100,13 @@ KukieControlQueue::KukieControlQueue(int sleepTime, std::string deviceType, std:
 
 }
 
+std::string KukieControlQueue::getRobotSidePrefix() {
+
+    KukaduTokenizer tok(armPrefix, "_");
+    return tok.next();
+
+}
+
 double KukieControlQueue::getTimeStep() {
     return sleepTime * 1e-6;
 }
@@ -140,6 +149,10 @@ geometry_msgs::Pose KukieControlQueue::moveCartesianRelativeWf(geometry_msgs::Po
 
     return basePoseRf;
 
+}
+
+std::string KukieControlQueue::getRobotDeviceType() {
+    return deviceType;
 }
 
 std::string KukieControlQueue::getRobotFileName() {

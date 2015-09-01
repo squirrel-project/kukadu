@@ -5,31 +5,21 @@
 
 using namespace std;
 
-VisionInterface::VisionInterface(int argc, char** argv, int sleepTime, ros::NodeHandle node)  {
+VisionInterface::VisionInterface(int sleepTime, ros::NodeHandle node)  {
 
-    this->sleepTime= sleepTime;
-    this->argc = argc;
-    this->argv = argv;
-    this->node = node;
-
-    this->construct();
+    // (@ senka) arTagTracker was not initialized in the original code, so i initialize it with false (dont know if this is the intended behaviour)
+    this->construct(sleepTime, node, "", false);
 
 }
 
-VisionInterface::VisionInterface(int argc, char** argv, int sleepTime, std::string cameraTag, ros::NodeHandle node){
+VisionInterface::VisionInterface(int sleepTime, std::string cameraTag, ros::NodeHandle node){
 
-    this->sleepTime= sleepTime;
-    this->argc = argc;
-    this->argv = argv;
-    this->node = node;
-    this->currentCameraTag = cameraTag;
+    this->construct(sleepTime, node, cameraTag, false);
 
-    this->construct();
-
-    this->arTagTracker = false;
 }
 
 void VisionInterface::setArTagTracker(){
+
     this->arTagTracker = true;
     this->subArTag = node.subscribe(arTagTopic, 1, &VisionInterface::arTagCallback, this);
 
@@ -40,12 +30,15 @@ void VisionInterface::setArTagTracker(){
         lRate.sleep();
     }
 
+
 }
 
-void VisionInterface::construct(){
+void VisionInterface::construct(int sleepTime, ros::NodeHandle node, std::string cameraTag, bool arTagTracker){
+
+    this->node = node;
+    this->sleepTime = sleepTime;
+
     arTagTopic = "arMarker/tf";
-
-
     Eigen::Matrix4f Tm;
     Tm <<   // use inverse of octave
             -6.3153e-02, -1.0343e+00, -1.8485e-02,  7.2820e-01,

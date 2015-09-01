@@ -6,65 +6,44 @@ _INITIALIZE_EASYLOGGINGPP
 using namespace std;
 using namespace arma;
 
-SensorStorage::SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands, double pollingFrequency) {
+void SensorStorage::initSensorStorage(bool simulation, bool useVision, std::shared_ptr<SimInterface> simInterface, std::string objectId, std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands, std::shared_ptr<VisionInterface> vis, double pollingFrequency, bool storeSimObject, bool storeVisObject) {
 
-    this->simulation = false;
-    this->vision = false;
-    this->queues = queues;
+    this->vis = vis;
     this->hands = hands;
-
+    this->queues = queues;
+    this->vision = useVision;
+    this->sim = simInterface;
+    this->objectID = objectId;
+    this->simulation = simulation;
+    this->storeSimObject = storeSimObject;
+    this->storeVisObject = storeVisObject;
     this->pollingFrequency = pollingFrequency;
 
+    thr = nullptr;
     stopped = false;
     storageStopped = true;
 
-    thr = nullptr;
-
+    storeCartAbsFrc = storeSimObject = storeVisObject = false;
     storeTime = storeJntPos = storeCartPos = storeJntFrc = storeCartFrcTrq = storeHndJntPos = storeHndTctle = true;
 
-    simulation = false;
+}
+
+SensorStorage::SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands, double pollingFrequency) {
+
+    initSensorStorage(false, false, nullptr, "", queues, hands, nullptr, pollingFrequency, false, false);
 
 }
 
 SensorStorage::SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands, std::shared_ptr<SimInterface> sim, std::string objectID, double pollingFrequency) {
-    //SensorStorage(queues, hands, pollingFrequency);
-    simulation = true;
-    this->vision = false;
-    this->sim = sim;
-    this->objectID = objectID;
 
-    this->queues = queues;
-    this->hands = hands;
+    initSensorStorage(true, false, sim, objectID, queues, hands, nullptr, pollingFrequency, true, false);
 
-    this->pollingFrequency = pollingFrequency;
-
-    stopped = false;
-    storageStopped = true;
-
-    thr = nullptr;
-
-    storeTime = storeJntPos = storeCartPos = storeJntFrc = storeCartFrcTrq = storeHndJntPos = storeHndTctle = storeSimObject = true;
-    storeSimObject = storeVisObject = false;
 }
 
 SensorStorage::SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands, std::shared_ptr<VisionInterface> vis, double pollingFrequency){
 
-    this->simulation = false;
-    this->vision = true;
+    initSensorStorage(false, true, nullptr, "", queues, hands, vis, pollingFrequency, false, true);
 
-    this->queues = queues;
-    this->hands = hands;
-    this->vis = vis;
-
-    this->pollingFrequency = pollingFrequency;
-
-    stopped = false;
-    storageStopped = true;
-
-    thr = nullptr;
-
-    storeTime = storeJntPos = storeCartPos = storeJntFrc = storeCartFrcTrq = storeHndJntPos = storeHndTctle  = false;
-    storeVisObject = true;
 }
 
 

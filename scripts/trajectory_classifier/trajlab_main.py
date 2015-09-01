@@ -3,26 +3,17 @@
 ######################
 
 import sys, time
-## import pickle
 import numpy as np
-## import scipy.io 
-## import pylab as plt
-
-## ##########################################
 import mmr_base_classes
 import mmr_setparams
 import mmr_mmr_cls
 import argparse
-## from mmr_load_data_state import load_data_state
 import trajlab_load_data
 import mmr_validation_cls 
 from mmr_kernel import mmr_kernel
-## from mmr_train import mmr_train
 from mmr_test import inverse_knn
-from mmr_report import mmr_report
+#from mmr_report import mmr_report
 from mmr_eval import mmr_eval_binvector
-## from mmr_tools import mmr_cross_kernel
-## from mmr_normalization_new import mmr_normalization
 ## ---------------------------------
 ## #################################
 def mmr_main(iworkmode, trainingBase, evalFile):

@@ -33,10 +33,7 @@ double alpham = 0.0;
 
 string environment = "simulation";
 
-string tmpDataFolder = resolvePath("$HOME/tmp/");
-string pushDataFolder = resolvePath("$KUKADU_HOME/movements/icra2016/");
-
-int doHapticTest(std::shared_ptr<ControlQueue> leftQueue, shared_ptr<RosSchunk> leftHand);
+int doHapticTest(std::shared_ptr<KukieControlQueue> leftQueue, shared_ptr<RosSchunk> leftHand, string classifierPath, string classifierFile, string classifierFunction, string databasePath, string tmpPath);
 
 void goToStartPos(std::shared_ptr<ControlQueue> leftQueue);
 void goToBlockingPos(std::shared_ptr<ControlQueue> rightQueue);
@@ -133,6 +130,12 @@ int main(int argc, char** args) {
     string prepRotVertPushBack = "";
     string prepTransPushForward = "";
 
+    string tmpPath = "";
+    string scriptPath = "";
+    string scriptFile = "";
+    string databasePath = "";
+    string scriptFunction = "";
+
 
     shared_ptr<ManualReward> manualRew = nullptr;
     shared_ptr<ProjectiveSimulator> projSim = nullptr;
@@ -163,6 +166,11 @@ int main(int argc, char** args) {
             ("ps.psfile", po::value<string>(), "path to store and load the ps model")
             ("control.simulation", po::value<int>(), "use simulator")
             ("control.hapticmode", po::value<int>(), "mode for determining the haptic category")
+            ("class.database", po::value<string>(), "classificatin database path")
+            ("class.mmrpath", po::value<string>(), "classifier path")
+            ("class.mmrfile", po::value<string>(), "classifier file")
+            ("class.mmrfunction", po::value<string>(), "classifier function")
+            ("class.tmppath", po::value<string>(), "temporary folder")
     ;
 
     ifstream parseFile(resolvePath("$KUKADU_HOME/cfg/haptic.prop"), std::ifstream::in);
@@ -216,18 +224,28 @@ int main(int argc, char** args) {
     else return 1;
     if (vm.count("ps.psfile")) psFile = resolvePath(vm["ps.psfile"].as<string>());
     else return 1;
+    if (vm.count("class.database")) databasePath = resolvePath(vm["class.database"].as<string>());
+    else return 1;
+    if (vm.count("class.mmrpath")) scriptPath = resolvePath(vm["class.mmrpath"].as<string>());
+    else return 1;
+    if (vm.count("class.mmrfile")) scriptFile = resolvePath(vm["class.mmrfile"].as<string>());
+    else return 1;
+    if (vm.count("class.mmrfunction")) scriptFunction = resolvePath(vm["class.mmrfunction"].as<string>());
+    else return 1;
+    if (vm.count("class.tmppath")) tmpPath = resolvePath(vm["class.tmppath"].as<string>());
+    else return 1;
 
     environment = (simMode == 0) ? "real" : "simulation";
 
-    pf::remove_all(tmpDataFolder + "hapticTest");
+    pf::remove_all(tmpPath + "hapticTest");
 
     cout << "all properties loaded" << endl;
     cout << "execution mode is " << environment << endl;
     int kukaStepWaitTime = dmpStepSize * 1e6;
 
     ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
-    shared_ptr<ControlQueue> leftQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, environment, "left_arm", *node));
-    shared_ptr<ControlQueue> rightQueue = shared_ptr<ControlQueue>(new KukieControlQueue(kukaStepWaitTime, environment, "right_arm", *node));
+    shared_ptr<KukieControlQueue> leftQueue = shared_ptr<KukieControlQueue>(new KukieControlQueue(kukaStepWaitTime, environment, "left_arm", *node));
+    shared_ptr<KukieControlQueue> rightQueue = shared_ptr<KukieControlQueue>(new KukieControlQueue(kukaStepWaitTime, environment, "right_arm", *node));
 
     shared_ptr<RosSchunk> leftHand = shared_ptr<RosSchunk>(new RosSchunk(*node, environment, "left"));
     shared_ptr<RosSchunk> rightHand = shared_ptr<RosSchunk>(new RosSchunk(*node, environment, "right"));
@@ -299,8 +317,8 @@ int main(int argc, char** args) {
 
         cout << "(main) do haptic test" << endl;
         // - 1 because classifier returns values in [1, 4]
-        int hapticCat = doHapticTest(leftQueue, leftHand) - 1;
-        cout << "(main) retrieved haptic category: " << hapticCat << endl;
+        int hapticCat = doHapticTest(leftQueue, leftHand, scriptPath, scriptFile, scriptFunction, databasePath, tmpPath) - 1;
+        cout << "(main) retrieved haptic category: " << (hapticCat + 1) << endl;
 
         cout << "(main) moving left arm to starting position" << endl;
         goToStartPos(leftQueue);
@@ -325,22 +343,22 @@ int main(int argc, char** args) {
 
         }
 
-        /*
         // do pushing stuff here
-        cout << "(main) performing preparation action " << nextActionId << endl;
-        if(nextActionId == 1) {
+        cout << "(main) performing preparation action " << (nextActionId + 1) << endl;
+        if(nextActionId == 0) {
             // found bottom side --> rotate 270 degrees (later, execution time can be included in reward function of ps, which should find that counter clock wise rotation of 90 degrees is better)
             executeRotVert270Deg(leftQueue, rightQueue);
-        } else if(nextActionId == 2) {
+        } else if(nextActionId == 1) {
             // found closed side --> nothing to do
-        } else if(nextActionId == 3) {
+        } else if(nextActionId == 2) {
             // found open side --> rotate 180 degrees
             executeRotHor180Deg(leftQueue, rightQueue);
-        } else if(nextActionId == 4) {
+        } else if(nextActionId == 3) {
             // found top side --> rotate 90 degrees
             executeRotVert90Deg(leftQueue, rightQueue);
         }
 
+        /*
         // then do book peeling
         cout << "(main) try to pick up book now" << endl;
         executePick(leftQueue);
@@ -469,7 +487,7 @@ void goToBlockingPos(std::shared_ptr<ControlQueue> rightQueue) {
 
 }
 
-int doHapticTest(std::shared_ptr<ControlQueue> leftQueue, shared_ptr<RosSchunk> leftHand) {
+int doHapticTest(std::shared_ptr<KukieControlQueue> leftQueue, shared_ptr<RosSchunk> leftHand, string classifierPath, string classifierFile, string classifierFunction, string databasePath, string tmpPath) {
 
     int classifierRes = -1;
     vector<shared_ptr<ControlQueue>> queues = {leftQueue};
@@ -483,14 +501,14 @@ int doHapticTest(std::shared_ptr<ControlQueue> leftQueue, shared_ptr<RosSchunk> 
     leftQueue->switchMode(KukieControlQueue::KUKA_JNT_IMP_MODE);
 
     SensorStorage store(queues, hands, 100);
-    shared_ptr<thread> storageThread = store.startDataStorage(tmpDataFolder + "hapticTest");
+    shared_ptr<thread> storageThread = store.startDataStorage(tmpPath + "hapticTest");
 
     sleep(1);
 
     vector<double> newHandJoints = {SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0.4, 1.2, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
     leftHand->publishSdhJoints(newHandJoints);
 
-    sleep(1);
+    sleep(2);
 
     store.stopDataStorage();
     storageThread->join();
@@ -499,20 +517,23 @@ int doHapticTest(std::shared_ptr<ControlQueue> leftQueue, shared_ptr<RosSchunk> 
         cout << "what was the haptic result?" << endl;
         cin >> classifierRes;
     } else if(hapticMode == HAPTIC_MODE_CLASSIFIER) {
-        classifierRes = callClassifier(resolvePath("$KUKADU_HOME/scripts/trajectory_classifier"),
-                                               "trajlab_main", "runClassifier",
-                                                  resolvePath("$KUKADU_HOME/scripts/2015-05-11_data_with_labels/"),
-                                                  resolvePath(tmpDataFolder + "hapticTest/kuka_lwr_real_left_arm_0"));
+        classifierRes = callClassifier(classifierPath,
+                                               classifierFile, classifierFunction,
+                                                  databasePath,
+                                                  tmpPath + "hapticTest/kuka_lwr_" + leftQueue->getRobotDeviceType() + "_left_arm_0");
     } else {
         throw "haptic mode not known";
     }
+
+    getchar();
 
     leftQueue->stopCurrentMode();
     leftQueue->switchMode(KukieControlQueue::KUKA_JNT_POS_MODE);
 
     cout << "(main) classifier result is category " << classifierRes << endl;
 
-    pf::remove_all(tmpDataFolder + "hapticTest");
+    pf::remove_all(tmpPath + "hapticTest");
+    leftHand->publishSdhJoints(handJoints);
 
     return classifierRes;
 
@@ -596,7 +617,7 @@ void executePick(std::shared_ptr<ControlQueue> leftQueue) {
 
 void executeFinalPush(std::shared_ptr<ControlQueue> leftQueue) {
 
-    goToStartPos(leftQueue);
+    leftQueue->moveJoints({-0.9692263007164001, 1.113829493522644, 1.1473214626312256, -1.444376826286316, -0.28663957118988037, -0.8957559466362, -0.2651996612548828});
 
     leftQueue->stopCurrentMode();
     leftQueue->switchMode(KukieControlQueue::KUKA_JNT_IMP_MODE);
@@ -607,14 +628,18 @@ void executeFinalPush(std::shared_ptr<ControlQueue> leftQueue) {
     leftQueue->stopCurrentMode();
     leftQueue->switchMode(KukieControlQueue::KUKA_JNT_POS_MODE);
 
-    goToStartPos(leftQueue);
+    leftQueue->moveJoints({-0.9692263007164001, 1.113829493522644, 1.1473214626312256, -1.444376826286316, -0.28663957118988037, -0.8957559466362, -0.2651996612548828});
 
 }
 
 void executeRotHorPushBack(std::shared_ptr<ControlQueue> leftQueue) {
 
+    leftQueue->moveJoints({-0.26015156507492065, 1.7727789878845215, 2.0502824783325195, -0.4911971092224121, -1.933821678161621, 1.159960150718689, 0.3724197447299957});
+
     DMPExecutor execRotHorPushBack(dmpRotHortPushBack, leftQueue);
     execRotHorPushBack.executeTrajectory(ac, 0, dmpRotHortPushBack->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+
+    leftQueue->moveJoints({-0.26015156507492065, 1.7727789878845215, 2.0502824783325195, -0.4911971092224121, -1.933821678161621, 1.159960150718689, 0.3724197447299957});
 
 }
 
@@ -630,39 +655,33 @@ void executeTransPushForward(std::shared_ptr<ControlQueue> rightQueue) {
     DMPExecutor execTransPushForward(dmpTransPushForward, rightQueue);
     execTransPushForward.executeTrajectory(ac, 0, dmpTransPushForward->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
 
+    goToBlockingPos(rightQueue);
+
 }
 
 void executeRotHor90Deg(std::shared_ptr<ControlQueue> leftQueue, std::shared_ptr<ControlQueue> rightQueue) {
 
-    DMPExecutor execTransPushForward(dmpTransPushForward, rightQueue);
-    execTransPushForward.executeTrajectory(ac, 0, dmpTransPushForward->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+    executeTransPushForward(rightQueue);
+
+    leftQueue->moveJoints({-1.2000699043273926, 1.2644866704940796, 2.038100004196167, -2.071664810180664, -1.1690874099731445, 1.3248648643493652, -1.7968707084655762});
 
     DMPExecutor execRotHor(dmpRotHor, leftQueue);
     execRotHor.executeTrajectory(ac, 0, dmpRotHor->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
 
-    DMPExecutor execRotHortPushBack(dmpRotHortPushBack, leftQueue);
-    execRotHortPushBack.executeTrajectory(ac, 0, dmpRotHortPushBack->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
-
-    goToStartPos(leftQueue);
-
-    DMPExecutor executeFinalPush(dmpFinalPush, leftQueue);
-    executeFinalPush.executeTrajectory(ac, 0, dmpFinalPush->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+    executeRotHorPushBack(leftQueue);
+    executeFinalPush(leftQueue);
 
 }
 
 void executeRotVert90Deg(std::shared_ptr<ControlQueue> leftQueue, std::shared_ptr<ControlQueue> rightQueue) {
 
-    DMPExecutor execTransPushForward(dmpTransPushForward, rightQueue);
-    execTransPushForward.executeTrajectory(ac, 0, dmpTransPushForward->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+    executeTransPushForward(rightQueue);
 
     DMPExecutor execRotVert(dmpRotVert, leftQueue);
     execRotVert.executeTrajectory(ac, 0, dmpRotVert->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
 
-    DMPExecutor execRotVertPushBack(dmpRotVertPushBack, leftQueue);
-    execRotVertPushBack.executeTrajectory(ac, 0, dmpRotVertPushBack->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
-
-    DMPExecutor executeFinalPush(dmpFinalPush, leftQueue);
-    executeFinalPush.executeTrajectory(ac, 0, dmpFinalPush->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+    executeRotVertPushBack(leftQueue);
+    executeFinalPush(leftQueue);
 
 }
 

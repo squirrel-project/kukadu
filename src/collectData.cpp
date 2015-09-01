@@ -192,7 +192,7 @@ int main(int argc, char** args) {
 
         //vision interface
 
-        shared_ptr<VisionInterface> vis = shared_ptr<VisionInterface>(new VisionInterface(argc, args, kukaStepWaitTime, *node));
+        shared_ptr<VisionInterface> vis = shared_ptr<VisionInterface>(new VisionInterface(kukaStepWaitTime, *node));
         cout<<"vision interface created"<<endl;
 
         vis->setArTagTracker();

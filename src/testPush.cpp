@@ -188,7 +188,7 @@ int main(int argc, char** args) {
     }
     if (environment == "real"){
 
-        shared_ptr<VisionInterface> vis = shared_ptr<VisionInterface>(new VisionInterface(argc, args, kukaStepWaitTime, *node));
+        shared_ptr<VisionInterface> vis = shared_ptr<VisionInterface>(new VisionInterface(kukaStepWaitTime, *node));
         SensorStorage storeData(std::vector<std::shared_ptr<ControlQueue>>(), std::vector<std::shared_ptr<GenericHand>>(), vis, 1000);
         storeData.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS | STORE_VIS_OBJECT);
 

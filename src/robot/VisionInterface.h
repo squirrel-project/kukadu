@@ -14,36 +14,32 @@
 
 class VisionInterface {
 private:
-    int argc;
+
     int sleepTime;
 
-    char** argv;
-
-    ros::NodeHandle node;
-
-    std::string currentCameraTag;
+    bool firstSet;
+    bool arTagTracker;
 
     std::string arTagTopic;
+    std::string currentCameraTag;
 
+    ros::NodeHandle node;
     ros::Subscriber subArTag;
 
-    bool arTagTracker;
-    bool firstSet;
-
-    geometry_msgs::Pose currentArPose;
     tf::Transform tfChestKin;
 
+    geometry_msgs::Pose currentArPose;
+
+
 public:
-    VisionInterface(int argc, char** argv, int sleepTime, ros::NodeHandle node);
-    VisionInterface(int argc, char** argv, int sleepTime, std::string cameraTag, ros::NodeHandle node);
 
-    void construct();
-
-    void setCameraTag(std::string cameraTag);
+    VisionInterface(int sleepTime, ros::NodeHandle node);
+    VisionInterface(int sleepTime, std::string cameraTag, ros::NodeHandle node);
 
     void setArTagTracker();
-
+    void setCameraTag(std::string cameraTag);
     void arTagCallback(const tf::tfMessage& msg);
+    void construct(int sleepTime, ros::NodeHandle node, std::string cameraTag, bool arTagTracker);
 
     geometry_msgs::Pose getArPose();
 

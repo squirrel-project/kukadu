@@ -52,90 +52,91 @@ class KukieControlQueue : public ControlQueue {
 
 private:
 	
+    int isInit;
+    int finish;
+    int impMode;
 	int sleepTime;
-	int finish;
-	int isInit;	
     int ptpReached;
+    int monComMode;
+    int currentMode;
     int cartesianPtpReached;
-	int monComMode;
-	int impMode;
-	int currentMode;
+
+    double currentTime;
 
     std::queue<arma::vec> movementQueue;
     std::queue<geometry_msgs::Pose> cartesianMovementQueue;
 	
-    arma::vec startingJoints;
-    arma::vec currentJoints;
     arma::vec currentCarts;
+    arma::vec currentJoints;
+    arma::vec startingJoints;
     arma::vec currentJntFrqTrq;
     arma::vec currentCartFrqTrq;
-	
-	double currentTime;
-	
-	std::mutex currentJointsMutex;
-	std::mutex currentCartsMutex;
+
     std::mutex cartFrcTrqMutex;
+    std::mutex currentCartsMutex;
+	std::mutex currentJointsMutex;
 
     geometry_msgs::Pose currentCartPose;
     geometry_msgs::Pose currentCartPoseRf;
 	
+
+    std::string ptpTopic;
+    std::string armPrefix;
+    std::string deviceType;
 	std::string commandTopic;
-	std::string retJointPosTopic;
-	std::string retCartPosTopic;
-	std::string switchModeTopic;
-	std::string stiffnessTopic;
-	std::string jntStiffnessTopic;
-	std::string ptpTopic;
-	std::string commandStateTopic;
-	std::string ptpReachedTopic;
-	std::string addLoadTopic;
+    std::string addLoadTopic;
+    std::string cartPtpTopic;
+    std::string stiffnessTopic;
     std::string jntFrcTrqTopic;
     std::string cartFrcTrqTopic;
-    std::string cartPtpTopic;
+    std::string retCartPosTopic;
+    std::string switchModeTopic;
+    std::string ptpReachedTopic;
+    std::string cartPoseRfTopic;
+	std::string retJointPosTopic;
+	std::string jntStiffnessTopic;
+	std::string commandStateTopic;
     std::string cartPtpReachedTopic;
     std::string cartMoveRfQueueTopic;
     std::string cartMoveWfQueueTopic;
-    std::string cartPoseRfTopic;
     std::string jntSetPtpThreshTopic;
 
-    std::string deviceType;
-    std::string armPrefix;
-	
 	ros::NodeHandle node;
+
 	ros::Rate* loop_rate;
 	
+    ros::Publisher pubPtp;
 	ros::Publisher pubCommand;
-	ros::Publisher pubSwitchMode;
-	ros::Publisher pubPtp;
     ros::Publisher pubCartPtp;
-	ros::Publisher pubAddLoad;
+    ros::Publisher pubAddLoad;
+	ros::Publisher pubSwitchMode;
     ros::Publisher pubCartMoveRfQueue;
     ros::Publisher pubCartMoveWfQueue;
-	
+    ros::Publisher pub_set_ptp_thresh;
 	ros::Publisher pub_set_cart_stiffness;
 	ros::Publisher pub_set_joint_stiffness;
-    ros::Publisher pub_set_ptp_thresh;
 	
 	ros::Subscriber subJntPos;
 	ros::Subscriber subCartPos;
 	ros::Subscriber subComState;
-	ros::Subscriber subPtpReached;
     ros::Subscriber subjntFrcTrq;
+	ros::Subscriber subPtpReached;
     ros::Subscriber subCartFrqTrq;
-    ros::Subscriber subCartPtpReached;
     ros::Subscriber subCartPoseRf;
-	
-	double computeDistance(float* a1, float* a2, int size);
+    ros::Subscriber subCartPtpReached;
+
 
     /* Kukie callback functions */
-    void robotJointPosCallback(const sensor_msgs::JointState& msg);
-    void robotCartPosCallback(const geometry_msgs::Pose& msg);
-    void commandStateCallback(const std_msgs::Float32MultiArray& msg);
-    void ptpReachedCallback(const std_msgs::Int32MultiArray& msg);
-    void cartPtpReachedCallback(const std_msgs::Int32MultiArray& msg);
-    void jntFrcTrqCallback(const std_msgs::Float64MultiArray& msg);
-    void cartFrcTrqCallback(const geometry_msgs::Wrench& msg);
     void cartPosRfCallback(const geometry_msgs::Pose msg);
+    void robotCartPosCallback(const geometry_msgs::Pose& msg);
+    void cartFrcTrqCallback(const geometry_msgs::Wrench& msg);
+    void ptpReachedCallback(const std_msgs::Int32MultiArray& msg);
+    void robotJointPosCallback(const sensor_msgs::JointState& msg);
+    void jntFrcTrqCallback(const std_msgs::Float64MultiArray& msg);
+    void commandStateCallback(const std_msgs::Float32MultiArray& msg);
+    void cartPtpReachedCallback(const std_msgs::Int32MultiArray& msg);
+
+    double computeDistance(float* a1, float* a2, int size);
 
 public:
 
@@ -150,43 +151,45 @@ public:
 	
 	void run();
 	void setFinish();
-    void addJointsPosToQueue(arma::vec joints);
-	void switchMode(int mode);
-	void stopCurrentMode();
-	void synchronizeToControlQueue(int maxNumJointsInQueue);
-    void setStartingJoints(arma::vec joints);
+    void safelyDestroy();
+    void setInitValues();
+    void stopCurrentMode();
+    void switchMode(int mode);
     void moveJoints(arma::vec joints);
+    void setJntPtpThresh(double thresh);
+    void setStartingJoints(arma::vec joints);
+    void addJointsPosToQueue(arma::vec joints);
     void moveCartesian(geometry_msgs::Pose pos);
     void moveCartesianNb(geometry_msgs::Pose pos);
-    void setJntPtpThresh(double thresh);
-    geometry_msgs::Pose moveCartesianRelativeWf(geometry_msgs::Pose basePoseRf, geometry_msgs::Pose offset);
-
     void addCartesianPosToQueue(geometry_msgs::Pose pose);
-	
-	void setAdditionalLoad(float loadMass, float loadPos);
+    void setAdditionalLoad(float loadMass, float loadPos);
+	void synchronizeToControlQueue(int maxNumJointsInQueue);
 	void setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq);
 
+    bool isInitialized();
+
+    double getTimeStep();
+
+    std::string getRobotName();
+    std::string getRobotFileName();
+    std::string getRobotSidePrefix();
+    std::string getRobotDeviceType();
+
+    std::vector<std::string> getJointNames();
+
+    mes_result getCartesianPos();
+    mes_result getCurrentJoints();
     mes_result getCurrentJntFrcTrq();
     mes_result getCurrentCartesianFrcTrq();
 	
-    mes_result getCartesianPos();
     geometry_msgs::Pose getCartesianPose();
     geometry_msgs::Pose getCartesianPoseRf();
+    geometry_msgs::Pose moveCartesianRelativeWf(geometry_msgs::Pose basePoseRf, geometry_msgs::Pose offset);
+
+
+    arma::vec getFrcTrqCart();
     arma::vec getStartingJoints();
     arma::vec retrieveJointsFromRobot();
-    arma::vec getFrcTrqCart();
-	
-	mes_result getCurrentJoints();
-	bool isInitialized();
-	void safelyDestroy();
-	void setInitValues();
-
-    double getTimeStep();
-	
-    std::string getRobotName();
-    std::string getRobotFileName();
-    std::vector<std::string> getJointNames();
-   // int getMode();
 
     static const int KUKA_STOP_MODE = 0;
     static const int KUKA_JNT_POS_MODE = 10;

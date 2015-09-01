@@ -17,12 +17,18 @@ transfinalpush = $KUKADU_HOME/movements/icra2016/rotvert90degpushbackblocking/ku
 transpushforward = $KUKADU_HOME/movements/icra2016/blockingpushforward/kuka_lwr_real_right_arm_0
 [control]
 simulation = 1
-hapticmode = 1
+hapticmode = 0
 [ps]
-useprojectivesimulation = 1
+useprojectivesimulation = 0
 loadps = 0
 numberofactions = 4
 numberofpercepts = 4
 gamma = 0.01
 stdreward = 100
 psfile = $KUKADU_HOME/movements/icra2016/trainedps.txt
+[class]
+mmrpath = $KUKADU_HOME/scripts/trajectory_classifier
+mmrfile = trajlab_main
+mmrfunction = runClassifier
+database = $HOME/data/studium/informatik/phd/projects/squirrel/books/2015-05-11_data_with_labels/
+tmppath = $HOME/tmp/
