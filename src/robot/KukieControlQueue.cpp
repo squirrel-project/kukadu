@@ -66,6 +66,8 @@ void KukieControlQueue::constructQueue(int sleepTime, std::string commandTopic, 
     pubPtp = node.advertise<std_msgs::Float64MultiArray>(ptpTopic, 10);
 //	pubAddLoad = node.advertise<std_msgs::Float32MultiArray>(addLoadTopic, 1);
 
+    isRealRobot = (getRobotDeviceType().compare("real")) ? false : true;
+
     usleep(1e6);
 
 }
@@ -181,7 +183,12 @@ void KukieControlQueue::cartFrcTrqCallback(const geometry_msgs::Wrench& msg) {
 
 void KukieControlQueue::jntFrcTrqCallback(const std_msgs::Float64MultiArray& msg) {
 
-    currentJntFrqTrq = stdToArmadilloVec(msg.data);
+    if(isRealRobot)
+        currentJntFrqTrq = stdToArmadilloVec(msg.data);
+    else {
+        currentJntFrqTrq = vec(7);
+        currentCartFrqTrq.fill(0);
+    }
 
 }
 

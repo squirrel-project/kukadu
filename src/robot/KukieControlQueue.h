@@ -61,6 +61,8 @@ private:
     int currentMode;
     int cartesianPtpReached;
 
+    bool isRealRobot;
+
     double currentTime;
 
     std::queue<arma::vec> movementQueue;

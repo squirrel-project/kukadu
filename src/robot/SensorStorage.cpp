@@ -240,8 +240,8 @@ void SensorStorage::storeData(bool storeHeader, std::vector<std::shared_ptr<std:
             mes_result cartAbsFrcTrq;
             double absCartFrc = 0.0;
 
+            // if not collect data live
             if(data.size()) {
-
                 time = data.at(i)->getTimes()(dataPointIdx);
 
                 if(storeJntPos) {
@@ -345,17 +345,21 @@ void SensorStorage::storeData(bool storeHeader, std::vector<std::shared_ptr<std:
             if(storeTime)
                 *currentOfStream << time << "\t";
 
-            if(storeJntPos)
+            if(storeJntPos) {
                 writeVectorInLine(currentOfStream, joints.joints);
+            }
 
-            if(storeCartPos)
+            if(storeCartPos) {
                 writeVectorInLine(currentOfStream, cartPos.joints);
+            }
 
-            if(storeJntFrc)
+            if(storeJntFrc) {
                 writeVectorInLine(currentOfStream, jntFrcTrq.joints);
+            }
 
-            if(storeCartFrcTrq)
+            if(storeCartFrcTrq) {
                 writeVectorInLine(currentOfStream, cartFrcTrq.joints);
+            }
 
             if(storeCartAbsFrc) {
                 vec absForce(1);

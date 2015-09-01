@@ -508,7 +508,7 @@ int doHapticTest(std::shared_ptr<KukieControlQueue> leftQueue, shared_ptr<RosSch
     vector<double> newHandJoints = {SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT, 0.4, 1.2, SDH_IGNORE_JOINT, SDH_IGNORE_JOINT};
     leftHand->publishSdhJoints(newHandJoints);
 
-    sleep(2);
+    sleep(4);
 
     store.stopDataStorage();
     storageThread->join();
