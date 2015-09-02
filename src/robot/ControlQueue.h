@@ -92,10 +92,16 @@ public:
     virtual void setStartingJoints(arma::vec joints) = 0;
 	
 	/**
-	 * \brief Implements simple point to point movement in joint space
+     * \brief Implements simple point to point movement in joint space (blocks until target reached)
 	 * \param joints array of joint positions
 	 */
     virtual void moveJoints(arma::vec joints) = 0;
+
+    /**
+     * \brief Implements simple point to point movement in joint space (not blocking)
+     * \param joints array of joint positions
+     */
+    virtual void moveJointsNb(arma::vec joints) = 0;
 
     /**
      * \brief Implements simple point to point movement in cartesian space

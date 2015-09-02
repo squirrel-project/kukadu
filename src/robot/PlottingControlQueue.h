@@ -82,38 +82,41 @@ public:
 	
 	void run();
 	void setFinish();
-    void addJointsPosToQueue(arma::vec joints);
-    void addCartesianPosToQueue(geometry_msgs::Pose pose);
-	void switchMode(int mode);
-	void stopCurrentMode();
-	void synchronizeToControlQueue(int maxNumJointsInQueue);
-    void setStartingJoints(arma::vec joints);
+    void safelyDestroy();
+    void setInitValues();
+    void stopCurrentMode();
+    void switchMode(int mode);
     void moveJoints(arma::vec joints);
+    void moveJointsNb(arma::vec joints);
+    void setJntPtpThresh(double thresh);
+    void setStartingJoints(arma::vec joints);
+    void addJointsPosToQueue(arma::vec joints);
     void moveCartesian(geometry_msgs::Pose pos);
     void moveCartesianNb(geometry_msgs::Pose pos);
-	
-	void setAdditionalLoad(float loadMass, float loadPos);
+    void addCartesianPosToQueue(geometry_msgs::Pose pose);
+    void setAdditionalLoad(float loadMass, float loadPos);
+	void synchronizeToControlQueue(int maxNumJointsInQueue);
 	void setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq);
 
-    mes_result getCurrentJntFrcTrq();
-    mes_result getCurrentCartesianFrcTrq();
-    mes_result getCartesianPos();
-    geometry_msgs::Pose getCartesianPose();
+    bool isInitialized();
 
-    arma::vec getStartingJoints();
-    arma::vec retrieveJointsFromRobot();
-	
-	mes_result getCurrentJoints();
-	bool isInitialized();
-	void safelyDestroy();
-	void setInitValues();
-    void setJntPtpThresh(double thresh);
+    double getTimeStep();
 
     std::string getRobotName();
     std::string getRobotFileName();
+
+    arma::vec getStartingJoints();
+    arma::vec retrieveJointsFromRobot();
+
     std::vector<std::string> getJointNames();
 
-    double getTimeStep();
+    mes_result getCartesianPos();
+    mes_result getCurrentJoints();
+    mes_result getCurrentJntFrcTrq();
+    mes_result getCurrentCartesianFrcTrq();
+
+
+    geometry_msgs::Pose getCartesianPose();
     
 };
 

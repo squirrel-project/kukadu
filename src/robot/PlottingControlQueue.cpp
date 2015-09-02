@@ -129,6 +129,10 @@ void PlottingControlQueue::moveJoints(arma::vec joints) {
     currentJoints = joints;
 }
 
+void PlottingControlQueue::moveJointsNb(arma::vec joints) {
+    moveJoints(joints);
+}
+
 void PlottingControlQueue::setAdditionalLoad(float loadMass, float loadPos) {
 }
 

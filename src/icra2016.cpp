@@ -33,10 +33,13 @@ double alpham = 0.0;
 
 string environment = "simulation";
 
-int doHapticTest(std::shared_ptr<KukieControlQueue> leftQueue, shared_ptr<RosSchunk> leftHand, string classifierPath, string classifierFile, string classifierFunction, string databasePath, string tmpPath);
+int doHapticTest(std::shared_ptr<KukieControlQueue> leftQueue, std::shared_ptr<KukieControlQueue> rightQueue, shared_ptr<RosSchunk> leftHand, string classifierPath, string classifierFile, string classifierFunction, string databasePath, string tmpPath);
 
+void goToPushHandPos(std::shared_ptr<RosSchunk> leftHand);
 void goToStartPos(std::shared_ptr<ControlQueue> leftQueue);
 void goToBlockingPos(std::shared_ptr<ControlQueue> rightQueue);
+void setWeakStiffness(std::shared_ptr<ControlQueue> queue);
+void setStandardStiffness(std::shared_ptr<ControlQueue> queue);
 
 void learnRotHor(std::shared_ptr<ControlQueue> leftQueue, std::string trainingDataPath);
 void learnRotVert(std::shared_ptr<ControlQueue> leftQueue, std::string trainingDataPath);
@@ -250,9 +253,6 @@ int main(int argc, char** args) {
     shared_ptr<RosSchunk> leftHand = shared_ptr<RosSchunk>(new RosSchunk(*node, environment, "left"));
     shared_ptr<RosSchunk> rightHand = shared_ptr<RosSchunk>(new RosSchunk(*node, environment, "right"));
 
-    vector<double> pushHandPos = {0.15, -1.57, 0, -1.57, 0, -1.57, 0};
-    leftHand->publishSdhJoints(pushHandPos);
-
     vector<shared_ptr<ControlQueue>> queueVectors;
     queueVectors.push_back(leftQueue);
 
@@ -302,14 +302,16 @@ int main(int argc, char** args) {
 
     while(performFurtherRound) {
 
+        goToPushHandPos(leftHand);
+
+        cout << "(main) moving left arm to starting position" << endl;
+        goToStartPos(leftQueue);
+
         vector<double> rightHandJoints = {2.57271414799788e-05, -0.5270757987175063, 0.20988086261097294, 0.8659628476930076, 1.537404015150829, -0.5575713234648674, 0.22337989354436658};
         rightHand->publishSdhJoints(rightHandJoints);
 
         vector<double> pushHandPos = {0.15, -1.57, 0, -1.57, 0, -1.57, 0};
         leftHand->publishSdhJoints(pushHandPos);
-
-        cout << "(main) moving left arm to starting position" << endl;
-        goToStartPos(leftQueue);
 
         // get right blocking arm to position
         cout << "(main) moving right arm to blocking position" << endl;
@@ -317,7 +319,7 @@ int main(int argc, char** args) {
 
         cout << "(main) do haptic test" << endl;
         // - 1 because classifier returns values in [1, 4]
-        int hapticCat = doHapticTest(leftQueue, leftHand, scriptPath, scriptFile, scriptFunction, databasePath, tmpPath) - 1;
+        int hapticCat = doHapticTest(leftQueue, rightQueue, leftHand, scriptPath, scriptFile, scriptFunction, databasePath, tmpPath) - 1;
         cout << "(main) retrieved haptic category: " << (hapticCat + 1) << endl;
 
         cout << "(main) moving left arm to starting position" << endl;
@@ -404,6 +406,25 @@ int main(int argc, char** args) {
 
 }
 
+void setStandardStiffness(std::shared_ptr<ControlQueue> queue) {
+
+    queue->setStiffness(KukieControlQueue::KUKA_STD_XYZ_STIFF, KukieControlQueue::KUKA_STD_ABC_STIFF, KukieControlQueue::KUKA_STD_CPDAMPING, 15000, 150, 1500);
+
+}
+
+void setWeakStiffness(std::shared_ptr<ControlQueue> queue) {
+
+    queue->setStiffness(50, 10, 0.05, 15000, 150, 1500);
+
+}
+
+void goToPushHandPos(std::shared_ptr<RosSchunk> leftHand) {
+
+    vector<double> pushHandPos = {0.15, -1.57, 0, -1.57, 0, -1.57, 0};
+    leftHand->publishSdhJoints(pushHandPos);
+
+}
+
 int callClassifier(std::string pythonPath, std::string pythonFile, std::string pythonFun, std::string trainedPath, std::string passedFilePath) {
 
     int retVal = -1;
@@ -487,7 +508,7 @@ void goToBlockingPos(std::shared_ptr<ControlQueue> rightQueue) {
 
 }
 
-int doHapticTest(std::shared_ptr<KukieControlQueue> leftQueue, shared_ptr<RosSchunk> leftHand, string classifierPath, string classifierFile, string classifierFunction, string databasePath, string tmpPath) {
+int doHapticTest(std::shared_ptr<KukieControlQueue> leftQueue, std::shared_ptr<KukieControlQueue> rightQueue, shared_ptr<RosSchunk> leftHand, string classifierPath, string classifierFile, string classifierFunction, string databasePath, string tmpPath) {
 
     int classifierRes = -1;
     vector<shared_ptr<ControlQueue>> queues = {leftQueue};
@@ -497,8 +518,24 @@ int doHapticTest(std::shared_ptr<KukieControlQueue> leftQueue, shared_ptr<RosSch
     leftHand->publishSdhJoints(handJoints);
     leftQueue->moveJoints(stdToArmadilloVec({-0.40275293588638306, 1.7016545534133911, 1.8671916723251343, -0.6587858200073242, 0.0556875579059124, 1.1993221044540405, -1.9818705320358276}));
 
+    rightQueue->stopCurrentMode();
+    setWeakStiffness(rightQueue);
+    rightQueue->switchMode(KukieControlQueue::KUKA_JNT_IMP_MODE);
+
     leftQueue->stopCurrentMode();
+    setStandardStiffness(leftQueue);
     leftQueue->switchMode(KukieControlQueue::KUKA_JNT_IMP_MODE);
+
+    rightQueue->startJointRollBackMode(4.0);
+    rightQueue->moveJointsNb(stdToArmadilloVec({-2.2548043727874756, 1.5036139488220215, -2.1158950328826904, 1.7510524988174438, 2.1929965019226074, -1.2221717834472656, -0.7233961820602417}));
+    sleep(2);
+    rightQueue->rollBack(1.0);
+
+    /*
+    geometry_msgs::Pose relPose = rightQueue->getCartesianPose();
+    relPose.position.x += 0.05;
+    rightQueue->moveCartesian(relPose);
+    */
 
     SensorStorage store(queues, hands, 100);
     shared_ptr<thread> storageThread = store.startDataStorage(tmpPath + "hapticTest");
@@ -514,23 +551,28 @@ int doHapticTest(std::shared_ptr<KukieControlQueue> leftQueue, shared_ptr<RosSch
     storageThread->join();
 
     if(hapticMode == HAPTIC_MODE_TERMINAL) {
-        cout << "what was the haptic result?" << endl;
+        cout << "what was the haptic result? [1, 4]" << endl;
         cin >> classifierRes;
     } else if(hapticMode == HAPTIC_MODE_CLASSIFIER) {
         classifierRes = callClassifier(classifierPath,
                                                classifierFile, classifierFunction,
                                                   databasePath,
-                                                  tmpPath + "hapticTest/kuka_lwr_" + leftQueue->getRobotDeviceType() + "_left_arm_0");
+                                                  tmpPath + "hapticTest/kuka_lwr_" + leftQueue->getRobotDeviceType() + "_left_arm_0") + 1;
     } else {
         throw "haptic mode not known";
     }
 
-    getchar();
-
     leftQueue->stopCurrentMode();
     leftQueue->switchMode(KukieControlQueue::KUKA_JNT_POS_MODE);
 
-    cout << "(main) classifier result is category " << classifierRes << endl;
+    cout << "(main) classifier result is category " << classifierRes << endl << "(main) press enter to continue" << endl;
+    getchar();
+
+    goToBlockingPos(rightQueue);
+    goToStartPos(leftQueue);
+    goToPushHandPos(leftHand);
+    executeFinalPush(leftQueue);
+    goToStartPos(leftQueue);
 
     pf::remove_all(tmpPath + "hapticTest");
     leftHand->publishSdhJoints(handJoints);
@@ -541,7 +583,8 @@ int doHapticTest(std::shared_ptr<KukieControlQueue> leftQueue, shared_ptr<RosSch
 
 void goToStartPos(std::shared_ptr<ControlQueue> leftQueue) {
 
-    leftQueue->moveJoints(stdToArmadilloVec({-1.1064038276672363, 1.6908159255981445, -0.8935614824295044, 1.4897072315216064, 1.2026464939117432, 1.549628734588623, 0.5572592616081238}));
+    // leftQueue->moveJoints(stdToArmadilloVec({-1.1064038276672363, 1.6908159255981445, -0.8935614824295044, 1.4897072315216064, 1.2026464939117432, 1.549628734588623, 0.5572592616081238}));
+    leftQueue->moveJoints(stdToArmadilloVec({-0.8267349600791931, 1.7793419361114502, 1.8670663833618164, -0.6415770649909973, 0.055327583104372025, 1.5422502756118774, -1.9147248268127441}));
 
 }
 
@@ -620,12 +663,15 @@ void executeFinalPush(std::shared_ptr<ControlQueue> leftQueue) {
     leftQueue->moveJoints({-0.9692263007164001, 1.113829493522644, 1.1473214626312256, -1.444376826286316, -0.28663957118988037, -0.8957559466362, -0.2651996612548828});
 
     leftQueue->stopCurrentMode();
+
+    setWeakStiffness(leftQueue);
     leftQueue->switchMode(KukieControlQueue::KUKA_JNT_IMP_MODE);
 
     DMPExecutor execFinalPush(dmpFinalPush, leftQueue);
     execFinalPush.executeTrajectory(ac, 0, dmpFinalPush->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
 
     leftQueue->stopCurrentMode();
+    setStandardStiffness(leftQueue);
     leftQueue->switchMode(KukieControlQueue::KUKA_JNT_POS_MODE);
 
     leftQueue->moveJoints({-0.9692263007164001, 1.113829493522644, 1.1473214626312256, -1.444376826286316, -0.28663957118988037, -0.8957559466362, -0.2651996612548828});

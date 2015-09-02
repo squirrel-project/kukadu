@@ -10,6 +10,7 @@
 #include <mutex>
 #include <time.h>
 #include <thread>
+#include <deque>
 
 // Custom librairies
 #include "ControlQueue.h"
@@ -59,11 +60,16 @@ private:
     int ptpReached;
     int monComMode;
     int currentMode;
+    int rollBackQueueSize;
     int cartesianPtpReached;
 
     bool isRealRobot;
+    bool rollbackMode;
 
     double currentTime;
+    double sleepTimeInSec;
+
+    std::deque<arma::vec> rollBackQueue;
 
     std::queue<arma::vec> movementQueue;
     std::queue<geometry_msgs::Pose> cartesianMovementQueue;
@@ -127,11 +133,11 @@ private:
     ros::Subscriber subCartPoseRf;
     ros::Subscriber subCartPtpReached;
 
-
     /* Kukie callback functions */
     void cartPosRfCallback(const geometry_msgs::Pose msg);
     void robotCartPosCallback(const geometry_msgs::Pose& msg);
     void cartFrcTrqCallback(const geometry_msgs::Wrench& msg);
+    void jntMoveCallback(const std_msgs::Float64MultiArray& msg);
     void ptpReachedCallback(const std_msgs::Int32MultiArray& msg);
     void robotJointPosCallback(const sensor_msgs::JointState& msg);
     void jntFrcTrqCallback(const std_msgs::Float64MultiArray& msg);
@@ -158,6 +164,7 @@ public:
     void stopCurrentMode();
     void switchMode(int mode);
     void moveJoints(arma::vec joints);
+    void moveJointsNb(arma::vec joints);
     void setJntPtpThresh(double thresh);
     void setStartingJoints(arma::vec joints);
     void addJointsPosToQueue(arma::vec joints);
@@ -167,6 +174,11 @@ public:
     void setAdditionalLoad(float loadMass, float loadPos);
 	void synchronizeToControlQueue(int maxNumJointsInQueue);
 	void setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq);
+
+    /* roll back stops the roll back mode (recording) and kills previous experience (can only be used once per recording) */
+    void rollBack(double time);
+    void stopJointRollBackMode();
+    void startJointRollBackMode(double possibleTime);
 
     bool isInitialized();
 
@@ -188,7 +200,6 @@ public:
     geometry_msgs::Pose getCartesianPoseRf();
     geometry_msgs::Pose moveCartesianRelativeWf(geometry_msgs::Pose basePoseRf, geometry_msgs::Pose offset);
 
-
     arma::vec getFrcTrqCart();
     arma::vec getStartingJoints();
     arma::vec retrieveJointsFromRobot();
@@ -197,6 +208,10 @@ public:
     static const int KUKA_JNT_POS_MODE = 10;
     static const int KUKA_CART_IMP_MODE = 20;
     static const int KUKA_JNT_IMP_MODE = 30;
+
+    static const int KUKA_STD_XYZ_STIFF = 250;
+    static const int KUKA_STD_ABC_STIFF = 100;
+    static const int KUKA_STD_CPDAMPING = 0.3;
     
 };
 
