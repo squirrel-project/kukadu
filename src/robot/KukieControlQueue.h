@@ -67,6 +67,7 @@ private:
     bool rollbackMode;
 
     double currentTime;
+    double rollBackTime;
     double sleepTimeInSec;
 
     std::deque<arma::vec> rollBackQueue;

@@ -46,7 +46,7 @@ void KukieControlQueue::constructQueue(int sleepTime, std::string commandTopic, 
     startingJoints = arma::vec(1);
     currentJntFrqTrq = arma::vec(1);
     this->node = node;
-    sleepTimeInSec = sleepTime * 1e+6;
+    sleepTimeInSec = sleepTime * 1e-6;
     loop_rate = new ros::Rate(1.0 / sleepTimeInSec);
 
     subJntPos = node.subscribe(retPosTopic, 2, &KukieControlQueue::robotJointPosCallback, this);
@@ -110,6 +110,7 @@ void KukieControlQueue::startJointRollBackMode(double possibleTime) {
 
     rollBackQueue.clear();
     rollbackMode = true;
+    rollBackTime = possibleTime;
     // buffer of 1.0 more second
     rollBackQueueSize = (int) ((possibleTime + 1.0) / sleepTimeInSec);
 
@@ -126,11 +127,29 @@ void KukieControlQueue::rollBack(double time) {
 
     rollbackMode = false;
     int rollBackCount = (int) (time / sleepTimeInSec);
+
+    int stretchFactor = ceil((double) rollBackCount / (double) rollBackQueue.size());
+    stretchFactor = max((double) stretchFactor, 1.0);
+
+    vec lastCommand(LBR_MNJ);
+    if(rollBackQueue.size())
+        lastCommand = rollBackQueue.front();
+
+    int newRollBackCount = ceil((double) rollBackCount / (double) stretchFactor);
+
     // fill command queue with last commands (backwards)
-    for(int i = 0; i < rollBackCount; ++i) {
+    for(int i = 0; i < newRollBackCount && rollBackQueue.size(); ++i) {
         vec nextCommand = rollBackQueue.front();
+
+        // interpolate to stretch the trajectory in case there are not enough measured packets (happens in usage with simulator)
+        vec diffUnit = (nextCommand - lastCommand) / (double) stretchFactor;
+        for(int j = 0; j < stretchFactor; ++j) {
+            addJointsPosToQueue(lastCommand + j * diffUnit);
+        }
+
+        lastCommand = nextCommand;
         rollBackQueue.pop_front();
-        addJointsPosToQueue(nextCommand);
+
     }
     // wait until everything has been executed
     synchronizeToControlQueue(1);
@@ -239,11 +258,10 @@ void KukieControlQueue::robotJointPosCallback(const sensor_msgs::JointState& msg
         for(int i = 0; i < msg.position.size(); ++i) currentJoints(i) = msg.position.at(i);
 
         if(rollbackMode) {
-
             rollBackQueue.push_front(currentJoints);
 
             // if queue is full --> go back
-            if(rollBackQueue.size() < rollBackQueueSize)
+            if(rollBackQueue.size() > rollBackQueueSize)
                 rollBackQueue.pop_back();
 
         }
@@ -296,7 +314,7 @@ void KukieControlQueue::cartPtpReachedCallback(const std_msgs::Int32MultiArray& 
 void KukieControlQueue::run() {
 
     setInitValues();
-    ros::Rate sleepRate(1e6 / sleepTime);
+    ros::Rate sleepRate(1.0 / sleepTimeInSec);
 
     arma::vec movement = arma::vec(1);
     geometry_msgs::Pose movementPose;
@@ -349,7 +367,7 @@ void KukieControlQueue::run() {
 
         }
 
-		currentTime += sleepTime * 1e-6;
+        currentTime += sleepTimeInSec;
         sleepRate.sleep();
 		
         ros::spinOnce();
