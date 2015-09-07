@@ -151,6 +151,7 @@ void KukieControlQueue::rollBack(double time) {
         rollBackQueue.pop_front();
 
     }
+
     // wait until everything has been executed
     synchronizeToControlQueue(1);
     rollBackQueue.clear();

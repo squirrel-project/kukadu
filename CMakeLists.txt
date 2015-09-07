@@ -7,38 +7,29 @@ find_package(cmake_modules REQUIRED)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-    roscpp
     rospy
-    std_msgs
-    geometry_msgs
-    message_generation
-    message_runtime
-    iis_kukie
-    iis_robot_dep
-    iis_schunk_hardware
-    planning_scene_plugin
-    tf_conversions
+    roscpp
     pcl_ros
-    pcl_conversions
+    std_msgs
+    iis_kukie
     sensor_msgs
     vrep_common
+    geometry_msgs
+    iis_robot_dep
+    tf_conversions
+    pcl_conversions
+    message_runtime
+    message_generation
+    iis_schunk_hardware
+    planning_scene_plugin
 )
 
 set(CURSES_USE_NCURSES TRUE)
+
 find_package(Curses)
 find_package(Boost REQUIRED)
-#find_package(PCL REQUIRED)
 find_package(PythonLibs 3.4 REQUIRED)
 
-###################################
-## catkin specific configuration ##
-###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if you package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES kukadu
@@ -54,42 +45,43 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-    ${catkin_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
     ${Eigen_INCLUDE_DIRS}
+    ${catkin_INCLUDE_DIRS}
+    /usr/include/python3.4m
     $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/
     $ENV{IIS_INCLUDE_PATH}/external_rosmake_ws/motion_control/motion_control_msgs/msg_gen/cpp/include
-    /usr/include/python3.4m
+
 )
 
 set(CMAKE_BUILD_TYPE Debug)
 #set(CMAKE_BUILD_TYPE Release)
-add_definitions(-DOSNAME_LINUX=1)
-add_definitions(-std=c++0x)
+
+add_definitions(-O0)
 add_definitions(-fPIC)
 add_definitions(-shared)
 add_definitions(-pthread)
+add_definitions(-std=c++0x)
 add_definitions(-DROS_SUPPORT)
-add_definitions(-O0)
-
-
+add_definitions(-DOSNAME_LINUX=1)
 
 ## python definitions
 link_directories(/usr/lib/python3.4/config-3.4m-x86_64-linux-gnu /usr/lib)
 
 AUX_SOURCE_DIRECTORY(src/utils/ KUKADUSRC)
-AUX_SOURCE_DIRECTORY(src/trajectory/ KUKADUSRC)
-AUX_SOURCE_DIRECTORY(src/robot/robotDriver/src/kuka/ KUKADUSRC)
-AUX_SOURCE_DIRECTORY(src/robot/robotDriver/src/ KUKADUSRC)
-AUX_SOURCE_DIRECTORY(src/learning/ KUKADUSRC)
-AUX_SOURCE_DIRECTORY(src/robot/mounted/ KUKADUSRC)
-AUX_SOURCE_DIRECTORY(src/utils/gnuplot-cpp/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/robot/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/types/ KUKADUSRC)
-AUX_SOURCE_DIRECTORY(src/utils/easyloggingpp/src/ KUKADUSRC)
-AUX_SOURCE_DIRECTORY(src/learning/reinforcement_learning/ KUKADUSRC)
-AUX_SOURCE_DIRECTORY(src/learning/metric_learning/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/learning/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/trajectory/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/robot/mounted/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/utils/gnuplot-cpp/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/learning/clustering/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/manipulation/pushing/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/robot/robotDriver/src/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/utils/easyloggingpp/src/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/learning/metric_learning/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/robot/robotDriver/src/kuka/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/learning/reinforcement_learning/ KUKADUSRC)
 
 add_subdirectory(src/learning/projective_simulation)
 
