@@ -20,7 +20,7 @@ private:
 
 public:
 
-	double computeCost(t_executor_res results);
+    double computeCost(std::shared_ptr<ControllerResult> results);
 	
 };
 

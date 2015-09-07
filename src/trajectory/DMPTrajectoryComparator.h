@@ -26,16 +26,16 @@ private:
 
     std::shared_ptr<PlottingControlQueue> simQueue;
 	
-	t_executor_res dmp1Result;
-	t_executor_res dmp2Result;
+    std::shared_ptr<ControllerResult> dmp1Result;
+    std::shared_ptr<ControllerResult> dmp2Result;
 	
 	void initAll(double integrationStep, double tolAbsErr, double tolRelErr, arma::vec degOfFreedomWeights, double tTolerance);
-    t_executor_res executeTrajectory(std::shared_ptr<Dmp> traj);
+    std::shared_ptr<ControllerResult> executeTrajectory(std::shared_ptr<Dmp> traj);
 	
 public:
 	
     DMPTrajectoryComparator(std::shared_ptr<Dmp> traject1, std::shared_ptr<Dmp> traject2, arma::vec degOfFreedomWeights, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance);
-	DMPTrajectoryComparator(t_executor_res res1, t_executor_res res2, arma::vec degOfFreedomWeights);
+    DMPTrajectoryComparator(std::shared_ptr<ControllerResult> res1, std::shared_ptr<ControllerResult> res2, arma::vec degOfFreedomWeights);
 	
     void setTrajectories(std::shared_ptr<Dmp> traj1, std::shared_ptr<Dmp> traj2, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance);
 	

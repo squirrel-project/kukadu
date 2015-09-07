@@ -30,9 +30,9 @@ private:
     std::shared_ptr<TrajectoryExecutor> trajEx;
 	
     std::vector<std::shared_ptr<Trajectory>> rollout;
-	std::vector<t_executor_res> dmpResult;
+    std::vector<std::shared_ptr<ControllerResult>> dmpResult;
 	
-	t_executor_res lastUpdateRes;
+    std::shared_ptr<ControllerResult> lastUpdateRes;
 	
 	bool isFirstIteration;
 	
@@ -74,8 +74,8 @@ public:
     virtual std::vector<std::shared_ptr<Trajectory>> computeRolloutParamters() = 0;
 	
     std::vector<std::shared_ptr<Trajectory>> getLastRolloutParameters();
-	std::vector<t_executor_res> getLastExecutionResults();
-	t_executor_res getLastUpdateRes();
+    std::vector<std::shared_ptr<ControllerResult>> getLastExecutionResults();
+    std::shared_ptr<ControllerResult> getLastUpdateRes();
 	double getLastUpdateReward();
 	
 	/**

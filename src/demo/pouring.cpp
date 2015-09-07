@@ -146,7 +146,7 @@ int main(int argc, char** args) {
 
     std::shared_ptr<DmpRewardComputer> reward = std::shared_ptr<DmpRewardComputer>(new DmpRewardComputer(resolvePath(cfFile), az, bz, dmpStepSize, dmpGen->getDegOfFreedom(), dmpGen->getTrajectory()->getTmax(), 0.1));
     cout << "execute ground truth" << endl;
-    t_executor_res opt = reward->getOptimalTraj();
+    shared_ptr<ControllerResult> opt = reward->getOptimalTraj();
     cout << "execution done" << endl;
 
     cout << "(main) initializing trajectory" << endl;
@@ -209,8 +209,8 @@ int main(int argc, char** args) {
                 cout << metrics.at(i).getM() << endl;
 
             if(i == 0) {
-                initT = pow.getLastUpdateRes().t;
-                initY = pow.getLastUpdateRes().y;
+                initT = pow.getLastUpdateRes()->getTimes();
+                initY = pow.getLastUpdateRes()->getYs();
             }
 
 
@@ -222,9 +222,9 @@ int main(int argc, char** args) {
                     convert << plotTraj;
 
                     g1 = gs.at(plotTraj);
-                    g1->set_style("lines").plot_xy(armadilloToStdVec(opt.t), armadilloToStdVec(opt.y[plotTraj]), "optimal trajectoy");
+                    g1->set_style("lines").plot_xy(armadilloToStdVec(opt->getTimes()), armadilloToStdVec(opt->getYs()[plotTraj]), "optimal trajectoy");
                     g1->set_style("lines").plot_xy(armadilloToStdVec(initT), armadilloToStdVec(initY[plotTraj]), "initial trajectoy");
-                    g1->set_style("lines").plot_xy(armadilloToStdVec(pow.getLastUpdateRes().t), armadilloToStdVec(pow.getLastUpdateRes().y[plotTraj]), "generalized trajectory");
+                    g1->set_style("lines").plot_xy(armadilloToStdVec(pow.getLastUpdateRes()->getTimes()), armadilloToStdVec(pow.getLastUpdateRes()->getYs()[plotTraj]), "generalized trajectory");
                     g1->showonscreen();
 
                 }

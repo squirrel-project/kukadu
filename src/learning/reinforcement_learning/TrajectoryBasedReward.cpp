@@ -22,16 +22,16 @@ TrajectoryBasedReward::TrajectoryBasedReward(int degOfFreedom, arma::vec rewards
 
 }
 
-double TrajectoryBasedReward::computeCost(t_executor_res results) {
+double TrajectoryBasedReward::computeCost(std::shared_ptr<ControllerResult> results) {
 
-	int tCount = results.t.n_elem;
-	tmax = results.t(tCount - 1);
+    int tCount = results->getTimes().n_elem;
+    tmax = results->getTimes()(tCount - 1);
 	
     double reward = 0.0;
 
-    vector<vec> funVals = computeFun(results.t);
+    vector<vec> funVals = computeFun(results->getTimes());
     for(int i = 0; i < degOfFreedom; ++i) {
-        vec y = results.y.at(i);
+        vec y = results->getYs().at(i);
 
         vec diffVec = funVals.at(i) - y;
         vec rewardVec = diffVec.t() * diffVec;
@@ -62,36 +62,33 @@ void TrajectoryBasedReward::writeToFile(std::string file, double tStart, double 
 
 }
 
-t_executor_res TrajectoryBasedReward::getOptimalTraj() {
+std::shared_ptr<ControllerResult> TrajectoryBasedReward::getOptimalTraj() {
     return getOptimalTraj(tmax);
 }
 
-t_executor_res TrajectoryBasedReward::getOptimalTraj(double tmax) {
+std::shared_ptr<ControllerResult> TrajectoryBasedReward::getOptimalTraj(double tmax) {
 
     double tmin = 0;
-    t_executor_res ret;
 
     int size = (int) ( (double) (tmax - tmin) / (double) step);
 
-    ret.t = vec(size);
+    vec retT = vec(size);
     int i = 0;
 
     for(double t = tmin; i < size; t = t + step, ++i) {
-        ret.t(i) = t - tmin;
+        retT(i) = t - tmin;
     }
 
-    ret.y = computeFun(ret.t);
-    return ret;
+    return std::shared_ptr<ControllerResult>(new ControllerResult(retT, computeFun(retT)));
 
 }
 
-t_executor_res TrajectoryBasedReward::getOptimalTraj(double tmax, int freedomIdx) {
+std::shared_ptr<ControllerResult> TrajectoryBasedReward::getOptimalTraj(double tmax, int freedomIdx) {
     return getOptimalTraj(0, tmax, freedomIdx);
 }
 
-t_executor_res TrajectoryBasedReward::getOptimalTraj(double tmin, double tmax, int freedomIdx) {
+std::shared_ptr<ControllerResult> TrajectoryBasedReward::getOptimalTraj(double tmin, double tmax, int freedomIdx) {
 	
-	t_executor_res ret;
 
     //TODO: revise this
     double step = 0.1;
@@ -99,17 +96,17 @@ t_executor_res TrajectoryBasedReward::getOptimalTraj(double tmin, double tmax, i
     int size = (int) ( (double) (tmax - tmin) / (double) step);
 	
 	vec ys = vec(size);
-	ret.t = vec(size);
+    vec retT = vec(size);
 	int i = 0;
 
     for(double t = tmin; i < size; t = t + step, ++i) {
-        ret.t(i) = t - tmin;
+        retT(i) = t - tmin;
         ys(i) = computeFun(t).at(freedomIdx);
 	}
-
-	ret.y.push_back(ys);
 	
-	return ret;
+    vector<vec> yss;
+    yss.push_back(ys);
+    return shared_ptr<ControllerResult>(new ControllerResult(retT, yss));
 	
 }
 

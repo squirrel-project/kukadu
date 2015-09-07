@@ -251,7 +251,7 @@ int DMPExecutor::jac(double t, const double* y, double *dfdy, double* dfdt, void
 
 }
 
-t_executor_res DMPExecutor::executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
+std::shared_ptr<ControllerResult> DMPExecutor::executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
 
     this->ac = ac;
     this->simulate = EXECUTE_ROBOT;
@@ -259,12 +259,12 @@ t_executor_res DMPExecutor::executeTrajectory(double ac, double tStart, double t
 
 }
 
-t_executor_res DMPExecutor::simulateTrajectory(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
+std::shared_ptr<ControllerResult> DMPExecutor::simulateTrajectory(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
 
     this->simulate = SIMULATE_DMP;
     auto begin = std::chrono::high_resolution_clock::now();
 
-    t_executor_res ret = this->executeDMP(tStart, tEnd, stepSize, tolAbsErr, tolRelErr);
+    std::shared_ptr<ControllerResult> ret = this->executeDMP(tStart, tEnd, stepSize, tolAbsErr, tolRelErr);
 
     auto end = std::chrono::high_resolution_clock::now();
     std::cout << "(DMPExecutor) the simulation took " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() << " ns" << std::endl;
@@ -273,14 +273,14 @@ t_executor_res DMPExecutor::simulateTrajectory(double tStart, double tEnd, doubl
 
 }
 
-t_executor_res DMPExecutor::simulateTrajectory() {
+std::shared_ptr<ControllerResult> DMPExecutor::simulateTrajectory() {
 
     this->simulate = SIMULATE_DMP;
     return this->executeDMP(0, dmp->getTmax(), dmp->getStepSize(), dmp->getTolAbsErr(), dmp->getTolRelErr());
 
 }
 
-t_executor_res DMPExecutor::executeTrajectory() {
+std::shared_ptr<ControllerResult> DMPExecutor::executeTrajectory() {
 
     this->simulate = EXECUTE_ROBOT;
     return this->executeDMP(0, dmp->getTmax(), dmp->getStepSize(), dmp->getTolAbsErr(), dmp->getTolRelErr());
@@ -413,16 +413,16 @@ void DMPExecutor::destroyIntegration() {
 
 }
 
-t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
+std::shared_ptr<ControllerResult> DMPExecutor::executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
 
     // auto begin = std::chrono::high_resolution_clock::now();
 
     int stepCount = (tEnd - tStart) / stepSize;
     double currentTime = 0.0;
 
-    t_executor_res ret;
+    vector<vec> retY;
     for(int i = 0; i < degofFreedom; ++i)
-        ret.y.push_back(arma::vec(stepCount));
+        retY.push_back(arma::vec(stepCount));
 
     vector<double> retT;
     geometry_msgs::Pose start;
@@ -458,7 +458,7 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
         }
 
         for(int i = 0; i < degofFreedom; ++i)
-            ret.y.at(i)(j) = nextJoints(i);
+            retY.at(i)(j) = nextJoints(i);
 
         if(simulate == EXECUTE_ROBOT) {
             //    auto end = std::chrono::high_resolution_clock::now();
@@ -484,9 +484,8 @@ t_executor_res DMPExecutor::executeDMP(double tStart, double tEnd, double stepSi
 
     }
 
-    ret.t = stdToArmadilloVec(retT);
 
-    return ret;
+    return std::shared_ptr<ControllerResult>(new ControllerResult(stdToArmadilloVec(retT), retY));
 
 }
 

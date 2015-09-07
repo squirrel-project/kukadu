@@ -34,7 +34,7 @@ private:
 	arma::vec lastQueryPoint;
 	
     std::shared_ptr<Dmp> lastUpdate;
-	t_executor_res* genResults;
+    std::vector<std::shared_ptr<ControllerResult>> genResults;
 	bool isFirstRolloutAfterInit;
 	
 	double ql;
@@ -45,7 +45,7 @@ private:
 	/**
 	 * \brief plots feedback graphs
 	 */
-    void plotFeedback(std::shared_ptr<DMPGeneralizer> dmpGen, std::shared_ptr<Dmp> rollout, t_executor_res currentRolloutRes);
+    void plotFeedback(std::shared_ptr<DMPGeneralizer> dmpGen, std::shared_ptr<Dmp> rollout, std::shared_ptr<ControllerResult> currentRolloutRes);
 
 public:
 

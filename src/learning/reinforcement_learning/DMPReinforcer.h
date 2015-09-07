@@ -25,9 +25,9 @@ private:
     std::shared_ptr<ControlQueue> movementQueue;
 	
     std::vector<std::shared_ptr<Dmp>> rollout;
-	std::vector<t_executor_res> dmpResult;
+    std::vector<std::shared_ptr<ControllerResult>> dmpResult;
 	
-	t_executor_res lastUpdateRes;
+    std::shared_ptr<ControllerResult> lastUpdateRes;
 	
 	bool isFirstIteration;
 	
@@ -68,8 +68,8 @@ public:
     virtual std::vector<std::shared_ptr<Dmp>> computeRolloutParamters() = 0;
 	
     std::vector<std::shared_ptr<Dmp>> getLastRolloutParameters();
-	std::vector<t_executor_res> getLastExecutionResults();
-	t_executor_res getLastUpdateRes();
+    std::vector<std::shared_ptr<ControllerResult>> getLastExecutionResults();
+    std::shared_ptr<ControllerResult> getLastUpdateRes();
 	
 	/**
 	 * \brief executes rollout. first, the trajectory is simulated and the user is asked, whether the trajectory really should be executed

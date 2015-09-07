@@ -11,18 +11,22 @@
 
 #include "../utils/types.h"
 #include "../types/Trajectory.h"
+#include "../manipulation/Controller.hpp"
+#include "../manipulation/ControllerResult.hpp"
 
-class TrajectoryExecutor {
+class TrajectoryExecutor : public Controller {
 
 private:
 
 
 public:
 
-	virtual t_executor_res simulateTrajectory() = 0;
-	virtual t_executor_res executeTrajectory() = 0;
+    virtual std::shared_ptr<ControllerResult> executeTrajectory() = 0;
+    virtual std::shared_ptr<ControllerResult> simulateTrajectory() = 0;
 	
     virtual void setTrajectory(std::shared_ptr<Trajectory> traj) = 0;
+
+    std::shared_ptr<ControllerResult> performAction();
 
 };
 

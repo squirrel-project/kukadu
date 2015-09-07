@@ -15,7 +15,7 @@ GenDMPReinforcer::GenDMPReinforcer(vec initialQueryPoint, CostComputer* cost, st
 	
 	this->ql = getQMin();
 	this->qh = getQMax();
-	this->genResults = NULL;
+    this->genResults.clear();
 	
 	this->isFirstRolloutAfterInit = true;
     this->simQueue = std::shared_ptr<PlottingControlQueue>(new PlottingControlQueue(dmpGen->getDegOfFreedom(), dmpStepSize));
@@ -26,17 +26,17 @@ std::vector<std::shared_ptr<Dmp>> GenDMPReinforcer::getInitialRollout() {
 	
 	cout << "(GenDMPReinforcer) initial query point: " << initialQueryPoint(0) << endl;
 	
-	genResults = new t_executor_res[dmpGen->getQueryPointCount()];
+    genResults.clear();
 	for(int i = 0; i < dmpGen->getQueryPointCount(); ++i) {
         std::shared_ptr<Dmp> queryDmp = dmpGen->getQueryPointByIndex(i).getDmp();
         DMPExecutor dmpsim(queryDmp, simQueue);
-        genResults[i] = dmpsim.simulateTrajectory(0, queryDmp->getTmax(), getDmpStepSize(), getTolAbsErr(), getTolRelErr());
+        genResults.push_back(dmpsim.simulateTrajectory(0, queryDmp->getTmax(), getDmpStepSize(), getTolAbsErr(), getTolRelErr()));
 	}
 	
     vector<std::shared_ptr<Dmp>> ret;
     std::shared_ptr<Dmp> rollout = dmpGen->generalizeDmp(trajectoryKernel, parameterKernel, initialQueryPoint, 100000);
     DMPExecutor dmpsim(rollout, simQueue);
-    t_executor_res dmpResult = dmpsim.simulateTrajectory(0, rollout->getTmax(), getDmpStepSize(), getTolAbsErr(), getTolRelErr());
+    std::shared_ptr<ControllerResult> dmpResult = dmpsim.simulateTrajectory(0, rollout->getTmax(), getDmpStepSize(), getTolAbsErr(), getTolRelErr());
 	
 	if(DEBUGGENDMPREINFORCER) {
 		
@@ -117,7 +117,7 @@ std::shared_ptr<Dmp> GenDMPReinforcer::updateStep() {
     std::shared_ptr<Dmp> rollout = dmpGen->generalizeDmp(trajectoryKernel, parameterKernel, lastQueryPoint, 100000);
 	
     DMPExecutor dmpsim(rollout, simQueue);
-    t_executor_res dmpResult = dmpsim.simulateTrajectory(0, rollout->getTmax(), getDmpStepSize(), getTolAbsErr(), getTolRelErr());
+    std::shared_ptr<ControllerResult> dmpResult = dmpsim.simulateTrajectory(0, rollout->getTmax(), getDmpStepSize(), getTolAbsErr(), getTolRelErr());
 	
 	if(DEBUGGENDMPREINFORCER) {
 		
@@ -144,7 +144,7 @@ std::vector<std::shared_ptr<Dmp>> GenDMPReinforcer::computeRolloutParamters() {
 	
 }
 
-void GenDMPReinforcer::plotFeedback(std::shared_ptr<DMPGeneralizer> dmpGen, std::shared_ptr<Dmp> rollout, t_executor_res currentRolloutRes) {
+void GenDMPReinforcer::plotFeedback(std::shared_ptr<DMPGeneralizer> dmpGen, std::shared_ptr<Dmp> rollout, std::shared_ptr<ControllerResult> currentRolloutRes) {
 	
 	vector<Gnuplot*> gs;
 	Gnuplot* g1;
@@ -168,11 +168,11 @@ void GenDMPReinforcer::plotFeedback(std::shared_ptr<DMPGeneralizer> dmpGen, std:
 				o << tmpQp(j) << " ";
 			}
 			o << ")";
-			g1->set_style("lines").plot_xy(armadilloToStdVec(genResults[i].t), armadilloToStdVec(genResults[i].y[plotTraj]), o.str());
+            g1->set_style("lines").plot_xy(armadilloToStdVec(genResults.at(i)->getTimes()), armadilloToStdVec(genResults.at(i)->getYs()[plotTraj]), o.str());
 			
 		}
 		
-		g1->set_style("lines").plot_xy(armadilloToStdVec(currentRolloutRes.t), armadilloToStdVec(currentRolloutRes.y[plotTraj]), "executed gen y");
+        g1->set_style("lines").plot_xy(armadilloToStdVec(currentRolloutRes->getTimes()), armadilloToStdVec(currentRolloutRes->getYs()[plotTraj]), "executed gen y");
 		g1->showonscreen();
 		
 	}

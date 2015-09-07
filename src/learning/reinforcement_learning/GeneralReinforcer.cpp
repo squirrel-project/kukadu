@@ -30,11 +30,11 @@ std::vector<std::shared_ptr<Trajectory>> GeneralReinforcer::getLastRolloutParame
 	return rollout;
 }
 
-std::vector<t_executor_res> GeneralReinforcer::getLastExecutionResults() {
+std::vector<std::shared_ptr<ControllerResult> > GeneralReinforcer::getLastExecutionResults() {
 	return dmpResult;
 }
 
-t_executor_res GeneralReinforcer::getLastUpdateRes() {
+std::shared_ptr<ControllerResult> GeneralReinforcer::getLastUpdateRes() {
 	return lastUpdateRes;
 }
 
@@ -64,9 +64,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
         vec startingPos = rollout.at(k)->getStartingPos();
         startingJoints = startingPos;
 
-//        cout << "(DMPReinforcer) performing rollout " << k << endl;
-
-        t_executor_res simRes;
+        shared_ptr<ControllerResult> simRes;
         if(doSimulation) {
 
             simulationQueue->moveJoints(startingJoints);
@@ -75,7 +73,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
             simRes = trajEx->simulateTrajectory();
 
             if(!doExecution) {
-            //    dmpResult.push_back(simRes);
+
                 if(isFirstIteration)
                     lastUpdateRes = simRes;
             }
@@ -107,7 +105,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
         if(doSimulation || doExecution) {
 
             dmpResult.push_back(simRes);
-            t_executor_res resK = simRes;
+            shared_ptr<ControllerResult> resK = simRes;
             double delta = cost->computeCost(resK);
             lastCost.push_back(delta);
 
@@ -133,7 +131,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 
 	double tmpCost = lastUpdateCost;
     std::shared_ptr<Trajectory> tmpUpdate = lastUpdate->copy();
-    t_executor_res tmpRes = lastUpdateRes;
+    shared_ptr<ControllerResult> tmpRes = lastUpdateRes;
     lastUpdate = updateStep();
 
     trajEx->setTrajectory(lastUpdate);
@@ -141,7 +139,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
     if(!isFirstIteration) {
         cout << "(GeneralReinforcer) performing newest update" << endl;
 
-        t_executor_res simRes;
+        shared_ptr<ControllerResult> simRes;
         if(doSimulation) {
             cout << "(DMPReinforcer) simulating update" << endl;
             simulationQueue->moveJoints(startingJoints);

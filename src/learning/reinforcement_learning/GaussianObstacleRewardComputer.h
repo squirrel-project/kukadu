@@ -53,7 +53,7 @@ public:
 	
 	GraspingRewardComputer(std::vector<double> finalJointPos);
 
-	double computeCost(t_executor_res results);
+    double computeCost(std::shared_ptr<ControllerResult> results);
 	
 };
 
@@ -67,7 +67,7 @@ public:
 
     PouringRewardComputer(double targetWeight);
 
-    double computeCost(t_executor_res results);
+    double computeCost(std::shared_ptr<ControllerResult> results);
 
 };
 

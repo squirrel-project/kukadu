@@ -1,19 +1,21 @@
 #include "DMPGExecutorPush.h"
 
+using namespace std;
+using namespace arma;
+
 DMPExecutorPush::DMPExecutorPush( std::shared_ptr<Dmp> dmpL, std::shared_ptr<ControlQueue> execQueue, string env, std::shared_ptr<SimInterface> simI, string objectID): DMPExecutor(dmpL, execQueue), objectID(objectID), simI(simI) {
+
     //this->queue = execQueue;
     this->constructPush(env);
 
-
-
 }
 
-DMPExecutorPush::DMPExecutorPush( std::shared_ptr<Dmp> dmp, std::shared_ptr<ControlQueue> execQueue, string env, std::shared_ptr<VisionInterface> visI): DMPExecutor(dmp, execQueue), visI(visI){
+DMPExecutorPush::DMPExecutorPush( std::shared_ptr<Dmp> dmp, std::shared_ptr<ControlQueue> execQueue, string env, std::shared_ptr<VisionInterface> visI): DMPExecutor(dmp, execQueue), visI(visI) {
 
     this->constructPush(env);
 }
 
-void DMPExecutorPush::constructPush(string env){
+void DMPExecutorPush::constructPush(string env) {
     if (env == "real") doSimulation = false;
     else doSimulation = true;
     timeCount = 0;
@@ -29,7 +31,8 @@ void DMPExecutorPush::constructPush(string env){
     pcFdist = zeros(50,50);
 
 }
-double DMPExecutorPush::addTerm(double t, const double* currentDesiredYs, int jointNumber, std::shared_ptr<ControlQueue> queue){
+
+double DMPExecutorPush::addTerm(double t, const double* currentDesiredYs, int jointNumber, std::shared_ptr<ControlQueue> queue) {
 
     contPosition = true;
     contOrient = true;
@@ -110,6 +113,7 @@ double DMPExecutorPush::addTerm(double t, const double* currentDesiredYs, int jo
     if(jointNumber == 1) return corr;
     else return 0.0;
 }
+
 void DMPExecutorPush::setObjectData(arma::vec times, arma::mat cartPos){
 
     ros::spinOnce();
@@ -140,11 +144,11 @@ void DMPExecutorPush::setObjectData(arma::vec times, arma::mat cartPos){
 
 
 }
-void DMPExecutorPush::stopObject(){
+void DMPExecutorPush::stopObject() {
     stopObj = true;
 }
 
-void DMPExecutorPush::updateData(){
+void DMPExecutorPush::updateData() {
     double t = 0.0;
     while(!stopObj){
 
@@ -250,16 +254,18 @@ void DMPExecutorPush::updateData(){
 
 }
 
-int DMPExecutorPush::findIndex(double t, vec times){
+int DMPExecutorPush::findIndex(double t, vec times) {
 
     int ind = 0;
     for (int i = 0; i < times.n_elem; ++i){
         if (t >= times(i)) ind = i;
     }
     return ind;
+
 }
 
-void  DMPExecutorPush::saveData(string path){
+void  DMPExecutorPush::saveData(string path) {
+
     std::ofstream pStream , pStreamP;
     pStream.open(path + string("/") + "pushRes.txt");
     pStreamP.open(path + string("/") + "pushResP.txt");

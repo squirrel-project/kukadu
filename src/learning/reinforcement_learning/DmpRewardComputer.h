@@ -20,7 +20,7 @@ private:
     double bz;
     double timeStep;
 
-    t_executor_res executionResult;
+    std::shared_ptr<ControllerResult> executionResult;
 
     int binaryTimeSearch(arma::vec times, double t);
 

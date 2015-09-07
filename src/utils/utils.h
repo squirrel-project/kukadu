@@ -46,6 +46,7 @@
 #include "../types/DMPBase.h"
 #include "types.h"
 #include "KukaduTokenizer.h"
+#include "../manipulation/ControllerResult.hpp"
 
 #include "gnuplot-cpp/gnuplot_i.hpp"
 
@@ -113,7 +114,7 @@ arma::mat columnToSquareMatrix(arma::vec c);
 arma::vec symmetricMatrixToColumn(arma::mat m);
 arma::mat columnToSymmetricMatrix(arma::vec c);
 
-t_executor_res executeDemo(std::shared_ptr<ControlQueue> movementQu, std::string file, double az, double bz, int plotResults);
+std::shared_ptr<ControllerResult> executeDemo(std::shared_ptr<ControlQueue> movementQu, std::string file, double az, double bz, int plotResults);
 
 void set_ctrlc_exit_handler();
 void exit_handler(int s);

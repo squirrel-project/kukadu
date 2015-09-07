@@ -10,14 +10,6 @@ struct mes_result {
     arma::vec joints;
 };
 
-struct t_executor_res {
-	
-	arma::vec t;
-	std::vector<arma::vec> y;
-	arma::vec internalClock;
-
-};
-
 struct trajectory_learner_internal {
 	arma::mat desMat;
 	arma::vec coeff;

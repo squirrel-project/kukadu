@@ -5,6 +5,8 @@
 #include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
+using namespace std;
+using namespace arma;
 
 
 int importanceSamplingCount;

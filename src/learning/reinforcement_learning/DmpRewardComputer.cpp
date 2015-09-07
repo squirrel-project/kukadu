@@ -26,13 +26,13 @@ DmpRewardComputer::DmpRewardComputer(string file, double az, double bz, double t
 
 arma::vec DmpRewardComputer::computeFun(double t) {
 
-    vec time = executionResult.t;
-    vec retVec(executionResult.y.size());
+    vec time = executionResult->getTimes();
+    vec retVec(executionResult->getYs().size());
 
 //    cout << "(DmpRewardComputer) dim: " << executionResult.y.size() << endl;
     if(t >= time(time.n_elem - 1)) {
         for(int i = 0; i < retVec.n_elem; ++i)
-                retVec(i) = executionResult.y.at(i)(time.n_elem - 1);
+                retVec(i) = executionResult->getYs().at(i)(time.n_elem - 1);
 
     } else {
 
@@ -43,7 +43,7 @@ arma::vec DmpRewardComputer::computeFun(double t) {
         double secondDist = timeStep - secondT + t;
         cout << "(DmpRewardComputer) here is an interpolation bug" << endl;
         for(int i = 0; i < retVec.n_elem; ++i)
-                retVec(i) = (firstDist * executionResult.y.at(i)(tIdx) + secondDist * executionResult.y.at(i)(tIdx + 1)) / timeStep;
+                retVec(i) = (firstDist * executionResult->getYs().at(i)(tIdx) + secondDist * executionResult->getYs().at(i)(tIdx + 1)) / timeStep;
 
     }
 

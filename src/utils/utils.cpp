@@ -35,7 +35,7 @@ arma::vec createArmaVecFromDoubleArray(double* data, int n) {
     return ret;
 }
 
-t_executor_res executeDemo(shared_ptr<ControlQueue> movementQu, string file, double az, double bz, int plotResults) {
+std::shared_ptr<ControllerResult> executeDemo(shared_ptr<ControlQueue> movementQu, string file, double az, double bz, int plotResults) {
 
     Gnuplot* g1 = NULL;
 
@@ -57,7 +57,7 @@ t_executor_res executeDemo(shared_ptr<ControlQueue> movementQu, string file, dou
 
     movementQu->moveJoints(learnedDmps->getY0());
     DMPExecutor dmpexec(learnedDmps, movementQu);
-    t_executor_res dmpResult = dmpexec.simulateTrajectory();
+    std::shared_ptr<ControllerResult> dmpResult = dmpexec.simulateTrajectory();
 
     int plotNum = learnedDmps->getDegreesOfFreedom();
 
@@ -71,7 +71,7 @@ t_executor_res executeDemo(shared_ptr<ControlQueue> movementQu, string file, dou
             string title = string("fitted sensor data (joint") + convert.str() + string(")");
             g1 = new Gnuplot(title);
             g1->set_style("lines").plot_xy(armadilloToStdVec(learnedDmps->getSupervisedTs()), armadilloToStdVec(learnedDmps->getSampleYByIndex(plotTraj)), "sample y");
-            g1->set_style("lines").plot_xy(armadilloToStdVec(dmpResult.t), armadilloToStdVec(dmpResult.y[plotTraj]), "dmp y");
+            g1->set_style("lines").plot_xy(armadilloToStdVec(dmpResult->getTimes()), armadilloToStdVec(dmpResult->getYs()[plotTraj]), "dmp y");
             g1->showonscreen();
 
         }

@@ -1,10 +1,13 @@
 #ifndef COSTCOMPUTER
 #define COSTCOMPUTER
 
-#include <armadillo>
 #include <vector>
+#include <memory>
+#include <armadillo>
+
 
 #include "../../utils/types.h"
+#include "../../manipulation/ControllerResult.hpp"
 
 /** \brief Interface for reinforcement learning cost function computation used by DMPReinforcer
  * 
@@ -21,7 +24,7 @@ public:
 	 * \brief computes cost for a given dmp execution
 	 * \param results measured results of the last dmp execution
 	 */
-	virtual double computeCost(t_executor_res results) = 0;
+    virtual double computeCost(std::shared_ptr<ControllerResult> results) = 0;
 	
 };
 

@@ -29,7 +29,7 @@ std::vector<std::shared_ptr<Dmp>> DMPReinforcer::getLastRolloutParameters() {
 	return rollout;
 }
 
-std::vector<t_executor_res> DMPReinforcer::getLastExecutionResults() {
+std::vector<std::shared_ptr<ControllerResult> > DMPReinforcer::getLastExecutionResults() {
 	return dmpResult;
 }
 
@@ -45,7 +45,7 @@ double DMPReinforcer::getTolRelErr() {
 	return tolRelErr;
 }
 
-t_executor_res DMPReinforcer::getLastUpdateRes() {
+std::shared_ptr<ControllerResult> DMPReinforcer::getLastUpdateRes() {
 	return lastUpdateRes;
 }
 
@@ -82,7 +82,7 @@ void DMPReinforcer::performRollout(int doSimulation, int doExecution) {
 		
 		if(doSimulation) {
 
-            t_executor_res simRes = dmpsim.simulateTrajectory(0, rollout.at(k)->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+            shared_ptr<ControllerResult> simRes = dmpsim.simulateTrajectory(0, rollout.at(k)->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
 			dmpResult.push_back(simRes);
 
 /*

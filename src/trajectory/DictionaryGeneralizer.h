@@ -58,7 +58,7 @@ private:
 	arma::vec currentQuery;
     arma::vec extendedQuery;
 	
-    t_executor_res executeGen(arma::vec query, double tEnd, double ac, double as, int simulate);
+    std::shared_ptr<ControllerResult> executeGen(arma::vec query, double tEnd, double ac, double as, int simulate);
     int computeClosestT(double t, arma::vec times);
 
     arma::vec computeExtendedQuery(double time, int correspondingIdx, arma::vec query);
@@ -74,21 +74,22 @@ public:
     DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, std::string dictionaryPath, double az, double bz,
                   double stepSize, double tolAbsErr, double tolRelErr, double ac, double as, arma::mat metric, double maxRelativeToMeanDistance, double alpham);
 	
-	t_executor_res simulateTrajectory();
-	t_executor_res executeTrajectory();
-	
-    void setTrajectory(std::shared_ptr<Trajectory> traj);
-    std::shared_ptr<Trajectory> getTrajectory();
-	
-	int getQueryPointCount();
-	int getDegOfFreedom();
-	QueryPoint getQueryPointByIndex(int idx);
-	
-	void switchQueryPoint(arma::vec query);
     void setAs(double as);
+    void switchQueryPoint(arma::vec query);
+    void setTrajectory(std::shared_ptr<Trajectory> traj);
 
-	double getCurrentTime();
-	
+    int getDegOfFreedom();
+    int getQueryPointCount();
+
+    double getCurrentTime();
+
+    QueryPoint getQueryPointByIndex(int idx);
+
+    std::shared_ptr<Trajectory> getTrajectory();
+
+    std::shared_ptr<ControllerResult> executeTrajectory();
+    std::shared_ptr<ControllerResult> simulateTrajectory();
+
 };
 
 #endif

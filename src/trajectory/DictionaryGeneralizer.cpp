@@ -89,12 +89,12 @@ int DictionaryGeneralizer::getDegOfFreedom() {
 	return dictTraj->getDegreesOfFreedom();
 }
 
-t_executor_res DictionaryGeneralizer::simulateTrajectory() {
+std::shared_ptr<ControllerResult> DictionaryGeneralizer::simulateTrajectory() {
     return executeGen(currentQuery, dictTraj->getTmax(), ac, as, 1);
 }
 
 // TODO: implement execute trajectory
-t_executor_res DictionaryGeneralizer::executeTrajectory() {
+std::shared_ptr<ControllerResult> DictionaryGeneralizer::executeTrajectory() {
     return executeGen(currentQuery, dictTraj->getTmax(), ac, as, 0);
 }
 
@@ -210,7 +210,7 @@ arma::vec DictionaryGeneralizer::computeExtendedQuery(double time, int correspon
 }
 
 // TODO: find out why metric can produce negative distances after reinforcement learning
-t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, double ac, double as, int simulate) {
+std::shared_ptr<ControllerResult> DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, double ac, double as, int simulate) {
 	
     double tStart = 0.0;
     int stepCount = (tEnd - tStart) / stepSize;
@@ -234,9 +234,9 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 	
     int isFirstIteration = 1;
 
-	t_executor_res ret;
+    vector<vec> retY;
     for(int i = 0; i < degOfFreedom; ++i)
-        ret.y.push_back(arma::vec(stepCount));
+        retY.push_back(arma::vec(stepCount));
 
 	vector<double> retT;
 
@@ -370,13 +370,11 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
         }
 
 		for(int i = 0; i < degOfFreedom; ++i)
-            ret.y.at(i)(j) = nextJoints(i);
+            retY.at(i)(j) = nextJoints(i);
 
 		retT.push_back(currentTime);
 
 	}
-	
-	ret.t = stdToArmadilloVec(retT);
 	
 	// clean up
     for(int i = 0; i < points; ++i)
@@ -387,7 +385,7 @@ t_executor_res DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, d
 
 	currentTime = 0.0;
 
-	return ret;
+    return std::shared_ptr<ControllerResult>(new ControllerResult(stdToArmadilloVec(retT), retY));
 
 }
 

@@ -28,7 +28,7 @@ PouringRewardComputer::PouringRewardComputer(double targetWeight) {
     this->targetWeight = targetWeight;
 }
 
-double PouringRewardComputer::computeCost(t_executor_res results) {
+double PouringRewardComputer::computeCost(std::shared_ptr<ControllerResult> results) {
 
     double weight = 0.0;
     cout << "(PouringRewardComputer) Enter measured weight: ";
@@ -107,7 +107,7 @@ GraspingRewardComputer::GraspingRewardComputer(std::vector<double> finalJointPos
 	
 }
 
-double GraspingRewardComputer::computeCost(t_executor_res results) {
+double GraspingRewardComputer::computeCost(std::shared_ptr<ControllerResult> results) {
 	
 	double rightR2WTM[4][4] = {
 		{-0.7162,0.6041,0.3496,-0.4837},
@@ -117,8 +117,8 @@ double GraspingRewardComputer::computeCost(t_executor_res results) {
 		
 	double measuredJointPosition[7];
 	for(int i = 0; i < 7; ++i) {
-		vec currDeg = results.y.at(i);
-		measuredJointPosition[i] = currDeg(results.t.size() - 1);
+        vec currDeg = results->getYs().at(i);
+        measuredJointPosition[i] = currDeg(results->getTimes().size() - 1);
 	}
 	
 	forwardKinEE(robotPos, fingerDir, palmNormal, measuredJointPosition);
