@@ -21,6 +21,7 @@
 #include <signal.h>
 #include <utility>
 #include <limits>
+#include <eigen3/Eigen/Dense>
 
 
 #include <dirent.h>
@@ -32,7 +33,6 @@
 
 #include <tf/transform_datatypes.h>
 #include <geometry_msgs/Quaternion.h>
-#include "Eigen/Dense"
 
 #include <sys/types.h>
 #include <sys/stat.h>

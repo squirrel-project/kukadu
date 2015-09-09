@@ -3,7 +3,7 @@
 
 #include "tf/tf.h"
 #include "ros/ros.h"
-#include "Eigen/Dense"
+#include <eigen3/Eigen/Dense>
 #include "tf2_msgs/TFMessage.h"
 #include "geometry_msgs/Pose.h"
 

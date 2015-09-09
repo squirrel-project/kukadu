@@ -28,13 +28,14 @@
 #include <std_msgs/Float32MultiArray.h>
 #include <std_msgs/MultiArrayDimension.h>
 #include <geometry_msgs/Pose.h>
-#include <iis_robot_dep/CartesianImpedance.h>
-#include <iis_robot_dep/FriJointCommand.h>
-#include <iis_robot_dep/FriJointImpedance.h>
-#include <iis_robot_dep/FriJointState.h>
-#include <iis_robot_dep/FriRobotData.h>
-#include <iis_robot_dep/FriRobotJntData.h>
+
 #include <iis_robot_dep/KukieError.h>
+#include <iis_robot_dep/FriRobotData.h>
+#include <iis_robot_dep/FriJointState.h>
+#include <iis_robot_dep/FriJointCommand.h>
+#include <iis_robot_dep/FriRobotJntData.h>
+#include <iis_robot_dep/FriJointImpedance.h>
+#include <iis_robot_dep/CartesianImpedance.h>
 
 #define COMMAND_NOT_SET -100
 

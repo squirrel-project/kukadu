@@ -38,7 +38,6 @@
 #include <iis_robot_dep/FriRobotData.h>
 #include <iis_robot_dep/FriRobotJntData.h>
 #include <iis_robot_dep/KukieError.h>
-#include <RedundantKin.h>
 
 #define COMMAND_NOT_SET -100
 

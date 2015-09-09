@@ -22,6 +22,7 @@
 
 #include "../include/kukadu.h"
 #include "../src/utils/gnuplot-cpp/gnuplot_i.hpp"
+#include "../src/learning/reinforcement_learning/GaussianObstacleRewardComputer.h"
 
 #define DOSIMULATION 1
 

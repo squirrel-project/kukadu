@@ -68,23 +68,26 @@ private:
     void stateCallback(const sensor_msgs::JointState& state);
     void tactileCallback(const iis_schunk_hardware::TactileSensor& state);
 
+protected:
+
+    RosSchunk(std::string type, std::string hand);
 
 public:
 
     RosSchunk(ros::NodeHandle node, std::string type, std::string hand);
 
-    void connectHand();
-    void closeHand(double percentage, double velocity);
-    void disconnectHand();
-    void setGrasp(kukadu_grasps grasp);
-    void safelyDestroy();
+    virtual void connectHand();
+    virtual void closeHand(double percentage, double velocity);
+    virtual void disconnectHand();
+    virtual void setGrasp(kukadu_grasps grasp);
+    virtual void safelyDestroy();
 
-    std::vector<arma::mat> getTactileSensing();
+    virtual std::vector<arma::mat> getTactileSensing();
 
-    void publishSdhJoints(std::vector<double> positions);
-    void publishSingleJoint(int idx, double pos);
+    virtual void publishSdhJoints(std::vector<double> positions);
+    virtual void publishSingleJoint(int idx, double pos);
 
-    std::string getHandName();
+    virtual std::string getHandName();
 
 };
 

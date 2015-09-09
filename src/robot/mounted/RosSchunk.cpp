@@ -4,6 +4,10 @@ using namespace std;
 using namespace arma;
 using namespace iis_schunk_hardware;
 
+RosSchunk::RosSchunk(std::string type, std::string hand) {
+
+}
+
 RosSchunk::RosSchunk(ros::NodeHandle node, std::string type, std::string hand) {
 
     this->node = node;

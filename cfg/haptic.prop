@@ -16,6 +16,7 @@ rotvert90degpushback = $KUKADU_HOME/movements/icra2016/rotvert90degpushback/kuka
 transfinalpush = $KUKADU_HOME/movements/icra2016/rotvert90degpushbackblocking/kuka_lwr_real_left_arm_0
 transpushforward = $KUKADU_HOME/movements/icra2016/blockingpushforward/kuka_lwr_real_right_arm_0
 [control]
+usehands = 1
 simulation = 1
 hapticmode = 1
 [ps]

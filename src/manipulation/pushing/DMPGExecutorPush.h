@@ -1,9 +1,11 @@
 #ifndef DMPGEXECUTORPUSH_H
 #define DMPGEXECUTORPUSH_H
 
-#include "../../../kukadu/include/kukadu.h"
-#include "../../../kukadu/src/types/DMP.h"
-#include "../../../kukadu/src/utils/utils.h"
+#include "../../trajectory/DMPExecutor.h"
+#include "../../types/DMP.h"
+#include "../../utils/utils.h"
+#include "../../robot/VisionInterface.h"
+#include "../../robot/SimInterface.h"
 
 #include <cstdio>
 #include <iostream>
@@ -12,8 +14,9 @@
 #include <string>
 #include <vector>
 #include <wordexp.h>
-#include "ros/ros.h"
-#include "std_msgs/Int32.h"
+#include <memory>
+#include <ros/ros.h>
+#include <std_msgs/Int32.h>
 
 class DMPExecutorPush : public DMPExecutor {
 

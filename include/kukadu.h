@@ -26,7 +26,6 @@
 #include "../src/learning/reinforcement_learning/TerminalCostComputer.h"
 #include "../src/learning/reinforcement_learning/SampleRewardComputer.h"
 #include "../src/learning/reinforcement_learning/TrajectoryBasedReward.h"
-#include "../src/learning/reinforcement_learning/GaussianObstacleRewardComputer.h"
 
 #include "../src/robot/ControlQueue.h"
 #include "../src/robot/SimInterface.h"
@@ -35,6 +34,7 @@
 #include "../src/robot/VisionInterface.h"
 #include "../src/robot/mounted/RosSchunk.h"
 #include "../src/robot/mounted/GenericHand.h"
+#include "../src/robot/mounted/PlottingHand.h"
 #include "../src/robot/PlottingControlQueue.h"
 
 #include "../src/trajectory/DMPExecutor.h"
@@ -60,6 +60,8 @@
 #include "../src/types/DictionaryTrajectory.h"
 #include "../src/types/SingleSampleTrajectory.h"
 
+#include "../src/manipulation/Controller.hpp"
+#include "../src/manipulation/SensingController.hpp"
 #include "../src/manipulation/haptic/HapticPlanner.h"
 #include "../src/manipulation/pushing/DMPGExecutorPush.h"
 
