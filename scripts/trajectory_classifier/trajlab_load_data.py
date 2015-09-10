@@ -14,14 +14,14 @@ import tensor_decomp
 ## ##################################################
 class cls_label_files:
 
-  def __init__(self, trainingBase, evalFile):
+  def __init__(self, trainingBase, evalFile, performClassification):
     """
     """
 
-    ## self.sbasedir='/home/szedmak/data/squirrel_data/traj_label/data_label/'
     self.sbasedir = trainingBase
     self.evaldir = evalFile
     self.labelfile='labels'
+    self.loadFurther = performClassification
     ## self.linputmask=[(0,7),(7,10),(10,13)]
     self.linputmask=[(14,21),(21,24),(24,27)]
     
@@ -31,7 +31,8 @@ class cls_label_files:
   def load_mmr(self, cData, lviews):
     
     ldata_labels = self.read_raw_txt(self.sbasedir,self.labelfile)
-    ldata_labels.append([self.evaldir, 1])
+    if self.loadFurther==1:
+      ldata_labels.append([self.evaldir, 1])
     mdata=len(ldata_labels)
 
     ## !!!!!!!!!!!!!!!!!!!!!!!!!!

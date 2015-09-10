@@ -61,6 +61,7 @@
 #include "../src/types/SingleSampleTrajectory.h"
 
 #include "../src/manipulation/Controller.hpp"
+#include "../src/manipulation/ComplexController.hpp"
 #include "../src/manipulation/SensingController.hpp"
 #include "../src/manipulation/haptic/HapticPlanner.h"
 #include "../src/manipulation/pushing/DMPGExecutorPush.h"

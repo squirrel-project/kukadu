@@ -1,6 +1,8 @@
 #include "utils.h"
 #include "../trajectory/DMPExecutor.h"
 
+#include <sys/stat.h>
+#include <sys/types.h>
 
 using namespace std;
 using namespace arma;
@@ -1023,4 +1025,11 @@ arma::vec pointOnLine2Point(double xp,double yp,double x1,double y1,double x2,do
     p(1) = y * 2;
 
     return p;
+}
+
+bool fileExists(const std::string filePath) {
+    struct stat info;
+    if(stat(filePath.c_str(), &info) != 0 )
+        return false;
+    return true;
 }

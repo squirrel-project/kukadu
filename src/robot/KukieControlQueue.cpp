@@ -548,42 +548,52 @@ double KukieControlQueue::computeDistance(float* a1, float* a2, int size) {
 
 void KukieControlQueue::setAdditionalLoad(float loadMass, float loadPos) {
 
-	std_msgs::Float32MultiArray msg;
-	msg.layout.dim.push_back(std_msgs::MultiArrayDimension());
-	msg.layout.dim[0].size = 2;
-	msg.layout.dim[0].stride = 0;
-	msg.layout.dim[0].label = "Load";
-	msg.data.push_back(loadMass);
-	msg.data.push_back(loadPos);
-	
-	pubAddLoad.publish(msg);
-	
-	int tmpMode = currentMode;
-	stopCurrentMode();
-	switchMode(tmpMode);
+    if(isRealRobot) {
+
+        std_msgs::Float32MultiArray msg;
+        msg.layout.dim.push_back(std_msgs::MultiArrayDimension());
+        msg.layout.dim[0].size = 2;
+        msg.layout.dim[0].stride = 0;
+        msg.layout.dim[0].label = "Load";
+        msg.data.push_back(loadMass);
+        msg.data.push_back(loadPos);
+
+        pubAddLoad.publish(msg);
+
+        int tmpMode = currentMode;
+        stopCurrentMode();
+        switchMode(tmpMode);
+
+    } else {
+        cout << "(setAdditionalLoad) this functionality is not available in simulator - ignored" << endl;
+    }
 
 }
 
 void KukieControlQueue::setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq) {
 
-    iis_robot_dep::CartesianImpedance imp;
-	
-	imp.stiffness.linear.x = imp.stiffness.linear.y = imp.stiffness.linear.z = cpstiffnessxyz;
-	imp.damping.linear.x = imp.damping.linear.y = imp.damping.linear.z = cpdamping;
-	imp.stiffness.angular.x = imp.stiffness.angular.y = imp.stiffness.angular.z = cpstiffnessabc;
-	imp.damping.angular.x = imp.damping.angular.y = imp.damping.angular.z = cpdamping;
-	imp.cpmaxdelta = cpmaxdelta;
-	imp.axismaxdeltatrq = axismaxdeltatrq;
-	
-    iis_robot_dep::FriJointImpedance newImpedance;
-	for (int j = 0; j < 7; j++){
-		newImpedance.stiffness[j] = cpstiffnessxyz;
-		newImpedance.damping[j] = cpdamping;
-	}
+    if(isRealRobot) {
+        iis_robot_dep::CartesianImpedance imp;
 
-	pub_set_cart_stiffness.publish(imp);
-	pub_set_joint_stiffness.publish(newImpedance);
-	ros::spinOnce();
+        imp.stiffness.linear.x = imp.stiffness.linear.y = imp.stiffness.linear.z = cpstiffnessxyz;
+        imp.damping.linear.x = imp.damping.linear.y = imp.damping.linear.z = cpdamping;
+        imp.stiffness.angular.x = imp.stiffness.angular.y = imp.stiffness.angular.z = cpstiffnessabc;
+        imp.damping.angular.x = imp.damping.angular.y = imp.damping.angular.z = cpdamping;
+        imp.cpmaxdelta = cpmaxdelta;
+        imp.axismaxdeltatrq = axismaxdeltatrq;
+
+        iis_robot_dep::FriJointImpedance newImpedance;
+        for (int j = 0; j < 7; j++){
+            newImpedance.stiffness[j] = cpstiffnessxyz;
+            newImpedance.damping[j] = cpdamping;
+        }
+
+        pub_set_cart_stiffness.publish(imp);
+        pub_set_joint_stiffness.publish(newImpedance);
+        ros::spinOnce();
+    } else {
+        cout << "(setStiffness) this functionality is not available in simulator - ignored" << endl;
+    }
 
 }
 

@@ -27,14 +27,6 @@ DMPExecutor::DMPExecutor(std::shared_ptr<Trajectory> traj, std::shared_ptr<Contr
 }
 
 void DMPExecutor::construct(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQueue> execQueue, int suppressMessages) {
-    /*
-
-
-    ControlQueue* controlQueue;
-
-    std::vector<double>* vec_y;
-
-    */
 
     this->isCartesian = traj->isCartesian();
     this->controlQueue = execQueue;
@@ -103,7 +95,6 @@ double DMPExecutor::addTerm(double t, const double* currentDesiredYs, int jointN
 }
 
 int DMPExecutor::func(double t, const double* y, double* f, void* params) {
-
 
     if(!isCartesian) {
 
@@ -182,8 +173,6 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
         }
 
     }
-
-
 
     if(this->simulate == EXECUTE_ROBOT) {
 
@@ -415,8 +404,6 @@ void DMPExecutor::destroyIntegration() {
 
 std::shared_ptr<ControllerResult> DMPExecutor::executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
 
-    // auto begin = std::chrono::high_resolution_clock::now();
-
     int stepCount = (tEnd - tStart) / stepSize;
     double currentTime = 0.0;
 
@@ -427,16 +414,15 @@ std::shared_ptr<ControllerResult> DMPExecutor::executeDMP(double tStart, double 
     vector<double> retT;
     geometry_msgs::Pose start;
 
-    if(!isCartesian)
+    if(!isCartesian) {
+
         controlQueue->moveJoints(y0s);
-    else {
+
+    } else {
+
          start=controlQueue->getCartesianPose();
         cout<<controlQueue->getCartesianPose()<<endl;
         controlQueue->addCartesianPosToQueue(vectorarma2pose(&y0s));
-        //controlQueue->addCartesianPosToQueue(start);
-        //cout<<" in starting position "<< y0s<<endl;
-        //cout<<" in starting position "<< start<<endl;
-
 
     }
 
@@ -461,22 +447,20 @@ std::shared_ptr<ControllerResult> DMPExecutor::executeDMP(double tStart, double 
             retY.at(i)(j) = nextJoints(i);
 
         if(simulate == EXECUTE_ROBOT) {
-            //    auto end = std::chrono::high_resolution_clock::now();
-            //    std::cout << "(DMPExecutor) the simulation took " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() * 1e-9 << " s" << std::endl;
-            //    begin = end;
+
             controlQueue->synchronizeToControlQueue(1);
+
         }
 
-        if(!isCartesian)
+        if(!isCartesian) {
+
             controlQueue->addJointsPosToQueue(nextJoints);
-        else {
-            const double * y;
+
+        } else {
+
             geometry_msgs::Pose newP = vectorarma2pose(&nextJoints);
-//            double x= this->addTerm(t, y, 1, controlQueue);
-//            cout<<" x "<< x<<endl;
-//            //cout<<"old x "<<newP.position.y<<" newx "<< x <<endl;
-//            if(!std::isnan(x)) newP.position.x = newP.position.x + x;
             controlQueue->addCartesianPosToQueue(newP);
+
         }
 
 

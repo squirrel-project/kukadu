@@ -137,5 +137,7 @@ tf::Quaternion axisAngle2Quat (const double xx, const double &yy, const double &
 double distancePoint2Line(double xp,double yp,double x1,double y1,double x2,double y2);
 arma::vec pointOnLine2Point(double xp,double yp,double x1,double y1,double x2,double y2);
 
+bool fileExists(const std::string filePath);
+
 
 #endif

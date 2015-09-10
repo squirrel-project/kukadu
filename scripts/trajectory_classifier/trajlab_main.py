@@ -16,7 +16,7 @@ from mmr_test import inverse_knn
 from mmr_eval import mmr_eval_binvector
 ## ---------------------------------
 ## #################################
-def mmr_main(iworkmode, trainingBase, evalFile):
+def mmr_main(iworkmode, trainingBase, evalFile, performcl):
 
   params=mmr_setparams.cls_params()
   
@@ -59,7 +59,7 @@ def mmr_main(iworkmode, trainingBase, evalFile):
         xresult_train=np.zeros((nipar,nrepeat,nfold0))
         xpr=np.zeros((nipar,nrepeat,nfold0,nscore))
 
-      cdata_store = trajlab_load_data.cls_label_files(trainingBase, evalFile)  
+      cdata_store = trajlab_load_data.cls_label_files(trainingBase, evalFile, performcl)  
       cdata_store.load_mmr(cMMR, lviews)
       mdata=cMMR.mdata
 
@@ -189,9 +189,14 @@ def mmr_main(iworkmode, trainingBase, evalFile):
   
   return -1
 
-def runClassifier(trainingBase, evalFile):
+def runClassifier(trainingBase, evalFile, pcl):
   iworkmode = 0
-  return mmr_main(iworkmode, trainingBase, evalFile)
+  cl = 1
+  if pcl > 0.0:
+    cl = 1
+  else:
+    cl = 0
+  return mmr_main(iworkmode, trainingBase, evalFile, cl)
 
 ## ################################################################
 if __name__ == "__main__":

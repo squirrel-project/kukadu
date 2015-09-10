@@ -257,6 +257,7 @@ int main(int argc, char** args) {
     queueVectors.push_back(leftQueue);
 
     if(usePs) {
+
         manualRew = shared_ptr<ManualReward>(new ManualReward(generator, numberOfActions, numberOfPercepts, false, stdReward));
 
         if(!loadPs)

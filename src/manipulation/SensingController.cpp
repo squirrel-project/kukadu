@@ -9,13 +9,18 @@ SensingController::SensingController(vector<shared_ptr<KukieControlQueue>> queue
     this->hands = hands;
     this->queues = queues;
     this->tmpPath = tmpPath;
+    this->classifierFile = classifierFile;
+    this->classifierPath = classifierPath;
+    this->classifierFunction = classifierFunction;
 }
 
-int SensingController::performClassification(int hapticMode, std::string databasePath) {
+void SensingController::gatherData(std::string dataBasePath, std::string dataName) {
 
-    int classifierRes = -1;
+    gatherData(dataBasePath + dataName);
 
-    pf::remove_all(tmpPath + "hapticTest");
+}
+
+void SensingController::gatherData(std::string completePath) {
 
     vector<shared_ptr<ControlQueue>> castedQueues;
     for(shared_ptr<KukieControlQueue> queue : queues)
@@ -24,23 +29,38 @@ int SensingController::performClassification(int hapticMode, std::string databas
     SensorStorage store(castedQueues, hands, 100);
 
     prepare();
-    shared_ptr<thread> storageThread = store.startDataStorage(tmpPath + "hapticTest");
+
+    shared_ptr<thread> storageThread = store.startDataStorage(completePath);
 
     performCore();
 
     store.stopDataStorage();
     storageThread->join();
 
+    cleanUp();
+
+}
+
+std::string SensingController::getFirstRobotFileName() {
+    return queues.at(0)->getRobotFileName();
+}
+
+int SensingController::performClassification(int hapticMode, std::string databasePath) {
+
+    int classifierRes = -1;
+
+    pf::remove_all(tmpPath + "hapticTest");
+
+    gatherData(tmpPath, "hapticTest");
+
     if(hapticMode == SensingController::HAPTIC_MODE_TERMINAL) {
         cout << "what was the haptic result? [0, 3]" << endl;
         cin >> classifierRes;
     } else if(hapticMode == SensingController::HAPTIC_MODE_CLASSIFIER) {
-        classifierRes = callClassifier(databasePath, tmpPath + "hapticTest/kuka_lwr_" + queues.at(0)->getRobotDeviceType() + "_" + queues.at(0)->getRobotSidePrefix() + "_arm_0");
+        classifierRes = callClassifier(databasePath, tmpPath + "hapticTest/" + queues.at(0)->getRobotFileName() + "_0", true);
     } else {
         throw "haptic mode not known";
     }
-
-    cleanUp();
 
     cout << "(main) classifier result is category " << classifierRes << endl << "(main) press enter to continue" << endl;
     getchar();
@@ -52,7 +72,7 @@ int SensingController::performClassification(int hapticMode, std::string databas
 
 }
 
-int SensingController::callClassifier(std::string trainedPath, std::string passedFilePath) {
+int SensingController::callClassifier(std::string trainedPath, std::string passedFilePath, bool classify) {
 
     int retVal = -1;
     string mName = classifierFile;
@@ -77,7 +97,7 @@ int SensingController::callClassifier(std::string trainedPath, std::string passe
 
         if (pFunc && PyCallable_Check(pFunc)) {
 
-            pArgs = PyTuple_New(2);
+            pArgs = PyTuple_New(3);
             pValue = PyUnicode_FromString(argumentVal.c_str());
             if (!pValue) {
                 Py_DECREF(pArgs);
@@ -95,6 +115,15 @@ int SensingController::callClassifier(std::string trainedPath, std::string passe
                 return 1;
             }
             PyTuple_SetItem(pArgs, 1, pValue);
+
+            pValue = PyFloat_FromDouble((classify) ? 1.0 : -1.0);
+            if (!pValue) {
+                Py_DECREF(pArgs);
+                Py_DECREF(pModule);
+                fprintf(stderr, "Cannot convert argument\n");
+                return 1;
+            }
+            PyTuple_SetItem(pArgs, 2, pValue);
 
             pValue = PyObject_CallObject(pFunc, pArgs);
             Py_DECREF(pArgs);

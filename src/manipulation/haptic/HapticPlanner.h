@@ -29,6 +29,12 @@ private:
     std::vector<std::shared_ptr<Controller>> preparationControllers;
     std::vector<std::shared_ptr<Controller>> complexControllers;
 
+    int pickSensingController();
+    int pickPreparationController(int sensingController);
+    int pickComplexController();
+
+    void printNamedVector(std::vector<std::string> names);
+
 public:
 
     HapticPlanner();
@@ -36,6 +42,10 @@ public:
     void addSensingController(std::string name, std::shared_ptr<SensingController> sensingController);
     void addPreparationController(std::string name, std::shared_ptr<Controller> prepController);
     void addComplexController(std::string name, std::shared_ptr<Controller> complexController);
+
+    void printSensingControllers();
+    void printPreparationControllers();
+    void printComplexControllers();
 
 };
 
