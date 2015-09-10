@@ -259,6 +259,7 @@ class cls_mmr_validation:
 
             sys.stdout.flush()  
 
+    self.validationScore = xxmax
     best_param=xparam
 
     return(best_param)

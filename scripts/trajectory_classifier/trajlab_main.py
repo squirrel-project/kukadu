@@ -163,9 +163,11 @@ def mmr_main(iworkmode, trainingBase, evalFile, performcl):
             # in a clean way
             # print(cEvaluationTes.classconfusion)
             evaluatedRes = [row[0] for row in cEvaluationTes.classconfusion]
-            nonZeroIndexes = [i for i, e in enumerate(evaluatedRes) if e != 0]
-            print(evaluatedRes)
-            return nonZeroIndexes[0]
+            evaluatedRes.append(cvalidation.validationScore)
+            #nonZeroIndexes = [i for i, e in enumerate(evaluatedRes) if e != 0]
+            #print(evaluatedRes)
+            #return nonZeroIndexes[0]
+            return evaluatedRes
             try:
               xclassconfusion+=cEvaluationTes.classconfusion
             except:
@@ -187,7 +189,7 @@ def mmr_main(iworkmode, trainingBase, evalFile, performcl):
       xhead=''
       lresult.append((xhead,tresult))
   
-  return -1
+  return [-1]
 
 def runClassifier(trainingBase, evalFile, pcl):
   iworkmode = 0

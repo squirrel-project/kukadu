@@ -57,7 +57,18 @@ int SensingController::performClassification(int hapticMode, std::string databas
         cout << "what was the haptic result? [0, 3]" << endl;
         cin >> classifierRes;
     } else if(hapticMode == SensingController::HAPTIC_MODE_CLASSIFIER) {
-        classifierRes = callClassifier(databasePath, tmpPath + "hapticTest/" + queues.at(0)->getRobotFileName() + "_0", true);
+        vector<double> res = callClassifier(databasePath, tmpPath + "hapticTest/" + queues.at(0)->getRobotFileName() + "_0", true);
+        vector<double> cutAwayRes(res.begin(), res.end() - 1);
+        int maxIdx = 0;
+        double maxElement = cutAwayRes.at(0);
+        for(int i = 1; i < cutAwayRes.size() - 1; ++i) {
+            if(cutAwayRes.at(i) > maxIdx) {
+                maxElement = cutAwayRes.at(i);
+                maxIdx = i;
+            }
+        }
+        classifierRes = maxIdx;
+
     } else {
         throw "haptic mode not known";
     }
@@ -72,9 +83,9 @@ int SensingController::performClassification(int hapticMode, std::string databas
 
 }
 
-int SensingController::callClassifier(std::string trainedPath, std::string passedFilePath, bool classify) {
+std::vector<double> SensingController::callClassifier(std::string trainedPath, std::string passedFilePath, bool classify) {
 
-    int retVal = -1;
+    vector<double> retVals = {0.0, 0.0};
     string mName = classifierFile;
     string fName = classifierFunction;
     string argumentVal = trainedPath;
@@ -99,61 +110,86 @@ int SensingController::callClassifier(std::string trainedPath, std::string passe
 
             pArgs = PyTuple_New(3);
             pValue = PyUnicode_FromString(argumentVal.c_str());
+
             if (!pValue) {
+
                 Py_DECREF(pArgs);
                 Py_DECREF(pModule);
                 fprintf(stderr, "Cannot convert argument\n");
-                return 1;
+                return retVals;
+
             }
+
             PyTuple_SetItem(pArgs, 0, pValue);
 
             pValue = PyUnicode_FromString(passedFilePath.c_str());
+
             if (!pValue) {
+
                 Py_DECREF(pArgs);
                 Py_DECREF(pModule);
                 fprintf(stderr, "Cannot convert argument\n");
-                return 1;
+
             }
+
             PyTuple_SetItem(pArgs, 1, pValue);
 
             pValue = PyFloat_FromDouble((classify) ? 1.0 : -1.0);
+
             if (!pValue) {
+
                 Py_DECREF(pArgs);
                 Py_DECREF(pModule);
                 fprintf(stderr, "Cannot convert argument\n");
-                return 1;
+
             }
+
             PyTuple_SetItem(pArgs, 2, pValue);
 
             pValue = PyObject_CallObject(pFunc, pArgs);
             Py_DECREF(pArgs);
+
             if (pValue != NULL) {
-                retVal = PyLong_AsLong(pValue);
+
+                int count = (int) PyList_Size(pValue);
+                for(int i = 0; i < count; ++i) {
+                    PyObject* ptemp = PyList_GetItem(pValue, i);
+                    retVals.push_back(PyFloat_AsDouble(ptemp));
+                }
+
+                // retVal = PyLong_AsLong(pValue);
                 Py_DECREF(pValue);
-            }
-            else {
+
+            } else {
+
                 Py_DECREF(pFunc);
                 Py_DECREF(pModule);
                 PyErr_Print();
                 fprintf(stderr,"Call failed\n");
-                retVal = -1;
+
             }
 
-        }
-        else {
+        } else {
+
             if (PyErr_Occurred())
                 PyErr_Print();
             cerr << "Cannot find function " << fName << endl;
+
         }
+
         Py_XDECREF(pFunc);
         Py_DECREF(pModule);
+
     }
     else {
+
         PyErr_Print();
         cerr << "Failed to load " << mName << endl;
-        retVal = -1;
+
     }
+
     Py_Finalize();
-    return retVal;
+
+    return retVals;
 
 }

@@ -41,7 +41,7 @@ public:
 
     // classifies the sensor data that comes from the first passed queue; the file has to end with the "_0" postfix as well
     int performClassification(int hapticMode, std::string databasePath);
-    int callClassifier(std::string trainedPath, std::string passedFilePath, bool classify);
+    std::vector<double> callClassifier(std::string trainedPath, std::string passedFilePath, bool classify);
 
     // returns robot file name of the first passed control queue (the one, from which the force data is sampled)
     std::string getFirstRobotFileName();

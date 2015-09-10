@@ -40,7 +40,6 @@ std::vector<std::string> ComplexController::createSensingDatabase(std::vector<st
 double ComplexController::createDataBaseForSingleSense(std::string path, std::shared_ptr<SensingController> sensingController) {
 
     vector<pair<int, string>> collectedSamples;
-cout << path << endl;
     int numClasses = 4;
     cout << "(ComplexController) how many different classes are there? [1, inf]" << endl;
     cin >> numClasses;
@@ -70,8 +69,10 @@ cout << path << endl;
     }
 
     writeLabelFile(path, collectedSamples);
-    sensingController->callClassifier(path, "", false);
-    //sensingController->callClassifier("/home/c7031109/data/studium/informatik/phd/projects/squirrel/books/2015-05-11_data_with_labels/", "", false);
+    vector<double> classRes = sensingController->callClassifier(path, "", false);
+    double confidence = *classRes.end();
+    cout << confidence << endl;
+    // sensingController->callClassifier("/home/c7031109/data/studium/informatik/phd/projects/squirrel/books/2015-05-11_data_with_labels/", "", false);
 
 
 }
@@ -79,7 +80,7 @@ cout << path << endl;
 void ComplexController::writeLabelFile(std::string baseFolderPath, std::vector<std::pair<int, std::string>> collectedSamples) {
 
     ofstream outFile;
-    outFile.open(baseFolderPath + "label");
+    outFile.open(baseFolderPath + "labels");
 
     for(pair<int, string> sample : collectedSamples)
         outFile << sample.second << " " << sample.first << endl;
