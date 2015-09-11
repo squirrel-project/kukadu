@@ -47,6 +47,8 @@ def mmr_main(iworkmode, trainingBase, evalFile, performcl):
 
       nscore=4
       nipar=1
+      
+      cMMR.crossval_mode = 1
       if cMMR.crossval_mode==0:   ## random
         nfold0=nfold
         xresult_test=np.zeros((nipar,nrepeat,nfold0))

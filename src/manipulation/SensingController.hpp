@@ -15,7 +15,7 @@
 #include "../robot/SensorStorage.h"
 #include "../robot/KukieControlQueue.h"
 
-class SensingController {
+class SensingController : public Controller {
 
 private:
 
@@ -29,7 +29,7 @@ private:
 
 public:
 
-    SensingController(std::vector<std::shared_ptr<KukieControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands,
+    SensingController(std::string caption, std::vector<std::shared_ptr<KukieControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands,
                       std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction);
 
     virtual void prepare() = 0;

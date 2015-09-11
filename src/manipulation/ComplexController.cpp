@@ -2,9 +2,9 @@
 
 using namespace std;
 
-ComplexController::ComplexController(std::vector<std::shared_ptr<SensingController>> sensingControllers,
+ComplexController::ComplexController(std::string caption, std::vector<std::shared_ptr<SensingController>> sensingControllers,
                                      std::vector<std::shared_ptr<Controller>> preparationControllers,
-                                     std::string corrPSPath, std::shared_ptr<std::mt19937> generator, int stdReward, double gamma) {
+                                     std::string corrPSPath, std::shared_ptr<std::mt19937> generator, int stdReward, double gamma) : Controller(caption) {
 
     bool existsPs = fileExists(corrPSPath);
     shared_ptr<ProjectiveSimulator> projSim = nullptr;
@@ -17,6 +17,10 @@ ComplexController::ComplexController(std::vector<std::shared_ptr<SensingControll
         // skill is used the first time; do initialization
         projSim = shared_ptr<ProjectiveSimulator>(new ProjectiveSimulator(manualRew, generator, gamma, PS_USE_ORIGINAL, false));
     }
+
+}
+
+std::shared_ptr<ControllerResult> ComplexController::performAction() {
 
 }
 
@@ -43,42 +47,68 @@ double ComplexController::createDataBaseForSingleSense(std::string path, std::sh
     int numClasses = 4;
     cout << "(ComplexController) data is stored to " << path << endl;
     if(!fileExists(path)) {
+
         cout << "(ComplexController) folder doesn't exist - create" << endl;
         createDirectory(path);
-    }
 
-    cout << "(ComplexController) how many different classes are there? [1, inf]" << endl;
-    cin >> numClasses;
+        // create the database
+        cout << "(ComplexController) how many different classes are there? [1, inf]" << endl;
+        cin >> numClasses;
 
-    for(int currClass = 0; currClass < numClasses; ++currClass) {
+        for(int currClass = 0; currClass < numClasses; ++currClass) {
 
-        int cont = 1;
-        for(int sampleNum = 0; cont == 1; ++sampleNum) {
+            int cont = 1;
+            for(int sampleNum = 0; cont == 1; ++sampleNum) {
 
-            cout << "(ComplexController) press key to collect sample number " << sampleNum << " for class " << currClass << endl;
-            getchar();
+                cout << "(ComplexController) press key to collect sample number " << sampleNum << " for class " << currClass << endl;
+                getchar();
 
-            stringstream s;
-            s << "class_" << currClass << "_sample_" << sampleNum;
-            string relativePath = s.str();
-            string relativeClassifyPath = relativePath + "/" + sensingController->getFirstRobotFileName() + "_0";
-            string nextSamplePath = path + relativePath;
-            sensingController->gatherData(nextSamplePath);
+                stringstream s;
+                s << "class_" << currClass << "_sample_" << sampleNum;
+                string relativePath = s.str();
+                string relativeClassifyPath = relativePath + "/" + sensingController->getFirstRobotFileName() + "_0";
+                string nextSamplePath = path + relativePath;
+                sensingController->gatherData(nextSamplePath);
 
-            collectedSamples.push_back(pair<int, string>(currClass, relativeClassifyPath));
+                collectedSamples.push_back(pair<int, string>(currClass, relativeClassifyPath));
 
-            cout << "(ComplexController) want to collect another sample for class " << currClass << "? (0 = no / 1 = yes): ";
-            cin >> cont;
+                cout << "(ComplexController) want to collect another sample for class " << currClass << "? (0 = no / 1 = yes): ";
+                cin >> cont;
+
+            }
 
         }
 
+        writeLabelFile(path, collectedSamples);
+
+    } else {
+        cout << "(ComplexController) database for controller " << sensingController->getCaption() << " exists - not collection required" << endl;
     }
 
-    writeLabelFile(path, collectedSamples);
-    vector<double> classRes = sensingController->callClassifier(path, "", false);
-    double confidence = *classRes.end();
-    cout << confidence << endl;
-    // sensingController->callClassifier("/home/c7031109/data/studium/informatik/phd/projects/squirrel/books/2015-05-11_data_with_labels/", "", false);
+    // if no classifier file exists
+    if(!fileExists(path + "classRes")) {
+
+        // determine confidence value on database
+        vector<double> classRes = sensingController->callClassifier(path, "/home/c7031109/tmp/kuka_lwr_real_left_arm_0", false);
+        for(double c : classRes)
+            cout << c << "\t";
+        cout << endl;
+        double confidence = classRes.at(classRes.size() - 1);
+
+        ofstream ofile;
+        ofile.open(path + "classRes");
+        ofile << confidence << endl;
+
+    }
+
+    ifstream infile;
+    infile.open(path + "classRes");
+    double confidence = 0.0;
+    infile >> confidence;
+
+    cout << "(ComplexController) determined a confidence of " << confidence << endl;
+
+    return confidence;
 
 
 }

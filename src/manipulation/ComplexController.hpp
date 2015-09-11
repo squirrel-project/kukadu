@@ -18,7 +18,7 @@
 #include "../learning/projective_simulation/core/projectivesimulator.h"
 #include "../learning/projective_simulation/application/manualreward.h"
 
-class ComplexController {
+class ComplexController : public Controller {
 
 private:
 
@@ -31,13 +31,15 @@ private:
 
 public:
 
-    ComplexController(std::vector<std::shared_ptr<SensingController>> sensingControllers, std::vector<std::shared_ptr<Controller>> preparationControllers, std::string corrPSPath, std::shared_ptr<std::mt19937> generator, int stdReward, double gamma);
+    ComplexController(std::string caption, std::vector<std::shared_ptr<SensingController>> sensingControllers, std::vector<std::shared_ptr<Controller>> preparationControllers, std::string corrPSPath, std::shared_ptr<std::mt19937> generator, int stdReward, double gamma);
 
     std::vector<std::string> createSensingDatabase();
     std::vector<std::string> createSensingDatabase(std::vector<std::string> databasePaths, std::vector<std::shared_ptr<SensingController>> sensingControllers);
 
     // returns cross validation score
     double createDataBaseForSingleSense(std::string path, std::shared_ptr<SensingController> sensingController);
+
+    std::shared_ptr<ControllerResult> performAction();
 
 };
 

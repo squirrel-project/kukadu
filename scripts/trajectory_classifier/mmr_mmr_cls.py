@@ -62,18 +62,18 @@ class cls_mmr(base.cls_data):
     self.xbias=0.0
 
     self.kmode=1   ## =0 additive (feature concatenation)
-                    ## =1 multiplicative (fetaure tensor product)
+                    ## =1 multiplicative (feature tensor product)
 
     self.ifixtrain=None
     self.ifixtest=None
 
     self.crossval_mode=0   ## =0 random cross folds =1 fixtraining
     ## itestmode can be 2 if YKernel is linear !!!
-    self.itestmode=0        ## 2 agains the training with knn, 10 vectorwise
+    self.itestmode=0        ## 2 against the training with knn, 10 vectorwise
                             ## 20 Y0 is available
     ## ##################################################
     ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
-    self.nrepeat=1
+    self.nrepeat=5000
     self.nfold=5
     ## ##################################################
     self.testknn=5

@@ -5,7 +5,7 @@
 using namespace std;
 namespace pf = boost::filesystem;
 
-SensingController::SensingController(vector<shared_ptr<KukieControlQueue>> queues, vector<shared_ptr<GenericHand>> hands, std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction) {
+SensingController::SensingController(string caption, vector<shared_ptr<KukieControlQueue>> queues, vector<shared_ptr<GenericHand>> hands, std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction) : Controller(caption) {
     this->hands = hands;
     this->queues = queues;
     this->tmpPath = tmpPath;
@@ -95,7 +95,7 @@ std::shared_ptr<ControllerResult> SensingController::performAction() {
 
 std::vector<double> SensingController::callClassifier(std::string trainedPath, std::string passedFilePath, bool classify) {
 
-    vector<double> retVals = {0.0, 0.0};
+    vector<double> retVals;
     string mName = classifierFile;
     string fName = classifierFunction;
     string argumentVal = trainedPath;

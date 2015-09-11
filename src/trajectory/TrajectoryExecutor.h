@@ -21,6 +21,8 @@ private:
 
 public:
 
+    TrajectoryExecutor();
+
     virtual std::shared_ptr<ControllerResult> executeTrajectory() = 0;
     virtual std::shared_ptr<ControllerResult> simulateTrajectory() = 0;
 	
