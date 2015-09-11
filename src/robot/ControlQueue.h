@@ -174,7 +174,14 @@ public:
     virtual std::vector<std::string> getJointNames() = 0;
 
     virtual double getAbsoluteCartForce();
-   // virtual int getMode() = 0;
+
+    // kills command line output of queue
+    virtual void shutUp() = 0;
+    virtual void startTalking() = 0;
+
+    virtual void rollBack(double time) = 0;
+    virtual void stopJointRollBackMode() = 0;
+    virtual void startJointRollBackMode(double possibleTime) = 0;
     
 };
 

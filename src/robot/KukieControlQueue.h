@@ -62,6 +62,7 @@ private:
     int rollBackQueueSize;
     int cartesianPtpReached;
 
+    bool isShutUp;
     bool isRealRobot;
     bool rollbackMode;
 
@@ -174,6 +175,9 @@ public:
     void setAdditionalLoad(float loadMass, float loadPos);
 	void synchronizeToControlQueue(int maxNumJointsInQueue);
 	void setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq);
+
+    void shutUp();
+    void startTalking();
 
     /* roll back stops the roll back mode (recording) and kills previous experience (can only be used once per recording) */
     void rollBack(double time);

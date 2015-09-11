@@ -14,6 +14,7 @@ void KukieControlQueue::constructQueue(int sleepTime, std::string commandTopic, 
 
     set_ctrlc_exit_handler();
 
+    isShutUp = true;
     currentTime = 0.0;
     rollbackMode = false;
     rollBackQueueSize = 0;
@@ -139,6 +140,7 @@ void KukieControlQueue::rollBack(double time) {
 
     // fill command queue with last commands (backwards)
     for(int i = 0; i < newRollBackCount && rollBackQueue.size(); ++i) {
+
         vec nextCommand = rollBackQueue.front();
 
         // interpolate to stretch the trajectory in case there are not enough measured packets (happens in usage with simulator)
@@ -321,9 +323,12 @@ void KukieControlQueue::run() {
     geometry_msgs::Pose movementPose;
 
     if(startingJoints.n_elem > 1) {
-        cout << "start moving to start position" << endl;
+        if(!isShutUp)
+            cout << "start moving to start position" << endl;
         moveJoints(startingJoints);
-        cout << "finished moving to start position" << endl;
+
+        if(!isShutUp)
+            cout << "finished moving to start position" << endl;
     }
 	
 	isInit = true;
@@ -375,7 +380,8 @@ void KukieControlQueue::run() {
 
 	}
 
-    cout << "thread finished" << endl;
+    if(!isShutUp)
+        cout << "thread finished" << endl;
 }
 
 void KukieControlQueue::setInitValues() {
@@ -426,7 +432,8 @@ void KukieControlQueue::addJointsPosToQueue(arma::vec joints) {
 
 void KukieControlQueue::switchMode(int mode) {
 	if(ros::ok) {
-        cout << "(KukieControlQueue) switching to mode " << mode << endl;
+        if(!isShutUp)
+            cout << "(KukieControlQueue) switching to mode " << mode << endl;
 		std_msgs::Int32 newMode;
 		newMode.data = currentMode = mode;
 		if(ros::ok()) {
@@ -438,7 +445,8 @@ void KukieControlQueue::switchMode(int mode) {
 			ros::spinOnce();
 		}
 	} else {
-        cout << "(KukieControlQueue) ros error" << endl;
+        if(!isShutUp)
+            cout << "(KukieControlQueue) ros error" << endl;
 	}
 }
 
@@ -470,7 +478,8 @@ void KukieControlQueue::moveCartesian(geometry_msgs::Pose pos) {
 
     if(ros::ok) {
 
-        cout << "(KukieControlQueue) moving" << endl;
+        if(!isShutUp)
+            cout << "(KukieControlQueue) moving" << endl;
         pubCartPtp.publish(pos);
         ros::spinOnce();
 
@@ -489,10 +498,12 @@ void KukieControlQueue::moveCartesian(geometry_msgs::Pose pos) {
                 throw new std::string("(KukieControlQueue) time limit reached; ptp movement not done ");
             }
         }
-        cout << "(KukieControlQueue) ptp movement done" << endl;
+        if(!isShutUp)
+            cout << "(KukieControlQueue) ptp movement done" << endl;
 
     } else {
-        cout << "(KukieControlQueue) ros error" << endl;
+        if(!isShutUp)
+            cout << "(KukieControlQueue) ros error" << endl;
     }
 
 }
@@ -518,16 +529,19 @@ void KukieControlQueue::moveJoints(arma::vec joints) {
 			loop_rate->sleep();
 			ros::spinOnce();
 		}
-        cout << "(KukieControlQueue) ptp movement done" << endl;
+        if(!isShutUp)
+            cout << "(KukieControlQueue) ptp movement done" << endl;
 		
 	} else {
-        cout << "(KukieControlQueue) ros error" << endl;
+        if(!isShutUp)
+            cout << "(KukieControlQueue) ros error" << endl;
 	}
 	
 }
 
 void KukieControlQueue::moveJointsNb(arma::vec joints) {
-    cout << "(KukieControlQueue) moving" << endl;
+    if(!isShutUp)
+        cout << "(KukieControlQueue) moving" << endl;
     std_msgs::Float64MultiArray newJoints;
     for(int i = 0; i < getMovementDegreesOfFreedom(); ++i) newJoints.data.push_back(joints[i]);
     newJoints.layout.dim.push_back(std_msgs::MultiArrayDimension());
@@ -542,7 +556,8 @@ double KukieControlQueue::computeDistance(float* a1, float* a2, int size) {
 	for(int i = 0 ; i < size; ++i) {
 		ret = pow(a1[i] - a2[i], 2);
 	}
-	cout << "current distance: " << ret << endl;
+    if(!isShutUp)
+        cout << "current distance: " << ret << endl;
 	return ret;
 }
 
@@ -565,7 +580,8 @@ void KukieControlQueue::setAdditionalLoad(float loadMass, float loadPos) {
         switchMode(tmpMode);
 
     } else {
-        cout << "(setAdditionalLoad) this functionality is not available in simulator - ignored" << endl;
+        if(!isShutUp)
+            cout << "(setAdditionalLoad) this functionality is not available in simulator - ignored" << endl;
     }
 
 }
@@ -592,7 +608,8 @@ void KukieControlQueue::setStiffness(float cpstiffnessxyz, float cpstiffnessabc,
         pub_set_joint_stiffness.publish(newImpedance);
         ros::spinOnce();
     } else {
-        cout << "(setStiffness) this functionality is not available in simulator - ignored" << endl;
+        if(!isShutUp)
+            cout << "(setStiffness) this functionality is not available in simulator - ignored" << endl;
     }
 
 }
@@ -626,7 +643,10 @@ bool KukieControlQueue::isInitialized() {
 void KukieControlQueue::safelyDestroy() {
 }
 
-/*int KukieControlQueue::getMode(){
+void KukieControlQueue::shutUp() {
+    isShutUp = true;
+}
 
-    return currentMode;
-}*/
+void KukieControlQueue::startTalking() {
+    isShutUp = false;
+}

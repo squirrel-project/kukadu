@@ -28,6 +28,10 @@ DMPExecutor::DMPExecutor(std::shared_ptr<Trajectory> traj, std::shared_ptr<Contr
 
 void DMPExecutor::construct(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQueue> execQueue, int suppressMessages) {
 
+    // max force safety is switched of
+    maxForce = DBL_MAX;
+    executionRunning = false;
+
     this->isCartesian = traj->isCartesian();
     this->controlQueue = execQueue;
 
@@ -61,6 +65,38 @@ void DMPExecutor::construct(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQu
     t = 0.0;
 
     this->odeSystemSizeMinOne = odeSystemSize - 1;
+
+}
+
+void DMPExecutor::runCheckMaxForces() {
+
+    bool rollBack = false;
+    ros::Rate pollingRate(50);
+
+    while(executionRunning) {
+
+        double currentForce = controlQueue->getAbsoluteCartForce();
+        if(currentForce > maxAllowedForce) {
+            executionRunning = false;
+            rollBack = true;
+        }
+
+        pollingRate.sleep();
+
+    }
+
+    while(!executionStoppingDone) {
+        pollingRate.sleep();
+    }
+
+    // if maxforce event detected --> kill execution and roll back
+    if(rollBack) {
+
+        cout << "(DMPExecutor) max force threshold exceeded - rolling back a bit and stopping execution" << endl;
+        controlQueue->rollBack(2.0);
+        cout << "(DMPExecutor) rollback done" << endl;
+
+    }
 
 }
 
@@ -224,6 +260,7 @@ double DMPExecutor::computeDistance(const arma::vec yDes, arma::vec yCurr) {
     }
     return dist;
     */
+
     if(!isCartesian) {
         // distance for quaternion has to be introduced if this is enabled
         arma::vec tmp = (yDes - yCurr).t() * (yDes - yCurr);
@@ -260,6 +297,10 @@ std::shared_ptr<ControllerResult> DMPExecutor::simulateTrajectory(double tStart,
 
     return ret;
 
+}
+
+void DMPExecutor::enableMaxForceMode(double maxAbsForce) {
+    maxAllowedForce = maxAbsForce;
 }
 
 std::shared_ptr<ControllerResult> DMPExecutor::simulateTrajectory() {
@@ -404,6 +445,15 @@ void DMPExecutor::destroyIntegration() {
 
 std::shared_ptr<ControllerResult> DMPExecutor::executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
 
+    // two variables are really required here, because executionRunning is changed by other functions that really need to know
+    // whether the exeuction was stopped (this is checked by executionStoppingDone)
+    executionRunning = true;
+    executionStoppingDone = false;
+    if(!isCartesian) {
+        maxFrcThread = shared_ptr<thread>(new thread(&DMPExecutor::runCheckMaxForces, this));
+        controlQueue->startJointRollBackMode(3.0);
+    }
+
     int stepCount = (tEnd - tStart) / stepSize;
     double currentTime = 0.0;
 
@@ -420,8 +470,7 @@ std::shared_ptr<ControllerResult> DMPExecutor::executeDMP(double tStart, double 
 
     } else {
 
-         start=controlQueue->getCartesianPose();
-        cout<<controlQueue->getCartesianPose()<<endl;
+        start = controlQueue->getCartesianPose();
         controlQueue->addCartesianPosToQueue(vectorarma2pose(&y0s));
 
     }
@@ -432,9 +481,10 @@ std::shared_ptr<ControllerResult> DMPExecutor::executeDMP(double tStart, double 
     nextJoints.fill(0.0);
 
     // execute dmps and compute linear combination
-    for(int j = 0; j < stepCount; ++j, currentTime += stepSize) {
+    for(int j = 0; j < stepCount && executionRunning; ++j, currentTime += stepSize) {
 
         try {
+
             nextJoints = doIntegrationStep(ac);
 
         } catch(const char* s) {
@@ -463,11 +513,14 @@ std::shared_ptr<ControllerResult> DMPExecutor::executeDMP(double tStart, double 
 
         }
 
-
         retT.push_back(currentTime);
 
     }
 
+    executionRunning = false;
+    executionStoppingDone = true;
+
+    maxFrcThread->join();
 
     return std::shared_ptr<ControllerResult>(new ControllerResult(stdToArmadilloVec(retT), retY));
 

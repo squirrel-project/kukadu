@@ -54,8 +54,8 @@ include_directories(
     ${EIGEN3_INCLUDE_DIR}
 )
 
-set(CMAKE_BUILD_TYPE Debug)
-#set(CMAKE_BUILD_TYPE Release)
+#set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 
 add_definitions(-O0)
 add_definitions(-fPIC)

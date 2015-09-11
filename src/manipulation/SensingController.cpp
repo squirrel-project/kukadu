@@ -83,6 +83,16 @@ int SensingController::performClassification(int hapticMode, std::string databas
 
 }
 
+std::shared_ptr<ControllerResult> SensingController::performAction() {
+
+    prepare();
+    performCore();
+    cleanUp();
+
+    return nullptr;
+
+}
+
 std::vector<double> SensingController::callClassifier(std::string trainedPath, std::string passedFilePath, bool classify) {
 
     vector<double> retVals = {0.0, 0.0};

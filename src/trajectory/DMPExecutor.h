@@ -7,15 +7,16 @@
 #define KUKADU_EXEC_JOINT 1
 #define KUKADU_EXEC_CART 2
 
-
-#include <armadillo>
 #include <vector>
+#include <chrono>
+#include <memory>
+#include <thread>
+#include <thread>
+#include <cstdlib>
 #include <iostream>
 #include <unistd.h>
 #include <iostream>
-#include <cstdlib>
-#include <chrono>
-#include <memory>
+#include <armadillo>
 #include <ros/rate.h>
 
 #include <gsl/gsl_errno.h>
@@ -50,6 +51,8 @@ class DMPExecutor : public TrajectoryExecutor {
 protected:
 
     bool isCartesian;
+    bool executionRunning;
+    bool executionStoppingDone;
 
 	double tau;
 	double az;
@@ -70,6 +73,7 @@ protected:
 	int suppressMessages;
 
 	double externalError;
+    double maxAllowedForce;
 	
     arma::vec currentJoints;
     arma::vec previousDesiredJoints;
@@ -101,16 +105,22 @@ protected:
 	
 	double t;
 	double stepSize;
+    double maxForce;
 
-    arma::vec dEta0;
     arma::vec Eta0;
-    arma::vec currentEta;
+    arma::vec dEta0;
     arma::vec nextEta;
     arma::vec nextDEta;
-    tf::Quaternion dQ0;
+    arma::vec currentEta;
+
     tf::Quaternion qG;
-    tf::Quaternion currentQ;
+    tf::Quaternion dQ0;
     tf::Quaternion nextQ;
+    tf::Quaternion currentQ;
+
+    std::shared_ptr<std::thread> maxFrcThread;
+
+    void runCheckMaxForces();
 
     double computeDistance(const arma::vec yDes, arma::vec yCurr);
 	
@@ -123,7 +133,7 @@ protected:
 protected:
 
     virtual int func (double t, const double* y, double* f, void* params);
-	int jac(double t, const double* y, double *dfdy, double* dfdt, void* params);
+    virtual int jac(double t, const double* y, double *dfdy, double* dfdt, void* params);
     virtual double addTerm(double t, const double* currentDesiredYs, int jointNumber, std::shared_ptr<ControlQueue> queue);
 
 public:
@@ -158,6 +168,8 @@ public:
 	
 	arma::vec doIntegrationStep(double ac);
 
+    // for now, only works in joint mode
+    void enableMaxForceMode(double maxAbsForce);
 
 };
 

@@ -116,8 +116,14 @@ public:
     mes_result getCurrentJntFrcTrq();
     mes_result getCurrentCartesianFrcTrq();
 
-
     geometry_msgs::Pose getCartesianPose();
+
+    void shutUp();
+    void startTalking();
+
+    virtual void rollBack(double time);
+    virtual void stopJointRollBackMode();
+    virtual void startJointRollBackMode(double possibleTime);
     
 };
 

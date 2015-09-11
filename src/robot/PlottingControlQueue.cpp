@@ -43,6 +43,26 @@ std::vector<std::string> PlottingControlQueue::getJointNames() {
 
 }
 
+void PlottingControlQueue::rollBack(double time) {
+    throw "(PlottingControlQueue) roll back mode not supported";
+}
+
+void PlottingControlQueue::stopJointRollBackMode() {
+    throw "(PlottingControlQueue) roll back mode not supported";
+}
+
+void PlottingControlQueue::startJointRollBackMode(double possibleTime) {
+    throw "(PlottingControlQueue) roll back mode not supported";
+}
+
+void PlottingControlQueue::shutUp() {
+    // nothing to do
+}
+
+void PlottingControlQueue::startTalking() {
+    // nothing to do
+}
+
 void PlottingControlQueue::setJntPtpThresh(double thresh) {
 
 }

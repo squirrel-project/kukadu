@@ -41,6 +41,12 @@ double ComplexController::createDataBaseForSingleSense(std::string path, std::sh
 
     vector<pair<int, string>> collectedSamples;
     int numClasses = 4;
+    cout << "(ComplexController) data is stored to " << path << endl;
+    if(!fileExists(path)) {
+        cout << "(ComplexController) folder doesn't exist - create" << endl;
+        createDirectory(path);
+    }
+
     cout << "(ComplexController) how many different classes are there? [1, inf]" << endl;
     cin >> numClasses;
 
@@ -49,7 +55,7 @@ double ComplexController::createDataBaseForSingleSense(std::string path, std::sh
         int cont = 1;
         for(int sampleNum = 0; cont == 1; ++sampleNum) {
 
-            cout << "(ComplexController) press key to collect sample number " << sampleNum << " for class " << numClasses << endl;
+            cout << "(ComplexController) press key to collect sample number " << sampleNum << " for class " << currClass << endl;
             getchar();
 
             stringstream s;

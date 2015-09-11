@@ -22,6 +22,6 @@ double ControlQueue::getAbsoluteCartForce() {
     mes_result m = getCurrentCartesianFrcTrq();
     vec forces = m.joints.subvec(0, 2);
     vec prod = forces.t() * forces;
-    return prod(0);
+    return sqrt(prod(0));
 
 }
