@@ -1,26 +1,5 @@
 ######################
 ## Version 0.1 #######
-## /**********************************************************************
-##   Copyright 2015, Sandor Szedmak  
-##   email: sandor.szedmak@uibk.ac.at
-##          szedmak777@gmail.com
-##
-##   This file is part of Maximum Margin Multi-valued Regression code(MMMVR).
-##
-##   MMMVR is free software: you can redistribute it and/or modify
-##   it under the terms of the GNU General Public License as published by
-##   the Free Software Foundation, either version 3 of the License, or
-##   (at your option) any later version. 
-##
-##   MMMVR is distributed in the hope that it will be useful,
-##   but WITHOUT ANY WARRANTY; without even the implied warranty of
-##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##   GNU General Public License for more details.
-##
-##   You should have received a copy of the GNU General Public License
-##   along with MMMVR.  If not, see <http://www.gnu.org/licenses/>.
-##
-## ***********************************************************************/
 ######################
 
 ## import sys
@@ -34,7 +13,7 @@ class cls_initial_params:
     """
     parameters for output kernel - ykernel, and input kernels xkernel,
                where
-               ykernel['kernel']  xkernel['kernel']            
+               ykernel['kerenel']  xkernel['kernel']            
                ykernel['norm']  xkernel['norm']            
                ykernel['cross']  xkernel['corss']
                refer to a dictionary indexed by eah of the kernels
@@ -44,6 +23,7 @@ class cls_initial_params:
                                     =1 polynomial
                                     =2 sigmoid
                                     =3 Gaussian
+                                    =5 Gaussian process type 
                         ipar1, ipar2   kernel parameters, see in
                                mvm_kernel_eval modul in kernel_nlr function
     normlization parameters:
@@ -71,12 +51,12 @@ class cls_initial_params:
     ## self.xparams['kernel'][4]={ 'kernel_type' : 3, 'ipar1' : 5.0, \
     ##                             'ipar2' : 0.1 }
 
-    self.xparams['kernel'][0]={ 'kernel_type' : 1, 'ipar1' : 2,  \
-                                'ipar2' : 0.1 }
-    self.xparams['kernel'][1]={ 'kernel_type' : 1, 'ipar1' : 2,  \
-                                'ipar2' : 0.1 }
-    self.xparams['kernel'][2]={ 'kernel_type' : 3, 'ipar1' : 5, \
-                                'ipar2' : 0.1 }
+    self.xparams['kernel'][0]={ 'kernel_type' : 3, 'ipar1' : 0.65,  \
+                                'ipar2' : 0.0 }
+    self.xparams['kernel'][1]={ 'kernel_type' : 3, 'ipar1' : 0.85,  \
+                                'ipar2' : 0.0 }
+    self.xparams['kernel'][2]={ 'kernel_type' : 3, 'ipar1' : 1.0, \
+                                'ipar2' : 0.0 }
     self.xparams['kernel'][3]={ 'kernel_type' : 3, 'ipar1' : 4.9, \
                                 'ipar2' : 0.1 }
     self.xparams['kernel'][4]={ 'kernel_type' : 3, 'ipar1' : 5.0, \
@@ -97,11 +77,11 @@ class cls_initial_params:
 
 
     self.xparams['norm']={}    
-    self.xparams['norm'][0]={ 'ilocal' : 0, 'iscale' : 0}
-    self.xparams['norm'][1]={ 'ilocal' : 0, 'iscale' : 0}
-    self.xparams['norm'][2]={ 'ilocal' : 0, 'iscale' : -1}
-    self.xparams['norm'][3]={ 'ilocal' : 0, 'iscale' : -1}
-    self.xparams['norm'][4]={ 'ilocal' : 0, 'iscale' : -1}
+    self.xparams['norm'][0]={ 'ilocal' : 2, 'iscale' : 0}
+    self.xparams['norm'][1]={ 'ilocal' : 2, 'iscale' : 0}
+    self.xparams['norm'][2]={ 'ilocal' : 2, 'iscale' : 0}
+    self.xparams['norm'][3]={ 'ilocal' : 0, 'iscale' : 0}
+    self.xparams['norm'][4]={ 'ilocal' : 0, 'iscale' : 0}
     self.xparams['norm'][5]={ 'ilocal' : -1, 'iscale' : -1}
     self.xparams['norm'][6]={ 'ilocal' : 0, 'iscale' : -1}
     self.xparams['norm'][7]={ 'ilocal' : 0, 'iscale' : -1}
@@ -116,17 +96,17 @@ class cls_initial_params:
     self.xparams['norm'][16]={ 'ilocal' : 0, 'iscale' : -1}
 
     self.xparams['cross']={}
-    self.xparams['cross'][0]={ 'par1min' : 1 , 'par1max' : 3,  \
+    self.xparams['cross'][0]={ 'par1min' : 0.1 , 'par1max' : 10 ,  \
                                'par1step' : 1, \
-                               'par2min' : 0.0 , 'par2max' : 0.2, \
+                               'par2min' : 0 , 'par2max' : 0, \
                                'par2step' : 0.1, \
                                'nrange': 10   }
-    self.xparams['cross'][1]={ 'par1min' : 1 , 'par1max' : 3, \
-                               'par1step' : 1, \
-                               'par2min' : 0.0 , 'par2max' : 0.2, \
+    self.xparams['cross'][1]={ 'par1min' : 0.1 , 'par1max' : 2, \
+                               'par1step' : 0.5, \
+                               'par2min' : 0.2 , 'par2max' : 0.2, \
                                'par2step' : 0.1, \
                                'nrange': 10   }
-    self.xparams['cross'][2]={ 'par1min' : 4.9 , 'par1max' : 5.1, \
+    self.xparams['cross'][2]={ 'par1min' : 0.1 , 'par1max' : 2, \
                                'par1step' : 0.5, \
                                'par2min' : 0.2 , 'par2max' : 0.2, \
                                'par2step' : 0.1, \
@@ -141,16 +121,17 @@ class cls_initial_params:
                                'par2min' : 0.2 , 'par2max' : 0.2, \
                                'par2step' : 0.1, \
                                'nrange': 10   }
+
     ## external(default) kernel 
     self.yparams={}
     self.yparams['kernel']={}
-    self.yparams['kernel'][0]={ 'kernel_type' : 0, 'ipar1' : 0, 'ipar2' : 0 }
+    self.yparams['kernel'][0]={ 'kernel_type' : 0, 'ipar1' : 2, 'ipar2' : 0 }
 
     self.yparams['norm']={}
     self.yparams['norm'][0]={ 'ilocal' : 0, 'iscale' : 0}
 
     self.yparams['cross']={}
-    self.yparams['cross'][0]={ 'par1min' : 1.0 , 'par1max' : 1.0,  \
+    self.yparams['cross'][0]={ 'par1min' : 0.0 , 'par1max' : 1.0,  \
                                'par1step' : 1, \
                                'par2min' : 0.1 , 'par2max' : 1.0, \
                                'par2step' : 0.01, \
@@ -161,7 +142,7 @@ class cls_initial_params:
     self.yinparams['kernel'][0]={ 'kernel_type' : 0, 'ipar1' : 0, 'ipar2' : 0 }
 
     self.yinparams['norm']={}
-    self.yinparams['norm'][0]={ 'ilocal' : 2, 'iscale' : 0}
+    self.yinparams['norm'][0]={ 'ilocal' : 0, 'iscale' : -1}
 
     self.yinparams['cross']={}
     self.yinparams['cross'][0]={ 'par1min' : 1.0 , 'par1max' : 5.0,  \
@@ -174,13 +155,30 @@ class cls_initial_params:
     ## internal kernel
     self.xinparams={}
     self.xinparams['kernel']={}
-    self.xinparams['kernel'][0]={ 'kernel_type' : 0, 'ipar1' : 0, 'ipar2' : 0 }
+    self.xinparams['kernel'][0]={ 'kernel_type' : 0, 'ipar1' : 0.02 ,\
+                                  'ipar2' : 0 }
+    self.xinparams['kernel'][1]={ 'kernel_type' : 5, 'ipar1' : 0.5, \
+                                  'ipar2' : 0 }
+    self.xinparams['kernel'][2]={ 'kernel_type' : 5, 'ipar1' : 0.5, \
+                                  'ipar2' : 0 }
 
     self.xinparams['norm']={}
-    self.xinparams['norm'][0]={ 'ilocal' : 2, 'iscale' : -1}
+    self.xinparams['norm'][0]={ 'ilocal' : -1, 'iscale' : -1}
+    self.xinparams['norm'][1]={ 'ilocal' : -1, 'iscale' : -1}
+    self.xinparams['norm'][2]={ 'ilocal' : -1, 'iscale' : -1}
 
     self.xinparams['cross']={}
     self.xinparams['cross'][0]={ 'par1min' : 1.0 , 'par1max' : 5.0,  \
+                               'par1step' : 1, \
+                               'par2min' : 0.00 , 'par2max' : 0.00, \
+                               'par2step' : 0.02, \
+                               'nrange': 10   }
+    self.xinparams['cross'][1]={ 'par1min' : 1.0 , 'par1max' : 5.0,  \
+                               'par1step' : 1, \
+                               'par2min' : 0.00 , 'par2max' : 0.00, \
+                               'par2step' : 0.02, \
+                               'nrange': 10   }
+    self.xinparams['cross'][2]={ 'par1min' : 1.0 , 'par1max' : 5.0,  \
                                'par1step' : 1, \
                                'par2min' : 0.00 , 'par2max' : 0.00, \
                                'par2step' : 0.02, \

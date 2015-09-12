@@ -1,26 +1,5 @@
 ######################
 ## Version 0.1 #######
-## /**********************************************************************
-##   Copyright 2015, Sandor Szedmak  
-##   email: sandor.szedmak@uibk.ac.at
-##          szedmak777@gmail.com
-##
-##   This file is part of Maximum Margin Multi-valued Regression code(MMMVR).
-##
-##   MMMVR is free software: you can redistribute it and/or modify
-##   it under the terms of the GNU General Public License as published by
-##   the Free Software Foundation, either version 3 of the License, or
-##   (at your option) any later version. 
-##
-##   MMMVR is distributed in the hope that it will be useful,
-##   but WITHOUT ANY WARRANTY; without even the implied warranty of
-##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##   GNU General Public License for more details.
-##
-##   You should have received a copy of the GNU General Public License
-##   along with MMMVR.  If not, see <http://www.gnu.org/licenses/>.
-##
-## ***********************************************************************/
 ######################
 ## import pickle
 ## ###############################
@@ -95,29 +74,29 @@ class cls_feature:
   def get_train_norm(self,itrain):
 
     if self.XTrainNorm is None:
-      (self.XTrainNorm,self.XTestNorm)= \
+      (self.XTrainNorm,self.XTestNorm,opar)= \
               mmr_normalization(self.norm.ilocal,self.norm.iscale, \
                                 self.data[self.itrain], \
-                                self.data[self.itest],0)[:2]
+                                self.data[self.itest],0)
     return(self.XTrainNorm)
 
 ## --------------------------------------------------------------
   def get_test_norm(self,itest):
 
     if self.XTestNorm is None:
-      (self.XTrainNorm,self.XTestNorm)= \
+      (self.XTrainNorm,self.XTestNorm,opar)= \
               mmr_normalization(self.norm.ilocal,self.norm.iscale, \
                                 self.data[self.itrain], \
-                                self.data[self.itest],0)[:2]
+                                self.data[self.itest],0)
 
     return(self.XTestNorm)
 ## ---------------------------------------------------------------
   def compute_kernel(self,itrain,itest):
 
-    (self.XTrainNorm,self.XTestNorm)= \
+    (self.XTrainNorm,self.XTestNorm,opar)= \
                     mmr_normalization(self.norm.ilocal,self.norm.iscale, \
                                       self.data[self.itrain], \
-                                      self.data[self.itest],0)[:2]
+                                      self.data[self.itest],0)
 
     csubspace_kernel=cls_kernel_subspace(self.get_train(itrain), \
                                          None, \
@@ -198,12 +177,12 @@ class cls_kernel_subspace:
     ## column kernel
     xdata=self.xdata.T
 
-    xdata=mmr_normalization( \
+    (xdata,xdummy,opar)=mmr_normalization( \
       self.norm_col.ilocal,self.norm_col.iscale, \
-      xdata,np.array([]),0)[0]
+      xdata,np.array([]),0)
     K=np.dot(xdata,xdata.T)
     
-    Knl=kernel_eval_kernel((K,),None,None,self.param_col)[0]
+    (Knl,d1,d2)=kernel_eval_kernel((K,),None,None,self.param_col)
     self.kernel_col=Knl
     ## normalize kernel items
     dK=np.sqrt(np.diag(self.kernel_col))
@@ -213,7 +192,7 @@ class cls_kernel_subspace:
       dK[i]=1.0
     self.kernel_col=self.kernel_col/np.outer(dK,dK)
     
-    (v,w)=sp_lin.svd(self.kernel_col)[:2]
+    (v,w,vr)=sp_lin.svd(self.kernel_col)
 
     self.base_vectors=v*np.outer(np.ones(self.ncol),np.sqrt(w))
     
@@ -226,14 +205,14 @@ class cls_kernel_subspace:
     ## column kernel
     xdata0=np.copy(self.xdata)
 
-    xdata=mmr_normalization( \
+    (xdata,xdummy,opar)=mmr_normalization( \
       self.norm_col.ilocal,-1, \
-      xdata0,np.array([]),0)[0]
+      xdata0,np.array([]),0)
     xdata=xdata.T
     m=xdata.shape[0]
-    xdata=mmr_normalization( \
+    (xdata,xdummy,opar)=mmr_normalization( \
       -1,self.norm_col.iscale, \
-      xdata,np.array([]),0)[0]
+      xdata,np.array([]),0)
 
     ikern_type=1          ## =0 linear, =1 cond prob
     if ikern_type==0:
@@ -248,7 +227,7 @@ class cls_kernel_subspace:
     elif ikern_type==2:   # Tanimoto
       K=tanimoto(np.dot(xdata0.T,xdata0))
 
-    Knl=kernel_eval_kernel((K,None),None,None,self.param_col)[0]
+    (Knl,d1,d2)=kernel_eval_kernel((K,None),None,None,self.param_col)
 
     icenter=0
     if icenter>=0:

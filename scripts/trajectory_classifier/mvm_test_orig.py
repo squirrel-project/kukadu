@@ -1,65 +1,61 @@
 ######################
 ## Version 0.1 #######
 ## /**********************************************************************
-##   Copyright 2015, Sandor Szedmak  
+##   Copyright 2014, Sandor Szedmak  
 ##   email: sandor.szedmak@uibk.ac.at
-##          szedmak777@gmail.com
 ##
 ##   This file is part of Maximum Margin Multi-valued Regression code(MMMVR).
 ##
 ##   MMMVR is free software: you can redistribute it and/or modify
-##   it under the terms of the GNU General Public License as published by
+##   it under the terms of the GNU Lesser General Public License as published by
 ##   the Free Software Foundation, either version 3 of the License, or
 ##   (at your option) any later version. 
 ##
 ##   MMMVR is distributed in the hope that it will be useful,
 ##   but WITHOUT ANY WARRANTY; without even the implied warranty of
 ##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##   GNU General Public License for more details.
+##   GNU Lesser General Public License for more details.
 ##
-##   You should have received a copy of the GNU General Public License
+##   You should have received a copy of the GNU Lesser General Public License
 ##   along with MMMVR.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ## ***********************************************************************/
 ######################
-import time
+import sys, time
 import numpy as np
 ## import numexpr
 import scipy.sparse as spspar 
 ## ####################
 ## import mvm_classes
 #####################################################
-def mvm_test_orig(xdatacls,xalpha):
-  """
-  Computes the predicted rank for the (row,col) pairs occuring in the test
-  Inputs: 
-     xdatacls   reference to the data classs 
-     xalpha     vector of optimal values of dual variables computed
-                in the training  
-  Outputs:
-     Zrow       dictionary indexed by the rows of the relation table
-                each item of the dictionary containts 3 elements:
-                    the prediction of each row elements,
-                    the raw prediction,
-                    the corresponding confidence 
-  """
-  ## ################################################3
+def mvm_test_orig(xdatacls,xalpha,params):
+##########################################################
+# computes the predicted rank for the (row,col) pairs occuring in the test
+########################################################
+# Inputs: 
+#     xdatacls          data classses in training
+#     xalpha            collection of the dual variables computed in the
+#                       training
+#     params      parameters  
+# Outputs:
+#     Zrow             cell array, cells are indexed by row index and
+#                       contains the rank predictions for each  cols
+#                       from the test
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# It assumes xdata[2] is a vector !!!!
+########################################################
+
   KXfull=xdatacls.KX
   KYfull=xdatacls.KY
-  ## KXvar=xdatacls.KXvar    
-  ycategory=xdatacls.category   ## are cells categorical variables?
+  KXvar=xdatacls.KXvar    
+  ycategory=xdatacls.category   ## cells are categorical variables
   Y0Tetra=xdatacls.YKernel.Y0Tetra
-
-  xranges_tra=xdatacls.xranges_rel
-  xdata_tra=xdatacls.xdata_tra
-  if xdatacls.testontrain==0:  
-    xranges_tes=xdatacls.xranges_rel_test
-    xdata_tes=xdatacls.xdata_tes
-  else:
-    xranges_tes=xdatacls.xranges_rel
-    xdata_tes=xdatacls.xdata_tra
-  
-  tdim2=xdata_tra[2].shape
+    
+  xranges=xdatacls.xranges_rel
+  xranges_tes=xdatacls.xranges_rel_test
+  xdata=xdatacls.xdata_tra
+  xdata_tes=xdatacls.xdata_tes
+  tdim2=xdata[2].shape
   if len(tdim2)==1:
     nydim=1
   else:
@@ -74,12 +70,13 @@ def mvm_test_orig(xdatacls,xalpha):
 
   if ycategory in (1,2):
     row_max_category=xdatacls.largest_class.row_max_category
-    ## max_category=xdatacls.largest_class.max_category
+    max_category=xdatacls.largest_class.max_category
   
   nrow=xdatacls.nrow
+  ncol=xdatacls.ncol
 
   # collection of the prediction for each row
-  Zrow={}  
+  Zrow=[None for i in range(nrow)]  
 
   if ycategory==0 or ycategory==3:
     col_mean=xdatacls.glm_model.col_mean      # row averages matrix
@@ -108,48 +105,54 @@ def mvm_test_orig(xdatacls,xalpha):
       tfull=0
       tpred=0
       
-    if xranges_tra[irow,1]>0:        # row has training items    
+    if xranges[irow,1]>0:        # row has training items    
     ## if False:        # row has no training items    
 
+
       if xranges_tes[irow,1]>0:     # row has test items
+        istart=xranges[irow,0]       
+        nlength=xranges[irow,1]
+
         tpred0=time.time()
 
-        (istart,nlength)=xranges_tra[irow]       
         # training cols seen by the row
-        ixrange=xdata_tra[1][istart:istart+nlength]   
+        ixrange=xdata[1][istart:istart+nlength]   
         # read the row specific output subkernel
-        (istart_tes,nlength_tes)=xranges_tes[irow]
+        istart_tes=xranges_tes[irow,0]
+        nlength_tes=xranges_tes[irow,1]
         nhits[0]+=nlength_tes
         ixrange_tes=xdata_tes[1][istart_tes:istart_tes+nlength_tes]
         # read the col specific input kernel
         KXm=KXfull[ixrange.reshape((nlength,1)),ixrange_tes]
+
 
         if ycategory==0 or ycategory==3:
           yinterval=np.arange(ymin,ymax,ystep)
           yinterval=np.round((yinterval-ymin)/ystep).astype(int)
           nyrange=len(yinterval)
           if nydim==1:
-            iyrange=xdata_tra[2][istart:istart+nlength]   
+            iyrange=xdata[2][istart:istart+nlength]   
             iyrange=np.round((iyrange-ymin)/ystep).astype(int) # into indeces
             KY=KYfull[iyrange.reshape((nlength,1)),yinterval]
             tfull0=time.time()
             A1=spspar.csc_matrix(KY.T*np.outer(np.ones(nyrange), \
                          xalpha[istart:istart+nlength]))
             Z=A1.dot(KXm)
+            
             spre=Z.argmax(0)
             zpre=Z.max(0)
-            
           else: ## vector valued case 
             tfull0=time.time()
             spre=np.zeros((nlength_tes,nydim))
             zpre=np.zeros((nlength_tes,nydim))
             for i in range(nydim):
-              iyrange=xdata_tra[2][istart:istart+nlength][:,i]   
+              iyrange=xdata[2][istart:istart+nlength][:,i]   
               iyrange=np.round((iyrange-ymin)/ystep).astype(int) # into indeces
               KY=KYfull[iyrange.reshape((nlength,1)),yinterval]
               A1=spspar.csc_matrix(KY.T*np.outer(np.ones(nyrange), \
                          xalpha[istart:istart+nlength]))
               Z=A1.dot(KXm)
+
               spre[:,i]=Z.argmax(0)
               zpre[:,i]=Z.max(0)
               
@@ -164,12 +167,11 @@ def mvm_test_orig(xdatacls,xalpha):
           znorm=znorm+(znorm==0)
           Z0=Z0/np.outer(np.ones(Y0Tetra.shape[1]),znorm)
           Z=np.dot(Y0Tetra,Z0)
+
           spre=Z.argmax(0)
           zpre=Z.max(0)
-          
         elif ycategory==2:
           yinterval=np.arange(nyrange0)
-          iyrange=xdata_tra[2][istart:istart+nlength]   
           nyrange=len(yinterval)
           KY=KYfull[iyrange.reshape((nlength,1)),yinterval]
           tfull0=time.time()
@@ -214,7 +216,7 @@ def mvm_test_orig(xdatacls,xalpha):
       if nlength_tes>0:
         nhits[1]+=nlength_tes
         if ycategory==0 or ycategory==3:
-          (istart_tes,nlength_tes)=xranges_tes[irow]
+          istart_tes=xranges_tes[irow,0]
           ixrange_tes=xdata_tes[1][istart_tes:istart_tes+nlength_tes]
           if nydim==1:
             zpre=np.zeros(nlength_tes)

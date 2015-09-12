@@ -3,24 +3,35 @@
 ######################
 
 import sys, time
+## import pickle
 import numpy as np
+## import scipy.io 
+## import pylab as plt
+
+## ##########################################
 import mmr_base_classes
 import mmr_setparams
 import mmr_mmr_cls
 import argparse
 import trajlab_load_data
-import mmr_validation_cls 
+from mmr_validation import mmr_validation
 from mmr_kernel import mmr_kernel
 from mmr_test import inverse_knn
-#from mmr_report import mmr_report
+from mmr_report import mmr_report
 from mmr_eval import mmr_eval_binvector
-## ---------------------------------
 ## #################################
+
 def mmr_main(iworkmode, trainingBase, evalFile, performcl):
 
   params=mmr_setparams.cls_params()
+  params.setvalidation()
+  params.setsolver()
+  params.setgeneral()
+  params.setoutput()
+  params.setinput()
+  params.setinputraw()
   
-  ## np.set_printoptions(precision=4)
+  np.set_printoptions(precision=4)
   
   dresult={}
   nview=1
@@ -38,7 +49,7 @@ def mmr_main(iworkmode, trainingBase, evalFile, performcl):
     for ifeature in range(nview):
 
       params.ninputview=len(lviews)
-      cMMR=mmr_mmr_cls.cls_mmr(params.ninputview)
+      cMMR=mmr_mmr_cls.cls_mmr(params.ninputview, performcl)
       nfold=cMMR.nfold
       nrepeat=cMMR.nrepeat
       ## cMMR.xbias=-0.06  ## 4 categories
@@ -47,8 +58,6 @@ def mmr_main(iworkmode, trainingBase, evalFile, performcl):
 
       nscore=4
       nipar=1
-      
-      cMMR.crossval_mode = 1
       if cMMR.crossval_mode==0:   ## random
         nfold0=nfold
         xresult_test=np.zeros((nipar,nrepeat,nfold0))
@@ -67,8 +76,7 @@ def mmr_main(iworkmode, trainingBase, evalFile, performcl):
 
       xcross=np.zeros((mdata,mdata))
 
-      ## !!!!!!!!!!!!!!!!!!
-      ## params.validation.rkernel=cMMR.XKernel[0].title
+      params.validation.rkernel=cMMR.XKernel[0].title
 
       xtime=np.zeros(5)
     ## ############################################################
@@ -89,7 +97,7 @@ def mmr_main(iworkmode, trainingBase, evalFile, performcl):
                 ifold=0
             np.random.shuffle(xselector)
           elif cMMR.crossval_mode==1: ## preddefined training and test
-      # (added by simon) train with all data but the last one (not elegant, but works)
+			# (added by simon) train with all data but the last one (not elegant, but works)
             cMMR.ifixtrain = list(range(mdata - 1))
             xselector = np.zeros(mdata)
             xselector[cMMR.ifixtrain] = 1
@@ -99,12 +107,25 @@ def mmr_main(iworkmode, trainingBase, evalFile, performcl):
 
             ## validation to choose the best parameters
             t0 = time.clock()
-
-            ## !!!!!!!!!!!!!!!!!!!!!!!!!
+            ## select the kernel to be validated
             cMMR.set_validation()
-            cvalidation=mmr_validation_cls.cls_mmr_validation()
-            ## !!!!!!!!!!!!!!!!!!!!!!!!! no parameter "params"
-            best_param = cvalidation.mmr_validation(cMMR)
+            ## params.validation.rkernel=cMMR.XKernel[0].title
+            if params.validation.rkernel in cMMR.dkernels:
+              kernbest = cMMR.dkernels[params.validation.rkernel].kernel_params
+            else:
+              kernbest = cMMR.XKernel[0].kernel_params
+
+            if params.validation.ivalid == 1:
+              res = mmr_validation(cMMR, params, performcl)
+              best_param = res['bp']
+              validationScore = res['vs']
+            else:
+              best_param = mmr_base_classes.cls_empty_class()
+              best_param.par1 = kernbest.ipar1
+              best_param.par2 = kernbest.ipar2
+              ## common params
+              best_param.c = cMMR.penalty.c
+              best_param.d = cMMR.penalty.d
               
             xtime[0] = time.clock() - t0
             xbest_param[irepeat,ifold,0]=best_param.c
@@ -112,18 +133,22 @@ def mmr_main(iworkmode, trainingBase, evalFile, performcl):
             xbest_param[irepeat,ifold,2]=best_param.par1
             xbest_param[irepeat,ifold,3]=best_param.par2
 
+            kernbest.ipar1=best_param.par1
+            kernbest.ipar2=best_param.par2
+			## common params
+            cMMR.penalty.c=best_param.c
+            cMMR.penalty.d=best_param.d
             cMMR.compute_kernels()
             cMMR.Y0=cMMR.YKernel.get_train(cMMR.itrain)   ## candidates
+              
             
             t0=time.clock()
-            ## !!!!!!!!!!!!!!!!!!!!!!! np "params"
-            cOptDual=cMMR.mmr_train()
+            cOptDual=cMMR.mmr_train(params)
             xtime[1]=time.clock()-t0
       ## cls transfers the dual variables to the test procedure
       ## compute tests 
       ## check the train accuracy
-            ## !!!!!!!!!!!!!!!!!!!!!!! np "params"
-            cPredictTra = cMMR.mmr_test(cOptDual,itraindata=0)
+            cPredictTra = cMMR.mmr_test(cOptDual,params,itraindata=0)
       ## counts the proportion the ones predicted correctly    
       ## ######################################
             if cMMR.itestmode==2:
@@ -138,8 +163,7 @@ def mmr_main(iworkmode, trainingBase, evalFile, performcl):
       ## ######################################     
       ## check the test accuracy
             t0=time.clock()
-            ## !!!!!!!!!!!!!!!!!!!!!!! np "params"
-            cPredictTes = cMMR.mmr_test(cOptDual,itraindata=1)
+            cPredictTes = cMMR.mmr_test(cOptDual,params,itraindata=1)
       ## counts the proportion the ones predicted correctly
             if cMMR.itestmode==2:
               ypred=inverse_knn(cMMR.YKernel.get_Y0(cMMR.itrain), \
@@ -165,11 +189,12 @@ def mmr_main(iworkmode, trainingBase, evalFile, performcl):
             # in a clean way
             # print(cEvaluationTes.classconfusion)
             evaluatedRes = [row[0] for row in cEvaluationTes.classconfusion]
-            evaluatedRes.append(cvalidation.validationScore)
+
+            evaluatedRes.append(validationScore)
+            return evaluatedRes
             #nonZeroIndexes = [i for i, e in enumerate(evaluatedRes) if e != 0]
             #print(evaluatedRes)
             #return nonZeroIndexes[0]
-            return evaluatedRes
             try:
               xclassconfusion+=cEvaluationTes.classconfusion
             except:
@@ -177,10 +202,9 @@ def mmr_main(iworkmode, trainingBase, evalFile, performcl):
               xclassconfusion=np.zeros((n,n))
               xclassconfusion+=cEvaluationTes.classconfusion
             ## mmr_eval_label(ZW,iPre,YTesN,Y0,kit_data,itest,params)
-            mmr_report.mmr_report('Result on one fold',
-                   xresult_train[iipar,irepeat,ifold], \
-                   xresult_test[iipar,irepeat,ifold], \
-                   xpr[iipar,irepeat,ifold,:])
+
+
+
 
         sys.stdout.flush()
 
@@ -191,7 +215,7 @@ def mmr_main(iworkmode, trainingBase, evalFile, performcl):
       xhead=''
       lresult.append((xhead,tresult))
   
-  return [-1]
+  return -1
 
 def runClassifier(trainingBase, evalFile, pcl):
   iworkmode = 0
@@ -202,12 +226,3 @@ def runClassifier(trainingBase, evalFile, pcl):
     cl = 0
   return mmr_main(iworkmode, trainingBase, evalFile, cl)
 
-## ################################################################
-if __name__ == "__main__":
-  if len(sys.argv)==1:
-    iworkmode=0
-  elif len(sys.argv)>=2:
-    iworkmode=eval(sys.argv[1])
-  trainingBase='../2015-05-11_data_with_labels/'
-  evalFile='../2015-05-11_data_with_labels/N5309222_top_1'
-  mmr_main(iworkmode, trainingBase, evalFile)

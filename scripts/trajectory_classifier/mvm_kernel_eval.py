@@ -1,29 +1,30 @@
 ######################
 ## Version 0.1 #######
 ## /**********************************************************************
-##   Copyright 2015, Sandor Szedmak  
+##   Copyright 2014, Sandor Szedmak  
 ##   email: sandor.szedmak@uibk.ac.at
-##          szedmak777@gmail.com
 ##
 ##   This file is part of Maximum Margin Multi-valued Regression code(MMMVR).
 ##
 ##   MMMVR is free software: you can redistribute it and/or modify
-##   it under the terms of the GNU General Public License as published by
+##   it under the terms of the GNU Lesser General Public License as published by
 ##   the Free Software Foundation, either version 3 of the License, or
 ##   (at your option) any later version. 
 ##
 ##   MMMVR is distributed in the hope that it will be useful,
 ##   but WITHOUT ANY WARRANTY; without even the implied warranty of
 ##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##   GNU General Public License for more details.
+##   GNU Lesser General Public License for more details.
 ##
-##   You should have received a copy of the GNU General Public License
+##   You should have received a copy of the GNU Lesser General Public License
 ##   along with MMMVR.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ## ***********************************************************************/
 ######################
 import numpy as np
 from scipy import sparse
+
+
 ## ####################
 ## import mvm_classes
 ## ####################
@@ -36,6 +37,7 @@ def mvm_kernel(X1,X2,params_spec,norm_spec):
 #       X1     training feature matrix
 #       X2     second feature matrix for cross kernel
 #              in training X1 can be equal to X2
+#       params      global parameters
 #       params_spec parameters for a kernel
 #         ipar1       kernel fist parameter see below
 #         ipar2       kernel second parameter
@@ -105,18 +107,18 @@ def mvm_kernel(X1,X2,params_spec,norm_spec):
 def kernel_category_1d(X1,X2,params_spec):
 
   ncat=max(X1.max(),X2.max())+1
-  m1=X1.shape[0]
-  (m2,n2)=X2.shape
+  (m,n)=X1.shape
+  (mt,n)=X2.shape
 
   vequal=1.0
   vnoteq=-1.0/(ncat-1)
 
-  K=np.zeros((m1,m2))
-  for irow in range(m1):
-    for icol in range(m2):
+  K=np.zeros((m,mt))
+  for irow in range(m):
+    for icol in range(mt):
       xr=X1[irow]
       xc=X2[icol]
-      for i in range(n2):
+      for i in range(n):
         if xr[i]==xc[i]:
           K[irow,icol]+=vequal
         else:
@@ -146,7 +148,7 @@ def kernel_category_2d(xdatacls,params_spec,norm_spec):
   ## xdata_2=xdatacls.xdata_tes
   
   nrow=xdatacls.nrow
-  ## ncol=xdatacls.ncol
+  ncol=xdatacls.ncol
 
   vequal=1.0
   ncat=xdatacls.categorymax
@@ -162,6 +164,9 @@ def kernel_category_2d(xdatacls,params_spec,norm_spec):
     nlen1=xranges[irow1][1]
     if nlen1>0:
       istart1=xranges[irow1][0]
+      ## drow1={}
+      ## for i in range(nlen1):
+      ##   drow1[xdata[1][istart1+i]]=xdata[2][istart1+i]
     else:
       continue
     for irow2 in range(irow1,nrow):
@@ -173,7 +178,7 @@ def kernel_category_2d(xdatacls,params_spec,norm_spec):
         for i in range(istart2,istart2+nlen2):
           drow2[xdata1[i]]=xdata2[i]
 
-        ## for key1,val1 in drow1.items():
+##        for key1,val1 in drow1.items():
         for i in range(istart1,istart1+nlen1):
           key1=xdata1[i]
           if key1 in drow2:
@@ -214,11 +219,11 @@ def kernel_categoryvec_2d(xdatacls,params_spec,norm_spec):
   ## xdata_2=xdatacls.xdata_tes
   
   nrow=xdatacls.nrow
-  ## ncol=xdatacls.ncol
+  ncol=xdatacls.ncol
 
-  ## vequal=1.0
-  ## ncat=xdatacls.categorymax
-  ## vnoteq=-1.0/(ncat-1)
+  vequal=1.0
+  ncat=xdatacls.categorymax
+  vnoteq=-1.0/(ncat-1)
 
   xranges=xdatacls.xranges_rel
   K=np.zeros((nrow,nrow))
@@ -330,6 +335,7 @@ def mvm_kernel_sparse(xdatacls,isymmetric,params_spec,norm_spec):
   inputs: 
         xdatacls      data class
         isymmetric    =1 training case =0 test, cross kernel case
+        params        general parameters
         params_spec   kernel specific parameters
   outputs:
         K         normalized kernel
@@ -425,7 +431,7 @@ def kernel_multiclass_vector(valrange,ndim,classweight):
   tdim=tuple([nitem]*ndim)  
   tfeature=np.unravel_index(np.arange(nfullsize),tdim)
   yfeature=np.array(tfeature).T
-  m=yfeature.shape[0]
+  (m,n)=yfeature.shape
   K=np.zeros((m,m))
   for i in range(m):
     yi=yfeature[i]

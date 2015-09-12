@@ -1,26 +1,5 @@
 ######################
 ## Version 0.1 #######
-## /**********************************************************************
-##   Copyright 2015, Sandor Szedmak  
-##   email: sandor.szedmak@uibk.ac.at
-##          szedmak777@gmail.com
-##
-##   This file is part of Maximum Margin Multi-valued Regression code(MMMVR).
-##
-##   MMMVR is free software: you can redistribute it and/or modify
-##   it under the terms of the GNU General Public License as published by
-##   the Free Software Foundation, either version 3 of the License, or
-##   (at your option) any later version. 
-##
-##   MMMVR is distributed in the hope that it will be useful,
-##   but WITHOUT ANY WARRANTY; without even the implied warranty of
-##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##   GNU General Public License for more details.
-##
-##   You should have received a copy of the GNU General Public License
-##   along with MMMVR.  If not, see <http://www.gnu.org/licenses/>.
-##
-## ***********************************************************************/
 ######################
 import numpy as np
 
@@ -124,7 +103,7 @@ def mmr_eval_binvector(yTest,yPred):
   xctp=np.sum(xtp,axis=0)
   xcfp=np.sum(xfp,axis=0)
   xcfn=np.sum(xfn,axis=0)
-  ## xctn=np.sum(xtn,axis=0)
+  xctn=np.sum(xtn,axis=0)
 
 
   cEvaluation.cprecision=np.zeros(n)
@@ -192,7 +171,7 @@ def mmr_eval_angle(yTest,yPred):
 #   precision=0.0
 #   recall=0.0
 
-  ## (m,n)=yTest.shape
+  (m,n)=yTest.shape
 
   cEvaluation=mmr_base_classes.cls_evaluation()
 
@@ -224,7 +203,7 @@ def mmr_eval_angle(yTest,yPred):
 ## #######################################################################
 def mmr_eval_real(yTest,yPred):
 
-  ## (m,n)=yTest.shape
+  (m,n)=yTest.shape
 
   cEvaluation=mmr_base_classes.cls_evaluation()
 

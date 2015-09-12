@@ -2,8 +2,8 @@
 import numpy as np
 import scipy.io
 import PIL.Image as pilimg
-## import gzip
-## import simplejson
+import gzip
+import simplejson
 
 ## import scipy.linalg as sp_linalg
 import mvm_prepare
@@ -140,14 +140,12 @@ class cls_label_files:
       xtrain=ddata['xtrain']
     else:
       xtrain=ddata['xtest']
-    m=xtrain.shape[0]
+    (m,n)=xtrain.shape
 
-    ## antimatroid(xtrain[:5000])
-    
     iselect=np.where(np.random.rand(m)<pselect)[0]
 
     xtrain0=xtrain[iselect]
-    m=xtrain0.shape[0];
+    (m,n)=xtrain0.shape;
 
     X=np.dot(xtrain0,xtrain.T)
 
@@ -230,8 +228,8 @@ class cls_image_files:
     tshape=X.shape
     mi=tshape[0]
     mj=tshape[1]
-    ## if len(tshape)>2:
-    ##   mk=tshape[2]
+    if len(tshape)>2:
+      mk=tshape[2]
 
     ## X=X/self.image_scale
     
@@ -287,44 +285,7 @@ class cls_image_files:
   ##   Resize PIL image xmatpil to the greater closets power of 2
   ##   """
   ##   return
-## ##############################################3
-def antimatroid(X):
-
-  m=X.shape[0]
-
-  K=np.dot(X,X.T)
-  dd=np.zeros((m,m))
-
-  dchain={}
-
-  for i in range(m):
-    for j in range(m):
-      if K[i,j]==K[i,i]:
-        if K[i,j]==K[j,j]-1:
-          dchain[(i,j)]=K[i,i]
-          dd[i,j]=1
-      else:
-        if K[i,j]==K[j,j]:
-          if K[i,j]==K[i,i]-1:
-            dchain[(i,j)]=K[j,j]
-            dd[i,j]=1
-
-    if  i%100==0:
-      print(i)
-      
-  kmax=np.diag(K).max()
-
-  xstat=np.zeros(kmax+1)
-  for tval in dchain.values():
-    xstat[tval]+=1
-
-  for i in range(kmax+1):
-    print(i,'%5d'%xstat[i])
-  print('%6d'%(np.sum(xstat)))
-
-  return
-
-  
+                    
     
 
     

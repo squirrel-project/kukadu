@@ -1,35 +1,14 @@
 ######################
 ## Version 0.1 #######
-## /**********************************************************************
-##   Copyright 2015, Sandor Szedmak  
-##   email: sandor.szedmak@uibk.ac.at
-##          szedmak777@gmail.com
-##
-##   This file is part of Maximum Margin Multi-valued Regression code(MMMVR).
-##
-##   MMMVR is free software: you can redistribute it and/or modify
-##   it under the terms of the GNU General Public License as published by
-##   the Free Software Foundation, either version 3 of the License, or
-##   (at your option) any later version. 
-##
-##   MMMVR is distributed in the hope that it will be useful,
-##   but WITHOUT ANY WARRANTY; without even the implied warranty of
-##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##   GNU General Public License for more details.
-##
-##   You should have received a copy of the GNU General Public License
-##   along with MMMVR.  If not, see <http://www.gnu.org/licenses/>.
-##
-## ***********************************************************************/
 ######################
 
 import numpy as np
 ## ###########################################################
 from mmr_base_classes import cls_crossval, cls_kernel_params, cls_norm
-## from mmr_multic_label import mmr_multic_label
+from mmr_multic_label import mmr_multic_label
 from mmr_normalization_new import mmr_normalization
-from mmr_kernel_eval import kernel_eval_kernel, \
-     kernel_localscale, gaussian_process_type_kernel
+from mmr_kernel_eval import kernel_eval_kernel, kernel_eval_nl, \
+     kernel_localscale, tanimoto, gaussian_process_type_kernel
 
 ## class definitions
 
@@ -69,7 +48,9 @@ class cls_feature:
     self.kernel_params=cls_kernel_params()
     self.prekernel_params=cls_kernel_params()
 
+    self.ioperator_valued=0
     self.title=None
+    self.kernel_computed=0
 
 ## -------------------------------------------------------------
   def load_data(self,dataraw,ifeature=0):
@@ -110,37 +91,40 @@ class cls_feature:
     if self.Y0Norm is None:
       if self.Y0 is None:
         if self.XTrainNorm is None:
-          self.XTrainNorm= \
-                mmr_normalization(self.norm.ilocal,self.norm.iscale, \
-                                  self.data[itrain],None,0)[0]
-        Y0Norm=self.XTrainNorm
+          (self.XTrainNorm,ydummy,opar)= \
+                mmr_normalization(self.ilocal,self.iscale, \
+                                  self.data[itrain], \
+                                  None,0)
+        self.Y0Norm=self.XTrainNorm
       else:
-        Y0Norm=mmr_normalization(self.norm.ilocal,self.norm.iscale, \
-                                  self.Y0,None,0)[0]
+          (self.Y0,ydummy,opar)= \
+                mmr_normalization(self.ilocal,self.iscale, \
+                                  self.Y0, \
+                                  None,0)
     ## if self.Y0Norm.shape[0]!=itrain.shape[0]:
     ##   print('!!!!',self.Y0Norm.shape[0],itrain.shape[0], \
     ##         self.itrain.shape[0],self.itest.shape[0])
 
-    return(Y0Norm)
+    return(self.Y0Norm)
 
 ## --------------------------------------------------------------
   def get_train_norm(self,itrain):
 
     if self.XTrainNorm is None:
-      (self.XTrainNorm,self.XTestNorm)= \
+      (self.XTrainNorm,self.XTestNorm,opar)= \
               mmr_normalization(self.norm.ilocal,self.norm.iscale, \
                                 self.data[self.itrain], \
-                                self.data[self.itest],0)[:2]
+                                self.data[self.itest],0)
     return(self.XTrainNorm)
 
 ## --------------------------------------------------------------
   def get_test_norm(self,itrain,itest):
 
     if self.XTestNorm is None:
-      (self.XTrainNorm,self.XTestNorm)= \
+      (self.XTrainNorm,self.XTestNorm,opar)= \
               mmr_normalization(self.norm.ilocal,self.norm.iscale, \
                                 self.data[itrain], \
-                                self.data[itest],0)[:2]
+                                self.data[itest],0)
 
     return(self.XTestNorm)
 ## ---------------------------------------------------------------
@@ -148,14 +132,16 @@ class cls_feature:
 
     if self.ifeature==0:  
       if self.icategory==0:
-        (self.XTrainNorm,self.XTestNorm)= \
+        (self.XTrainNorm,self.XTestNorm,opar)= \
                       mmr_normalization(self.norm.ilocal,self.norm.iscale, \
                                         self.data[itrain], \
-                                        self.data[itest],0)[:2]
+                                        self.data[itest],0)
 
         if self.Y0 is not None:
-          self.Y0Norm=mmr_normalization(self.norm.ilocal,self.norm.iscale, \
-                                        self.Y0,None,0)[0]
+          (self.Y0Norm,ydummy,opar)= \
+                      mmr_normalization(self.norm.ilocal,self.norm.iscale, \
+                                        self.Y0, \
+                                        None,0)
           
         if self.prekernel_params.kernel_type in (0,1,2,3):
           xdata=[self.XTrainNorm,None]
@@ -163,9 +149,8 @@ class cls_feature:
                                           self.kernel_params)
 
           if self.Y0 is  None:
-            if len(itest)>0:
-              xdata=[self.XTrainNorm,self.XTestNorm]
-              (self.Kcross,self.d1c,self.d2c)=kernel_eval_kernel(xdata,None, \
+            xdata=[self.XTrainNorm,self.XTestNorm]
+            (self.Kcross,self.d1c,self.d2c)=kernel_eval_kernel(xdata,None, \
                                                                None, \
                                           self.kernel_params)
           else:
@@ -210,12 +195,9 @@ class cls_feature:
         return(self.K,self.d1,self.d2)
     elif ioutput==1:
       if itraintest==1:
-        if itraindata==0:
-          return(self.K,self.d1,self.d2)
-        else:  
           return(self.Kcross,self.d1,self.d2)
       else:  
-        return(self.K,self.d1,self.d2)
+          return(self.K,self.d1,self.d2)
         
 
 ## ---------------------------------------------------------------
@@ -245,4 +227,4 @@ class cls_feature:
     new_obj.norm=self.norm
     
     return(new_obj)
-  ## #####################################################3 
+ ## #####################################################3 

@@ -1,26 +1,5 @@
 ######################
 ## Version 0.1 #######
-## /**********************************************************************
-##   Copyright 2015, Sandor Szedmak  
-##   email: sandor.szedmak@uibk.ac.at
-##          szedmak777@gmail.com
-##
-##   This file is part of Maximum Margin Multi-valued Regression code(MMMVR).
-##
-##   MMMVR is free software: you can redistribute it and/or modify
-##   it under the terms of the GNU General Public License as published by
-##   the Free Software Foundation, either version 3 of the License, or
-##   (at your option) any later version. 
-##
-##   MMMVR is distributed in the hope that it will be useful,
-##   but WITHOUT ANY WARRANTY; without even the implied warranty of
-##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##   GNU General Public License for more details.
-##
-##   You should have received a copy of the GNU General Public License
-##   along with MMMVR.  If not, see <http://www.gnu.org/licenses/>.
-##
-## ***********************************************************************/
 ######################
 from numpy import zeros, ones, array
 from numpy import sum as np_sum
@@ -148,7 +127,7 @@ def mmr_polypower_dn(ndim,maxdegree,ldegree):
 
   maxdegree=int(maxdegree)
   if len(ldegree)==0:
-    ldegree=[maxdegree]*ndim
+    ldegree=[ maxdegree for i in range(ndim)]
 
   xpolydir={}
   xpower=zeros(ndim,dtype=int)

@@ -9,25 +9,47 @@ import numpy as np
 ## import pylab as plt
 
 ## ##########################################
-## import mmr_base_classes
+import mmr_base_classes
 import mmr_setparams
 import mmr_mmr_cls
+## from mmr_load_data_state import load_data_state
 import objpart_load_data
-import mmr_validation_cls
+from mmr_validation import mmr_validation
+from mmr_kernel import mmr_kernel
+## from mmr_train import mmr_train
 from mmr_test import inverse_knn
 from mmr_report import mmr_report
 from mmr_eval import mmr_eval_binvector
+## from mmr_tools import mmr_cross_kernel
+## from mmr_normalization_new import mmr_normalization
+## ---------------------------------
 ## #################################
 def mmr_main(iworkmode):
 
   params=mmr_setparams.cls_params()
+  params.setvalidation()
+  params.setsolver()
+  params.setgeneral()
+  params.setoutput()
+  params.setinput()
+  params.setinputraw()    ## object view wise kernel
+
+  ## nfold=params.nfold
+  ## nrepeat=params.nrepeat
   
   np.set_printoptions(precision=4)
   
   dresult={}
 ## ---------------------------------------------
   list_object=['parts']
+    
   nviews=1
+
+  ## tfile_in=[[(3,4,3)],[(3,4,4)],[(3,4,5)]]
+  ## tfile_in=[[(3,4,1)],[(3,4,2)],[(3,4,3)],[(3,4,4)],[(3,4,5)]]
+  ## tfile_in=[[(3,4,6)],[(3,4,7)],[(3,4,8)],[(3,4,9)]]
+  
+  ## lfile_in=[[[(3,4,i)]] for i in range(20,34)]
   lfile_in=[[[(3,4,21)]]]
   tfile_out=(3,1,6)
 
@@ -59,25 +81,39 @@ def mmr_main(iworkmode):
         xresult_train=np.zeros((nipar,nrepeat,nfold0))
         xpr=np.zeros((nipar,nrepeat,nfold0,nscore))
 
+    ## -----------------------------------------------
+      print('Output kernel type: ',params.output.kernel_type)
+      for i in range(params.ninputkernel):
+        print(i,'Input kernel type: ',params.getinput(i).kernel_type)
     ## @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+      ## cMMR=mmr_mmr_cls.cls_mmr(params.ninputview)
 
       cdata_store=objpart_load_data.cls_label_files()  
       cdata_store.load_mmr(cMMR,tfile_in,tfile_out)
       mdata=cMMR.mdata
 
-      ## -----------------------------------------------
-      print('Output kernel type: ',cMMR.YKernel.kernel_params.kernel_type)
-      for i in range(params.ninputview):
-        print(i,'Input kernel type: ',cMMR.XKernel[i].kernel_params.kernel_type)
-      ## -------------------------------------------------
+      params.validation.rkernel=cMMR.XKernel[0].title
 
       xtime=np.zeros(5)
     ## ############################################################
       nparam=4    ## C,D,par1,par2
       xbest_param=np.zeros((nrepeat,nfold0,nparam))
 
-      ## xinpar=[0.2,0.3,0.4,0.5,0.6]
+      xinpar=[0.2,0.3,0.4,0.5,0.6]
       for iipar in range(nipar):
+        ## if iipar!=6:
+        ##   continue
+        ## params.output1.ipar1=iipar+1
+        ## params.output1.ipar1=0.1*(1.25**iipar)
+        ## params.output1.ipar1=0.1
+        ## print('params.output1.ipar1:',params.output1.ipar1)
+        ## params.input[0].ipar1=xinpar[iipar]
+        ## print('params.input[0].ipar1:',params.input[0].ipar1)
+        ## params.testknn=iipar+1
+        ## cMMR.itestmode=2
+        ## print('params.output.itestmode',params.output.itestmode)
+        ## print('testknn:',params.testknn)
 
         print('===================================================')
         for irepeat in range(nrepeat):
@@ -97,11 +133,22 @@ def mmr_main(iworkmode):
             t0=time.clock()
             ## select the kernel to be validated
             cMMR.set_validation()
+            ## params.validation.rkernel=cMMR.XKernel[0].title
+            if params.validation.rkernel in cMMR.dkernels:
+              kernbest=cMMR.dkernels[params.validation.rkernel].kernel_params
+            else:
+              kernbest=cMMR.XKernel[0].kernel_params
 
-            cvalidation=mmr_validation_cls.cls_mmr_validation()
-            cvalidation.validation_rkernel=cMMR.XKernel[0].title
-            best_param=cvalidation.mmr_validation(cMMR)
-          
+            if params.validation.ivalid==1:
+              best_param=mmr_validation(cMMR,params)
+            else:
+              best_param=mmr_base_classes.cls_empty_class()
+              best_param.par1=kernbest.ipar1
+              best_param.par2=kernbest.ipar2
+              ## common params
+              best_param.c=cMMR.penalty.c
+              best_param.d=cMMR.penalty.d
+              
             xtime[0]=time.clock()-t0
 
             print('Best parameters found by validation')
@@ -114,6 +161,11 @@ def mmr_main(iworkmode):
             xbest_param[irepeat,ifold,2]=best_param.par1
             xbest_param[irepeat,ifold,3]=best_param.par2
 
+            kernbest.ipar1=best_param.par1
+            kernbest.ipar2=best_param.par2
+      ## common params
+            cMMR.penalty.c=best_param.c
+            cMMR.penalty.d=best_param.d
             cMMR.compute_kernels()
             cMMR.Y0=cMMR.YKernel.get_train(cMMR.itrain)   ## candidates
 
@@ -130,13 +182,13 @@ def mmr_main(iworkmode):
               
             
             t0=time.clock()
-            cOptDual=cMMR.mmr_train()
+            cOptDual=cMMR.mmr_train(params)
             xtime[1]=time.clock()-t0
       ## cls transfers the dual variables to the test procedure
       ## compute tests 
       ## check the train accuracy
             print('Test')
-            cPredictTra=cMMR.mmr_test(cOptDual,itraindata=0)
+            cPredictTra=cMMR.mmr_test(cOptDual,params,itraindata=0)
       ## counts the proportion the ones predicted correctly    
       ## ######################################
             if cMMR.itestmode==2:
@@ -153,7 +205,7 @@ def mmr_main(iworkmode):
       ## ######################################     
       ## check the test accuracy
             t0=time.clock()
-            cPredictTes= cMMR.mmr_test(cOptDual,itraindata=1)
+            cPredictTes= cMMR.mmr_test(cOptDual,params,itraindata=1)
       ## counts the proportion the ones predicted correctly
             if cMMR.itestmode==2:
               ypred=inverse_knn(cMMR.YKernel.get_Y0(cMMR.itrain), \
@@ -174,13 +226,7 @@ def mmr_main(iworkmode):
             xpr[iipar,irepeat,ifold,3]=cEvaluationTes.accuracy
 
             print(cEvaluationTes.confusion)
-            print(cEvaluationTes.classconfusion)
-            try:
-              xclassconfusion+=cEvaluationTes.classconfusion
-            except:
-              (n,n)=cEvaluationTes.classconfusion.shape
-              xclassconfusion=np.zeros((n,n))
-              xclassconfusion+=cEvaluationTes.classconfusion
+            ## mmr_eval_label(ZW,iPre,YTesN,Y0,kit_data,itest,params)
 
       ## ####################################
             print('Parameter:',iipar,'Repetition: ',irepeat, \
@@ -234,7 +280,13 @@ def mmr_main(iworkmode):
             ' & ','%6.4f'%litem[1][1][1],' & ','%6.4f'%litem[1][1][2],' \\\\')
     print('\\end{tabular}')  
 
-  print(xclassconfusion)
+    ## print('\\begin{tabular}{l|rrr}')
+    ## print('& \\multicolumn{3}{c}{'+'Objects'+'} \\\\')
+    ## print('Feature & xbias & Precision & Recall & F1 \\\\ \\hline')
+    ## for litem in lresult:
+    ##   print(litem[0],' & ','%6.4f'%litem[1][0],' & ','%6.4f'%litem[1][1][0], \
+    ##         ' & ','%6.4f'%litem[1][1][1],' & ','%6.4f'%litem[1][1][2],' \\\\')
+    ## print('\\end{tabular}')  
 
   print('Bye')
   

@@ -1,34 +1,13 @@
 ######################
 ## Version 0.1 #######
-## /**********************************************************************
-##   Copyright 2015, Sandor Szedmak  
-##   email: sandor.szedmak@uibk.ac.at
-##          szedmak777@gmail.com
-##
-##   This file is part of Maximum Margin Multi-valued Regression code(MMMVR).
-##
-##   MMMVR is free software: you can redistribute it and/or modify
-##   it under the terms of the GNU General Public License as published by
-##   the Free Software Foundation, either version 3 of the License, or
-##   (at your option) any later version. 
-##
-##   MMMVR is distributed in the hope that it will be useful,
-##   but WITHOUT ANY WARRANTY; without even the implied warranty of
-##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##   GNU General Public License for more details.
-##
-##   You should have received a copy of the GNU General Public License
-##   along with MMMVR.  If not, see <http://www.gnu.org/licenses/>.
-##
-## ***********************************************************************/
 ######################
 
 import numpy as np
 ## ###########################################################
 from mmr_base_classes import cls_crossval, cls_kernel_params, cls_norm
-## from mmr_multic_label import mmr_multic_label
+from mmr_multic_label import mmr_multic_label
 from mmr_normalization_new import mmr_normalization
-## from mmr_kernel_eval import kernel_eval_kernel, kernel_eval_nl, kernel_center
+from mmr_kernel_eval import kernel_eval_kernel, kernel_eval_nl, kernel_center
 
 import mvm_kernel_eval
 
@@ -69,12 +48,14 @@ class cls_feature:
     self.kernel_params=cls_kernel_params()
     self.prekernel_params=None
 
+    self.ioperator_valued=0
     self.title='mvm_y'
+    self.kernel_computed=0
 
     self.ymax=10.0
     self.ymin=-10.0
+    self.ystep=1.0
     self.yrange=20
-    self.ystep=(self.ymax-self.ymin)/self.yrange
 
     self.Y0Tetra=None
 
@@ -132,20 +113,20 @@ class cls_feature:
   def get_train_norm(self,itrain):
 
     if self.XTrainNorm is None:
-      (self.XTrainNorm,self.XTestNorm)= \
+      (self.XTrainNorm,self.XTestNorm,opar)= \
               mmr_normalization(self.norm.ilocal,self.norm.iscale, \
                                 self.data[self.itrain], \
-                                self.data[self.itest],0)[:2]
+                                self.data[self.itest],0)
     return(self.XTrainNorm)
 
 ## --------------------------------------------------------------
   def get_test_norm(self,itest):
 
     if self.XTestNorm is None:
-      (self.XTrainNorm,self.XTestNorm)= \
+      (self.XTrainNorm,self.XTestNorm,opar)= \
               mmr_normalization(self.norm.ilocal,self.norm.iscale, \
                                 self.data[self.itrain], \
-                                self.data[self.itest],0)[:2]
+                                self.data[self.itest],0)
 
     return(self.XTestNorm)
 ## ---------------------------------------------------------------
@@ -171,7 +152,11 @@ class cls_feature:
       ##    via transforming into number of base len(valrange) where the
       ##    first component has has the highest position
       self.K=np.copy(self.Kpre)
+      ## self.K=kernel_center(self.K)
       d1=np.diag(self.K)
+      ## d1=d1+(d1==0)
+      ## self.K=self.K/np.outer(d1,d1)
+      ## d1=np.ones(m)
       d2=d1
       self.K=mvm_kernel_eval.kernel_nlr(self.K,d1,d2,self.kernel_params)
 
@@ -185,7 +170,7 @@ class cls_feature:
                                                        self.classweight)
 
 ## ---------------------------------------------------------------
-  def get_kernel(self,itrain,itest,ioutput=0,itraintest=0,itraindata=1):
+  def get_kernel(self,itrain,itest,itraintest=0):
 
     return(self.K,self.d1,self.d2)
 
@@ -214,3 +199,38 @@ class cls_feature:
     
     return(new_obj)
   ## #####################################################3 
+  ## ###########################################################
+#   def mvm_ygrid(self,xdatacls):
+#     """
+#     It digitalizes the values to be predicted to constract probability density
+#     function features, e.g. Gaussian densities centralized on the observed
+#     value, of the output items
+# 
+#     Input:
+#     xdatacls      data class
+#     """
+# 
+#   ##  nrow=xdatacls.nrow
+#   ##  ncol=xdatacls.ncol
+# 
+#     ydata=xdatacls.xdata_tra[2]
+# 
+#   ## compute grid  
+#     ymax=np.max(ydata)
+#     ymin=np.min(ydata)
+# 
+# 
+#     ystep=self.ystep
+#     ymax=np.ceil((ymax+ystep)/ystep)*ystep
+#     ymin=np.floor((ymin-ystep)/ystep)*ystep
+#     if ymax>self.ymax:
+#       self.ymax=ymax
+#     if ymin<self.ymin:
+#       self.ymin=ymin
+# 
+#     self.yrange=(ymax-ymin)/ystep
+# 
+#     ydata=xdatacls.xdata_tra[2]
+#     self.xdatacls[2]=np.round(ydata/ystep)*ystep
+# 
+#     return
