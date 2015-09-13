@@ -54,8 +54,8 @@ class cls_mmr(base.cls_data):
     if evaluateSpecific == 0:
       print('random cross validation mode')
       self.crossval_mode=0   ## =0 random cross folds =1 fixtraining
-      self.nrepeat=100
-      self.nfold=10
+      self.nrepeat=10
+      self.nfold=2
     else:
       print('evaluating specific sample')
       self.crossval_mode=1   ## =0 random cross folds =1 fixtraining

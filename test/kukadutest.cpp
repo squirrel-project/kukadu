@@ -1,8 +1,12 @@
 #include <gtest/gtest.h>
 
-TEST(ProjectiveSimulation, projSimSerialization){
+#include <memory>
+#include <vector>
 
-    /*
+using namespace std;
+
+TEST(ProjectiveSimulation, projSimSerialization){
+/*
     std::shared_ptr<NeverendingColorReward> trafficReward = nullptr;
     std::shared_ptr<ProjectiveSimulator> currentProjSim = nullptr;
 
@@ -21,8 +25,7 @@ TEST(ProjectiveSimulation, projSimSerialization){
 
     loadedProjSim->storePS("/home/c7031109/tmp/storedPS2.txt");
     cout << "stored loaded ps" << endl;
-    */
-
+*/
     EXPECT_TRUE(true);
 }
 

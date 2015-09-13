@@ -33,7 +33,7 @@ class cls_label_files:
     ldata_labels = self.read_raw_txt(self.sbasedir,self.labelfile)
     ## simon: if evaluation of specific trajectory - append it to the dataset
     if self.evaluateSpecific:
-      ldata_labels.append([self.evaldir, 1])
+      ldata_labels.append([self.evaldir, 0])
     mdata=len(ldata_labels)
     
     ## assumes that classes go from [0, maxCat] (and all values are taken)

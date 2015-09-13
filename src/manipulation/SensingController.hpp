@@ -19,7 +19,17 @@ class SensingController : public Controller {
 
 private:
 
+    bool classifierParamsSet;
+
+    int hapticMode;
+
+    double bestParamC;
+    double bestParamD;
+    double bestParamParam1;
+    double bestParamParam2;
+
     std::string tmpPath;
+    std::string databasePath;
     std::string classifierPath;
     std::string classifierFile;
     std::string classifierFunction;
@@ -27,9 +37,14 @@ private:
     std::vector<std::shared_ptr<GenericHand>> hands;
     std::vector<std::shared_ptr<KukieControlQueue>> queues;
 
+    std::vector<double> callClassifier(std::string trainedPath, std::string passedFilePath, bool classify,
+                                       double bestParamC, double bestParamD, double bestParamParam1, double bestParamParam2);
+
+    void writeLabelFile(std::string baseFolderPath, std::vector<std::pair<int, std::string>> collectedSamples);
+
 public:
 
-    SensingController(std::string caption, std::vector<std::shared_ptr<KukieControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands,
+    SensingController(int hapticMode, std::string caption, std::string databasePath, std::vector<std::shared_ptr<KukieControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands,
                       std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction);
 
     virtual void prepare() = 0;
@@ -39,14 +54,21 @@ public:
     void gatherData(std::string completePath);
     void gatherData(std::string dataBasePath, std::string dataName);
 
-    // classifies the sensor data that comes from the first passed queue; the file has to end with the "_0" postfix as well
-    int performClassification(int hapticMode, std::string databasePath);
-    std::vector<double> callClassifier(std::string trainedPath, std::string passedFilePath, bool classify);
+    virtual int getSensingCatCount() = 0;
 
+    // classifies the sensor data that comes from the first passed queue; the file has to end with the "_0" postfix as well
+    int performClassification();
+
+    void setCLassifierParams(double bestParamC, double bestParamD, double bestParamParam1, double bestParamParam2);
+
+    std::string getDatabasePath();
     // returns robot file name of the first passed control queue (the one, from which the force data is sampled)
     std::string getFirstRobotFileName();
 
     std::shared_ptr<ControllerResult> performAction();
+
+    // returns cross validation score
+    double createDataBase();
 
     static const int HAPTIC_MODE_TERMINAL = 0;
     static const int HAPTIC_MODE_CLASSIFIER = 1;

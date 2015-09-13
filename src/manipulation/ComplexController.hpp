@@ -22,22 +22,23 @@ class ComplexController : public Controller {
 
 private:
 
+    int stdPrepWeight;
+
     std::string corrPSPath;
+
+    std::vector<double> sensingWeights;
 
     std::vector<std::shared_ptr<Controller>> preparationControllers;
     std::vector<std::shared_ptr<SensingController>> sensingControllers;
 
-    void writeLabelFile(std::string baseFolderPath, std::vector<std::pair<int, std::string>> collectedSamples);
+    std::shared_ptr<std::vector<std::shared_ptr<Clip>>> prepActions;
 
 public:
 
-    ComplexController(std::string caption, std::vector<std::shared_ptr<SensingController>> sensingControllers, std::vector<std::shared_ptr<Controller>> preparationControllers, std::string corrPSPath, std::shared_ptr<std::mt19937> generator, int stdReward, double gamma);
+    ComplexController(std::string caption, std::vector<std::shared_ptr<SensingController>> sensingControllers, std::vector<std::shared_ptr<Controller>> preparationControllers, std::string corrPSPath, std::shared_ptr<std::mt19937> generator, int stdReward, double gamma, int stdPrepWeight);
 
-    std::vector<std::string> createSensingDatabase();
-    std::vector<std::string> createSensingDatabase(std::vector<std::string> databasePaths, std::vector<std::shared_ptr<SensingController>> sensingControllers);
-
-    // returns cross validation score
-    double createDataBaseForSingleSense(std::string path, std::shared_ptr<SensingController> sensingController);
+    void createSensingDatabase();
+    void createSensingDatabase(std::vector<std::shared_ptr<SensingController>> sensingControllers);
 
     std::shared_ptr<ControllerResult> performAction();
 
