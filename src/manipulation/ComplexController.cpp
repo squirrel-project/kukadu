@@ -10,29 +10,43 @@ using namespace std;
 
 ComplexController::ComplexController(std::string caption, std::vector<std::shared_ptr<SensingController>> sensingControllers,
                                      std::vector<std::shared_ptr<Controller>> preparationControllers,
-                                     std::string corrPSPath, std::shared_ptr<std::mt19937> generator, int stdReward, double gamma, int stdPrepWeight) : Controller(caption) {
+                                     std::string corrPSPath, std::shared_ptr<std::mt19937> generator, int stdReward, double gamma, int stdPrepWeight, bool collectPrevRewards)
+    : Controller(caption), Reward(generator, collectPrevRewards) {
 
-    bool existsPs = fileExists(corrPSPath);
-    shared_ptr<ProjectiveSimulator> projSim = nullptr;
-    shared_ptr<ManualReward> manualRew = shared_ptr<ManualReward>(new ManualReward(generator, preparationControllers.size(), sensingControllers.size(), false, stdReward));
+    projSim = nullptr;
 
+    this->gamma = gamma;
+    this->gen = generator;
+    this->colPrevRewards = collectPrevRewards;
+
+    this->stdReward = stdReward;
+    this->corrPSPath = corrPSPath;
     this->stdPrepWeight = stdPrepWeight;
     this->sensingControllers = sensingControllers;
     this->preparationControllers = preparationControllers;
 
+}
+
+void ComplexController::initialize() {
+
+    bool existsPs = fileExists(corrPSPath);
     createSensingDatabase();
 
     int currentId = 0;
     shared_ptr<vector<int>> clipDimVal = shared_ptr<vector<int>>(new vector<int>());
     clipDimVal->push_back(currentId);
-    shared_ptr<PerceptClip> root = shared_ptr<PerceptClip>(new PerceptClip(0, "root", generator, clipDimVal, INT_MAX));
+    root = shared_ptr<PerceptClip>(new PerceptClip(0, "root", generator, clipDimVal, INT_MAX));
 
     vector<double> prepWeights;
     prepActions = shared_ptr<vector<shared_ptr<Clip>>>(new vector<shared_ptr<Clip>>());
+    prepActionsCasted = shared_ptr<vector<shared_ptr<ActionClip>>>(new vector<shared_ptr<ActionClip>>());
     for(int i = 0; i < preparationControllers.size(); ++i) {
-        shared_ptr<Clip> prepActionClips = shared_ptr<Clip>(new ControllerActionClip(i, preparationControllers.at(i), generator));
-        prepActions->push_back(prepActionClips);
+
+        shared_ptr<ActionClip> prepActionClip = shared_ptr<ActionClip>(new ControllerActionClip(i, preparationControllers.at(i), generator));
+        prepActions->push_back(prepActionClip);
+        prepActionsCasted->push_back(prepActionClip);
         prepWeights.push_back(stdPrepWeight);
+
     }
     ++currentId;
 
@@ -56,25 +70,93 @@ ComplexController::ComplexController(std::string caption, std::vector<std::share
         }
 
         // todo: adapt weights (according to sandors classifier evaluation)
-        root->addSubClip(nextSensClip, sensingWeights.at(i));
+        root->addSubClip(nextSensClip, sensingWeights.at(i) * 100);
 
     }
 
     if(existsPs) {
         // skill was already initialized and can be loaded again
-        projSim = shared_ptr<ProjectiveSimulator>(new ProjectiveSimulator(manualRew, generator, corrPSPath));
+        projSim = shared_ptr<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, corrPSPath));
     } else {
+
         shared_ptr<vector<shared_ptr<PerceptClip>>> rootVec = shared_ptr<vector<shared_ptr<PerceptClip>>>(new vector<shared_ptr<PerceptClip>>());
         rootVec->push_back(root);
+
         // skill is used the first time; do initialization
-        projSim = shared_ptr<ProjectiveSimulator>(new ProjectiveSimulator(manualRew, generator, rootVec, gamma, PS_USE_ORIGINAL, false));
-        projSim->storePS(corrPSPath);
+        projSim = shared_ptr<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, rootVec, gamma, PS_USE_ORIGINAL, false));
+
     }
 
 }
 
-std::shared_ptr<ControllerResult> ComplexController::performAction() {
+std::shared_ptr<ProjectiveSimulator> ComplexController::getProjectiveSimulator() {
+    return projSim;
+}
 
+void ComplexController::store() {
+    projSim->storePS(corrPSPath);
+}
+
+int ComplexController::getDimensionality() {
+    cout << "(ComplexController) get dimensionality got called" << endl;
+    return 1;
+}
+
+// same percept must always have same id
+std::shared_ptr<PerceptClip> ComplexController::generateNextPerceptClip(int immunity) {
+    return root;
+}
+
+std::shared_ptr<std::vector<std::shared_ptr<ActionClip>>> ComplexController::generateActionClips() {
+    return prepActionsCasted;
+}
+
+std::shared_ptr<std::vector<std::shared_ptr<PerceptClip>>> ComplexController::generatePerceptClips() {
+    return std::shared_ptr<std::vector<std::shared_ptr<PerceptClip>>>(new std::vector<std::shared_ptr<PerceptClip>>({root}));
+}
+
+// remove this later
+void ComplexController::executeComplexAction() {
+
+}
+
+double ComplexController::computeRewardInternal(std::shared_ptr<PerceptClip> providedPercept, std::shared_ptr<ActionClip> takenAction) {
+
+    int worked = 0;
+    int executeIt = 0;
+    double retReward = 0.0;
+    shared_ptr<vector<int>> intermed = projSim->getIntermediateHopIdx();
+    shared_ptr<Clip> sensClip = providedPercept->getSubClipByIdx(intermed->at(0));
+    cout << "selected sensing action \"" << *sensClip << "\" resulted in preparation action \"" << *takenAction << "\"" << endl;
+
+    shared_ptr<ControllerActionClip> castedAction = dynamic_pointer_cast<ControllerActionClip>(takenAction);
+    castedAction->performAction();
+
+    cout << "(ComplexController) do you want to execute complex action now? (0 = no / 1 = yes)" << endl;
+    cin >> executeIt;
+
+    if(executeIt) {
+        executeComplexAction();
+    }
+
+    cout << "did the complex action succeed? (0 = no / 1 = yes)" << endl;
+    cin >> worked;
+
+    if(worked) {
+        cout << "preparation action worked; rewarded with " << stdReward << endl;
+        retReward = stdReward;
+    } else {
+        cout << "preparation action didn't work; no reward given" << endl;
+        retReward = 0.0;
+    }
+
+    return retReward;
+
+}
+
+std::shared_ptr<ControllerResult> ComplexController::performAction() {
+    projSim->performRandomWalk();
+    projSim->performRewarding();
 }
 
 void ComplexController::createSensingDatabase() {

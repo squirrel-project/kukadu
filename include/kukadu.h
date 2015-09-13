@@ -14,8 +14,10 @@
 #include "../src/learning/metric_learning/MahalanobisLearner.h"
 #include "../src/learning/metric_learning/InfTheoMetricLearner.h"
 #include "../src/learning/metric_learning/TogersonMetricLearner.h"
-#include "../src/learning/projective_simulation/application/manualreward.h"
+
 #include "../src/learning/projective_simulation/core/projectivesimulator.h"
+#include "../src/learning/projective_simulation/application/manualreward.h"
+#include "../src/learning/projective_simulation/visualization/treedrawer.h"
 
 #include "../src/learning/reinforcement_learning/PoWER.h"
 #include "../src/learning/reinforcement_learning/CostComputer.h"

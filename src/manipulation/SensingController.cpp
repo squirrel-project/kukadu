@@ -62,22 +62,37 @@ std::string SensingController::getFirstRobotFileName() {
 
 int SensingController::performClassification() {
 
-    if(!classifierParamsSet) {
-        string errorMsg = "(SensingController) classifier parameters not yet set" ;
-        cerr << errorMsg << endl;
-        throw errorMsg;
+    int executeIt = 0;
+    int classifierRes = -1;
+    int temporaryHapticMode = hapticMode;
+    cout << "(SensingController) selected sensing action is \"" << getCaption() << "\"; want to execute it? (0 = no / 1 = yes)" << endl;
+    cin >> executeIt;
+
+    if(executeIt == 1) {
+
+        if(!classifierParamsSet) {
+            string errorMsg = "(SensingController) classifier parameters not yet set" ;
+            cerr << errorMsg << endl;
+            throw errorMsg;
+        }
+
+        pf::remove_all(tmpPath + "hapticTest");
+
+        gatherData(tmpPath, "hapticTest");
+
+        cout << "(main) classifier result is category " << classifierRes << endl << "(main) press enter to continue" << endl;
+        getchar();
+
+    } else {
+        cout << "(ControllerActionClip) you decided not to perform the action" << endl;
+        cout << "(ControllerActionClip) switching temporarily to haptic mode HAPTIC_MODE_TERMINAL; continue" << endl;
+        temporaryHapticMode = SensingController::HAPTIC_MODE_TERMINAL;
     }
 
-    int classifierRes = -1;
-
-    pf::remove_all(tmpPath + "hapticTest");
-
-    gatherData(tmpPath, "hapticTest");
-
-    if(hapticMode == SensingController::HAPTIC_MODE_TERMINAL) {
-        cout << "what was the haptic result? [0, 3]" << endl;
+    if(temporaryHapticMode == SensingController::HAPTIC_MODE_TERMINAL) {
+        cout << "(SensingController) what was the haptic result? [0, " << (getSensingCatCount() - 1) << "]" << endl;
         cin >> classifierRes;
-    } else if(hapticMode == SensingController::HAPTIC_MODE_CLASSIFIER) {
+    } else if(temporaryHapticMode == SensingController::HAPTIC_MODE_CLASSIFIER) {
         vector<double> res = callClassifier(databasePath, tmpPath + "hapticTest/" + queues.at(0)->getRobotFileName() + "_0", true, bestParamC, bestParamD, bestParamParam1, bestParamParam2);
         vector<double> cutAwayRes(res.begin(), res.end() - 1);
         int maxIdx = 0;
@@ -89,13 +104,9 @@ int SensingController::performClassification() {
             }
         }
         classifierRes = maxIdx;
-
     } else {
         throw "haptic mode not known";
     }
-
-    cout << "(main) classifier result is category " << classifierRes << endl << "(main) press enter to continue" << endl;
-    getchar();
 
     pf::remove_all(tmpPath + "hapticTest");
 
@@ -152,7 +163,7 @@ double SensingController::createDataBase() {
     if(!fileExists(path + "classRes")) {
 
         // determine confidence value on database
-        vector<double> classRes = callClassifier(path, "/home/c7031109/tmp/kuka_lwr_real_left_arm_0", false, 0.0, 0.0, 0.0, 0.0);
+        vector<double> classRes = callClassifier(path, "", false, 0.0, 0.0, 0.0, 0.0);
 
         double confidence = classRes.at(classRes.size() - 5);
         double bestParamC = classRes.at(classRes.size() - 4);

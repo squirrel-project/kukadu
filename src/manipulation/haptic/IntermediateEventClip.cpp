@@ -1,5 +1,8 @@
 #include "IntermediateEventClip.h"
 
+#include <cstdio>
+#include <iostream>
+
 using namespace std;
 
 IntermediateEventClip::IntermediateEventClip(std::shared_ptr<SensingController> sensingEvent,
@@ -12,6 +15,8 @@ IntermediateEventClip::IntermediateEventClip(std::shared_ptr<SensingController> 
 }
 
 std::pair<int, std::shared_ptr<Clip>> IntermediateEventClip::jumpNextRandom() {
+
+    cout << "(IntermediateEventClip) perform sensing action " << sensingEvent->getCaption() << endl;
 
     pair<int, shared_ptr<Clip>> retVal;
     retVal.first = sensingEvent->performClassification();

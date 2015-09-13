@@ -22,6 +22,8 @@ public:
     ControllerActionClip(int actionId, std::shared_ptr<Controller> actionController,
                           std::shared_ptr<std::mt19937> generator);
 
+    void performAction();
+
 };
 
 

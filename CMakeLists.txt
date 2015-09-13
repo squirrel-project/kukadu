@@ -54,6 +54,8 @@ include_directories(
     ${EIGEN3_INCLUDE_DIR}
 )
 
+set(ENABLE_VISUALIZATION 1)
+
 #set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_BUILD_TYPE Release)
 
