@@ -78,7 +78,7 @@ void ComplexController::initialize() {
 
         }
 
-        double nextWeight = exp(senseStretch * max(0.0, sensingWeights.at(i) - 0.5));
+        double nextWeight = exp(senseStretch * max(0.0, sensingWeights.at(i) - 1.0 / sensCont->getSensingCatCount()));
         cout << "(ComplexController) relative weight of sensing action \"" << sensCont->getCaption() << "\" is " << nextWeight << endl;
         // todo: adapt weights (according to sandors classifier evaluation)
         root->addSubClip(nextSensClip, nextWeight);

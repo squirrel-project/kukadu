@@ -156,7 +156,7 @@ double SensingController::createDataBase() {
         writeLabelFile(path, collectedSamples);
 
     } else {
-        cout << "(SensingController) database for controller " << getCaption() << " exists - not collection required" << endl;
+        cout << "(SensingController) database for controller " << getCaption() << " exists - no collection required" << endl;
     }
 
     // if no classifier file exists
