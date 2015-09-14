@@ -80,9 +80,6 @@ int SensingController::performClassification() {
 
         gatherData(tmpPath, "hapticTest");
 
-        cout << "(main) classifier result is category " << classifierRes << endl << "(main) press enter to continue" << endl;
-        getchar();
-
     } else {
         cout << "(ControllerActionClip) you decided not to perform the action" << endl;
         cout << "(ControllerActionClip) switching temporarily to haptic mode HAPTIC_MODE_TERMINAL; continue" << endl;
@@ -107,6 +104,9 @@ int SensingController::performClassification() {
     } else {
         throw "haptic mode not known";
     }
+
+    cout << "(main) classifier result is category " << classifierRes << endl << "(main) press enter to continue" << endl;
+    getchar();
 
     pf::remove_all(tmpPath + "hapticTest");
 

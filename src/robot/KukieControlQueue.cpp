@@ -234,12 +234,16 @@ void KukieControlQueue::jntMoveCallback(const std_msgs::Float64MultiArray& msg) 
 void KukieControlQueue::cartFrcTrqCallback(const geometry_msgs::Wrench& msg) {
     cartFrcTrqMutex.lock();
         currentCartFrqTrq = vec(6);
-        currentCartFrqTrq(0) = msg.force.x;
-        currentCartFrqTrq(1) = msg.force.y;
-        currentCartFrqTrq(2) = msg.force.z;
-        currentCartFrqTrq(3) = msg.torque.x;
-        currentCartFrqTrq(4) = msg.torque.y;
-        currentCartFrqTrq(5) = msg.torque.z;
+        if(isRealRobot) {
+            currentCartFrqTrq(0) = msg.force.x;
+            currentCartFrqTrq(1) = msg.force.y;
+            currentCartFrqTrq(2) = msg.force.z;
+            currentCartFrqTrq(3) = msg.torque.x;
+            currentCartFrqTrq(4) = msg.torque.y;
+            currentCartFrqTrq(5) = msg.torque.z;
+        } else {
+            currentCartFrqTrq.fill(0.0);
+        }
     cartFrcTrqMutex.unlock();
 }
 

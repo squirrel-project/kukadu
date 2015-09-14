@@ -50,6 +50,7 @@ class DMPExecutor : public TrajectoryExecutor {
 
 protected:
 
+    bool doRollback;
     bool isCartesian;
     bool executionRunning;
     bool executionStoppingDone;
@@ -170,6 +171,7 @@ public:
 
     // for now, only works in joint mode
     void enableMaxForceMode(double maxAbsForce);
+    void doRollBackOnMaxForceEvent(bool doRollback);
 
 };
 

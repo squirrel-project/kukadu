@@ -48,11 +48,6 @@ private:
 
     double computeRewardInternal(std::shared_ptr<PerceptClip> providedPercept, std::shared_ptr<ActionClip> takenAction);
 
-protected:
-
-    // todo: make this abstract
-    virtual void executeComplexAction();
-
 public:
 
     ComplexController(std::string caption, std::vector<std::shared_ptr<SensingController>> sensingControllers, std::vector<std::shared_ptr<Controller>> preparationControllers,
@@ -75,6 +70,8 @@ public:
     std::shared_ptr<std::vector<std::shared_ptr<PerceptClip>>> generatePerceptClips();
 
     std::shared_ptr<ProjectiveSimulator> getProjectiveSimulator();
+
+    virtual void executeComplexAction() = 0;
 
 };
 

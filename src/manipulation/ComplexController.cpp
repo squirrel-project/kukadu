@@ -115,18 +115,15 @@ std::shared_ptr<std::vector<std::shared_ptr<PerceptClip>>> ComplexController::ge
     return std::shared_ptr<std::vector<std::shared_ptr<PerceptClip>>>(new std::vector<std::shared_ptr<PerceptClip>>({root}));
 }
 
-// remove this later
-void ComplexController::executeComplexAction() {
-
-}
-
 double ComplexController::computeRewardInternal(std::shared_ptr<PerceptClip> providedPercept, std::shared_ptr<ActionClip> takenAction) {
 
     int worked = 0;
     int executeIt = 0;
     double retReward = 0.0;
+
     shared_ptr<vector<int>> intermed = projSim->getIntermediateHopIdx();
-    shared_ptr<Clip> sensClip = providedPercept->getSubClipByIdx(intermed->at(0));
+    shared_ptr<Clip> sensClip = providedPercept->getSubClipByIdx(0)->getSubClipByIdx(intermed->at(0));
+
     cout << "selected sensing action \"" << *sensClip << "\" resulted in preparation action \"" << *takenAction << "\"" << endl;
 
     shared_ptr<ControllerActionClip> castedAction = dynamic_pointer_cast<ControllerActionClip>(takenAction);

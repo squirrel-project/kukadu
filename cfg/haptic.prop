@@ -18,13 +18,13 @@ transpushforward = $KUKADU_HOME/movements/icra2016/blockingpushforward/kuka_lwr_
 [control]
 usehands = 1
 simulation = 1
-hapticmode = 1
+hapticmode = 0
 [ps]
 useprojectivesimulation = 0
 loadps = 0
 numberofactions = 4
 numberofpercepts = 4
-gamma = 0.01
+gamma = 0.001
 stdreward = 100
 psfile = $KUKADU_HOME/movements/icra2016/trainedps.txt
 [class]

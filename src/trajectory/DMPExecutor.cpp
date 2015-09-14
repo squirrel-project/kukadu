@@ -29,6 +29,7 @@ DMPExecutor::DMPExecutor(std::shared_ptr<Trajectory> traj, std::shared_ptr<Contr
 void DMPExecutor::construct(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQueue> execQueue, int suppressMessages) {
 
     // max force safety is switched of
+    doRollback = true;
     maxForce = DBL_MAX;
     executionRunning = false;
 
@@ -89,8 +90,9 @@ void DMPExecutor::runCheckMaxForces() {
         pollingRate.sleep();
     }
 
+    cout << "(DMPExecutor " << this << ") doRollback: " << doRollback << endl;
     // if maxforce event detected --> kill execution and roll back
-    if(rollBack) {
+    if(rollBack && doRollback) {
 
         cout << "(DMPExecutor) max force threshold exceeded - rolling back a bit and stopping execution" << endl;
         controlQueue->rollBack(2.0);
@@ -297,6 +299,11 @@ std::shared_ptr<ControllerResult> DMPExecutor::simulateTrajectory(double tStart,
 
     return ret;
 
+}
+
+void DMPExecutor::doRollBackOnMaxForceEvent(bool doRollback) {
+    this->doRollback = doRollback;
+    cout << "(DMPExecutor) doRollback was set to " << this->doRollback << endl;
 }
 
 void DMPExecutor::enableMaxForceMode(double maxAbsForce) {
