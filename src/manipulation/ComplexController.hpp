@@ -26,11 +26,16 @@ private:
     bool colPrevRewards;
 
     int stdPrepWeight;
+    int currentIterationNum;
 
     double gamma;
     double stdReward;
+    double senseStretch;
 
     std::string corrPSPath;
+    std::string rewardHistoryPath;
+
+    std::shared_ptr<std::ofstream> rewardHistoryStream;
 
     std::shared_ptr<std::mt19937> gen;
 
@@ -51,9 +56,13 @@ private:
 public:
 
     ComplexController(std::string caption, std::vector<std::shared_ptr<SensingController>> sensingControllers, std::vector<std::shared_ptr<Controller>> preparationControllers,
-                      std::string corrPSPath, std::shared_ptr<std::mt19937> generator, int stdReward, double gamma, int stdPrepWeight, bool collectPrevRewards);
+                      std::string corrPSPath, std::string rewardHistoryPath, double senseStretch, std::shared_ptr<std::mt19937> generator, int stdReward, double gamma, int stdPrepWeight, bool collectPrevRewards);
+    ~ComplexController();
 
     void store();
+    void storeNextIteration();
+    void store(std::string destination);
+
     // needs to be called after constructor
     void initialize();
     void createSensingDatabase();

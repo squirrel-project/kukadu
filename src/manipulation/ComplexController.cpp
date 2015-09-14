@@ -10,14 +10,18 @@ using namespace std;
 
 ComplexController::ComplexController(std::string caption, std::vector<std::shared_ptr<SensingController>> sensingControllers,
                                      std::vector<std::shared_ptr<Controller>> preparationControllers,
-                                     std::string corrPSPath, std::shared_ptr<std::mt19937> generator, int stdReward, double gamma, int stdPrepWeight, bool collectPrevRewards)
+                                     std::string corrPSPath, std::string rewardHistoryPath, double senseStretch, std::shared_ptr<std::mt19937> generator, int stdReward, double gamma, int stdPrepWeight, bool collectPrevRewards)
     : Controller(caption), Reward(generator, collectPrevRewards) {
 
     projSim = nullptr;
+    rewardHistoryStream = nullptr;
 
     this->gamma = gamma;
     this->gen = generator;
+    this->currentIterationNum = 0;
+    this->senseStretch = senseStretch;
     this->colPrevRewards = collectPrevRewards;
+    this->rewardHistoryPath = rewardHistoryPath;
 
     this->stdReward = stdReward;
     this->corrPSPath = corrPSPath;
@@ -25,6 +29,11 @@ ComplexController::ComplexController(std::string caption, std::vector<std::share
     this->sensingControllers = sensingControllers;
     this->preparationControllers = preparationControllers;
 
+}
+
+ComplexController::~ComplexController() {
+    if(rewardHistoryStream)
+        rewardHistoryStream->close();
 }
 
 void ComplexController::initialize() {
@@ -69,8 +78,10 @@ void ComplexController::initialize() {
 
         }
 
+        double nextWeight = exp(senseStretch * max(0.0, sensingWeights.at(i) - 0.5));
+        cout << "(ComplexController) relative weight of sensing action \"" << sensCont->getCaption() << "\" is " << nextWeight << endl;
         // todo: adapt weights (according to sandors classifier evaluation)
-        root->addSubClip(nextSensClip, sensingWeights.at(i) * 100);
+        root->addSubClip(nextSensClip, nextWeight);
 
     }
 
@@ -87,6 +98,19 @@ void ComplexController::initialize() {
 
     }
 
+    rewardHistoryStream = std::shared_ptr<std::ofstream>(new std::ofstream());
+    int overWrite = 0;
+    if(fileExists(rewardHistoryPath)) {
+        cout << "(ComplexController) should reward history file be overwritten? (0 = no / 1 = yes)" << endl;
+        cin >> overWrite;
+        if(overWrite != 1) {
+            string err = "(ComplexController) reward file already exists. you chose not to overwrite. stopping";
+            cerr << err << endl;
+            throw err;
+        }
+    }
+    rewardHistoryStream->open(rewardHistoryPath, ios::trunc);
+
 }
 
 std::shared_ptr<ProjectiveSimulator> ComplexController::getProjectiveSimulator() {
@@ -95,6 +119,16 @@ std::shared_ptr<ProjectiveSimulator> ComplexController::getProjectiveSimulator()
 
 void ComplexController::store() {
     projSim->storePS(corrPSPath);
+}
+
+void ComplexController::store(std::string destination) {
+    projSim->storePS(destination);
+}
+
+void ComplexController::storeNextIteration() {
+    stringstream s;
+    s << corrPSPath << currentIterationNum;
+    projSim->storePS(s.str());
 }
 
 int ComplexController::getDimensionality() {
@@ -121,8 +155,10 @@ double ComplexController::computeRewardInternal(std::shared_ptr<PerceptClip> pro
     int executeIt = 0;
     double retReward = 0.0;
 
+    ++currentIterationNum;
+
     shared_ptr<vector<int>> intermed = projSim->getIntermediateHopIdx();
-    shared_ptr<Clip> sensClip = providedPercept->getSubClipByIdx(0)->getSubClipByIdx(intermed->at(0));
+    shared_ptr<Clip> sensClip = providedPercept->getSubClipByIdx(intermed->at(1));
 
     cout << "selected sensing action \"" << *sensClip << "\" resulted in preparation action \"" << *takenAction << "\"" << endl;
 
@@ -146,6 +182,8 @@ double ComplexController::computeRewardInternal(std::shared_ptr<PerceptClip> pro
         cout << "preparation action didn't work; no reward given" << endl;
         retReward = 0.0;
     }
+
+    *rewardHistoryStream << retReward << "\t" << *sensClip << "\t\t" << *takenAction << endl;
 
     return retReward;
 
