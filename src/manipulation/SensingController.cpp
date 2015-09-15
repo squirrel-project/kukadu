@@ -7,6 +7,7 @@ namespace pf = boost::filesystem;
 
 SensingController::SensingController(int hapticMode, string caption, std::string databasePath, vector<shared_ptr<KukieControlQueue>> queues, vector<shared_ptr<GenericHand>> hands, std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction) : Controller(caption) {
 
+    currentIterationNum = 0;
     classifierParamsSet = false;
 
     this->hands = hands;
@@ -22,6 +23,8 @@ SensingController::SensingController(int hapticMode, string caption, std::string
     bestParamD = 0.0;
     bestParamParam1 = 0.0;
     bestParamParam2 = 0.0;
+
+    Py_Initialize();
 
 }
 
@@ -60,6 +63,10 @@ std::string SensingController::getFirstRobotFileName() {
     return queues.at(0)->getRobotFileName();
 }
 
+std::vector<double> SensingController::callClassifier() {
+    return callClassifier(databasePath, tmpPath + "hapticTest/" + queues.at(0)->getRobotFileName() + "_0", true, bestParamC, bestParamD, bestParamParam1, bestParamParam2);
+}
+
 int SensingController::performClassification() {
 
     int executeIt = 0;
@@ -79,6 +86,9 @@ int SensingController::performClassification() {
         pf::remove_all(tmpPath + "hapticTest");
 
         gatherData(tmpPath, "hapticTest");
+        stringstream s;
+        s << tmpPath << "hapticTest_" << queues.at(0)->getRobotFileName() << "_0_" << currentIterationNum;
+        copyFile(tmpPath + "hapticTest/" + queues.at(0)->getRobotFileName() + "_0", s.str());
 
     } else {
         cout << "(ControllerActionClip) you decided not to perform the action" << endl;
@@ -90,13 +100,13 @@ int SensingController::performClassification() {
         cout << "(SensingController) what was the haptic result? [0, " << (getSensingCatCount() - 1) << "]" << endl;
         cin >> classifierRes;
     } else if(temporaryHapticMode == SensingController::HAPTIC_MODE_CLASSIFIER) {
+        cout << 1 << endl;
         vector<double> res = callClassifier(databasePath, tmpPath + "hapticTest/" + queues.at(0)->getRobotFileName() + "_0", true, bestParamC, bestParamD, bestParamParam1, bestParamParam2);
-        vector<double> cutAwayRes(res.begin(), res.end() - 1);
         int maxIdx = 0;
-        double maxElement = cutAwayRes.at(0);
-        for(int i = 1; i < cutAwayRes.size() - 1; ++i) {
-            if(cutAwayRes.at(i) > maxIdx) {
-                maxElement = cutAwayRes.at(i);
+        double maxElement = res.at(0);
+        for(int i = 1; i < getSensingCatCount(); ++i) {
+            if(res.at(i) > maxIdx) {
+                maxElement = res.at(i);
                 maxIdx = i;
             }
         }
@@ -109,6 +119,7 @@ int SensingController::performClassification() {
     getchar();
 
     pf::remove_all(tmpPath + "hapticTest");
+    ++currentIterationNum;
 
     return classifierRes;
 
@@ -165,6 +176,7 @@ double SensingController::createDataBase() {
         // determine confidence value on database
         vector<double> classRes = callClassifier(path, "", false, 0.0, 0.0, 0.0, 0.0);
 
+        cerr << "(SensingController) this part currently wont work (switched back to old classifier (repair later)" << endl;
         double confidence = classRes.at(classRes.size() - 5);
         double bestParamC = classRes.at(classRes.size() - 4);
         double bestParamD = classRes.at(classRes.size() - 3);
@@ -223,7 +235,6 @@ std::vector<double> SensingController::callClassifier(std::string trainedPath, s
     PyObject *pName, *pModule, *pFunc;
     PyObject *pArgs, *pValue;
 
-    Py_Initialize();
     PyRun_SimpleString("import sys");
     PyRun_SimpleString(string(string("sys.path.append('") + classifierPath + string("')")).c_str());
     PyRun_SimpleString("import trajlab_main");
@@ -365,8 +376,6 @@ std::vector<double> SensingController::callClassifier(std::string trainedPath, s
         cerr << "Failed to load " << mName << endl;
 
     }
-
-    Py_Finalize();
 
     return retVals;
 

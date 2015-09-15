@@ -138,6 +138,7 @@ double distancePoint2Line(double xp,double yp,double x1,double y1,double x2,doub
 arma::vec pointOnLine2Point(double xp,double yp,double x1,double y1,double x2,double y2);
 
 bool fileExists(const std::string filePath);
+void copyFile(const std::string source, const std::string destination);
 
 
 #endif

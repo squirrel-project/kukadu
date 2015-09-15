@@ -14,16 +14,17 @@ import tensor_decomp
 ## ##################################################
 class cls_label_files:
 
-  def __init__(self, trainingBase, evalFile):
+  def __init__(self, trainingBase, evalFile, evaluateSp):
     """
     """
 
-    ## self.sbasedir='/home/szedmak/data/squirrel_data/traj_label/data_label/'
     self.sbasedir = trainingBase
     self.evaldir = evalFile
+    self.evaluateSpecific = evaluateSp
     self.labelfile='labels'
     ## self.linputmask=[(0,7),(7,10),(10,13)]
     self.linputmask=[(14,21),(21,24),(24,27)]
+    ##self.linputmask=[(24,27)]
     
     return
 
@@ -31,26 +32,26 @@ class cls_label_files:
   def load_mmr(self, cData, lviews):
     
     ldata_labels = self.read_raw_txt(self.sbasedir,self.labelfile)
-    ldata_labels.append([self.evaldir, 1])
+    ## simon: if evaluation of specific trajectory - append it to the dataset
+    if self.evaluateSpecific:
+      ldata_labels.append([self.evaldir, 0])
     mdata=len(ldata_labels)
+    
+    ## assumes that classes go from [0, maxCat] (and all values are taken)
+    maxCat = 0
+    for line in ldata_labels:
+      if maxCat < int(line[1]):
+        maxCat = int(line[1])
 
     ## !!!!!!!!!!!!!!!!!!!!!!!!!!
     ## fixed number of categories od sides
-    ncategory=4
-    ## ncategory=3
-    category_recode=[0,1,2,3]
+    ncategory = maxCat + 1
+    print('you provided ' + str(ncategory) + ' categories')
     ## ####################################
     X_out=np.zeros((mdata,ncategory))
     for i in range(mdata):
-      ## X_out[i,int(ldata_labels[i][1])-1]=1
-      icategory=int(ldata_labels[i][1])-1
-      if icategory==0:
-        X_out[i,category_recode[icategory]]=1
-      else:
-        if ncategory==3:
-          X_out[i,category_recode[icategory]]=1
-        else:
-          X_out[i,category_recode[icategory]]=1
+      icategory=int(ldata_labels[i][1])
+      X_out[i, icategory]=1
 
     ## number of views: joint force, cart force, cart torque
     nview=len(self.linputmask)

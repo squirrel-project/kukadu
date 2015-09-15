@@ -11,7 +11,8 @@ from mmr_kernel import mmr_kernel
 from mmr_eval import mmr_eval_binvector
 from mmr_kernel_explicit import cls_feature
 ## ###########################################################
-def mmr_validation(cMMR,params):
+
+def mmr_validation(cMMR, params, evaluateSpecific):
 
   np.set_printoptions(precision=4)
   
@@ -24,7 +25,7 @@ def mmr_validation(cMMR,params):
   best_param.par2=0.0
   xparam=mmr_base_classes.cls_empty_class()
 
-  cMMRVal=mmr_mmr_cls.cls_mmr(cMMR.ninputview)
+  cMMRVal=mmr_mmr_cls.cls_mmr(cMMR.ninputview, evaluateSpecific)
   cMMRVal.XKernel=[None]*cMMR.ninputview
   cMMR.copy(cMMRVal,cMMR.itrain)
   ## params.validation.rkernel=cMMRVal.XKernel[0].title
@@ -193,7 +194,8 @@ def mmr_validation(cMMR,params):
               print('The best:',xxmax)
               
           sys.stdout.flush()  
+  validationScore = xxmax
   best_param=xparam
 
-  return(best_param)
+  return( {'vs' : validationScore, 'bp' : best_param})
 

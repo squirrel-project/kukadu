@@ -18,7 +18,7 @@ transpushforward = $KUKADU_HOME/movements/icra2016/blockingpushforward/kuka_lwr_
 [control]
 usehands = 1
 simulation = 0
-hapticmode = 0
+hapticmode = 1
 [ps]
 useprojectivesimulation = 0
 loadps = 0

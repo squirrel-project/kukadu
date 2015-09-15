@@ -3,6 +3,10 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <istream>
+#include <iostream>
+#include <fstream>
+#include <iterator>
 
 using namespace std;
 using namespace arma;
@@ -1032,4 +1036,17 @@ bool fileExists(const std::string filePath) {
     if(stat(filePath.c_str(), &info) != 0 )
         return false;
     return true;
+}
+
+void copyFile(const std::string source, const std::string destination) {
+    fstream f(source, fstream::in|fstream::binary);
+    f << noskipws;
+    istream_iterator<unsigned char> begin(f);
+    istream_iterator<unsigned char> end;
+
+    fstream f2(destination,
+    fstream::out|fstream::trunc|fstream::binary);
+    ostream_iterator<char> begin2(f2);
+
+    copy(begin, end, begin2);
 }

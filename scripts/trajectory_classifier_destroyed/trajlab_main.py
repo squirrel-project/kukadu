@@ -13,19 +13,15 @@ import mmr_base_classes
 import mmr_setparams
 import mmr_mmr_cls
 import argparse
-## from mmr_load_data_state import load_data_state
 import trajlab_load_data
 from mmr_validation import mmr_validation
 from mmr_kernel import mmr_kernel
-## from mmr_train import mmr_train
 from mmr_test import inverse_knn
 from mmr_report import mmr_report
 from mmr_eval import mmr_eval_binvector
-## from mmr_tools import mmr_cross_kernel
-## from mmr_normalization_new import mmr_normalization
-## ---------------------------------
 ## #################################
-def mmr_main(iworkmode, trainingBase, evalFile):
+
+def mmr_main(iworkmode, trainingBase, evalFile, performcl, bestParamC, bestParamD, bestParamParam1, bestParamParam2):
 
   params=mmr_setparams.cls_params()
   params.setvalidation()
@@ -47,13 +43,24 @@ def mmr_main(iworkmode, trainingBase, evalFile):
   lviews=[0,1] ### this list could contain a subset of 0,1,2
   ## ################################################
 
+  avgValidScore = 0.0
+  doneRepititons = 0
+  bestEvaluatedRes = []
+  bestAccuracy = 0.0
+  total_best_param = mmr_base_classes.cls_empty_class()
+  accuracies = []
   lresult=[]
+  best_param = mmr_base_classes.cls_empty_class()
+  best_param.c = bestParamC
+  best_param.d = bestParamD
+  best_param.par1 = bestParamParam1
+  best_param.par2 = bestParamParam2
   for iobject in range(nobject):
 
     for ifeature in range(nview):
 
       params.ninputview=len(lviews)
-      cMMR=mmr_mmr_cls.cls_mmr(params.ninputview)
+      cMMR=mmr_mmr_cls.cls_mmr(params.ninputview, performcl)
       nfold=cMMR.nfold
       nrepeat=cMMR.nrepeat
       ## cMMR.xbias=-0.06  ## 4 categories
@@ -74,7 +81,7 @@ def mmr_main(iworkmode, trainingBase, evalFile):
         xresult_train=np.zeros((nipar,nrepeat,nfold0))
         xpr=np.zeros((nipar,nrepeat,nfold0,nscore))
 
-      cdata_store = trajlab_load_data.cls_label_files(trainingBase, evalFile)  
+      cdata_store = trajlab_load_data.cls_label_files(trainingBase, evalFile, performcl)  
       cdata_store.load_mmr(cMMR, lviews)
       mdata=cMMR.mdata
 
@@ -109,8 +116,8 @@ def mmr_main(iworkmode, trainingBase, evalFile):
           for ifold in range(nfold0):
             cMMR.split_train_test(xselector,ifold)
 
-            ## validation to choose the best parameters
             t0 = time.clock()
+            ## validation to choose the best parameters
             ## select the kernel to be validated
             cMMR.set_validation()
             ## params.validation.rkernel=cMMR.XKernel[0].title
@@ -118,28 +125,32 @@ def mmr_main(iworkmode, trainingBase, evalFile):
               kernbest = cMMR.dkernels[params.validation.rkernel].kernel_params
             else:
               kernbest = cMMR.XKernel[0].kernel_params
-
-            if params.validation.ivalid == 1:
-              best_param = mmr_validation(cMMR,params)
-            else:
-              best_param = mmr_base_classes.cls_empty_class()
-              best_param.par1 = kernbest.ipar1
-              best_param.par2 = kernbest.ipar2
-              ## common params
-              best_param.c = cMMR.penalty.c
-              best_param.d = cMMR.penalty.d
               
-            xtime[0] = time.clock() - t0
-            xbest_param[irepeat,ifold,0]=best_param.c
-            xbest_param[irepeat,ifold,1]=best_param.d
-            xbest_param[irepeat,ifold,2]=best_param.par1
-            xbest_param[irepeat,ifold,3]=best_param.par2
+            validationScore = 0.0
+            if performcl == 0:
+
+              if params.validation.ivalid == 1:
+                res = mmr_validation(cMMR, params, performcl)
+                best_param = res['bp']
+                validationScore = res['vs']
+              else:
+                best_param.par1 = kernbest.ipar1
+                best_param.par2 = kernbest.ipar2
+                ## common params
+                best_param.c = cMMR.penalty.c
+                best_param.d = cMMR.penalty.d
+                
+              xtime[0] = time.clock() - t0
+              xbest_param[irepeat,ifold,0]=best_param.c
+              xbest_param[irepeat,ifold,1]=best_param.d
+              xbest_param[irepeat,ifold,2]=best_param.par1
+              xbest_param[irepeat,ifold,3]=best_param.par2
 
             kernbest.ipar1=best_param.par1
             kernbest.ipar2=best_param.par2
-			## common params
             cMMR.penalty.c=best_param.c
             cMMR.penalty.d=best_param.d
+  
             cMMR.compute_kernels()
             cMMR.Y0=cMMR.YKernel.get_train(cMMR.itrain)   ## candidates
               
@@ -184,16 +195,37 @@ def mmr_main(iworkmode, trainingBase, evalFile):
             xpr[iipar,irepeat,ifold,1]=cEvaluationTes.recall
             xpr[iipar,irepeat,ifold,2]=cEvaluationTes.f1
             xpr[iipar,irepeat,ifold,3]=cEvaluationTes.accuracy
+            
+            accuracies.append(cEvaluationTes.accuracy)
 
             # (added by simon) for now i will just add the new data to
             # the dataset with a random label and check the confusion
             # matrix --> very ugly solution but i cant figure it out
             # in a clean way
             # print(cEvaluationTes.classconfusion)
-            evaluatedRes = [row[0] for row in cEvaluationTes.classconfusion]
+            
+            if performcl == 1:
+              evaluatedRes = [row[0] for row in cEvaluationTes.classconfusion]
+
+              evaluatedRes.append(validationScore)
+              evaluatedRes.append(best_param.c)
+              evaluatedRes.append(best_param.d)
+              evaluatedRes.append(best_param.par1)
+              evaluatedRes.append(best_param.par2)
+              print(cEvaluationTes.classconfusion)
+              return evaluatedRes
+            else:
+              if bestAccuracy < validationScore:
+                total_best_param = best_param
+                bestAccuracy = validationScore
+                bestEvaluatedRes = [row[0] for row in cEvaluationTes.classconfusion]
+                
+            avgValidScore = avgValidScore + validationScore
+            doneRepititons = doneRepititons + 1
+                
             nonZeroIndexes = [i for i, e in enumerate(evaluatedRes) if e != 0]
-            print(evaluatedRes)
             return evaluatedRes
+            #print(evaluatedRes)
             #return nonZeroIndexes[0]
             try:
               xclassconfusion+=cEvaluationTes.classconfusion
@@ -201,10 +233,6 @@ def mmr_main(iworkmode, trainingBase, evalFile):
               (n,n)=cEvaluationTes.classconfusion.shape
               xclassconfusion=np.zeros((n,n))
               xclassconfusion+=cEvaluationTes.classconfusion
-            ## mmr_eval_label(ZW,iPre,YTesN,Y0,kit_data,itest,params)
-
-
-
 
         sys.stdout.flush()
 
@@ -214,12 +242,21 @@ def mmr_main(iworkmode, trainingBase, evalFile):
       ## xhead=cMMR.xbias
       xhead=''
       lresult.append((xhead,tresult))
-  
-  return -1
+
+  bestEvaluatedRes.append(avgValidScore / doneRepititons)
+  bestEvaluatedRes.append(total_best_param.c)
+  bestEvaluatedRes.append(total_best_param.d)
+  bestEvaluatedRes.append(total_best_param.par1)
+  bestEvaluatedRes.append(total_best_param.par2)
+
+  return bestEvaluatedRes
 
 def runClassifier(trainingBase, evalFile, pcl, bestParamC, bestParamD, bestParamParam1, bestParamParam2):
   iworkmode = 0
-  print(trainingBase)
-  print(evalFile)
-  return mmr_main(iworkmode, trainingBase, evalFile)
+  cl = 1
+  if pcl > 0.0:
+    cl = 1
+  else:
+    cl = 0
+  return mmr_main(iworkmode, trainingBase, evalFile, cl, bestParamC, bestParamD, bestParamParam1, bestParamParam2)
 

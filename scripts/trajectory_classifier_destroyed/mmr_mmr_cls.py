@@ -17,7 +17,7 @@ from mmr_tools import mmr_perceptron_primal, mmr_perceptron_dual
 ## ##################################################
 class cls_mmr(base.cls_data):
 
-  def __init__(self,ninputview):
+  def __init__(self, ninputview, evaluateSpecific):
     base.cls_data.__init__(self,ninputview)
 
     self.XKernel=[None]*ninputview
@@ -46,14 +46,21 @@ class cls_mmr(base.cls_data):
     self.ifixtrain=None
     self.ifixtest=None
 
-    self.crossval_mode=1   ## =0 random cross folds =1 fixtraining
     self.itestmode=2        ## 2 agains the training with knn, 10 vectorwise
                             ## 20 Y0 is available
     ## ##################################################
-    ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
+    ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ## number of repititions
-    self.nrepeat=1
-    self.nfold=1
+    if evaluateSpecific == 0:
+      print('random cross validation mode')
+      self.crossval_mode=0   ## =0 random cross folds =1 fixtraining
+      self.nrepeat=10
+      self.nfold=2
+    else:
+      print('evaluating specific sample')
+      self.crossval_mode=1   ## =0 random cross folds =1 fixtraining
+      self.nrepeat=1
+      self.nfold=1
     ## ##################################################
     self.testknn=1
 

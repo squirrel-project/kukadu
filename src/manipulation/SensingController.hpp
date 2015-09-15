@@ -22,6 +22,7 @@ private:
     bool classifierParamsSet;
 
     int hapticMode;
+    int currentIterationNum;
 
     double bestParamC;
     double bestParamD;
@@ -69,6 +70,8 @@ public:
 
     // returns cross validation score
     double createDataBase();
+
+    std::vector<double> callClassifier();
 
     static const int HAPTIC_MODE_TERMINAL = 0;
     static const int HAPTIC_MODE_CLASSIFIER = 1;

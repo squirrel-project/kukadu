@@ -85,8 +85,10 @@ void ComplexController::initialize() {
 
     }
 
+    cout << "(ComplexController) existsPs at " << corrPSPath << ": " << existsPs << endl;
     if(existsPs) {
         // skill was already initialized and can be loaded again
+        cout << "(ComplexController) loading existing PS" << endl;
         projSim = shared_ptr<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, corrPSPath));
     } else {
 
@@ -160,7 +162,7 @@ double ComplexController::computeRewardInternal(std::shared_ptr<PerceptClip> pro
     shared_ptr<vector<int>> intermed = projSim->getIntermediateHopIdx();
     shared_ptr<Clip> sensClip = providedPercept->getSubClipByIdx(intermed->at(1));
 
-    cout << "selected sensing action \"" << *sensClip << "\" resulted in preparation action \"" << *takenAction << "\"" << endl;
+    cout << "selected sensing action \"" << *sensClip << "\" resulted in predicted class " << intermed->at(2) << " and preparation action \"" << *takenAction << "\"" << endl;
 
     shared_ptr<ControllerActionClip> castedAction = dynamic_pointer_cast<ControllerActionClip>(takenAction);
     castedAction->performAction();
@@ -180,7 +182,7 @@ double ComplexController::computeRewardInternal(std::shared_ptr<PerceptClip> pro
         retReward = stdReward;
     } else {
         cout << "preparation action didn't work; no reward given" << endl;
-        retReward = 0.0;
+        retReward = -10;
     }
 
     *rewardHistoryStream << retReward << "\t" << *sensClip << "\t\t" << *takenAction << endl;
