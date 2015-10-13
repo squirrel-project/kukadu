@@ -2,13 +2,19 @@
 #include <Python.h>
 #include <boost/filesystem.hpp>
 
+#include <random>
+
 using namespace std;
 namespace pf = boost::filesystem;
 
-SensingController::SensingController(int hapticMode, string caption, std::string databasePath, vector<shared_ptr<KukieControlQueue>> queues, vector<shared_ptr<GenericHand>> hands, std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction) : Controller(caption) {
+SensingController::SensingController(std::shared_ptr<std::mt19937> generator, int hapticMode, string caption, std::string databasePath, vector<shared_ptr<KukieControlQueue>> queues, vector<shared_ptr<GenericHand>> hands, std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction) : Controller(caption) {
 
     currentIterationNum = 0;
     classifierParamsSet = false;
+    simulationGroundTruth = 0;
+    simulatedClassificationPrecision = 100;
+
+    this->generator = generator;
 
     this->hands = hands;
     this->queues = queues;
@@ -69,60 +75,101 @@ std::vector<double> SensingController::callClassifier() {
 
 int SensingController::performClassification() {
 
-    int executeIt = 0;
     int classifierRes = -1;
-    int temporaryHapticMode = hapticMode;
-    cout << "(SensingController) selected sensing action is \"" << getCaption() << "\"; want to execute it? (0 = no / 1 = yes)" << endl;
-    cin >> executeIt;
+    if(!getSimulationMode()) {
 
-    if(executeIt == 1) {
+        int executeIt = 0;
+        int temporaryHapticMode = hapticMode;
+        cout << "(SensingController) selected sensing action is \"" << getCaption() << "\"; want to execute it? (0 = no / 1 = yes)" << endl;
+        cin >> executeIt;
 
-        if(!classifierParamsSet) {
-            string errorMsg = "(SensingController) classifier parameters not yet set" ;
-            cerr << errorMsg << endl;
-            throw errorMsg;
+        if(executeIt == 1) {
+
+            if(!classifierParamsSet) {
+                string errorMsg = "(SensingController) classifier parameters not yet set" ;
+                cerr << errorMsg << endl;
+                throw errorMsg;
+            }
+
+            pf::remove_all(tmpPath + "hapticTest");
+
+            gatherData(tmpPath, "hapticTest");
+            stringstream s;
+            s << tmpPath << "hapticTest_" << queues.at(0)->getRobotFileName() << "_0_" << currentIterationNum;
+            copyFile(tmpPath + "hapticTest/" + queues.at(0)->getRobotFileName() + "_0", s.str());
+
+        } else {
+            if(!isShutUp) {
+                cout << "(ControllerActionClip) you decided not to perform the action" << endl;
+                cout << "(ControllerActionClip) switching temporarily to haptic mode HAPTIC_MODE_TERMINAL; continue" << endl;
+            }
+            temporaryHapticMode = SensingController::HAPTIC_MODE_TERMINAL;
         }
+
+        if(temporaryHapticMode == SensingController::HAPTIC_MODE_TERMINAL) {
+            cout << "(SensingController) what was the haptic result? [0, " << (getSensingCatCount() - 1) << "]" << endl;
+            cin >> classifierRes;
+        } else if(temporaryHapticMode == SensingController::HAPTIC_MODE_CLASSIFIER) {
+            cout << 1 << endl;
+            vector<double> res = callClassifier(databasePath, tmpPath + "hapticTest/" + queues.at(0)->getRobotFileName() + "_0", true, bestParamC, bestParamD, bestParamParam1, bestParamParam2);
+            int maxIdx = 0;
+            double maxElement = res.at(0);
+            for(int i = 1; i < getSensingCatCount(); ++i) {
+                if(res.at(i) > maxIdx) {
+                    maxElement = res.at(i);
+                    maxIdx = i;
+                }
+            }
+            classifierRes = maxIdx;
+        } else {
+            throw "haptic mode not known";
+        }
+
+        if(!isShutUp)
+            cout << "(main) classifier result is category " << classifierRes << endl << "(main) press enter to continue" << endl;
+        getchar();
 
         pf::remove_all(tmpPath + "hapticTest");
+        ++currentIterationNum;
 
-        gatherData(tmpPath, "hapticTest");
-        stringstream s;
-        s << tmpPath << "hapticTest_" << queues.at(0)->getRobotFileName() << "_0_" << currentIterationNum;
-        copyFile(tmpPath + "hapticTest/" + queues.at(0)->getRobotFileName() + "_0", s.str());
 
     } else {
-        cout << "(ControllerActionClip) you decided not to perform the action" << endl;
-        cout << "(ControllerActionClip) switching temporarily to haptic mode HAPTIC_MODE_TERMINAL; continue" << endl;
-        temporaryHapticMode = SensingController::HAPTIC_MODE_TERMINAL;
-    }
 
-    if(temporaryHapticMode == SensingController::HAPTIC_MODE_TERMINAL) {
-        cout << "(SensingController) what was the haptic result? [0, " << (getSensingCatCount() - 1) << "]" << endl;
-        cin >> classifierRes;
-    } else if(temporaryHapticMode == SensingController::HAPTIC_MODE_CLASSIFIER) {
-        cout << 1 << endl;
-        vector<double> res = callClassifier(databasePath, tmpPath + "hapticTest/" + queues.at(0)->getRobotFileName() + "_0", true, bestParamC, bestParamD, bestParamParam1, bestParamParam2);
-        int maxIdx = 0;
-        double maxElement = res.at(0);
-        for(int i = 1; i < getSensingCatCount(); ++i) {
-            if(res.at(i) > maxIdx) {
-                maxElement = res.at(i);
-                maxIdx = i;
-            }
+
+
+        discrete_distribution<int> precisionProb {(double) (simulatedClassificationPrecision), (double) (100 - simulatedClassificationPrecision)};
+
+        int correctClass = precisionProb(*generator);
+        // simulate correct classification
+        if(!correctClass)
+            classifierRes = simulationGroundTruth;
+        else {
+            // classify it wrongly (random)
+            classifierRes = simulationGroundTruth;
+            while(classifierRes == simulationGroundTruth)
+                classifierRes = createRandomGroundTruthIdx();
         }
-        classifierRes = maxIdx;
-    } else {
-        throw "haptic mode not known";
+
     }
-
-    cout << "(main) classifier result is category " << classifierRes << endl << "(main) press enter to continue" << endl;
-    getchar();
-
-    pf::remove_all(tmpPath + "hapticTest");
-    ++currentIterationNum;
 
     return classifierRes;
 
+}
+
+int SensingController::createRandomGroundTruthIdx() {
+    vector<int> randValues;
+    for(int i = 0; i < getSensingCatCount(); ++i)
+        randValues.push_back(1);
+    classifierDist = discrete_distribution<int>(randValues.begin(),randValues.end());
+    return classifierDist(*generator);
+}
+
+void SensingController::setSimulationClassificationPrecision(int percent) {
+    simulatedClassificationPrecision = percent;
+}
+
+void SensingController::setSimulationGroundTruth(int idx) {
+    simulationGroundTruth = idx;
 }
 
 double SensingController::createDataBase() {
@@ -130,15 +177,18 @@ double SensingController::createDataBase() {
     int numClasses = 0;
     string path = getDatabasePath();
     vector<pair<int, string>> collectedSamples;
-    cout << "(SensingController) data is stored to " << path << endl;
+    if(!isShutUp)
+        cout << "(SensingController) data is stored to " << path << endl;
     if(!fileExists(path)) {
 
-        cout << "(SensingController) folder doesn't exist - create" << endl;
+        if(!isShutUp)
+            cout << "(SensingController) folder doesn't exist - create" << endl;
         createDirectory(path);
 
         // create the database
         numClasses = getSensingCatCount();
-        cout << "(SensingController) " << getCaption() << " offers " << numClasses << " classes" << endl;
+        if(!isShutUp)
+            cout << "(SensingController) " << getCaption() << " offers " << numClasses << " classes" << endl;
 
         for(int currClass = 0; currClass < numClasses; ++currClass) {
 
@@ -167,7 +217,8 @@ double SensingController::createDataBase() {
         writeLabelFile(path, collectedSamples);
 
     } else {
-        cout << "(SensingController) database for controller " << getCaption() << " exists - no collection required" << endl;
+        if(!isShutUp)
+            cout << "(SensingController) database for controller " << getCaption() << " exists - no collection required" << endl;
     }
 
     // if no classifier file exists
@@ -201,7 +252,8 @@ double SensingController::createDataBase() {
 
     setCLassifierParams(bestParamC, bestParamD, bestParamParam1, bestParamParam2);
 
-    cout << "(SensingController) determined a confidence of " << confidence << endl;
+    if(!isShutUp)
+        cout << "(SensingController) determined a confidence of " << confidence << endl;
 
     return confidence;
 

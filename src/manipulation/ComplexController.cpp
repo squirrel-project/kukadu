@@ -6,16 +6,20 @@
 #include "../learning/projective_simulation/core/clip.h"
 #include "../learning/projective_simulation/core/perceptclip.h"
 
+#include <armadillo>
+
 using namespace std;
+using namespace arma;
 
 ComplexController::ComplexController(std::string caption, std::vector<std::shared_ptr<SensingController>> sensingControllers,
                                      std::vector<std::shared_ptr<Controller>> preparationControllers,
-                                     std::string corrPSPath, std::string rewardHistoryPath, double senseStretch, std::shared_ptr<std::mt19937> generator, int stdReward, double gamma, int stdPrepWeight, bool collectPrevRewards)
+                                     std::string corrPSPath, std::string rewardHistoryPath, bool storeReward, double senseStretch, std::shared_ptr<std::mt19937> generator, int stdReward, int punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards)
     : Controller(caption), Reward(generator, collectPrevRewards) {
 
     projSim = nullptr;
     rewardHistoryStream = nullptr;
 
+    this->storeReward = storeReward;
     this->gamma = gamma;
     this->gen = generator;
     this->currentIterationNum = 0;
@@ -25,6 +29,7 @@ ComplexController::ComplexController(std::string caption, std::vector<std::share
 
     this->stdReward = stdReward;
     this->corrPSPath = corrPSPath;
+    this->punishReward = punishReward;
     this->stdPrepWeight = stdPrepWeight;
     this->sensingControllers = sensingControllers;
     this->preparationControllers = preparationControllers;
@@ -32,7 +37,7 @@ ComplexController::ComplexController(std::string caption, std::vector<std::share
 }
 
 ComplexController::~ComplexController() {
-    if(rewardHistoryStream)
+    if(rewardHistoryStream && storeReward)
         rewardHistoryStream->close();
 }
 
@@ -79,16 +84,17 @@ void ComplexController::initialize() {
         }
 
         double nextWeight = exp(senseStretch * max(0.0, sensingWeights.at(i) - 1.0 / sensCont->getSensingCatCount()));
-        cout << "(ComplexController) relative weight of sensing action \"" << sensCont->getCaption() << "\" is " << nextWeight << endl;
-        // todo: adapt weights (according to sandors classifier evaluation)
+        sensCont->setSimulationClassificationPrecision(min(sensingWeights.at(i) * 100.0, 100.0));
+        if(!isShutUp)
+            cout << "(ComplexController) relative weight of sensing action \"" << sensCont->getCaption() << "\" is " << nextWeight << endl;
         root->addSubClip(nextSensClip, nextWeight);
 
     }
 
-    cout << "(ComplexController) existsPs at " << corrPSPath << ": " << existsPs << endl;
     if(existsPs) {
         // skill was already initialized and can be loaded again
-        cout << "(ComplexController) loading existing PS" << endl;
+        if(!isShutUp)
+            cout << "(ComplexController) loading existing PS" << endl;
         projSim = shared_ptr<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, corrPSPath));
     } else {
 
@@ -100,19 +106,34 @@ void ComplexController::initialize() {
 
     }
 
-    rewardHistoryStream = std::shared_ptr<std::ofstream>(new std::ofstream());
-    int overWrite = 0;
-    if(fileExists(rewardHistoryPath)) {
-        cout << "(ComplexController) should reward history file be overwritten? (0 = no / 1 = yes)" << endl;
-        cin >> overWrite;
-        if(overWrite != 1) {
-            string err = "(ComplexController) reward file already exists. you chose not to overwrite. stopping";
-            cerr << err << endl;
-            throw err;
+    if(storeReward) {
+        rewardHistoryStream = std::shared_ptr<std::ofstream>(new std::ofstream());
+        int overWrite = 0;
+        if(fileExists(rewardHistoryPath)) {
+            cout << "(ComplexController) should reward history file be overwritten? (0 = no / 1 = yes)" << endl;
+            cin >> overWrite;
+            if(overWrite != 1) {
+                string err = "(ComplexController) reward file already exists. you chose not to overwrite. stopping";
+                cerr << err << endl;
+                throw err;
+            }
         }
+        rewardHistoryStream->open(rewardHistoryPath, ios::trunc);
     }
-    rewardHistoryStream->open(rewardHistoryPath, ios::trunc);
 
+}
+
+double ComplexController::getPunishReward() {
+    return punishReward;
+}
+
+double ComplexController::getStdReward() {
+    return stdReward;
+}
+
+void ComplexController::setSimulationModeInChain(bool simulationMode) {
+    for(shared_ptr<SensingController> sensCont : sensingControllers)
+        sensCont->setSimulationMode(simulationMode);
 }
 
 std::shared_ptr<ProjectiveSimulator> ComplexController::getProjectiveSimulator() {
@@ -134,7 +155,8 @@ void ComplexController::storeNextIteration() {
 }
 
 int ComplexController::getDimensionality() {
-    cout << "(ComplexController) get dimensionality got called" << endl;
+    if(!isShutUp)
+        cout << "(ComplexController) get dimensionality got called" << endl;
     return 1;
 }
 
@@ -155,45 +177,64 @@ double ComplexController::computeRewardInternal(std::shared_ptr<PerceptClip> pro
 
     int worked = 0;
     int executeIt = 0;
+
     double retReward = 0.0;
+
+    shared_ptr<vector<int>> intermed = projSim->getIntermediateHopIdx();
+    shared_ptr<IntermediateEventClip> sensClip = dynamic_pointer_cast<IntermediateEventClip>(providedPercept->getSubClipByIdx(intermed->at(1)));
+    shared_ptr<SensingController> sensCont = sensClip->getSensingController();
+
+    int predictedClassIdx = intermed->at(2);
+    int takenActionIdx = intermed->at(3);
 
     ++currentIterationNum;
 
-    shared_ptr<vector<int>> intermed = projSim->getIntermediateHopIdx();
-    shared_ptr<Clip> sensClip = providedPercept->getSubClipByIdx(intermed->at(1));
+    if(!getSimulationMode()) {
 
-    cout << "selected sensing action \"" << *sensClip << "\" resulted in predicted class " << intermed->at(2) << " and preparation action \"" << *takenAction << "\"" << endl;
+        cout << "selected sensing action \"" << *sensClip << "\" resulted in predicted class " << intermed->at(2) << " and preparation action \"" << *takenAction << "\"" << endl;
 
-    shared_ptr<ControllerActionClip> castedAction = dynamic_pointer_cast<ControllerActionClip>(takenAction);
-    castedAction->performAction();
+        shared_ptr<ControllerActionClip> castedAction = dynamic_pointer_cast<ControllerActionClip>(takenAction);
+        castedAction->performAction();
 
-    cout << "(ComplexController) do you want to execute complex action now? (0 = no / 1 = yes)" << endl;
-    cin >> executeIt;
+        cout << "(ComplexController) do you want to execute complex action now? (0 = no / 1 = yes)" << endl;
+        cin >> executeIt;
 
-    if(executeIt) {
-        executeComplexAction();
-    }
+        if(executeIt) {
+            executeComplexAction();
+        }
 
-    cout << "did the complex action succeed? (0 = no / 1 = yes)" << endl;
-    cin >> worked;
+        cout << "did the complex action succeed? (0 = no / 1 = yes)" << endl;
+        cin >> worked;
 
-    if(worked) {
-        cout << "preparation action worked; rewarded with " << stdReward << endl;
-        retReward = stdReward;
+        if(worked) {
+            cout << "preparation action worked; rewarded with " << stdReward << endl;
+            retReward = stdReward;
+        } else {
+            cout << "preparation action didn't work; no reward given" << endl;
+            retReward = -10;
+        }
+
     } else {
-        cout << "preparation action didn't work; no reward given" << endl;
-        retReward = -10;
+        sensCont->setSimulationGroundTruth(getNextSimulatedGroundTruth(sensCont));
+        retReward = getSimulatedReward(sensCont, providedPercept, takenAction, predictedClassIdx, takenActionIdx);
     }
 
-    *rewardHistoryStream << retReward << "\t" << *sensClip << "\t\t" << *takenAction << endl;
+    if(storeReward)
+        *rewardHistoryStream << retReward << "\t" << *sensClip << "\t\t" << *takenAction << endl;
 
     return retReward;
 
 }
 
+int ComplexController::getNextSimulatedGroundTruth(shared_ptr<SensingController> sensCont) {
+    return sensCont->createRandomGroundTruthIdx();
+}
+
 std::shared_ptr<ControllerResult> ComplexController::performAction() {
     projSim->performRandomWalk();
-    projSim->performRewarding();
+    double reward = projSim->performRewarding();
+    shared_ptr<ControllerResult> ret = shared_ptr<ControllerResult>(new ControllerResult(vec(), vector<vec>(), (reward > 0) ? true : false));
+    return ret;
 }
 
 void ComplexController::createSensingDatabase() {

@@ -27,6 +27,8 @@ public:
     std::string toString() const;
     std::pair<int, std::shared_ptr<Clip>> jumpNextRandom();
 
+    std::shared_ptr<SensingController> getSensingController();
+
 };
 
 

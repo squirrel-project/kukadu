@@ -16,7 +16,7 @@ IntermediateEventClip::IntermediateEventClip(std::shared_ptr<SensingController> 
 
 std::pair<int, std::shared_ptr<Clip>> IntermediateEventClip::jumpNextRandom() {
 
-    cout << "(IntermediateEventClip) perform sensing action " << sensingEvent->getCaption() << endl;
+    //cout << "(IntermediateEventClip) perform sensing action " << sensingEvent->getCaption() << endl;
 
     pair<int, shared_ptr<Clip>> retVal;
     visitedSubNode = retVal.first = sensingEvent->performClassification();
@@ -27,4 +27,8 @@ std::pair<int, std::shared_ptr<Clip>> IntermediateEventClip::jumpNextRandom() {
 
 std::string IntermediateEventClip::toString() const {
     return sensingEvent->getCaption();
+}
+
+std::shared_ptr<SensingController> IntermediateEventClip::getSensingController() {
+    return sensingEvent;
 }

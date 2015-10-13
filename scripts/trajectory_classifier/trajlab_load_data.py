@@ -18,7 +18,7 @@ class cls_label_files:
     """
     """
 
-    ## self.sbasedir='/home/szedmak/data/squirrel_data/traj_label/data_label/'
+    ## self.sbasedir='/home/c7031109/data/studium/informatik/phd/projects/squirrel/books/2015-05-11_data_with_labels/'
     self.sbasedir = trainingBase
     self.evaldir = evalFile
     self.labelfile='labels'

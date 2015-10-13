@@ -9,6 +9,7 @@
 #include <vector>
 #include <wordexp.h>
 #include <memory>
+#include <random>
 
 #include "Controller.hpp"
 #include "ControllerResult.hpp"
@@ -23,6 +24,10 @@ private:
 
     int hapticMode;
     int currentIterationNum;
+    int simulationGroundTruth;
+    int simulatedClassificationPrecision;
+
+    std::discrete_distribution<int> classifierDist;
 
     double bestParamC;
     double bestParamD;
@@ -35,6 +40,8 @@ private:
     std::string classifierFile;
     std::string classifierFunction;
 
+    std::shared_ptr<std::mt19937> generator;
+
     std::vector<std::shared_ptr<GenericHand>> hands;
     std::vector<std::shared_ptr<KukieControlQueue>> queues;
 
@@ -45,7 +52,7 @@ private:
 
 public:
 
-    SensingController(int hapticMode, std::string caption, std::string databasePath, std::vector<std::shared_ptr<KukieControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands,
+    SensingController(std::shared_ptr<std::mt19937> generator, int hapticMode, std::string caption, std::string databasePath, std::vector<std::shared_ptr<KukieControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands,
                       std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction);
 
     virtual void prepare() = 0;
@@ -70,6 +77,10 @@ public:
 
     // returns cross validation score
     double createDataBase();
+
+    int createRandomGroundTruthIdx();
+    void setSimulationGroundTruth(int idx);
+    void setSimulationClassificationPrecision(int percent);
 
     std::vector<double> callClassifier();
 

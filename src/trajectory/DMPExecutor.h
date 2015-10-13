@@ -106,7 +106,6 @@ protected:
 	
 	double t;
 	double stepSize;
-    double maxForce;
 
     arma::vec Eta0;
     arma::vec dEta0;

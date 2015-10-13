@@ -30,7 +30,7 @@ void DMPExecutor::construct(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQu
 
     // max force safety is switched of
     doRollback = true;
-    maxForce = DBL_MAX;
+    maxAllowedForce = DBL_MAX;
     executionRunning = false;
 
     this->isCartesian = traj->isCartesian();

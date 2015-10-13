@@ -23,8 +23,10 @@ class ComplexController : public Controller, public Reward, public std::enable_s
 
 private:
 
+    bool storeReward;
     bool colPrevRewards;
 
+    int punishReward;
     int stdPrepWeight;
     int currentIterationNum;
 
@@ -53,10 +55,15 @@ private:
 
     double computeRewardInternal(std::shared_ptr<PerceptClip> providedPercept, std::shared_ptr<ActionClip> takenAction);
 
+protected:
+
+    void setSimulationModeInChain(bool simulationMode);
+    virtual double getSimulatedReward(std::shared_ptr<SensingController> usedSensingController, std::shared_ptr<PerceptClip> providedPercept, std::shared_ptr<ActionClip> takenAction, int sensingClassIdx, int prepContIdx) = 0;
+
 public:
 
     ComplexController(std::string caption, std::vector<std::shared_ptr<SensingController>> sensingControllers, std::vector<std::shared_ptr<Controller>> preparationControllers,
-                      std::string corrPSPath, std::string rewardHistoryPath, double senseStretch, std::shared_ptr<std::mt19937> generator, int stdReward, double gamma, int stdPrepWeight, bool collectPrevRewards);
+                      std::string corrPSPath, std::string rewardHistoryPath, bool storeReward, double senseStretch, std::shared_ptr<std::mt19937> generator, int stdReward, int punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards);
     ~ComplexController();
 
     void store();
@@ -72,6 +79,9 @@ public:
 
     int getDimensionality();
 
+    double getStdReward();
+    double getPunishReward();
+
     // same percept must always have same id
     std::shared_ptr<PerceptClip> generateNextPerceptClip(int immunity);
 
@@ -81,6 +91,9 @@ public:
     std::shared_ptr<ProjectiveSimulator> getProjectiveSimulator();
 
     virtual void executeComplexAction() = 0;
+
+    // overwrite this virtual function if the next idx should be created randomly
+    virtual int getNextSimulatedGroundTruth(std::shared_ptr<SensingController> sensCont);
 
 };
 

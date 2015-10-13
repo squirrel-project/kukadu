@@ -16,7 +16,15 @@ class Controller {
 
 private:
 
+    bool simulation;
     std::string caption;
+
+protected:
+
+    bool isShutUp;
+
+    // is called by set simulation mode
+    virtual void setSimulationModeInChain(bool simulationMode) {}
 
 public:
 
@@ -24,6 +32,12 @@ public:
 
     std::string getCaption();
     virtual std::shared_ptr<ControllerResult> performAction() = 0;
+
+    void setSimulationMode(bool simulationMode);
+    bool getSimulationMode();
+
+    void shutUp();
+    void startTalking();
 
 };
 

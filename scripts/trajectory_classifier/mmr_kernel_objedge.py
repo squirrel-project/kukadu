@@ -63,6 +63,7 @@ class cls_feature:
 ## -------------------------------------------------------------
   def get_train(self,itrain):
 
+    print('mmr_kernel_mvm_y')
     return(self.data[itrain,:])
 
 ## -------------------------------------------------------------
