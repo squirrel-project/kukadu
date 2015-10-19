@@ -54,6 +54,7 @@ class ProjectiveSimulator {
 private:
 
     double gamma;
+    double boredom;
 
     int levels;
     int operationMode;
@@ -61,12 +62,14 @@ private:
     int maxNumberOfClips;
 
     bool useRanking;
+    bool useBoredom;
 
     std::shared_ptr<Reward> reward;
 
     std::shared_ptr<std::mt19937> generator;
     std::uniform_int_distribution<int> intDist;
 
+    std::shared_ptr<Clip> lastClipBeforeAction;
     std::shared_ptr<ActionClip> lastActionClip;
     std::shared_ptr<PerceptClip> lastPerceptClip;
     std::shared_ptr<PerceptClip> lastGeneralizedPercept;
@@ -87,6 +90,8 @@ private:
 
     int getIdVecLevel(std::shared_ptr<std::vector<int>> idVec);
 
+    double computeBoredem(std::shared_ptr<Clip> clip);
+
     std::shared_ptr<Clip> findClipByIdVec(std::shared_ptr<std::vector<int>> idVec);
     std::shared_ptr<Clip> findClipInLevelByIdVec(std::shared_ptr<std::vector<int>> idVec, int level);
 
@@ -102,6 +107,7 @@ public:
     ~ProjectiveSimulator();
 
     void printWeights();
+    void setBoredom(double boredom);
     void setStandardImmunity(int immunity);
     void setMaxNumberOfClips(int maxNumberOfClips);
     void connectNewClip(std::shared_ptr<Clip> conClip);
@@ -112,7 +118,7 @@ public:
     int getClipCount();
     int getStandardImmunity();
 
-    double performRewarding();
+    std::pair<bool, double> performRewarding();
 
     std::shared_ptr<std::vector<int>> getIntermediateHopIdx();
 

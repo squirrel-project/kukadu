@@ -94,6 +94,7 @@ public:
     int getCurrentImmunity();
 
     double getWeightByIdx(int idx);
+    double computeSubEntropy() const;
     virtual double computeRank() const;
 
     std::string getIdVecString() const;

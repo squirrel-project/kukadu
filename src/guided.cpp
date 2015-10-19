@@ -20,7 +20,7 @@
 #include "ros/ros.h"
 #include "std_msgs/Int32.h"
 
-#include "../include/kukadu.h"
+#include "../include/kukadu/kukadu.h"
 #include "../src/utils/gnuplot-cpp/gnuplot_i.hpp"
 
 #define DOSIMULATION 1

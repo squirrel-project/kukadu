@@ -7,7 +7,7 @@
 using namespace std;
 namespace pf = boost::filesystem;
 
-SensingController::SensingController(std::shared_ptr<std::mt19937> generator, int hapticMode, string caption, std::string databasePath, vector<shared_ptr<KukieControlQueue>> queues, vector<shared_ptr<GenericHand>> hands, std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction) : Controller(caption) {
+SensingController::SensingController(std::shared_ptr<std::mt19937> generator, int hapticMode, string caption, std::string databasePath, std::vector<std::shared_ptr<ControlQueue> > queues, vector<shared_ptr<GenericHand>> hands, std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction) : Controller(caption) {
 
     currentIterationNum = 0;
     classifierParamsSet = false;
@@ -47,7 +47,7 @@ std::string SensingController::getDatabasePath() {
 void SensingController::gatherData(std::string completePath) {
 
     vector<shared_ptr<ControlQueue>> castedQueues;
-    for(shared_ptr<KukieControlQueue> queue : queues)
+    for(shared_ptr<ControlQueue> queue : queues)
         castedQueues.push_back(queue);
 
     SensorStorage store(castedQueues, hands, 100);

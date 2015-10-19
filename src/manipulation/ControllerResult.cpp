@@ -1,11 +1,11 @@
 #include "ControllerResult.hpp"
 
 ControllerResult::ControllerResult(arma::vec t, std::vector<arma::vec> ys) {
-    construct(t, ys, true);
+    construct(t, ys, true, false);
 }
 
-ControllerResult::ControllerResult(arma::vec t, std::vector<arma::vec> ys, bool success) {
-    construct(t, ys, success);
+ControllerResult::ControllerResult(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored) {
+    construct(t, ys, success, bored);
 }
 
 arma::vec ControllerResult::getTimes() {
@@ -16,7 +16,7 @@ std::vector<arma::vec> ControllerResult::getYs() {
     return y;
 }
 
-void ControllerResult::construct(arma::vec t, std::vector<arma::vec> ys, bool success) {
+void ControllerResult::construct(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored) {
     this->t = t;
     this->y = ys;
     this->success = success;
@@ -28,4 +28,8 @@ void ControllerResult::setSuccess(bool success) {
 
 bool ControllerResult::getSuccess() {
     return success;
+}
+
+bool ControllerResult::wasBored() {
+    return bored;
 }

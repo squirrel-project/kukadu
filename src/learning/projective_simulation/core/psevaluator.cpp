@@ -155,15 +155,20 @@ void PSEvaluator::produceStatistics(shared_ptr<ProjectiveSimulator> ps, shared_p
         ps->generalize(nextClip);
         ps->performRandomWalk();
 
-        int lastResult = ps->performRewarding() / rewardValue;
-        if(fieldsInCurrentOutput < 8) {
-            currentOutput = currentOutput << 1;
+        pair<bool, double> rewRes = ps->performRewarding();
+        int lastResult = rewRes.second / rewardValue;
+        if(!rewRes.first) {
+            if(fieldsInCurrentOutput < 8) {
+                currentOutput = currentOutput << 1;
+            } else {
+                outStream << currentOutput << ",";
+                fieldsInCurrentOutput = 0;
+                currentOutput = 0;
+            }
+            currentOutput = currentOutput | lastResult;
         } else {
-            outStream << currentOutput << ",";
-            fieldsInCurrentOutput = 0;
-            currentOutput = 0;
+            --fieldsInCurrentOutput;
         }
-        currentOutput = currentOutput | lastResult;
 
     }
 

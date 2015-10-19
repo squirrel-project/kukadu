@@ -43,7 +43,7 @@ private:
     std::shared_ptr<std::mt19937> generator;
 
     std::vector<std::shared_ptr<GenericHand>> hands;
-    std::vector<std::shared_ptr<KukieControlQueue>> queues;
+    std::vector<std::shared_ptr<ControlQueue>> queues;
 
     std::vector<double> callClassifier(std::string trainedPath, std::string passedFilePath, bool classify,
                                        double bestParamC, double bestParamD, double bestParamParam1, double bestParamParam2);
@@ -52,7 +52,7 @@ private:
 
 public:
 
-    SensingController(std::shared_ptr<std::mt19937> generator, int hapticMode, std::string caption, std::string databasePath, std::vector<std::shared_ptr<KukieControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands,
+    SensingController(std::shared_ptr<std::mt19937> generator, int hapticMode, std::string caption, std::string databasePath, std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands,
                       std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction);
 
     virtual void prepare() = 0;

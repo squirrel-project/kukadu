@@ -13,16 +13,17 @@ using namespace arma;
 
 ComplexController::ComplexController(std::string caption, std::vector<std::shared_ptr<SensingController>> sensingControllers,
                                      std::vector<std::shared_ptr<Controller>> preparationControllers,
-                                     std::string corrPSPath, std::string rewardHistoryPath, bool storeReward, double senseStretch, std::shared_ptr<std::mt19937> generator, int stdReward, int punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards)
+                                     std::string corrPSPath, std::string rewardHistoryPath, bool storeReward, double senseStretch, double boredom, std::shared_ptr<std::mt19937> generator, int stdReward, int punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards)
     : Controller(caption), Reward(generator, collectPrevRewards) {
 
     projSim = nullptr;
     rewardHistoryStream = nullptr;
 
-    this->storeReward = storeReward;
     this->gamma = gamma;
     this->gen = generator;
+    this->boredom = boredom;
     this->currentIterationNum = 0;
+    this->storeReward = storeReward;
     this->senseStretch = senseStretch;
     this->colPrevRewards = collectPrevRewards;
     this->rewardHistoryPath = rewardHistoryPath;
@@ -92,9 +93,11 @@ void ComplexController::initialize() {
     }
 
     if(existsPs) {
+
         // skill was already initialized and can be loaded again
         if(!isShutUp)
             cout << "(ComplexController) loading existing PS" << endl;
+
         projSim = shared_ptr<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, corrPSPath));
     } else {
 
@@ -105,6 +108,8 @@ void ComplexController::initialize() {
         projSim = shared_ptr<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, rootVec, gamma, PS_USE_ORIGINAL, false));
 
     }
+
+    projSim->setBoredom(boredom);
 
     if(storeReward) {
         rewardHistoryStream = std::shared_ptr<std::ofstream>(new std::ofstream());
@@ -232,8 +237,10 @@ int ComplexController::getNextSimulatedGroundTruth(shared_ptr<SensingController>
 
 std::shared_ptr<ControllerResult> ComplexController::performAction() {
     projSim->performRandomWalk();
-    double reward = projSim->performRewarding();
-    shared_ptr<ControllerResult> ret = shared_ptr<ControllerResult>(new ControllerResult(vec(), vector<vec>(), (reward > 0) ? true : false));
+    pair<bool, double> actionRes = projSim->performRewarding();
+    bool wasBored = actionRes.first;
+    double reward = actionRes.second;
+    shared_ptr<ControllerResult> ret = shared_ptr<ControllerResult>(new ControllerResult(vec(), vector<vec>(), (reward > 0) ? true : false, wasBored));
     return ret;
 }
 

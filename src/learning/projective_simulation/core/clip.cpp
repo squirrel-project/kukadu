@@ -51,6 +51,18 @@ Clip::~Clip() {
     subClipsSet = nullptr;
 }
 
+double Clip::computeSubEntropy() const {
+
+    double entropy = 0.0;
+    vector<double> probs = discDist.probabilities();
+
+    for(double prob : probs)
+        entropy -= prob * log2(prob);
+
+    return entropy;
+
+}
+
 void Clip::setImmunity(int immunity) {
     this->immunity = immunity;
 }

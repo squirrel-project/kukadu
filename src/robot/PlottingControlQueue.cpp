@@ -4,7 +4,22 @@ using namespace std;
 using namespace arma;
 
 PlottingControlQueue::PlottingControlQueue(int degOfFreedom, double timeStep) : ControlQueue(degOfFreedom) {
+    vector<string> jntNames;
+    for(int i = 0; i < degOfFreedom; ++i) {
+        stringstream s;
+        s << i;
+        jntNames.push_back(string("joint_") + s.str());
+    }
+    construct(jntNames, timeStep);
+}
+
+PlottingControlQueue::PlottingControlQueue(std::vector<std::string> jointNames, double timeStep) : ControlQueue(jointNames.size()) {
+    construct(jointNames, timeStep);
+}
+
+void PlottingControlQueue::construct(std::vector<std::string> jointNames, double timeStep) {
     this->sleepTime = timeStep;
+    this->jointNames = jointNames;
     setInitValues();
 }
 
@@ -34,13 +49,7 @@ std::string PlottingControlQueue::getRobotName() {
 }
 
 std::vector<std::string> PlottingControlQueue::getJointNames() {
-    vector<string> ret;
-    for(int i = 0; i < getMovementDegreesOfFreedom(); ++i) {
-        stringstream s;
-        s << i;
-        ret.push_back(string("joint ") + s.str());
-    }
-
+    return jointNames;
 }
 
 void PlottingControlQueue::rollBack(double time) {
@@ -72,12 +81,9 @@ void PlottingControlQueue::run() {
     setInitValues();
     isInit = true;
 
-    ros::Rate rate(1 / (sleepTime * 1e-6));
+    while(!finish) {
 
-    while(!finish && ros::ok) {
-
-    //    currentTime += sleepTime * 1e-6;
-        rate.sleep();
+        usleep(sleepTime);
 
     }
 }

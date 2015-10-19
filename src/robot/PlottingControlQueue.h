@@ -60,17 +60,18 @@ private:
 	int impMode;
 	int currentMode;
 	
-	char** argv;
-	
+    double currentTime;
+
     arma::vec startingJoints;
     arma::vec currentJoints;
     arma::vec currentCarts;
-	
-	double currentTime;
+
+    std::vector<std::string> jointNames;
 	
 	std::mutex currentJointsMutex;
 	std::mutex currentCartsMutex;
 	
+    void construct(std::vector<std::string> jointNames, double timeStep);
 
 public:
 
@@ -80,6 +81,8 @@ public:
 	 * \param initMode control mode (e.g. command mode, monitor mode) with which the queue should be started
 	 */
     PlottingControlQueue(int degOfFreedom, double timeStep);
+
+    PlottingControlQueue(std::vector<std::string> jointNames, double timeStep);
 	
 	void run();
 	void setFinish();

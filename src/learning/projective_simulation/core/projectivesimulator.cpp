@@ -241,7 +241,20 @@ std::shared_ptr<Clip> ProjectiveSimulator::findClipByIdVec(std::shared_ptr<std::
 
 }
 
+void ProjectiveSimulator::setBoredom(double boredom) {
+    if(boredom <= 0.0) {
+        this->boredom = 0.0;
+        this->useBoredom = false;
+    } else {
+        this->boredom = boredom;
+        this->useBoredom = true;
+    }
+}
+
 void ProjectiveSimulator::construct(std::shared_ptr<Reward> reward, std::shared_ptr<std::mt19937> generator, double gamma, int operationMode, bool useRanking) {
+
+    this->boredom = 0.0;
+    this->useBoredom = false;
 
     this->useRanking = useRanking;
     this->operationMode = operationMode;
@@ -426,6 +439,7 @@ std::shared_ptr<std::vector<std::shared_ptr<ActionClip>>> ProjectiveSimulator::g
 
 std::shared_ptr<ActionClip> ProjectiveSimulator::performRandomWalk() {
 
+    lastClipBeforeAction = nullptr;
     intermediateHops->clear();
     std::shared_ptr<Clip> previousClip = nullptr;
     std::shared_ptr<Clip> currentClip = nullptr;
@@ -448,6 +462,7 @@ std::shared_ptr<ActionClip> ProjectiveSimulator::performRandomWalk() {
     while(previousClip != currentClip) {
         intermediateHops->push_back(previousIdx);
         pair<int, std::shared_ptr<Clip>> nextHop;
+        lastClipBeforeAction = previousClip;
         previousClip = currentClip;
         nextHop = currentClip->jumpNextRandom();
         previousIdx = nextHop.first;
@@ -460,23 +475,61 @@ std::shared_ptr<ActionClip> ProjectiveSimulator::performRandomWalk() {
 
 }
 
-double ProjectiveSimulator::performRewarding() {
+double ProjectiveSimulator::computeBoredem(std::shared_ptr<Clip> clip) {
+    
+    double entropy = clip->computeSubEntropy();
+    double numberOfSubclips = clip->getSubClipCount();
 
-    double computedReward = reward->computeReward(lastPerceptClip, lastActionClip);
-    for(std::shared_ptr<set<std::shared_ptr<Clip>, clip_compare>> currLevel : *clipLayers) {
-        for(std::shared_ptr<Clip> currClip : *currLevel) {
-            currClip->updateWeights(computedReward, gamma);
+    // cout << "entropy: " << entropy << "; log2: " << log2(numberOfSubclips) << "; " << "; boredomConst: " << boredom << "; ";
+
+    // b * (1 - H / H_max) = b * (1 - H / log2(N))
+    double clipBoredom = boredom * (1.0 - entropy / log2(numberOfSubclips));
+
+    return clipBoredom;
+
+}
+
+pair<bool, double> ProjectiveSimulator::performRewarding() {
+
+    int beingBored = 0;
+    if(useBoredom) {
+
+        double boredomScore = computeBoredem(lastClipBeforeAction);
+        vector<double> boredomDistWeights = {boredomScore, 1 - boredomScore};
+        discrete_distribution<int> boredomDist = discrete_distribution<int>(boredomDistWeights.begin(), boredomDistWeights.end());
+        beingBored =  1 - boredomDist(*generator);
+
+        // cout << "boredomScore: " << boredomScore << "; " << "beingBored: " << beeingBored << endl;
+
+    }
+
+    double computedReward = 0.0;
+    if(!beingBored) {
+
+        computedReward = reward->computeReward(lastPerceptClip, lastActionClip);
+        for(std::shared_ptr<set<std::shared_ptr<Clip>, clip_compare>> currLevel : *clipLayers) {
+
+            for(std::shared_ptr<Clip> currClip : *currLevel) {
+
+                currClip->updateWeights(computedReward, gamma);
+
+                // decrease immunity
+                if(useRanking)
+                    currClip->decreaseImmunity();
+
+            }
         }
+
+        if(useRanking) {
+
+            computeRankVec();
+            cleanByRank();
+
+        }
+
     }
 
-    if(useRanking) {
-
-        computeRankVec();
-        cleanByRank();
-
-    }
-
-    return computedReward;
+    return pair<bool, double>(beingBored, computedReward);
 
 }
 
@@ -579,10 +632,6 @@ std::shared_ptr<std::set<std::shared_ptr<Clip>, clip_compare>> ProjectiveSimulat
             if(currLevel->size() && firstClipOnLevel->getLevel() != CLIP_H_LEVEL_FINAL) {
 
                 for(std::shared_ptr<Clip> currClip : *currLevel) {
-
-                    // decrease immunity
-                    if(useRanking)
-                        currClip->decreaseImmunity();
 
                     // create new clip that gets generated as a cascade
                     std::shared_ptr<Clip> nextClip = currClip->compareClip(newClip);
