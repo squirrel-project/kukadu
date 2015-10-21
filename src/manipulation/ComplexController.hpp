@@ -26,13 +26,13 @@ private:
     bool storeReward;
     bool colPrevRewards;
 
-    int punishReward;
     int stdPrepWeight;
     int currentIterationNum;
 
     double gamma;
     double boredom;
     double stdReward;
+    double punishReward;
     double senseStretch;
 
     std::string corrPSPath;
@@ -64,12 +64,14 @@ protected:
 public:
 
     ComplexController(std::string caption, std::vector<std::shared_ptr<SensingController>> sensingControllers, std::vector<std::shared_ptr<Controller>> preparationControllers,
-                      std::string corrPSPath, std::string rewardHistoryPath, bool storeReward, double senseStretch, double boredom, std::shared_ptr<std::mt19937> generator, int stdReward, int punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards);
+                      std::string corrPSPath, std::string rewardHistoryPath, bool storeReward, double senseStretch, double boredom, std::shared_ptr<std::mt19937> generator, int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards);
     ~ComplexController();
 
     void store();
     void storeNextIteration();
+    void setBoredom(double boredom);
     void store(std::string destination);
+    void setTrainingMode(bool doTraining);
 
     // needs to be called after constructor
     void initialize();

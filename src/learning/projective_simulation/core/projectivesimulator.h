@@ -53,16 +53,17 @@ class ProjectiveSimulator {
 
 private:
 
-    double gamma;
-    double boredom;
+    bool useRanking;
+    bool useBoredom;
+    bool doTraining;
 
     int levels;
     int operationMode;
     int immunityThresh;
     int maxNumberOfClips;
 
-    bool useRanking;
-    bool useBoredom;
+    double gamma;
+    double boredom;
 
     std::shared_ptr<Reward> reward;
 
@@ -108,6 +109,7 @@ public:
 
     void printWeights();
     void setBoredom(double boredom);
+    void setTrainingMode(bool doTraining);
     void setStandardImmunity(int immunity);
     void setMaxNumberOfClips(int maxNumberOfClips);
     void connectNewClip(std::shared_ptr<Clip> conClip);

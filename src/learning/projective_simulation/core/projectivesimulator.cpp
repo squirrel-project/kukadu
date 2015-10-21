@@ -1,5 +1,6 @@
 #include "projectivesimulator.h"
 
+#include <utility>
 #include <iostream>
 #include <fstream>
 
@@ -251,9 +252,14 @@ void ProjectiveSimulator::setBoredom(double boredom) {
     }
 }
 
+void ProjectiveSimulator::setTrainingMode(bool doTraining) {
+    this->doTraining = doTraining;
+}
+
 void ProjectiveSimulator::construct(std::shared_ptr<Reward> reward, std::shared_ptr<std::mt19937> generator, double gamma, int operationMode, bool useRanking) {
 
     this->boredom = 0.0;
+    this->doTraining = true;
     this->useBoredom = false;
 
     this->useRanking = useRanking;
@@ -507,29 +513,32 @@ pair<bool, double> ProjectiveSimulator::performRewarding() {
     if(!beingBored) {
 
         computedReward = reward->computeReward(lastPerceptClip, lastActionClip);
-        for(std::shared_ptr<set<std::shared_ptr<Clip>, clip_compare>> currLevel : *clipLayers) {
 
-            for(std::shared_ptr<Clip> currClip : *currLevel) {
+        if(doTraining) {
+            for(std::shared_ptr<set<std::shared_ptr<Clip>, clip_compare>> currLevel : *clipLayers) {
 
-                currClip->updateWeights(computedReward, gamma);
+                for(std::shared_ptr<Clip> currClip : *currLevel) {
 
-                // decrease immunity
-                if(useRanking)
-                    currClip->decreaseImmunity();
+                    currClip->updateWeights(computedReward, gamma);
+
+                    // decrease immunity
+                    if(useRanking)
+                        currClip->decreaseImmunity();
+
+                }
+            }
+
+            if(useRanking) {
+
+                computeRankVec();
+                cleanByRank();
 
             }
         }
 
-        if(useRanking) {
-
-            computeRankVec();
-            cleanByRank();
-
-        }
-
     }
 
-    return pair<bool, double>(beingBored, computedReward);
+    return make_pair(beingBored, computedReward);
 
 }
 

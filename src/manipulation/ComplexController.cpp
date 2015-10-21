@@ -13,7 +13,7 @@ using namespace arma;
 
 ComplexController::ComplexController(std::string caption, std::vector<std::shared_ptr<SensingController>> sensingControllers,
                                      std::vector<std::shared_ptr<Controller>> preparationControllers,
-                                     std::string corrPSPath, std::string rewardHistoryPath, bool storeReward, double senseStretch, double boredom, std::shared_ptr<std::mt19937> generator, int stdReward, int punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards)
+                                     std::string corrPSPath, std::string rewardHistoryPath, bool storeReward, double senseStretch, double boredom, std::shared_ptr<std::mt19937> generator, int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards)
     : Controller(caption), Reward(generator, collectPrevRewards) {
 
     projSim = nullptr;
@@ -128,6 +128,10 @@ void ComplexController::initialize() {
 
 }
 
+void ComplexController::setBoredom(double boredom) {
+    projSim->setBoredom(boredom);
+}
+
 double ComplexController::getPunishReward() {
     return punishReward;
 }
@@ -216,12 +220,14 @@ double ComplexController::computeRewardInternal(std::shared_ptr<PerceptClip> pro
             retReward = stdReward;
         } else {
             cout << "preparation action didn't work; no reward given" << endl;
-            retReward = -10;
+            retReward = punishReward;
         }
 
     } else {
+
         sensCont->setSimulationGroundTruth(getNextSimulatedGroundTruth(sensCont));
         retReward = getSimulatedReward(sensCont, providedPercept, takenAction, predictedClassIdx, takenActionIdx);
+
     }
 
     if(storeReward)
@@ -236,12 +242,18 @@ int ComplexController::getNextSimulatedGroundTruth(shared_ptr<SensingController>
 }
 
 std::shared_ptr<ControllerResult> ComplexController::performAction() {
+
     projSim->performRandomWalk();
     pair<bool, double> actionRes = projSim->performRewarding();
     bool wasBored = actionRes.first;
     double reward = actionRes.second;
     shared_ptr<ControllerResult> ret = shared_ptr<ControllerResult>(new ControllerResult(vec(), vector<vec>(), (reward > 0) ? true : false, wasBored));
     return ret;
+
+}
+
+void ComplexController::setTrainingMode(bool doTraining) {
+    projSim->setTrainingMode(doTraining);
 }
 
 void ComplexController::createSensingDatabase() {

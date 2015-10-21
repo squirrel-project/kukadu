@@ -19,6 +19,7 @@ std::vector<arma::vec> ControllerResult::getYs() {
 void ControllerResult::construct(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored) {
     this->t = t;
     this->y = ys;
+    this->bored = bored;
     this->success = success;
 }
 
