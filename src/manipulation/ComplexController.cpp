@@ -196,8 +196,6 @@ double ComplexController::computeRewardInternal(std::shared_ptr<PerceptClip> pro
     int predictedClassIdx = intermed->at(2);
     int takenActionIdx = intermed->at(3);
 
-    ++currentIterationNum;
-
     if(!getSimulationMode()) {
 
         cout << "selected sensing action \"" << *sensClip << "\" resulted in predicted class " << intermed->at(2) << " and preparation action \"" << *takenAction << "\"" << endl;
@@ -243,10 +241,15 @@ int ComplexController::getNextSimulatedGroundTruth(shared_ptr<SensingController>
 
 std::shared_ptr<ControllerResult> ComplexController::performAction() {
 
+    ++currentIterationNum;
     projSim->performRandomWalk();
     pair<bool, double> actionRes = projSim->performRewarding();
     bool wasBored = actionRes.first;
     double reward = actionRes.second;
+
+    if(wasBored)
+        cout << "(ComplexController) got bored" << endl;
+
     shared_ptr<ControllerResult> ret = shared_ptr<ControllerResult>(new ControllerResult(vec(), vector<vec>(), (reward > 0) ? true : false, wasBored));
     return ret;
 

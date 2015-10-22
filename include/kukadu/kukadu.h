@@ -75,6 +75,8 @@
 #include "../../src/utils/conversion_utils.h"
 #include "../../src/utils/DestroyableObject.h"
 
+#include "../../src/vision/Kinect.hpp"
+
 #ifdef ROS_SUPPORT
 #include "../../src/robot/KukieControlQueue.h"
 #endif

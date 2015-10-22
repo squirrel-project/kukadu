@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <iterator>
+#include <boost/filesystem.hpp>
 
 using namespace std;
 using namespace arma;
@@ -1038,6 +1039,11 @@ bool fileExists(const std::string filePath) {
     return true;
 }
 
+bool isDirectory(const std::string dirPath) {
+    boost::filesystem::path p = dirPath.c_str();
+    return boost::filesystem::is_directory(p);
+}
+
 void copyFile(const std::string source, const std::string destination) {
     fstream f(source, fstream::in|fstream::binary);
     f << noskipws;
@@ -1050,3 +1056,20 @@ void copyFile(const std::string source, const std::string destination) {
 
     copy(begin, end, begin2);
 }
+
+void deleteDirectory(std::string path) {
+    if(isDirectory(path)) {
+        boost::filesystem::path p = path.c_str();
+        boost::filesystem::remove_all(p);
+    }
+}
+
+
+
+
+
+
+
+
+
+

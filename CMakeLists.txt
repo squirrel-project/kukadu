@@ -25,7 +25,8 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 set(CURSES_USE_NCURSES TRUE)
-find_package(Boost REQUIRED)
+find_package(PCL REQUIRED)
+find_package(Boost COMPONENTS filesystem program_options)
 find_package(Eigen REQUIRED)
 find_package(Curses REQUIRED)
 find_package(PythonLibs REQUIRED)
@@ -34,7 +35,7 @@ catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
     CATKIN_DEPENDS roscpp
-    DEPENDS armadillo prosim gsl gslcblas ncurses $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a stdc++ ${Boost_LIBRARIES} ${Eigen_Libraries}
+    DEPENDS armadillo prosim gsl gslcblas ncurses $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a stdc++ ${Boost_LIBRARIES} ${Eigen_Libraries} ${PCL_LIBRARIES}
 )
 
 ###########
@@ -48,6 +49,7 @@ include_directories(
     ${Boost_INCLUDE_DIRS}
     ${Eigen_INCLUDE_DIRS}
     ${catkin_INCLUDE_DIRS}
+    ${PCL_INCLUDE_DIRS}
     /usr/include/python3.4m
     $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/
     $ENV{IIS_INCLUDE_PATH}/external_rosmake_ws/motion_control/motion_control_msgs/msg_gen/cpp/include
@@ -73,6 +75,7 @@ link_directories(/usr/lib/python3.4/config-3.4m-x86_64-linux-gnu /usr/lib)
 AUX_SOURCE_DIRECTORY(src/utils/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/robot/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/types/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/vision/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/learning/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/trajectory/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/manipulation/ KUKADUSRC)
@@ -93,10 +96,6 @@ add_library(kukadu
     ${KUKADUSRC}
 )
 
-target_link_libraries(kukadu ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a pthread dl util m python3.4m prosim)
-
-add_executable(kukadu_mes src/guided.cpp)
-target_link_libraries(kukadu_mes kukadu ${catkin_LIBRARIES} ${Boost_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ${catkin_LIBRARIES})
-
+target_link_libraries(kukadu ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a pthread dl util m python3.4m prosim ${PCL_LIBRARIES})
 
 catkin_add_gtest(kukadutest test/kukadutest.cpp)

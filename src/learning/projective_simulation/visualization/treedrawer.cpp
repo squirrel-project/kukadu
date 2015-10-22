@@ -37,11 +37,12 @@ void TreeDrawer::construct() {
         throw "(TreeDrawer) failed to initialize allegro";
     }
 
+    display = al_create_display(windowXSize, windowYSize);
+
     al_install_keyboard();
     al_init_font_addon();
     al_init_ttf_addon();
 
-    display = al_create_display(windowXSize, windowYSize);
     if(!display) {
         cerr << "(TreeDrawer) failed to create display" << endl;
         throw "(TreeDrawer) failed to create display";
@@ -189,6 +190,7 @@ void TreeDrawer::waitForEnter() {
         al_wait_for_event(event_queue, &ev);
 
         if(ev.type == ALLEGRO_EVENT_KEY_CHAR) {
+            cout << "lala" << endl;
             if(ev.keyboard.keycode == ALLEGRO_KEY_ENTER)
                 return;
         }

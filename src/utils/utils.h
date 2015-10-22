@@ -53,6 +53,7 @@
 
 
 int createDirectory(std::string path);
+void deleteDirectory(std::string path);
 
 void printDoubleVector(std::vector<double>* data);
 void printDoubleVector(double* data, int size);
@@ -137,6 +138,7 @@ tf::Quaternion axisAngle2Quat (const double xx, const double &yy, const double &
 double distancePoint2Line(double xp,double yp,double x1,double y1,double x2,double y2);
 arma::vec pointOnLine2Point(double xp,double yp,double x1,double y1,double x2,double y2);
 
+bool isDirectory(const std::string dirPath);
 bool fileExists(const std::string filePath);
 void copyFile(const std::string source, const std::string destination);
 
