@@ -1,13 +1,12 @@
 #include "SensingController.hpp"
+
 #include <Python.h>
 #include <boost/filesystem.hpp>
-
-#include <random>
 
 using namespace std;
 namespace pf = boost::filesystem;
 
-SensingController::SensingController(std::shared_ptr<std::mt19937> generator, int hapticMode, string caption, std::string databasePath, std::vector<std::shared_ptr<ControlQueue> > queues, vector<shared_ptr<GenericHand>> hands, std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction) : Controller(caption) {
+SensingController::SensingController(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int hapticMode, string caption, std::string databasePath, std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, vector<KUKADU_SHARED_PTR<GenericHand> > hands, std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction) : Controller(caption) {
 
     currentIterationNum = 0;
     classifierParamsSet = false;
@@ -46,15 +45,17 @@ std::string SensingController::getDatabasePath() {
 
 void SensingController::gatherData(std::string completePath) {
 
-    vector<shared_ptr<ControlQueue>> castedQueues;
-    for(shared_ptr<ControlQueue> queue : queues)
+    vector<KUKADU_SHARED_PTR<ControlQueue> > castedQueues;
+    for(int i = 0; i < queues.size(); ++i) {
+        KUKADU_SHARED_PTR<ControlQueue> queue = queues.at(i);
         castedQueues.push_back(queue);
+    }
 
     SensorStorage store(castedQueues, hands, 100);
 
     prepare();
 
-    shared_ptr<thread> storageThread = store.startDataStorage(completePath);
+    KUKADU_SHARED_PTR<kukadu_thread> storageThread = store.startDataStorage(completePath);
 
     performCore();
 
@@ -135,9 +136,10 @@ int SensingController::performClassification() {
 
     } else {
 
-
-
-        discrete_distribution<int> precisionProb {(double) (simulatedClassificationPrecision), (double) (100 - simulatedClassificationPrecision)};
+        vector<double> precisionProbVec;
+        precisionProbVec.push_back((double) (simulatedClassificationPrecision));
+        precisionProbVec.push_back((double) (100 - simulatedClassificationPrecision));
+        KUKADU_DISCRETE_DISTRIBUTION<int> precisionProb(precisionProbVec);
 
         int correctClass = precisionProb(*generator);
         // simulate correct classification
@@ -160,7 +162,7 @@ int SensingController::createRandomGroundTruthIdx() {
     vector<int> randValues;
     for(int i = 0; i < getSensingCatCount(); ++i)
         randValues.push_back(1);
-    classifierDist = discrete_distribution<int>(randValues.begin(),randValues.end());
+    classifierDist = KUKADU_DISCRETE_DISTRIBUTION<int>(randValues.begin(),randValues.end());
     return classifierDist(*generator);
 }
 
@@ -176,7 +178,7 @@ double SensingController::createDataBase() {
 
     int numClasses = 0;
     string path = getDatabasePath();
-    vector<pair<int, string>> collectedSamples;
+    vector<pair<int, string> > collectedSamples;
     if(!isShutUp)
         cout << "(SensingController) data is stored to " << path << endl;
     if(!fileExists(path)) {
@@ -235,14 +237,14 @@ double SensingController::createDataBase() {
         double bestParamPar2 = classRes.at(classRes.size() - 1);
 
         ofstream ofile;
-        ofile.open(path + "classRes");
+        ofile.open((path + "classRes").c_str());
         ofile << confidence << "\t" << bestParamC << "\t" << bestParamD << "\t" << bestParamPar1 << "\t" << bestParamPar2 << endl;
         ofile.close();
 
     }
 
     ifstream infile;
-    infile.open(path + "classRes");
+    infile.open((path + "classRes").c_str());
     double confidence = 0.0;
     double bestParamC = 0.0;
     double bestParamD = 0.0;
@@ -259,13 +261,13 @@ double SensingController::createDataBase() {
 
 }
 
-std::shared_ptr<ControllerResult> SensingController::performAction() {
+KUKADU_SHARED_PTR<ControllerResult> SensingController::performAction() {
 
     prepare();
     performCore();
     cleanUp();
 
-    return nullptr;
+    return KUKADU_SHARED_PTR<ControllerResult>();
 
 }
 
@@ -433,13 +435,15 @@ std::vector<double> SensingController::callClassifier(std::string trainedPath, s
 
 }
 
-void SensingController::writeLabelFile(std::string baseFolderPath, std::vector<std::pair<int, std::string>> collectedSamples) {
+void SensingController::writeLabelFile(std::string baseFolderPath, std::vector<std::pair<int, std::string> > collectedSamples) {
 
     ofstream outFile;
-    outFile.open(baseFolderPath + "labels");
+    outFile.open((baseFolderPath + "labels").c_str());
 
-    for(pair<int, string> sample : collectedSamples)
+    for(int i = 0; i < collectedSamples.size(); ++i) {
+        pair<int, string> sample = collectedSamples.at(i);
         outFile << sample.second << " " << sample.first << endl;
+    }
 
 }
 

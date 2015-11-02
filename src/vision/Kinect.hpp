@@ -1,27 +1,28 @@
-#ifndef KINECT_H
-#define KINECT_H
+#ifndef KUKADU_KINECT_H
+#define KUKADU_KINECT_H
 
-#include <cstdio>
-#include <iostream>
-#include <fstream>
-#include <thread>
-#include <mutex>
-#include <string>
 #include <vector>
+#include <cstdio>
+#include <string>
+#include <fstream>
+#include <iostream>
 #include <wordexp.h>
-#include <memory>
 #include <ros/ros.h>
 #include <ros/publisher.h>
 #include <ros/subscriber.h>
-
+#include <tf2_msgs/TFMessage.h>
 #include <pcl_ros/transforms.h>
 #include <tf/transform_listener.h>
-#include <tf2_msgs/TFMessage.h>
 #include <sensor_msgs/PointCloud2.h>
+
+#include "PCTransformator.hpp"
+#include "../types/KukaduTypes.h"
 
 class Kinect {
 
 private:
+
+    std::string stdVisPubTopic;
 
     bool isInit;
     bool keepRunning;
@@ -29,14 +30,15 @@ private:
 
     bool pcRequested;
 
-    std::shared_ptr<std::thread> thr;
+    KUKADU_SHARED_PTR<kukadu_thread> thr;
 
-    std::mutex pcMutex;
+    kukadu_mutex pcMutex;
 
     std::string targetFrame;
+    std::string visPubTopic;
     std::string kinectPrefix;
 
-    std::shared_ptr<tf::TransformListener> transformListener;
+    KUKADU_SHARED_PTR<tf::TransformListener> transformListener;
 
     sensor_msgs::PointCloud2 currentPc;
 
@@ -44,6 +46,8 @@ private:
 
     ros::Subscriber subKinect;
     ros::Subscriber subTransformation;
+
+    ros::Publisher visPublisher;
 
     void runThread();
     void callbackKinectPointCloud(const sensor_msgs::PointCloud2& pc);
@@ -56,14 +60,18 @@ public:
     Kinect(std::string kinectPrefix, std::string targetFrame, ros::NodeHandle node);
 
     void stopSensing();
-    std::shared_ptr<std::thread> startSensing();
+    void visualizeCurrentPc();
+    void setVisPubTopic(std::string visPubTopic);
+    void visualizeCurrentTransformedPc(KUKADU_SHARED_PTR<PCTransformator> transformator);
 
     bool isInitialized();
 
+    std::string getVisPubTopic();
+
     sensor_msgs::PointCloud2 getCurrentPointCloud();
+
+    KUKADU_SHARED_PTR<kukadu_thread> startSensing();
 
 };
 
-
-
-#endif // KINECT_H
+#endif

@@ -4,26 +4,26 @@
 
 using namespace std;
 
-Clip::Clip(int level, std::shared_ptr<std::mt19937> generator, std::string clipValues, int immunity) {
+Clip::Clip(int level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string clipValues, int immunity) {
 
     construct(level, generator, Clip::getIdVectorFromString(clipValues), immunity);
 
 }
 
-Clip::Clip(int level, std::shared_ptr<std::mt19937> generator, std::shared_ptr<std::vector<int>> clipDimensionValues, int immunity) {
+Clip::Clip(int level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, KUKADU_SHARED_PTR<std::vector<int> > clipDimensionValues, int immunity) {
 
     construct(level, generator, clipDimensionValues, immunity);
 
 }
 
-void Clip::construct(int level, std::shared_ptr<std::mt19937> generator, std::shared_ptr<std::vector<int>> clipValues, int immunity) {
+void Clip::construct(int level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, KUKADU_SHARED_PTR<std::vector<int> > clipValues, int immunity) {
 
     this->level = level;
     this->generator = generator;
     this->clipDimensionValues = clipValues;
-    this->subClips = std::shared_ptr<std::vector<std::shared_ptr<Clip>>>(new std::vector<std::shared_ptr<Clip>>());
-    this->parents = std::shared_ptr<std::set<std::shared_ptr<Clip>>>(new std::set<std::shared_ptr<Clip>>());
-    this->subClipsSet = std::shared_ptr<std::set<std::shared_ptr<Clip>>>(new std::set<std::shared_ptr<Clip>>());
+    this->subClips = KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > >(new std::vector<KUKADU_SHARED_PTR<Clip> >());
+    this->parents = KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip> > >(new std::set<KUKADU_SHARED_PTR<Clip> >());
+    this->subClipsSet = KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip> > >(new std::set<KUKADU_SHARED_PTR<Clip> >());
     this->visitedSubNode = CLIP_H_NOT_WALKED_YET;
     this->previousRank = -1;
     this->initialImmunity = this->immunity = immunity;
@@ -31,9 +31,9 @@ void Clip::construct(int level, std::shared_ptr<std::mt19937> generator, std::sh
 
 }
 
-std::shared_ptr<std::vector<int>> Clip::getIdVectorFromString(std::string str) {
+KUKADU_SHARED_PTR<std::vector<int>> Clip::getIdVectorFromString(std::string str) {
 
-    std::shared_ptr<std::vector<int>> retVec = std::shared_ptr<std::vector<int>>(new std::vector<int>());
+    KUKADU_SHARED_PTR<std::vector<int>> retVec = KUKADU_SHARED_PTR<std::vector<int> >(new std::vector<int>());
     Tokenizer tok(str, "(),");
 
     string t = "";
@@ -80,40 +80,40 @@ void Clip::decreaseImmunity() {
         --immunity;
 }
 
-void Clip::addParent(std::shared_ptr<Clip> par) {
+void Clip::addParent(KUKADU_SHARED_PTR<Clip> par) {
     parents->insert(par);
 }
 
-void Clip::addParentDownwards(std::shared_ptr<Clip> par) {
+void Clip::addParentDownwards(KUKADU_SHARED_PTR<Clip> par) {
     addParent(par);
     par->addSubClip(shared_from_this(), CLIP_H_STD_WEIGHT);
-    for(std::shared_ptr<Clip> child : *subClips) {
+    for(KUKADU_SHARED_PTR<Clip> child : *subClips) {
         child->addParentDownwards(par);
     }
 }
 
-void Clip::addChildUpwards(std::shared_ptr<Clip> sub) {
+void Clip::addChildUpwards(KUKADU_SHARED_PTR<Clip> sub) {
     this->addSubClip(sub, CLIP_H_STD_WEIGHT);
-    for(std::shared_ptr<Clip> parent : *parents)
+    for(KUKADU_SHARED_PTR<Clip> parent : *parents)
         parent->addChildUpwards(sub);
 }
 
-std::pair<int, std::shared_ptr<Clip>> Clip::jumpNextRandom() {
+std::pair<int, KUKADU_SHARED_PTR<Clip>> Clip::jumpNextRandom() {
 
     visitedSubNode = discDist(*generator);
-    return pair<int, std::shared_ptr<Clip>>(visitedSubNode, subClips->at(visitedSubNode));
+    return pair<int, KUKADU_SHARED_PTR<Clip> >(visitedSubNode, subClips->at(visitedSubNode));
 
 }
 
 void Clip::initRandomGenerator() {
 
-    discDist = discrete_distribution<int>(subH.begin(), subH.end());
+    discDist = KUKADU_DISCRETE_DISTRIBUTION<int>(subH.begin(), subH.end());
 
 }
 
-void Clip::addSubClip(std::shared_ptr<Clip> sub, int weight) {
+void Clip::addSubClip(KUKADU_SHARED_PTR<Clip> sub, int weight) {
 
-    pair<set<std::shared_ptr<Clip>>::iterator, bool> inserted = subClipsSet->insert(sub);
+    pair<set<KUKADU_SHARED_PTR<Clip>>::iterator, bool> inserted = subClipsSet->insert(sub);
     if(inserted.second) {
         subClips->push_back(sub);
         subH.push_back(weight);
@@ -123,7 +123,7 @@ void Clip::addSubClip(std::shared_ptr<Clip> sub, int weight) {
 
 }
 
-void Clip::setChildren(std::shared_ptr<std::vector<std::shared_ptr<Clip>>> children) {
+void Clip::setChildren(KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip>>> children) {
 
     int childCount = children->size();
     std::vector<double> newH;
@@ -137,7 +137,7 @@ void Clip::setChildren(std::shared_ptr<std::vector<std::shared_ptr<Clip>>> child
 
 }
 
-void Clip::setChildren(std::shared_ptr<std::vector<std::shared_ptr<Clip> > > children, std::vector<double> weights) {
+void Clip::setChildren(KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > children, std::vector<double> weights) {
 
     subClips = nullptr;
     this->subClips = children;
@@ -200,7 +200,7 @@ void Clip::printSubWeights() {
     cout << endl;
 }
 
-bool Clip::compareIdVecs(const std::shared_ptr<std::vector<int> > vec1, const std::shared_ptr<std::vector<int> > vec2) {
+bool Clip::compareIdVecs(const KUKADU_SHARED_PTR<std::vector<int> > vec1, const KUKADU_SHARED_PTR<std::vector<int> > vec2) {
 
     int s1 = vec1->size();
     if(s1 == vec2->size()) {
@@ -236,7 +236,7 @@ bool operator< (const Clip &o1, const Clip &o2) {
 
 }
 
-bool Clip::isCompatibleSubclip(std::shared_ptr<Clip> c) {
+bool Clip::isCompatibleSubclip(KUKADU_SHARED_PTR<Clip> c) {
 
     // if c is action clip --> its always a compatible subclip
     if(c->getLevel() == CLIP_H_LEVEL_FINAL)
@@ -244,7 +244,7 @@ bool Clip::isCompatibleSubclip(std::shared_ptr<Clip> c) {
     else if(this->getLevel() == CLIP_H_LEVEL_FINAL)
         return false;
 
-    std::shared_ptr<std::vector<int>> cClips = c->clipDimensionValues;
+    KUKADU_SHARED_PTR<std::vector<int>> cClips = c->clipDimensionValues;
     int clipSize = cClips->size();
     if(this->clipDimensionValues->size() == clipSize) {
         for(int i = 0; i < cClips->size(); ++i) {
@@ -257,11 +257,11 @@ bool Clip::isCompatibleSubclip(std::shared_ptr<Clip> c) {
 
 }
 
-void Clip::setClipDimensionValues(std::shared_ptr<std::vector<int>> vals) {
+void Clip::setClipDimensionValues(KUKADU_SHARED_PTR<std::vector<int>> vals) {
     this->clipDimensionValues = vals;
 }
 
-std::shared_ptr<Clip> Clip::getSubClipByIdx(int idx) {
+KUKADU_SHARED_PTR<Clip> Clip::getSubClipByIdx(int idx) {
     return subClips->at(idx);
 }
 
@@ -287,37 +287,37 @@ std::ostream& operator<<(std::ostream &strm, const Clip &c) {
     return strm << c.toString();
 }
 
-std::shared_ptr<std::vector<int> > Clip::getClipDimensions() const {
+KUKADU_SHARED_PTR<std::vector<int> > Clip::getClipDimensions() const {
     return clipDimensionValues;
 }
 
-std::shared_ptr<std::set<std::shared_ptr<Clip>>> Clip::getParents() {
+KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>>> Clip::getParents() {
     return parents;
 }
 
 void Clip::removeAllSubClips() {
-    vector<std::shared_ptr<Clip>> subClipCopy(*subClips);
-    for(std::shared_ptr<Clip> subClip : subClipCopy) {
+    vector<KUKADU_SHARED_PTR<Clip>> subClipCopy(*subClips);
+    for(KUKADU_SHARED_PTR<Clip> subClip : subClipCopy) {
         removeSubClipWoRand(subClip);
     }
     gotDeleted = 1;
 }
 
-void Clip::removeParentClip(std::shared_ptr<Clip> c) {
+void Clip::removeParentClip(KUKADU_SHARED_PTR<Clip> c) {
     parents->erase(c);
 }
 
-void Clip::removeSubClip(std::shared_ptr<Clip> clip) {
+void Clip::removeSubClip(KUKADU_SHARED_PTR<Clip> clip) {
 
     removeSubClipWoRand(clip);
     initRandomGenerator();
 
 }
 
-void Clip::removeSubClipWoRand(std::shared_ptr<Clip> clip) {
+void Clip::removeSubClipWoRand(KUKADU_SHARED_PTR<Clip> clip) {
 
     subClipsSet->erase(clip);
-    vector<std::shared_ptr<Clip>>::iterator foundIt = std::find(subClips->begin(), subClips->end() + 1, clip);
+    vector<KUKADU_SHARED_PTR<Clip>>::iterator foundIt = std::find(subClips->begin(), subClips->end() + 1, clip);
     int elIdx = foundIt - subClips->begin();
     subClips->erase(foundIt);
     subH.erase(subH.begin() + elIdx);
@@ -329,16 +329,16 @@ int Clip::getInitialImmunity() {
     return initialImmunity;
 }
 
-std::shared_ptr<Clip> Clip::compareClip(std::shared_ptr<Clip> c) {
+KUKADU_SHARED_PTR<Clip> Clip::compareClip(KUKADU_SHARED_PTR<Clip> c) {
 
-    std::shared_ptr<vector<int>> cVec = c->clipDimensionValues;
+    KUKADU_SHARED_PTR<vector<int>> cVec = c->clipDimensionValues;
     int cVecSize = cVec->size();
     int thisVecSize = clipDimensionValues->size();
     if(cVecSize != thisVecSize)
         return NULL;
 
     int hashCount = 0;
-    std::shared_ptr<vector<int>> clipValues = std::shared_ptr<vector<int>>(new vector<int>());
+    KUKADU_SHARED_PTR<vector<int>> clipValues = KUKADU_SHARED_PTR<vector<int>>(new vector<int>());
     for(int i = 0, val = 0; i < cVecSize; ++i) {
         if((val = cVec->at(i)) == clipDimensionValues->at(i) && cVec->at(i) != CLIP_H_HASH_VAL)
             clipValues->push_back(val);
@@ -350,10 +350,9 @@ std::shared_ptr<Clip> Clip::compareClip(std::shared_ptr<Clip> c) {
 
     // level is given by number of hashes
     if(hashCount)
-        return std::shared_ptr<Clip>(new Clip(hashCount, generator, clipValues, this->getInitialImmunity()));
+        return KUKADU_SHARED_PTR<Clip>(new Clip(hashCount, generator, clipValues, this->getInitialImmunity()));
     else {
         // with shared pointers it is important that this line is never executed --> return shared_from_this instead
-        // return std::shared_ptr<Clip>(this);
         return shared_from_this();
     }
 

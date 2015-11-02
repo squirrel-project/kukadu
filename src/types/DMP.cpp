@@ -20,7 +20,7 @@ Dmp::Dmp(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<ar
 
 Dmp::Dmp(std::string dmpFile) {
 
-    std::ifstream dmpFileStream(dmpFile, std::ifstream::in);
+    std::ifstream dmpFileStream(dmpFile.c_str(), std::ifstream::in);
     mat m = readMat(dmpFileStream);
     int degreesOfFreedom = m(0,0);
 
@@ -100,7 +100,7 @@ void Dmp::serialize(string dmpFile) {
     }
 
     ofstream dmpFileStream;
-    dmpFileStream.open(dmpFile);
+    dmpFileStream.open(dmpFile.c_str());
 
     dmpFileStream << getDegreesOfFreedom() << endl;
     dmpFileStream << "=" << endl;
@@ -364,7 +364,7 @@ std::vector<arma::vec> fitYs;
 	double bz;
 	double ax;
 */
-int Dmp::operator==(std::shared_ptr<Dmp> const& comp) const {
+int Dmp::operator==(KUKADU_SHARED_PTR<Dmp> const& comp) const {
 	
 //    std::shared_ptr<Dmp> tComp = dynamic_pointer_cast<Dmp>(comp->copy());
 //    std::shared_ptr<Dmp> tThis = dynamic_pointer_cast<Dmp>(this->copy());

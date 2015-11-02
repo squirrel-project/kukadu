@@ -3,8 +3,8 @@
 
 #include <vector>
 #include <armadillo>
-#include <memory>
 
+#include "../types/KukaduTypes.h"
 #include "../utils/conversion_utils.h"
 
 class Trajectory {
@@ -24,7 +24,7 @@ public:
 	
 	int operator==(Trajectory const& comp) const;
 	
-    virtual std::shared_ptr<Trajectory> copy() = 0;
+    virtual KUKADU_SHARED_PTR<Trajectory> copy() = 0;
 
     virtual double getTmax() = 0;
     virtual void setTmax(double tmax) = 0;

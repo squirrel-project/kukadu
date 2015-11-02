@@ -1,43 +1,40 @@
-#ifndef KUKIECONTROLQUEUE
-#define KUKIECONTROLQUEUE
+#ifndef KUKADU_KUKIECONTROLQUEUE_H
+#define KUKADU_KUKIECONTROLQUEUE_H
 
-#include <unistd.h>
 #include <queue>
-#include <iostream>
-#include <cstdlib>
-#include <math.h>
-#include <thread>
-#include <mutex>
-#include <time.h>
-#include <thread>
 #include <deque>
+#include <math.h>
+#include <time.h>
+#include <cstdlib>
+#include <unistd.h>
+#include <iostream>
 
 // Custom librairies
-#include "ControlQueue.h"
-#include "../utils/DestroyableObject.h"
 #include "../utils/types.h"
 #include "../utils/utils.h"
+#include "../types/KukaduTypes.h"
+#include "../robot/ControlQueue.h"
+#include "../utils/DestroyableObject.h"
 #include "robotDriver/src/kuka/friRemote.h"
 
-#include "ros/ros.h"
-#include "std_msgs/String.h"
-
-#include <sensor_msgs/JointState.h>
+#include <ros/ros.h>
 #include <std_msgs/Int32.h>
+#include <std_msgs/String.h>
 #include <std_msgs/Float64.h>
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Wrench.h>
+#include <sensor_msgs/JointState.h>
+#include <iis_robot_dep/KukieError.h>
 #include <std_msgs/Int32MultiArray.h>
 #include <std_msgs/Float64MultiArray.h>
 #include <std_msgs/Float32MultiArray.h>
-#include <std_msgs/MultiArrayDimension.h>
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/Wrench.h>
-#include <iis_robot_dep/CartesianImpedance.h>
-#include <iis_robot_dep/FriJointCommand.h>
-#include <iis_robot_dep/FriJointImpedance.h>
-#include <iis_robot_dep/FriJointState.h>
 #include <iis_robot_dep/FriRobotData.h>
+#include <iis_robot_dep/FriJointState.h>
+#include <std_msgs/MultiArrayDimension.h>
+#include <iis_robot_dep/FriJointCommand.h>
 #include <iis_robot_dep/FriRobotJntData.h>
-#include <iis_robot_dep/KukieError.h>
+#include <iis_robot_dep/FriJointImpedance.h>
+#include <iis_robot_dep/CartesianImpedance.h>
 
 #define COMMAND_NOT_SET -100
 
@@ -81,9 +78,9 @@ private:
     arma::vec currentJntFrqTrq;
     arma::vec currentCartFrqTrq;
 
-    std::mutex cartFrcTrqMutex;
-    std::mutex currentCartsMutex;
-	std::mutex currentJointsMutex;
+    kukadu_mutex cartFrcTrqMutex;
+    kukadu_mutex currentCartsMutex;
+    kukadu_mutex currentJointsMutex;
 
     geometry_msgs::Pose currentCartPose;
     geometry_msgs::Pose currentCartPoseRf;

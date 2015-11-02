@@ -4,6 +4,6 @@ TrajectoryExecutor::TrajectoryExecutor() : Controller("simple trajectory executo
 
 }
 
-std::shared_ptr<ControllerResult> TrajectoryExecutor::performAction() {
+KUKADU_SHARED_PTR<ControllerResult> TrajectoryExecutor::performAction() {
     return executeTrajectory();
 }

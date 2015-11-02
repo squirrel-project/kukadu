@@ -6,21 +6,21 @@ HapticPlanner::HapticPlanner() {
 
 }
 
-void HapticPlanner::addSensingController(std::string name, std::shared_ptr<SensingController> sensingController) {
+void HapticPlanner::addSensingController(std::string name, KUKADU_SHARED_PTR<SensingController> sensingController) {
 
     sensingNames.push_back(name);
     sensingControllers.push_back(sensingController);
 
 }
 
-void HapticPlanner::addPreparationController(std::string name, std::shared_ptr<Controller> prepController) {
+void HapticPlanner::addPreparationController(std::string name, KUKADU_SHARED_PTR<Controller> prepController) {
 
     preparationNames.push_back(name);
     preparationControllers.push_back(prepController);
 
 }
 
-void HapticPlanner::addComplexController(std::string name, std::shared_ptr<Controller> complexController) {
+void HapticPlanner::addComplexController(std::string name, KUKADU_SHARED_PTR<Controller> complexController) {
 
     complexControllerNames.push_back(name);
     complexControllers.push_back(complexController);

@@ -1,11 +1,12 @@
 #ifndef SINGLESAMPLETRAJECTORY
 #define SINGLESAMPLETRAJECTORY
 
+#include <vector>
+#include <armadillo>
+
 #include "Trajectory.h"
 #include "../utils/types.h"
 #include "../utils/conversion_utils.h"
-#include <vector>
-#include <armadillo>
 
 class SingleSampleTrajectory : public Trajectory {
 	

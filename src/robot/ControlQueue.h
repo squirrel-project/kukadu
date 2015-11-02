@@ -1,11 +1,11 @@
 #ifndef CONTROLQUEUE
 #define CONTROLQUEUE
 
-#include "../utils/DestroyableObject.h"
 #include "../utils/types.h"
+#include "../types/KukaduTypes.h"
+#include "../utils/DestroyableObject.h"
+
 #include <armadillo>
-#include <memory>
-#include <thread>
 #include <geometry_msgs/Pose.h>
 
 #define COMMAND_NOT_SET -100
@@ -26,7 +26,7 @@ class ControlQueue : public DestroyableObject {
 private:
 	
 	int degOfFreedom;
-    std::shared_ptr<std::thread> thr;
+    KUKADU_SHARED_PTR<kukadu_thread> thr;
 
 public:
 	/** \brief Constructor taking the robot dependent degrees of freedom
@@ -42,7 +42,7 @@ public:
 	/**
 	 * \brief Starts new thread to control the robot with real time capability
 	 */
-    std::shared_ptr<std::thread> startQueueThread();
+    KUKADU_SHARED_PTR<kukadu_thread> startQueueThread();
 	
 	/**
 	 * \brief This method is started in a new thread by startQueue

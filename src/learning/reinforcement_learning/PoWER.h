@@ -1,19 +1,18 @@
-#ifndef POWER
-#define POWER
+#ifndef KUKADU_POWER_H
+#define KUKADU_POWER_H
 
-#include <iostream>
-#include <armadillo>
 #include <vector>
 #include <cstdlib>
-#include <random>
 #include <utility>
-#include <memory>
+#include <iostream>
+#include <armadillo>
 
 #include "CostComputer.h"
 #include "GeneralReinforcer.h"
 #include "../../utils/types.h"
-#include "../../robot/ControlQueue.h"
 #include "../../types/Trajectory.h"
+#include "../../types/KukaduTypes.h"
+#include "../../robot/ControlQueue.h"
 #include "../../trajectory/TrajectoryExecutor.h"
 
 /** \brief The TerminalCostComputer implements the CostComputer interface
@@ -26,32 +25,31 @@ class PoWER : public GeneralReinforcer {
 
 private:
 	
+    int updatesPerRollout;
 	int importanceSamplingCount;
-	int updatesPerRollout;
+
 	double explorationSigma;
-    std::vector<std::shared_ptr<Trajectory>> initDmp;
-    std::shared_ptr<TrajectoryExecutor> trajEx;
+
+    KUKADU_SHARED_PTR<TrajectoryExecutor> trajEx;
+
+    std::vector<double> sigmas;
+    std::vector<kukadu_normal_distribution> normals;
+    std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp;
+    std::vector<std::pair <double, KUKADU_SHARED_PTR<Trajectory> > > sampleHistory;
 	
-//	std::vector<Dmp> sampleHistory;
-//	std::vector<double> rewardHistory;
+    kukadu_mersenne_twister generator;
 	
-    std::vector<std::pair <double, std::shared_ptr<Trajectory>>> sampleHistory;
-	
-    std::default_random_engine generator;
-	std::vector<std::normal_distribution<double>> normals;
-	
-	std::vector<double> sigmas;
-	
-    void construct(std::vector<std::shared_ptr<Trajectory>> initDmp, std::vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
+    void construct(std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp, std::vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
 	
 public:
 
-    PoWER(std::shared_ptr<TrajectoryExecutor> trajEx, std::vector<std::shared_ptr<Trajectory>> initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
-    PoWER(std::shared_ptr<TrajectoryExecutor> trajEx, std::vector<std::shared_ptr<Trajectory>> initDmp, std::vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
+    PoWER(KUKADU_SHARED_PTR<TrajectoryExecutor> trajEx, std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
+    PoWER(KUKADU_SHARED_PTR<TrajectoryExecutor> trajEx, std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp, std::vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
 	
-    std::vector<std::shared_ptr<Trajectory>> getInitialRollout();
-    std::vector<std::shared_ptr<Trajectory>> computeRolloutParamters();
-    std::shared_ptr<Trajectory> updateStep();
+    KUKADU_SHARED_PTR<Trajectory> updateStep();
+
+    std::vector<KUKADU_SHARED_PTR<Trajectory> > getInitialRollout();
+    std::vector<KUKADU_SHARED_PTR<Trajectory> > computeRolloutParamters();
 	
 };
 

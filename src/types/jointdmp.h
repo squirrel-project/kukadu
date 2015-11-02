@@ -1,7 +1,11 @@
-#ifndef JOINTDMP_H
-#define JOINTDMP_H
+#ifndef KUKADU_JOINTDMP_H
+#define KUKADU_JOINTDMP_H
 
-#include "DMP.h"
+#include <vector>
+#include <armadillo>
+
+#include "../types/DMP.h"
+#include "../types/KukaduTypes.h"
 
 class JointDmp : public Dmp {
 public:
@@ -17,8 +21,8 @@ public:
     JointDmp();
 
     bool isCartesian();
-    virtual std::shared_ptr<Trajectory> copy();
+    virtual KUKADU_SHARED_PTR<Trajectory> copy();
 
 };
 
-#endif // CARTESIANDMP_H
+#endif

@@ -20,9 +20,9 @@ bool CartesianDMP::isCartesian() {
     return true;
 }
 
-std::shared_ptr<Trajectory> CartesianDMP::copy() {
+KUKADU_SHARED_PTR<Trajectory> CartesianDMP::copy() {
 
-    return std::shared_ptr<Trajectory>(new CartesianDMP(*this));
+    return KUKADU_SHARED_PTR<Trajectory>(new CartesianDMP(*this));
 
 }
 

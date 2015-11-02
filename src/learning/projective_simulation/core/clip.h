@@ -1,19 +1,17 @@
-#ifndef CLIP_H
-#define CLIP_H
+#ifndef KUKADU_CLIP_H
+#define KUKADU_CLIP_H
 
-#include <iostream>
-#include <random>
-#include <vector>
-#include <utility>
-#include <limits>
-#include <string>
 #include <set>
-#include <limits.h>
-#include <algorithm>
-#include <sstream>
-#include <memory>
 #include <string>
 #include <vector>
+#include <limits>
+#include <utility>
+#include <sstream>
+#include <limits.h>
+#include <iostream>
+#include <algorithm>
+
+#include "../../../types/KukaduTypes.h"
 
 // start weight according to the paper
 #define CLIP_H_STD_WEIGHT 1
@@ -23,7 +21,7 @@
 
 #define PS_DEFAULT_IMMUNITY 1000
 
-class Clip : public std::enable_shared_from_this<Clip> {
+class Clip : public KUKADU_ENABLE_SHARED_FROM_THIS<Clip> {
 
 private:
 
@@ -33,19 +31,19 @@ private:
     int previousRank;
     int initialImmunity;
 
-    std::shared_ptr<std::mt19937> generator;
+    KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator;
 
     std::vector<double> subH;
 
-    std::discrete_distribution<int> discDist;
+    KUKADU_DISCRETE_DISTRIBUTION<int> discDist;
 
-    std::shared_ptr<std::set<std::shared_ptr<Clip>>> parents;
-    std::shared_ptr<std::set<std::shared_ptr<Clip>>> subClipsSet;
+    KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip> > > parents;
+    KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip> > > subClipsSet;
 
-    std::shared_ptr<std::vector<int>> clipDimensionValues;
-    std::shared_ptr<std::vector<std::shared_ptr<Clip>>> subClips;
+    KUKADU_SHARED_PTR<std::vector<int> > clipDimensionValues;
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > subClips;
 
-    void construct(int level, std::shared_ptr<std::mt19937> generator, std::shared_ptr<std::vector<int>> clipValues, int immunity);
+    void construct(int level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, KUKADU_SHARED_PTR<std::vector<int> > clipValues, int immunity);
 
 protected:
 
@@ -53,16 +51,16 @@ protected:
 
 public:
 
-    Clip(int level, std::shared_ptr<std::mt19937> generator, std::string clipValues, int immunity);
-    Clip(int level, std::shared_ptr<std::mt19937> generator, std::shared_ptr<std::vector<int>> clipValues, int immunity);
+    Clip(int level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string clipValues, int immunity);
+    Clip(int level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, KUKADU_SHARED_PTR<std::vector<int> > clipValues, int immunity);
     ~Clip();
 
     // must set the visitedSubnode member if overwritten --> otherwise it will not update its weights
     // todo: remove that requirement that subclasses have to set that by themselves
-    virtual std::pair<int, std::shared_ptr<Clip> > jumpNextRandom();
+    virtual std::pair<int, KUKADU_SHARED_PTR<Clip> > jumpNextRandom();
 
-    static std::shared_ptr<std::vector<int>> getIdVectorFromString(std::string str);
-    static bool compareIdVecs(const std::shared_ptr<std::vector<int> > vec1, const std::shared_ptr<std::vector<int> > vec2);
+    static KUKADU_SHARED_PTR<std::vector<int> > getIdVectorFromString(std::string str);
+    static bool compareIdVecs(const KUKADU_SHARED_PTR<std::vector<int> > vec1, const KUKADU_SHARED_PTR<std::vector<int> > vec2);
 
     void printSubWeights();
     void setPreviousRank();
@@ -70,21 +68,22 @@ public:
     void removeAllSubClips();
     void initRandomGenerator();
     void setImmunity(int immunity);
-    void addParent(std::shared_ptr<Clip> par);
-    void removeSubClip(std::shared_ptr<Clip> clip);
-    void removeParentClip(std::shared_ptr<Clip> c);
+    void addParent(KUKADU_SHARED_PTR<Clip> par);
     void addHAndInitialize(int idx, int addWeight);
     void updateWeights(double reward, double gamma);
-    void addChildUpwards(std::shared_ptr<Clip> sub);
-    void addParentDownwards(std::shared_ptr<Clip> par);
-    void removeSubClipWoRand(std::shared_ptr<Clip> clip);
-    void addSubClip(std::shared_ptr<Clip> sub, int weight);
-    void setClipDimensionValues(std::shared_ptr<std::vector<int> > vals);
-    void setChildren(std::shared_ptr<std::vector<std::shared_ptr<Clip>>> children);
-    void setChildren(std::shared_ptr<std::vector<std::shared_ptr<Clip>>> children, std::vector<double> weights);
+    void removeSubClip(KUKADU_SHARED_PTR<Clip> clip);
+    void removeParentClip(KUKADU_SHARED_PTR<Clip> c);
+    void addChildUpwards(KUKADU_SHARED_PTR<Clip> sub);
+    void addParentDownwards(KUKADU_SHARED_PTR<Clip> par);
+    void removeSubClipWoRand(KUKADU_SHARED_PTR<Clip> clip);
+    void addSubClip(KUKADU_SHARED_PTR<Clip> sub, int weight);
+    void setClipDimensionValues(KUKADU_SHARED_PTR<std::vector<int> > vals);
+    void setChildren(KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > children);
+    void setChildren(KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > children, std::vector<double> weights);
 
     bool isImmune();
-    virtual bool isCompatibleSubclip(std::shared_ptr<Clip> c);
+
+    virtual bool isCompatibleSubclip(KUKADU_SHARED_PTR<Clip> c);
 
     int getLevel();
     int getPreviousRank();
@@ -95,16 +94,17 @@ public:
 
     double getWeightByIdx(int idx);
     double computeSubEntropy() const;
+
     virtual double computeRank() const;
 
     std::string getIdVecString() const;
+
     virtual std::string toString() const;
 
-    std::shared_ptr<Clip> getSubClipByIdx(int idx);
-    std::shared_ptr<Clip> compareClip(std::shared_ptr<Clip> c);
-
-    std::shared_ptr<std::vector<int>> getClipDimensions() const;
-    std::shared_ptr<std::set<std::shared_ptr<Clip>>> getParents();
+    KUKADU_SHARED_PTR<Clip> getSubClipByIdx(int idx);
+    KUKADU_SHARED_PTR<std::vector<int> > getClipDimensions() const;
+    KUKADU_SHARED_PTR<Clip> compareClip(KUKADU_SHARED_PTR<Clip> c);
+    KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip> > > getParents();
 
     friend bool operator< (const Clip &o1, const Clip &o2);
     friend bool operator== (const Clip &o1, const Clip &o2);
@@ -114,4 +114,4 @@ public:
 
 };
 
-#endif // CLIP_H
+#endif

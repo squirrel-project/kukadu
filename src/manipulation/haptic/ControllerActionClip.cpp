@@ -2,8 +2,8 @@
 
 using namespace std;
 
-ControllerActionClip::ControllerActionClip(int actionId, std::shared_ptr<Controller> actionController,
-                      std::shared_ptr<std::mt19937> generator) : ActionClip(actionId, 1, actionController->getCaption(), generator) {
+ControllerActionClip::ControllerActionClip(int actionId, KUKADU_SHARED_PTR<Controller> actionController,
+                      boost::shared_ptr<kukadu_mersenne_twister> generator) : ActionClip(actionId, 1, actionController->getCaption(), generator) {
     this->actionController = actionController;
 }
 

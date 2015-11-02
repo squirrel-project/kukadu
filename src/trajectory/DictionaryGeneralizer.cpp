@@ -3,12 +3,12 @@
 using namespace std;
 using namespace arma;
 
-DictionaryGeneralizer::DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, std::string dictionaryPath,
+DictionaryGeneralizer::DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, std::string dictionaryPath,
                         double az, double bz, double stepSize,
                         double tolAbsErr, double tolRelErr, double ac, arma::vec trajMetricWeights,
                         double maxRelativeToMeanDistance, double as, double alpham) {
 
-    dictTraj = std::shared_ptr<LinCombDmp>(new LinCombDmp(initQueryPoint.n_elem, dictionaryPath, az, bz, trajMetricWeights, timeCenters));
+    dictTraj = KUKADU_SHARED_PTR<LinCombDmp>(new LinCombDmp(initQueryPoint.n_elem, dictionaryPath, az, bz, trajMetricWeights, timeCenters));
 
     this->simulationQueue = simulationQueue;
     this->executionQueue = executionQueue;
@@ -33,10 +33,10 @@ void DictionaryGeneralizer::setAs(double as) {
     this->as = as;
 }
 
-DictionaryGeneralizer::DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, std::string dictionaryPath, double az, double bz,
+DictionaryGeneralizer::DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, std::string dictionaryPath, double az, double bz,
                   double stepSize, double tolAbsErr, double tolRelErr, double ac, double as, arma::mat metric, double maxRelativeToMeanDistance, double alpham) {
 
-    dictTraj = std::shared_ptr<LinCombDmp>(new LinCombDmp(dictionaryPath, az, bz, metric, timeCenters));
+    dictTraj = KUKADU_SHARED_PTR<LinCombDmp>(new LinCombDmp(dictionaryPath, az, bz, metric, timeCenters));
     this->simulationQueue = simulationQueue;
     this->executionQueue = executionQueue;
 	this->stepSize = stepSize;
@@ -89,19 +89,19 @@ int DictionaryGeneralizer::getDegOfFreedom() {
 	return dictTraj->getDegreesOfFreedom();
 }
 
-std::shared_ptr<ControllerResult> DictionaryGeneralizer::simulateTrajectory() {
+KUKADU_SHARED_PTR<ControllerResult> DictionaryGeneralizer::simulateTrajectory() {
     return executeGen(currentQuery, dictTraj->getTmax(), ac, as, 1);
 }
 
 // TODO: implement execute trajectory
-std::shared_ptr<ControllerResult> DictionaryGeneralizer::executeTrajectory() {
+KUKADU_SHARED_PTR<ControllerResult> DictionaryGeneralizer::executeTrajectory() {
     return executeGen(currentQuery, dictTraj->getTmax(), ac, as, 0);
 }
 
-void DictionaryGeneralizer::setTrajectory(std::shared_ptr<Trajectory> traj) {
+void DictionaryGeneralizer::setTrajectory(KUKADU_SHARED_PTR<Trajectory> traj) {
 
-    dictTraj = std::dynamic_pointer_cast<LinCombDmp>(dictTraj->copy());
-    std::shared_ptr<LinCombDmp> castedTraj = std::dynamic_pointer_cast<LinCombDmp>(traj);
+    dictTraj = KUKADU_DYNAMIC_POINTER_CAST<LinCombDmp>(dictTraj->copy());
+    KUKADU_SHARED_PTR<LinCombDmp> castedTraj = KUKADU_DYNAMIC_POINTER_CAST<LinCombDmp>(traj);
     vector<Mahalanobis> trajMetric = castedTraj->getMetric();
     dictTraj->setMetric(trajMetric);
 
@@ -145,9 +145,6 @@ arma::vec DictionaryGeneralizer::computeNewCoefficients(Mahalanobis metric, int 
         distanceCoeffs(i) = currCoeff;
 
     }
-
-    // normalize distances TODO: improve this
-//    distanceCoeffs = distanceCoeffs / distanceCoeffs.max();
 
     // compute average distance
     double avgDist = 0.0;
@@ -209,8 +206,7 @@ arma::vec DictionaryGeneralizer::computeExtendedQuery(double time, int correspon
 
 }
 
-// TODO: find out why metric can produce negative distances after reinforcement learning
-std::shared_ptr<ControllerResult> DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, double ac, double as, int simulate) {
+KUKADU_SHARED_PTR<ControllerResult> DictionaryGeneralizer::executeGen(arma::vec query, double tEnd, double ac, double as, int simulate) {
 	
     double tStart = 0.0;
     int stepCount = (tEnd - tStart) / stepSize;
@@ -224,7 +220,7 @@ std::shared_ptr<ControllerResult> DictionaryGeneralizer::executeGen(arma::vec qu
     int centersCount = timeCenters.n_elem;
     int querySize = query.n_elem;
 
-    vector<std::shared_ptr<DMPExecutor>> execs;
+    vector<KUKADU_SHARED_PTR<DMPExecutor> > execs;
 	currentQuery = query;
 	newQpSwitch = 1;
 
@@ -244,7 +240,7 @@ std::shared_ptr<ControllerResult> DictionaryGeneralizer::executeGen(arma::vec qu
 	for(int i = 0; i < points; ++i) {
 
         QueryPoint currentQp = dictTraj->getQueryPoints().at(i);
-        std::shared_ptr<DMPExecutor> currentExec = std::shared_ptr<DMPExecutor>(new DMPExecutor(currentQp.getDmp(), simulationQueue));
+        KUKADU_SHARED_PTR<DMPExecutor> currentExec = KUKADU_SHARED_PTR<DMPExecutor>(new DMPExecutor(currentQp.getDmp(), simulationQueue));
 		currentExec->initializeIntegration(0, stepSize, tolAbsErr, tolRelErr);
 
 		// if real execution use external error determination
@@ -347,7 +343,7 @@ std::shared_ptr<ControllerResult> DictionaryGeneralizer::executeGen(arma::vec qu
 
         }
 
-        std::shared_ptr<ControlQueue> queue = NULL;
+        KUKADU_SHARED_PTR<ControlQueue> queue;
         if(simulate)
             queue = simulationQueue;
         else
@@ -385,11 +381,11 @@ std::shared_ptr<ControllerResult> DictionaryGeneralizer::executeGen(arma::vec qu
 
 	currentTime = 0.0;
 
-    return std::shared_ptr<ControllerResult>(new ControllerResult(stdToArmadilloVec(retT), retY));
+    return KUKADU_SHARED_PTR<ControllerResult>(new ControllerResult(stdToArmadilloVec(retT), retY));
 
 }
 
-std::shared_ptr<Trajectory> DictionaryGeneralizer::getTrajectory() {
+KUKADU_SHARED_PTR<Trajectory> DictionaryGeneralizer::getTrajectory() {
     return dictTraj;
 }
 

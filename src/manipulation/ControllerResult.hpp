@@ -4,7 +4,6 @@
 #include <cstdio>
 #include <iostream>
 #include <fstream>
-#include <thread>
 #include <string>
 #include <vector>
 #include <wordexp.h>

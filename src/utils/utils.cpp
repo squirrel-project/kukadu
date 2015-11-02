@@ -1,13 +1,20 @@
-#include "utils.h"
-#include "../trajectory/DMPExecutor.h"
 
+#include <istream>
+#include <fstream>
+#include <iostream>
+#include <iterator>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <istream>
-#include <iostream>
-#include <fstream>
-#include <iterator>
 #include <boost/filesystem.hpp>
+
+#include <pcl/point_cloud.h>
+#include <pcl/conversions.h>
+#include <pcl/common/common.h>
+#include <pcl_conversions/pcl_conversions.h>
+
+#include "../utils/utils.h"
+#include "../types/KukaduTypes.h"
+#include "../trajectory/DMPExecutor.h"
 
 using namespace std;
 using namespace arma;
@@ -40,53 +47,6 @@ arma::vec createArmaVecFromDoubleArray(double* data, int n) {
     for(int i = 0; i < n; ++i)
         ret(i) = data[i];
     return ret;
-}
-
-std::shared_ptr<ControllerResult> executeDemo(shared_ptr<ControlQueue> movementQu, string file, double az, double bz, int plotResults) {
-
-    Gnuplot* g1 = NULL;
-
-    vector<double> tmpmys{0, 1, 2, 3, 4, 4.1, 4.3, 4.5};
-    //vector<double> tmpmys;
-    vector<double> tmpsigmas{0.2, 0.8};
-
-    // reading in file
-    mat joints = readMovements(file);
-    tmpmys = constructDmpMys(joints);
-
-    double tau = 0.8;
-    double ax = -log((float)0.1) / joints(joints.n_rows - 1, 0) / tau;
-
-    vector<DMPBase> baseDef = buildDMPBase(tmpmys, tmpsigmas, ax, tau);
-
-    JointDMPLearner dmpLearner(baseDef, tau, az, bz, ax, joints);
-    std::shared_ptr<Dmp> learnedDmps = dmpLearner.fitTrajectories();
-
-    movementQu->moveJoints(learnedDmps->getY0());
-    DMPExecutor dmpexec(learnedDmps, movementQu);
-    std::shared_ptr<ControllerResult> dmpResult = dmpexec.simulateTrajectory();
-
-    int plotNum = learnedDmps->getDegreesOfFreedom();
-
-    if(plotResults) {
-
-        for(int plotTraj = 0; plotTraj < plotNum; ++plotTraj) {
-
-            ostringstream convert;   // stream used for the conversion
-            convert << plotTraj;
-
-            string title = string("fitted sensor data (joint") + convert.str() + string(")");
-            g1 = new Gnuplot(title);
-            g1->set_style("lines").plot_xy(armadilloToStdVec(learnedDmps->getSupervisedTs()), armadilloToStdVec(learnedDmps->getSampleYByIndex(plotTraj)), "sample y");
-            g1->set_style("lines").plot_xy(armadilloToStdVec(dmpResult->getTimes()), armadilloToStdVec(dmpResult->getYs()[plotTraj]), "dmp y");
-            g1->showonscreen();
-
-        }
-
-    }
-
-    return dmpResult;
-
 }
 
 /* reimplements the getch() function available on windows
@@ -383,9 +343,10 @@ gsl_matrix* invertSquareMatrix(gsl_matrix* mat) {
 mat readMovements(string file) {
 
     ifstream inFile;
-    inFile.open(file, ios::in | ios::app | ios::binary);
+    inFile.open(file.c_str(), ios::in | ios::app | ios::binary);
     mat retMat = readMovements(inFile);
     inFile.close();
+
     return retMat;
 
 }
@@ -465,7 +426,7 @@ std::pair<std::vector<std::string>, arma::mat> readSensorStorage(std::string fil
     string token;
     string line;
     ifstream inFile;
-    inFile.open(file, ios::in | ios::app | ios::binary);
+    inFile.open(file.c_str(), ios::in | ios::app | ios::binary);
     getline(inFile, line);
 
     KukaduTokenizer tok(line);
@@ -487,9 +448,9 @@ vec readQuery(string file) {
     double dn = 0.0;
     int i = 0;
     ifstream inFile;
-    inFile.open (file, ios::in | ios::app | ios::binary);
+    inFile.open(file.c_str(), ios::in | ios::app | ios::binary);
     if (inFile.is_open()) {
-        cout << string("(utils) query file ") + file + " opened\n";
+        cout << string("(utils) query file ") + file + " opened" << endl;
         if(inFile.good()) {
             getline(inFile, line);
             KukaduTokenizer tok(line);
@@ -854,7 +815,7 @@ void exit_handler(int s) {
 }
 
 
-geometry_msgs::Pose vectorarma2pose(arma::vec* vectorpose){
+geometry_msgs::Pose vectorarma2pose(arma::vec* vectorpose) {
 
     geometry_msgs:: Pose posepose;
     posepose.position.x = vectorpose->at(0);
@@ -869,7 +830,7 @@ geometry_msgs::Pose vectorarma2pose(arma::vec* vectorpose){
 
 }
 
-arma::vec pose2vectorarma(geometry_msgs::Pose posepose){
+arma::vec pose2vectorarma(geometry_msgs::Pose posepose) {
 
     vec armapose(7);
     armapose(0) = posepose.position.x;
@@ -882,9 +843,6 @@ arma::vec pose2vectorarma(geometry_msgs::Pose posepose){
     return armapose;
 
 }
-
-
-
 
 arma::vec log(tf::Quaternion quat) {
 
@@ -908,28 +866,6 @@ arma::vec log(tf::Quaternion quat) {
         logQuat(2) = 0.0;
 
     }
-//    if (modU == 0) {
-//        logQuat(0) = 0.0;
-//        logQuat(1) = 0.0;
-//        logQuat(2) = 0.0;
-//    }
-//    else if (quat.w() == 0.0 ){
-
-//        logQuat(0) = M_PI / 2* quat.x() / modU;
-//        logQuat(1) = M_PI / 2* quat.y() / modU;
-//        logQuat(2) = M_PI / 2* quat.z() / modU;
-//    }
-
-//    else  {
-
-//        logQuat(0) = atan(modU / quat.w()) * quat.x() / modU;
-//        logQuat(1) = atan(modU / quat.w()) * quat.y() / modU;
-//        logQuat(2) = atan(modU / quat.w()) * quat.z() / modU;
-
-//    }
-
-
-    //cout<<"logQuat"<< logQuat;
 
     return logQuat;
 
@@ -957,13 +893,12 @@ tf::Quaternion exp(arma::vec logQuat) {
 
     }
 
-
     return tf::Quaternion(x, y, z, w);
 
 }
 
 
-double distQuat(tf::Quaternion q1, tf::Quaternion q2){
+double distQuat(tf::Quaternion q1, tf::Quaternion q2) {
 
     double d;
     const tf::Quaternion q = q1 * q2.inverse();
@@ -980,10 +915,10 @@ double distQuat(tf::Quaternion q1, tf::Quaternion q2){
     return d;
 }
 
-tf::Transform Matrix4f2Transform(Eigen::Matrix4f Tm){
+tf::Transform Matrix4f2Transform(Eigen::Matrix4f Tm) {
+
     tf::Vector3 origin;
     origin.setValue(static_cast<double>(Tm(0,3)),static_cast<double>(Tm(1,3)),static_cast<double>(Tm(2,3)));
-
 
     tf::Matrix3x3 tf3d;
     tf3d.setValue(static_cast<double>(Tm(0,0)), static_cast<double>(Tm(0,1)), static_cast<double>(Tm(0,2)),
@@ -1001,7 +936,7 @@ tf::Transform Matrix4f2Transform(Eigen::Matrix4f Tm){
 
 }
 
-tf::Quaternion axisAngle2Quat(const double xx, const double &yy, const double &zz, const double &a){
+tf::Quaternion axisAngle2Quat(const double xx, const double &yy, const double &zz, const double &a) {
 
     double result = sin( a / 2.0 );
 
@@ -1012,13 +947,15 @@ tf::Quaternion axisAngle2Quat(const double xx, const double &yy, const double &z
     double w = cos( a / 2.0 );
 
     return tf::Quaternion(x, y, z, w).normalize();
+
 }
 
-double distancePoint2Line(double xp,double yp,double x1,double y1,double x2,double y2){
-return abs((y2 - y1) * xp - (x2 -x1) * yp + x2 * y1 - x1 * y2) / sqrt((y2-y1) * (y2-y1) + (x2 -x1) * (x2 -x1));
+double distancePoint2Line(double xp,double yp,double x1,double y1,double x2,double y2) {
+    return abs((y2 - y1) * xp - (x2 -x1) * yp + x2 * y1 - x1 * y2) / sqrt((y2-y1) * (y2-y1) + (x2 -x1) * (x2 -x1));
 }
 
-arma::vec pointOnLine2Point(double xp,double yp,double x1,double y1,double x2,double y2){
+arma::vec pointOnLine2Point(double xp,double yp,double x1,double y1,double x2,double y2) {
+
     double a = x2 - x1;
     double b = y1 - y2;
     double c = -y1 * a - x1 * b;
@@ -1030,6 +967,7 @@ arma::vec pointOnLine2Point(double xp,double yp,double x1,double y1,double x2,do
     p(1) = y * 2;
 
     return p;
+
 }
 
 bool fileExists(const std::string filePath) {
@@ -1045,16 +983,17 @@ bool isDirectory(const std::string dirPath) {
 }
 
 void copyFile(const std::string source, const std::string destination) {
-    fstream f(source, fstream::in|fstream::binary);
+
+    fstream f(source.c_str(), fstream::in|fstream::binary);
     f << noskipws;
     istream_iterator<unsigned char> begin(f);
     istream_iterator<unsigned char> end;
 
-    fstream f2(destination,
-    fstream::out|fstream::trunc|fstream::binary);
+    fstream f2(destination.c_str(), fstream::out | fstream::trunc | fstream::binary);
     ostream_iterator<char> begin2(f2);
 
     copy(begin, end, begin2);
+
 }
 
 void deleteDirectory(std::string path) {
@@ -1064,12 +1003,18 @@ void deleteDirectory(std::string path) {
     }
 }
 
+pcl::PointCloud<pcl::PointXYZ> sensorMsgsPcToPclPc(sensor_msgs::PointCloud2 pc) {
+    pcl::PCLPointCloud2 intermediate;
+    pcl::PointCloud<pcl::PointXYZ> output;
+    pcl_conversions::toPCL(pc, intermediate);
+    pcl::fromPCLPointCloud2(intermediate, output);
+    return output;
+}
 
-
-
-
-
-
-
-
-
+sensor_msgs::PointCloud2 pclPcToSensorMsgsPc(pcl::PointCloud<pcl::PointXYZ> pc) {
+    sensor_msgs::PointCloud2 output;
+    pcl::PCLPointCloud2 intermediate;
+    pcl::toPCLPointCloud2(pc, intermediate);
+    pcl_conversions::fromPCL(intermediate, output);
+    return output;
+}

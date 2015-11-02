@@ -1,9 +1,10 @@
-#ifndef ACTIONCLIP_H
-#define ACTIONCLIP_H
+#ifndef KUKADU_ACTIONCLIP_H
+#define KUKADU_ACTIONCLIP_H
 
 #include <string>
-#include <random>
+
 #include "clip.h"
+#include "../../../types/KukaduTypes.h"
 
 class ActionClip : public Clip {
 
@@ -14,15 +15,15 @@ private:
 
 public:
 
-    ActionClip(int actionId, int perceptDimensionality, std::string label, std::shared_ptr<std::mt19937> generator);
+    ActionClip(int actionId, int perceptDimensionality, std::string label, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator);
 
     int getActionId();
 
     std::string getLabel();
     std::string toString() const;
 
-    std::pair<int, std::shared_ptr<Clip>> jumpNextRandom();
+    std::pair<int, KUKADU_SHARED_PTR<Clip> > jumpNextRandom();
 
 };
 
-#endif // ACTIONCLIP_H
+#endif

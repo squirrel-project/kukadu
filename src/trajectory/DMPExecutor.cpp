@@ -7,26 +7,26 @@ using namespace std;
 using namespace arma;
 
 
-DMPExecutor::DMPExecutor(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQueue> execQueue) {
+DMPExecutor::DMPExecutor(KUKADU_SHARED_PTR<Dmp> traj, KUKADU_SHARED_PTR<ControlQueue> execQueue) {
 
     construct(traj, execQueue, 1);
 
 }
 
-DMPExecutor::DMPExecutor(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQueue> execQueue, int suppressMessages) {
+DMPExecutor::DMPExecutor(KUKADU_SHARED_PTR<Dmp> traj, KUKADU_SHARED_PTR<ControlQueue> execQueue, int suppressMessages) {
 
     construct(traj, execQueue, suppressMessages);
 
 }
 
-DMPExecutor::DMPExecutor(std::shared_ptr<Trajectory> traj, std::shared_ptr<ControlQueue> execQueue) {
+DMPExecutor::DMPExecutor(KUKADU_SHARED_PTR<Trajectory> traj, KUKADU_SHARED_PTR<ControlQueue> execQueue) {
 
-    shared_ptr<Dmp> dmp = dynamic_pointer_cast<Dmp>(traj);
+    KUKADU_SHARED_PTR<Dmp> dmp = KUKADU_DYNAMIC_POINTER_CAST<Dmp>(traj);
     construct(dmp, execQueue, suppressMessages);
 
 }
 
-void DMPExecutor::construct(std::shared_ptr<Dmp> traj, std::shared_ptr<ControlQueue> execQueue, int suppressMessages) {
+void DMPExecutor::construct(KUKADU_SHARED_PTR<Dmp> traj, KUKADU_SHARED_PTR<ControlQueue> execQueue, int suppressMessages) {
 
     // max force safety is switched of
     doRollback = true;
@@ -102,9 +102,9 @@ void DMPExecutor::runCheckMaxForces() {
 
 }
 
-void DMPExecutor::setTrajectory(std::shared_ptr<Trajectory> traj) {
+void DMPExecutor::setTrajectory(KUKADU_SHARED_PTR<Trajectory> traj) {
 
-    std::shared_ptr<Dmp> dmp = dynamic_pointer_cast<Dmp>(traj);
+    KUKADU_SHARED_PTR<Dmp> dmp = KUKADU_DYNAMIC_POINTER_CAST<Dmp>(traj);
     construct(dmp, controlQueue, suppressMessages);
 
     vec_t.clear();
@@ -128,7 +128,7 @@ double DMPExecutor::getExternalError() {
     return externalError;
 }
 
-double DMPExecutor::addTerm(double t, const double* currentDesiredYs, int jointNumber, std::shared_ptr<ControlQueue> queue) {
+double DMPExecutor::addTerm(double t, const double* currentDesiredYs, int jointNumber, KUKADU_SHARED_PTR<ControlQueue> queue) {
     return 0.0;
 }
 
@@ -279,7 +279,7 @@ int DMPExecutor::jac(double t, const double* y, double *dfdy, double* dfdt, void
 
 }
 
-std::shared_ptr<ControllerResult> DMPExecutor::executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
+KUKADU_SHARED_PTR<ControllerResult> DMPExecutor::executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
 
     this->ac = ac;
     this->simulate = EXECUTE_ROBOT;
@@ -287,16 +287,10 @@ std::shared_ptr<ControllerResult> DMPExecutor::executeTrajectory(double ac, doub
 
 }
 
-std::shared_ptr<ControllerResult> DMPExecutor::simulateTrajectory(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
+KUKADU_SHARED_PTR<ControllerResult> DMPExecutor::simulateTrajectory(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
 
     this->simulate = SIMULATE_DMP;
-    auto begin = std::chrono::high_resolution_clock::now();
-
-    std::shared_ptr<ControllerResult> ret = this->executeDMP(tStart, tEnd, stepSize, tolAbsErr, tolRelErr);
-
-    auto end = std::chrono::high_resolution_clock::now();
-    std::cout << "(DMPExecutor) the simulation took " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() << " ns" << std::endl;
-
+    KUKADU_SHARED_PTR<ControllerResult> ret = this->executeDMP(tStart, tEnd, stepSize, tolAbsErr, tolRelErr);
     return ret;
 
 }
@@ -310,14 +304,14 @@ void DMPExecutor::enableMaxForceMode(double maxAbsForce) {
     maxAllowedForce = maxAbsForce;
 }
 
-std::shared_ptr<ControllerResult> DMPExecutor::simulateTrajectory() {
+KUKADU_SHARED_PTR<ControllerResult> DMPExecutor::simulateTrajectory() {
 
     this->simulate = SIMULATE_DMP;
     return this->executeDMP(0, dmp->getTmax(), dmp->getStepSize(), dmp->getTolAbsErr(), dmp->getTolRelErr());
 
 }
 
-std::shared_ptr<ControllerResult> DMPExecutor::executeTrajectory() {
+KUKADU_SHARED_PTR<ControllerResult> DMPExecutor::executeTrajectory() {
 
     this->simulate = EXECUTE_ROBOT;
     return this->executeDMP(0, dmp->getTmax(), dmp->getStepSize(), dmp->getTolAbsErr(), dmp->getTolRelErr());
@@ -352,8 +346,9 @@ void DMPExecutor::initializeIntegration(double tStart, double stepSize, double t
 
     ys[odeSystemSize - 1] = 1;
 
-    sys = {static_func, NULL, odeSystemSize, this};
-    d = std::shared_ptr<gsl_odeiv2_driver>(gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rkf45, stepSize, tolAbsErr, tolRelErr), gsl_delete_expression());
+    gsl_odeiv2_system tmp_sys = {static_func, NULL, odeSystemSize, this};
+    sys = tmp_sys;
+    d = KUKADU_SHARED_PTR<gsl_odeiv2_driver>(gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rkf45, stepSize, tolAbsErr, tolRelErr), gsl_delete_expression());
 
     this->stepSize = stepSize;
 
@@ -370,7 +365,7 @@ void DMPExecutor::initializeIntegrationQuat() {
 
     if(isCartesian) {
 
-        shared_ptr<CartesianDMP> cartDmp = dynamic_pointer_cast<CartesianDMP>(dmp);
+        KUKADU_SHARED_PTR<CartesianDMP> cartDmp = KUKADU_DYNAMIC_POINTER_CAST<CartesianDMP>(dmp);
         double firstDt = cartDmp->getDeltaTByIdx(0);
         vec eta0 = cartDmp->getEta0();
         vec eta1 = cartDmp->getEtaByIdx(1);
@@ -446,18 +441,18 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
 
 void DMPExecutor::destroyIntegration() {
 
-    d = std::shared_ptr<gsl_odeiv2_driver>(nullptr);
+    d = KUKADU_SHARED_PTR<gsl_odeiv2_driver>();
 
 }
 
-std::shared_ptr<ControllerResult> DMPExecutor::executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
+KUKADU_SHARED_PTR<ControllerResult> DMPExecutor::executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
 
     // two variables are really required here, because executionRunning is changed by other functions that really need to know
     // whether the exeuction was stopped (this is checked by executionStoppingDone)
     executionRunning = true;
     executionStoppingDone = false;
     if(!isCartesian) {
-        maxFrcThread = shared_ptr<thread>(new thread(&DMPExecutor::runCheckMaxForces, this));
+        maxFrcThread = KUKADU_SHARED_PTR<kukadu_thread>(new kukadu_thread(&DMPExecutor::runCheckMaxForces, this));
         controlQueue->startJointRollBackMode(3.0);
     }
 
@@ -529,7 +524,7 @@ std::shared_ptr<ControllerResult> DMPExecutor::executeDMP(double tStart, double 
 
     maxFrcThread->join();
 
-    return std::shared_ptr<ControllerResult>(new ControllerResult(stdToArmadilloVec(retT), retY));
+    return KUKADU_SHARED_PTR<ControllerResult>(new ControllerResult(stdToArmadilloVec(retT), retY));
 
 }
 

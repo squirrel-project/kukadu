@@ -1,18 +1,19 @@
-#ifndef DICTIONARYTRAJECTORY
-#define DICTIONARYTRAJECTORY
+#ifndef KUKADU_DICTIONARYTRAJECTORY_H
+#define KUKADU_DICTIONARYTRAJECTORY_H
 
-#include "DMPBase.h"
-#include "QueryPoint.h"
-#include "Trajectory.h"
-#include "../trajectory/JointDMPLearner.h"
-#include "../utils/utils.h"
-#include "../utils/types.h"
-#include "../utils/conversion_utils.h"
 #include <vector>
 #include <string>
-#include <armadillo>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <armadillo>
+
+#include "../utils/utils.h"
+#include "../utils/types.h"
+#include "../types/DMPBase.h"
+#include "../types/QueryPoint.h"
+#include "../types/Trajectory.h"
+#include "../utils/conversion_utils.h"
+#include "../trajectory/JointDMPLearner.h"
 
 class DictionaryTrajectory : public Trajectory {
 	
@@ -35,24 +36,24 @@ private:
 	
 public:
 	
+    DictionaryTrajectory();
+    DictionaryTrajectory(const DictionaryTrajectory& copy);
     DictionaryTrajectory(std::string baseFolder, double az, double bz);
-	DictionaryTrajectory(const DictionaryTrajectory& copy);
-	DictionaryTrajectory();
+
+    void setTmax(double tmax);
+    void setCoefficients(std::vector<arma::vec> coeffs);
 	
 	int getDegreesOfFreedom() const;
-	arma::vec getStartingPos();
+    int operator==(DictionaryTrajectory const& comp) const;
 	
     double getTmax();
-    void setTmax(double tmax);
+
+    arma::vec getStartingPos();
 	
+    std::vector<arma::vec> getCoefficients();
 	std::vector<QueryPoint> getQueryPoints();
-	
-	std::vector<arma::vec> getCoefficients();
-	void setCoefficients(std::vector<arma::vec> coeffs);
-	
-	int operator==(DictionaryTrajectory const& comp) const;
-	
-    std::shared_ptr<Trajectory> copy();
+
+    KUKADU_SHARED_PTR<Trajectory> copy();
 	
 };
 

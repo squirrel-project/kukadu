@@ -1,10 +1,12 @@
 #include "ControlQueue.h"
 
+#include "../types/KukaduTypes.h"
+
 using namespace std;
 using namespace arma;
 
-std::shared_ptr<std::thread> ControlQueue::startQueueThread() {
-    thr = std::shared_ptr<std::thread>(new std::thread(&ControlQueue::run, this));
+KUKADU_SHARED_PTR<kukadu_thread> ControlQueue::startQueueThread() {
+    thr = KUKADU_SHARED_PTR<kukadu_thread>(new kukadu_thread(&ControlQueue::run, this));
     while(!this->isInitialized());
     return thr;
 }

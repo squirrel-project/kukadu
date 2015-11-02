@@ -1,19 +1,19 @@
-#ifndef CARTESIANDMPLEARNER_H
-#define CARTESIANDMPLEARNER_H
+#ifndef KUKADU_CARTESIANDMPLEARNER_H
+#define KUKADU_CARTESIANDMPLEARNER_H
 
-
-#include "generaldmplearner.h"
-#include "DMPTrajectoryGenerator.h"
-#include "../utils/utils.h"
-#include "../learning/GeneralFitter.h"
-#include "../utils/types.h"
-#include "../types/jointdmp.h"
-#include "../types/DMPBase.h"
-
-#include <vector>
 #include <queue>
+#include <vector>
 #include <cstdlib>
 #include <armadillo>
+
+#include "../utils/types.h"
+#include "../utils/utils.h"
+#include "../types/DMPBase.h"
+#include "../types/jointdmp.h"
+#include "../types/KukaduTypes.h"
+#include "../learning/GeneralFitter.h"
+#include "../trajectory/generaldmplearner.h"
+#include "../trajectory/DMPTrajectoryGenerator.h"
 
 /** \brief The TrajectoryDMPLearner encapsulates the dmp learning process
  *
@@ -21,15 +21,14 @@
  * that enables the programmer to reduce code complexity.
  * \ingroup ControlPolicyFramework
  */
-
 class CartesianDMPLearner : public GeneralDmpLearner {
 
 protected:
 
-    std::shared_ptr<Dmp> createDmpInstance(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<arma::vec> fitYs, std::vector<arma::vec> dmpCoeffs, std::vector<DMPBase> dmpBase, std::vector<arma::mat> designMatrices,
+    KUKADU_SHARED_PTR<Dmp> createDmpInstance(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<arma::vec> fitYs, std::vector<arma::vec> dmpCoeffs, std::vector<DMPBase> dmpBase, std::vector<arma::mat> designMatrices,
                                            double tau, double az, double bz, double ax);
 
-    arma::mat computeFitY(arma::vec& time, arma::mat& y, arma::mat& dy, arma::mat& ddy, arma::vec& vec_g) override;
+    arma::mat computeFitY(arma::vec& time, arma::mat& y, arma::mat& dy, arma::mat& ddy, arma::vec& vec_g);
 
 public:
 

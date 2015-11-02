@@ -11,13 +11,13 @@
 using namespace std;
 using namespace arma;
 
-ComplexController::ComplexController(std::string caption, std::vector<std::shared_ptr<SensingController>> sensingControllers,
-                                     std::vector<std::shared_ptr<Controller>> preparationControllers,
-                                     std::string corrPSPath, std::string rewardHistoryPath, bool storeReward, double senseStretch, double boredom, std::shared_ptr<std::mt19937> generator, int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards)
+ComplexController::ComplexController(std::string caption, std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers,
+                                     std::vector<KUKADU_SHARED_PTR<Controller> > preparationControllers,
+                                     std::string corrPSPath, std::string rewardHistoryPath, bool storeReward, double senseStretch, double boredom, boost::shared_ptr<kukadu_mersenne_twister> generator, int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards)
     : Controller(caption), Reward(generator, collectPrevRewards) {
 
-    projSim = nullptr;
-    rewardHistoryStream = nullptr;
+    projSim.reset();
+    rewardHistoryStream.reset();
 
     this->gamma = gamma;
     this->gen = generator;
@@ -48,16 +48,16 @@ void ComplexController::initialize() {
     createSensingDatabase();
 
     int currentId = 0;
-    shared_ptr<vector<int>> clipDimVal = shared_ptr<vector<int>>(new vector<int>());
+    KUKADU_SHARED_PTR<vector<int> > clipDimVal = KUKADU_SHARED_PTR<vector<int> >(new vector<int>());
     clipDimVal->push_back(currentId);
-    root = shared_ptr<PerceptClip>(new PerceptClip(0, "root", generator, clipDimVal, INT_MAX));
+    root = KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(0, "root", generator, clipDimVal, INT_MAX));
 
     vector<double> prepWeights;
-    prepActions = shared_ptr<vector<shared_ptr<Clip>>>(new vector<shared_ptr<Clip>>());
-    prepActionsCasted = shared_ptr<vector<shared_ptr<ActionClip>>>(new vector<shared_ptr<ActionClip>>());
+    prepActions = KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<Clip> > >(new vector<KUKADU_SHARED_PTR<Clip> >());
+    prepActionsCasted = KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<ActionClip> > >(new vector<KUKADU_SHARED_PTR<ActionClip> >());
     for(int i = 0; i < preparationControllers.size(); ++i) {
 
-        shared_ptr<ActionClip> prepActionClip = shared_ptr<ActionClip>(new ControllerActionClip(i, preparationControllers.at(i), generator));
+        KUKADU_SHARED_PTR<ActionClip> prepActionClip = KUKADU_SHARED_PTR<ActionClip>(new ControllerActionClip(i, preparationControllers.at(i), generator));
         prepActions->push_back(prepActionClip);
         prepActionsCasted->push_back(prepActionClip);
         prepWeights.push_back(stdPrepWeight);
@@ -67,18 +67,18 @@ void ComplexController::initialize() {
 
     for(int i = 0; i < sensingControllers.size(); ++i) {
 
-        shared_ptr<SensingController> sensCont = sensingControllers.at(i);
+        KUKADU_SHARED_PTR<SensingController> sensCont = sensingControllers.at(i);
 
-        clipDimVal = shared_ptr<vector<int>>(new vector<int>());
+        clipDimVal = KUKADU_SHARED_PTR<vector<int> >(new vector<int>());
         clipDimVal->push_back(currentId);
 
-        shared_ptr<Clip> nextSensClip = shared_ptr<Clip>(new IntermediateEventClip(sensCont, 1, generator, clipDimVal, INT_MAX));
+        KUKADU_SHARED_PTR<Clip> nextSensClip = KUKADU_SHARED_PTR<Clip>(new IntermediateEventClip(sensCont, 1, generator, clipDimVal, INT_MAX));
         ++currentId;
         for(int j = 0; j < sensCont->getSensingCatCount(); ++j, ++currentId) {
 
-            clipDimVal = shared_ptr<vector<int>>(new vector<int>());
+            clipDimVal = KUKADU_SHARED_PTR<vector<int> >(new vector<int>());
             clipDimVal->push_back(currentId);
-            shared_ptr<Clip> nextSubSensClip = shared_ptr<Clip>(new Clip(2, generator, clipDimVal, INT_MAX));
+            KUKADU_SHARED_PTR<Clip> nextSubSensClip = KUKADU_SHARED_PTR<Clip>(new Clip(2, generator, clipDimVal, INT_MAX));
             nextSubSensClip->setChildren(prepActions, prepWeights);
             nextSensClip->addSubClip(nextSubSensClip, stdPrepWeight);
 
@@ -98,21 +98,21 @@ void ComplexController::initialize() {
         if(!isShutUp)
             cout << "(ComplexController) loading existing PS" << endl;
 
-        projSim = shared_ptr<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, corrPSPath));
+        projSim = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, corrPSPath));
     } else {
 
-        shared_ptr<vector<shared_ptr<PerceptClip>>> rootVec = shared_ptr<vector<shared_ptr<PerceptClip>>>(new vector<shared_ptr<PerceptClip>>());
+        KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<PerceptClip> > > rootVec = KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<PerceptClip> > >(new vector<KUKADU_SHARED_PTR<PerceptClip> >());
         rootVec->push_back(root);
 
         // skill is used the first time; do initialization
-        projSim = shared_ptr<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, rootVec, gamma, PS_USE_ORIGINAL, false));
+        projSim = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, rootVec, gamma, PS_USE_ORIGINAL, false));
 
     }
 
     projSim->setBoredom(boredom);
 
     if(storeReward) {
-        rewardHistoryStream = std::shared_ptr<std::ofstream>(new std::ofstream());
+        rewardHistoryStream = KUKADU_SHARED_PTR<std::ofstream>(new std::ofstream());
         int overWrite = 0;
         if(fileExists(rewardHistoryPath)) {
             cout << "(ComplexController) should reward history file be overwritten? (0 = no / 1 = yes)" << endl;
@@ -123,7 +123,7 @@ void ComplexController::initialize() {
                 throw err;
             }
         }
-        rewardHistoryStream->open(rewardHistoryPath, ios::trunc);
+        rewardHistoryStream->open(rewardHistoryPath.c_str(), ios::trunc);
     }
 
 }
@@ -141,11 +141,14 @@ double ComplexController::getStdReward() {
 }
 
 void ComplexController::setSimulationModeInChain(bool simulationMode) {
-    for(shared_ptr<SensingController> sensCont : sensingControllers)
+    for(int i = 0; i < sensingControllers.size(); ++i) {
+        KUKADU_SHARED_PTR<SensingController> sensCont = sensingControllers.at(i);
         sensCont->setSimulationMode(simulationMode);
+    }
+
 }
 
-std::shared_ptr<ProjectiveSimulator> ComplexController::getProjectiveSimulator() {
+KUKADU_SHARED_PTR<ProjectiveSimulator> ComplexController::getProjectiveSimulator() {
     return projSim;
 }
 
@@ -170,28 +173,30 @@ int ComplexController::getDimensionality() {
 }
 
 // same percept must always have same id
-std::shared_ptr<PerceptClip> ComplexController::generateNextPerceptClip(int immunity) {
+KUKADU_SHARED_PTR<PerceptClip> ComplexController::generateNextPerceptClip(int immunity) {
     return root;
 }
 
-std::shared_ptr<std::vector<std::shared_ptr<ActionClip>>> ComplexController::generateActionClips() {
+KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > ComplexController::generateActionClips() {
     return prepActionsCasted;
 }
 
-std::shared_ptr<std::vector<std::shared_ptr<PerceptClip>>> ComplexController::generatePerceptClips() {
-    return std::shared_ptr<std::vector<std::shared_ptr<PerceptClip>>>(new std::vector<std::shared_ptr<PerceptClip>>({root}));
+KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > ComplexController::generatePerceptClips() {
+    vector<KUKADU_SHARED_PTR<PerceptClip> >* rootRet;
+    rootRet->push_back(root);
+    return KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > >(rootRet);
 }
 
-double ComplexController::computeRewardInternal(std::shared_ptr<PerceptClip> providedPercept, std::shared_ptr<ActionClip> takenAction) {
+double ComplexController::computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction) {
 
     int worked = 0;
     int executeIt = 0;
 
     double retReward = 0.0;
 
-    shared_ptr<vector<int>> intermed = projSim->getIntermediateHopIdx();
-    shared_ptr<IntermediateEventClip> sensClip = dynamic_pointer_cast<IntermediateEventClip>(providedPercept->getSubClipByIdx(intermed->at(1)));
-    shared_ptr<SensingController> sensCont = sensClip->getSensingController();
+    KUKADU_SHARED_PTR<vector<int> > intermed = projSim->getIntermediateHopIdx();
+    KUKADU_SHARED_PTR<IntermediateEventClip> sensClip = KUKADU_DYNAMIC_POINTER_CAST<IntermediateEventClip>(providedPercept->getSubClipByIdx(intermed->at(1)));
+    KUKADU_SHARED_PTR<SensingController> sensCont = sensClip->getSensingController();
 
     int predictedClassIdx = intermed->at(2);
     int takenActionIdx = intermed->at(3);
@@ -200,7 +205,7 @@ double ComplexController::computeRewardInternal(std::shared_ptr<PerceptClip> pro
 
         cout << "selected sensing action \"" << *sensClip << "\" resulted in predicted class " << intermed->at(2) << " and preparation action \"" << *takenAction << "\"" << endl;
 
-        shared_ptr<ControllerActionClip> castedAction = dynamic_pointer_cast<ControllerActionClip>(takenAction);
+        KUKADU_SHARED_PTR<ControllerActionClip> castedAction = KUKADU_DYNAMIC_POINTER_CAST<ControllerActionClip>(takenAction);
         castedAction->performAction();
 
         cout << "(ComplexController) do you want to execute complex action now? (0 = no / 1 = yes)" << endl;
@@ -235,11 +240,11 @@ double ComplexController::computeRewardInternal(std::shared_ptr<PerceptClip> pro
 
 }
 
-int ComplexController::getNextSimulatedGroundTruth(shared_ptr<SensingController> sensCont) {
+int ComplexController::getNextSimulatedGroundTruth(KUKADU_SHARED_PTR<SensingController> sensCont) {
     return sensCont->createRandomGroundTruthIdx();
 }
 
-std::shared_ptr<ControllerResult> ComplexController::performAction() {
+KUKADU_SHARED_PTR<ControllerResult> ComplexController::performAction() {
 
     ++currentIterationNum;
     projSim->performRandomWalk();
@@ -250,7 +255,7 @@ std::shared_ptr<ControllerResult> ComplexController::performAction() {
     if(wasBored)
         cout << "(ComplexController) got bored" << endl;
 
-    shared_ptr<ControllerResult> ret = shared_ptr<ControllerResult>(new ControllerResult(vec(), vector<vec>(), (reward > 0) ? true : false, wasBored));
+    KUKADU_SHARED_PTR<ControllerResult> ret = KUKADU_SHARED_PTR<ControllerResult>(new ControllerResult(vec(), vector<vec>(), (reward > 0) ? true : false, wasBored));
     return ret;
 
 }
@@ -265,7 +270,7 @@ void ComplexController::createSensingDatabase() {
 
 }
 
-void ComplexController::createSensingDatabase(std::vector<std::shared_ptr<SensingController>> sensingControllers) {
+void ComplexController::createSensingDatabase(std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers) {
 
     sensingWeights.clear();
     for(int i = 0; i < sensingControllers.size(); ++i) {

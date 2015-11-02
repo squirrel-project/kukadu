@@ -1,15 +1,15 @@
-#ifndef MANUALREWARD_H
-#define MANUALREWARD_H
+#ifndef KUKADU_MANUALREWARD_H
+#define KUKADU_MANUALREWARD_H
 
-#include <random>
 #include "../core/reward.h"
+#include "../../../types/KukaduTypes.h"
 
 class ManualReward : public Reward {
 
 private:
 
-    std::shared_ptr<std::vector<std::shared_ptr<ActionClip>>> actionClips;
-    std::shared_ptr<std::vector<std::shared_ptr<PerceptClip>>> perceptClips;
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > actionClips;
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > perceptClips;
 
     int nextPerceptId;
     int numberOfActions;
@@ -19,21 +19,21 @@ private:
 
 protected:
 
-    double computeRewardInternal(std::shared_ptr<PerceptClip> providedPercept, std::shared_ptr<ActionClip> takenAction);
+    double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction);
 
 public:
 
-    ManualReward(std::shared_ptr<std::mt19937> generator, int numberOfActions, int numberOfPercepts, bool collectPrevRewards, double stdReward);
+    ManualReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int numberOfActions, int numberOfPercepts, bool collectPrevRewards, double stdReward);
     ~ManualReward();
 
     void setNextPerceptId(int nextId);
 
     int getDimensionality();
-    std::shared_ptr<PerceptClip> generateNextPerceptClip(int immunity);
 
-    std::shared_ptr<std::vector<std::shared_ptr<ActionClip>>> generateActionClips();
-    std::shared_ptr<std::vector<std::shared_ptr<PerceptClip> >> generatePerceptClips();
+    KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();
 
 };
 
-#endif // MANUALREWARD_H
+#endif

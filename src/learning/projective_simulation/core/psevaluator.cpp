@@ -7,7 +7,7 @@ using namespace std;
 PSEvaluator::PSEvaluator() {
 }
 
-std::pair<std::vector<int>, std::vector<double>> PSEvaluator::evaluateStatistics(std::vector<string> inputFiles, std::vector<int> inputPos) {
+std::pair<std::vector<int>, std::vector<double> > PSEvaluator::evaluateStatistics(std::vector<string> inputFiles, std::vector<int> inputPos) {
 
     vector<double> retSuccess;
     vector<double> walkSuccess;
@@ -81,7 +81,7 @@ std::pair<std::vector<int>, std::vector<double>> PSEvaluator::evaluateStatistics
 
 }
 
-vector<double> PSEvaluator::evaluateStatistics(std::vector<std::shared_ptr<std::ifstream>>& inputStreams) {
+vector<double> PSEvaluator::evaluateStatistics(std::vector<KUKADU_SHARED_PTR<std::ifstream> >& inputStreams) {
 
     vector<double> retSuccess;
     vector<double> walkSuccess;
@@ -92,7 +92,7 @@ vector<double> PSEvaluator::evaluateStatistics(std::vector<std::shared_ptr<std::
     for(int streamNum = 0; streamNum < inputStreams.size(); ++streamNum) {
         string lastLine = "";
         string dataLine = "";
-        shared_ptr<ifstream> currentStream = inputStreams.at(streamNum);
+        KUKADU_SHARED_PTR<ifstream> currentStream = inputStreams.at(streamNum);
         memblock[0] = '\0';
         size_t endPos = 0;
 
@@ -145,13 +145,13 @@ vector<double> PSEvaluator::evaluateStatistics(std::vector<std::shared_ptr<std::
 
 }
 
-void PSEvaluator::produceStatistics(shared_ptr<ProjectiveSimulator> ps, shared_ptr<Reward> reward, int numberOfWalks, int clipImmunity, int rewardValue, std::ostream& outStream) {
+void PSEvaluator::produceStatistics(KUKADU_SHARED_PTR<ProjectiveSimulator> ps, KUKADU_SHARED_PTR<Reward> reward, int numberOfWalks, int clipImmunity, int rewardValue, std::ostream& outStream) {
 
     char currentOutput = 0;
     int fieldsInCurrentOutput = 0;
     for(int j = 0; j < numberOfWalks; ++j, ++fieldsInCurrentOutput) {
 
-        shared_ptr<PerceptClip> nextClip = reward->generateNextPerceptClip(clipImmunity);
+        KUKADU_SHARED_PTR<PerceptClip> nextClip = reward->generateNextPerceptClip(clipImmunity);
         ps->generalize(nextClip);
         ps->performRandomWalk();
 

@@ -1,11 +1,11 @@
 #include "DMPTrajectoryComparator.h"
 
-using namespace arma;
 using namespace std;
+using namespace arma;
 
-DMPTrajectoryComparator::DMPTrajectoryComparator(std::shared_ptr<Dmp> traject1, std::shared_ptr<Dmp> traject2, vec degOfFreedomWeights, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance) : traj1(traject1), traj2(traject2) {
+DMPTrajectoryComparator::DMPTrajectoryComparator(KUKADU_SHARED_PTR<Dmp> traject1, KUKADU_SHARED_PTR<Dmp> traject2, vec degOfFreedomWeights, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance) : traj1(traject1), traj2(traject2) {
 
-    simQueue = std::shared_ptr<PlottingControlQueue>(new PlottingControlQueue(degOfFreedomWeights.n_elem, integrationStep));
+    simQueue = KUKADU_SHARED_PTR<PlottingControlQueue>(new PlottingControlQueue(degOfFreedomWeights.n_elem, integrationStep));
 	initAll(integrationStep, tolAbsErr, tolRelErr, degOfFreedomWeights, tTolerance);
 	
 	dmp1Result = executeTrajectory(traject1);
@@ -13,13 +13,13 @@ DMPTrajectoryComparator::DMPTrajectoryComparator(std::shared_ptr<Dmp> traject1, 
 
 }
 
-DMPTrajectoryComparator::DMPTrajectoryComparator(std::shared_ptr<ControllerResult> res1, std::shared_ptr<ControllerResult> res2, vec degOfFreedomWeights) {
+DMPTrajectoryComparator::DMPTrajectoryComparator(KUKADU_SHARED_PTR<ControllerResult> res1, KUKADU_SHARED_PTR<ControllerResult> res2, vec degOfFreedomWeights) {
 
 	dmp1Result = res1;
 	dmp2Result = res2;
 	this->degOfFreedomWeights = degOfFreedomWeights;
 
-    simQueue = std::shared_ptr<PlottingControlQueue>(new PlottingControlQueue(degOfFreedomWeights.n_elem, res1->getTimes()(1) - res1->getTimes()(0)));
+    simQueue = KUKADU_SHARED_PTR<PlottingControlQueue>(new PlottingControlQueue(degOfFreedomWeights.n_elem, res1->getTimes()(1) - res1->getTimes()(0)));
 
 }
 
@@ -69,15 +69,15 @@ double DMPTrajectoryComparator::computeDistance() {
 }
 
 // TODO: add some optimiziations here (e.g. list of already executed trajectories)
-void DMPTrajectoryComparator::setTrajectories(std::shared_ptr<Dmp> traj1, std::shared_ptr<Dmp> traj2, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance) {
+void DMPTrajectoryComparator::setTrajectories(KUKADU_SHARED_PTR<Dmp> traj1, KUKADU_SHARED_PTR<Dmp> traj2, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance) {
 	
-    std::shared_ptr<Dmp> old1 = this->traj1;
-    std::shared_ptr<Dmp> old2 = this->traj2;
+    KUKADU_SHARED_PTR<Dmp> old1 = this->traj1;
+    KUKADU_SHARED_PTR<Dmp> old2 = this->traj2;
 	
 	initAll(integrationStep, tolAbsErr, tolRelErr, degOfFreedomWeights, tTolerance);
 	
 	if(this->traj2 == traj1 || this->traj1 == traj2) {
-        std::shared_ptr<Dmp> tmp = traj1;
+        KUKADU_SHARED_PTR<Dmp> tmp = traj1;
 		traj1 = traj2;
 		traj2 = tmp;
 	}
@@ -93,17 +93,9 @@ void DMPTrajectoryComparator::setTrajectories(std::shared_ptr<Dmp> traj1, std::s
 
 }
 
-std::shared_ptr<ControllerResult> DMPTrajectoryComparator::executeTrajectory(std::shared_ptr<Dmp> traj) {
+KUKADU_SHARED_PTR<ControllerResult> DMPTrajectoryComparator::executeTrajectory(KUKADU_SHARED_PTR<Dmp> traj) {
 	
     DMPExecutor dmpexec(traj, simQueue);
-	
-    /*
-	if( abs(traj1.getTmax() - traj2.getTmax()) > tTolerance ) {
-		cerr << "(DMPTrajectoryComparator) trajectories do not have same duration" << endl;
-		throw "(DMPTrajectoryComparator) trajectories do not have same duration";
-	}
-    */
-	
     return dmpexec.simulateTrajectory(0, max(traj1->getTmax(), traj2->getTmax()), integrationStep, tolAbsErr, tolRelErr);
 	
 }

@@ -6,7 +6,7 @@
 using namespace std;
 using namespace arma;
 
-GenDMPReinforcer::GenDMPReinforcer(vec initialQueryPoint, CostComputer* cost, std::shared_ptr<DMPGeneralizer> dmpGen, GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, std::shared_ptr<ControlQueue> movementQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : DMPReinforcer(cost, movementQueue, ac, dmpStepSize, tolAbsErr, tolRelErr) {
+GenDMPReinforcer::GenDMPReinforcer(vec initialQueryPoint, CostComputer* cost, KUKADU_SHARED_PTR<DMPGeneralizer> dmpGen, GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, KUKADU_SHARED_PTR<ControlQueue> movementQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : DMPReinforcer(cost, movementQueue, ac, dmpStepSize, tolAbsErr, tolRelErr) {
 	this->dmpGen = dmpGen;
 	this->trajectoryKernel = trajectoryKernel;
 	this->parameterKernel = parameterKernel;
@@ -18,25 +18,25 @@ GenDMPReinforcer::GenDMPReinforcer(vec initialQueryPoint, CostComputer* cost, st
     this->genResults.clear();
 	
 	this->isFirstRolloutAfterInit = true;
-    this->simQueue = std::shared_ptr<PlottingControlQueue>(new PlottingControlQueue(dmpGen->getDegOfFreedom(), dmpStepSize));
+    this->simQueue = KUKADU_SHARED_PTR<PlottingControlQueue>(new PlottingControlQueue(dmpGen->getDegOfFreedom(), dmpStepSize));
 
 }
 
-std::vector<std::shared_ptr<Dmp>> GenDMPReinforcer::getInitialRollout() {
+std::vector<KUKADU_SHARED_PTR<Dmp> > GenDMPReinforcer::getInitialRollout() {
 	
 	cout << "(GenDMPReinforcer) initial query point: " << initialQueryPoint(0) << endl;
 	
     genResults.clear();
 	for(int i = 0; i < dmpGen->getQueryPointCount(); ++i) {
-        std::shared_ptr<Dmp> queryDmp = dmpGen->getQueryPointByIndex(i).getDmp();
+        KUKADU_SHARED_PTR<Dmp> queryDmp = dmpGen->getQueryPointByIndex(i).getDmp();
         DMPExecutor dmpsim(queryDmp, simQueue);
         genResults.push_back(dmpsim.simulateTrajectory(0, queryDmp->getTmax(), getDmpStepSize(), getTolAbsErr(), getTolRelErr()));
 	}
 	
-    vector<std::shared_ptr<Dmp>> ret;
-    std::shared_ptr<Dmp> rollout = dmpGen->generalizeDmp(trajectoryKernel, parameterKernel, initialQueryPoint, 100000);
+    vector<KUKADU_SHARED_PTR<Dmp> > ret;
+    KUKADU_SHARED_PTR<Dmp> rollout = dmpGen->generalizeDmp(trajectoryKernel, parameterKernel, initialQueryPoint, 100000);
     DMPExecutor dmpsim(rollout, simQueue);
-    std::shared_ptr<ControllerResult> dmpResult = dmpsim.simulateTrajectory(0, rollout->getTmax(), getDmpStepSize(), getTolAbsErr(), getTolRelErr());
+    KUKADU_SHARED_PTR<ControllerResult> dmpResult = dmpsim.simulateTrajectory(0, rollout->getTmax(), getDmpStepSize(), getTolAbsErr(), getTolRelErr());
 	
 	if(DEBUGGENDMPREINFORCER) {
 		
@@ -78,7 +78,7 @@ double GenDMPReinforcer::getQMax() {
 	
 }
 
-std::shared_ptr<Dmp> GenDMPReinforcer::updateStep() {
+KUKADU_SHARED_PTR<Dmp> GenDMPReinforcer::updateStep() {
 	
 	double lastCost = getLastRolloutCost().at(0);
 	double q;
@@ -113,11 +113,11 @@ std::shared_ptr<Dmp> GenDMPReinforcer::updateStep() {
 	
 	cout << "(GenDMPReinforcer) next rollout query point: " << q << endl;
 	
-    vector<std::shared_ptr<Dmp>> ret;
-    std::shared_ptr<Dmp> rollout = dmpGen->generalizeDmp(trajectoryKernel, parameterKernel, lastQueryPoint, 100000);
+    vector<KUKADU_SHARED_PTR<Dmp> > ret;
+    KUKADU_SHARED_PTR<Dmp> rollout = dmpGen->generalizeDmp(trajectoryKernel, parameterKernel, lastQueryPoint, 100000);
 	
     DMPExecutor dmpsim(rollout, simQueue);
-    std::shared_ptr<ControllerResult> dmpResult = dmpsim.simulateTrajectory(0, rollout->getTmax(), getDmpStepSize(), getTolAbsErr(), getTolRelErr());
+    KUKADU_SHARED_PTR<ControllerResult> dmpResult = dmpsim.simulateTrajectory(0, rollout->getTmax(), getDmpStepSize(), getTolAbsErr(), getTolRelErr());
 	
 	if(DEBUGGENDMPREINFORCER) {
 		
@@ -132,19 +132,19 @@ std::shared_ptr<Dmp> GenDMPReinforcer::updateStep() {
 	
 }
 
-std::shared_ptr<Dmp> GenDMPReinforcer::getLastUpdate() {
+KUKADU_SHARED_PTR<Dmp> GenDMPReinforcer::getLastUpdate() {
 	return getLastRolloutParameters().at(0);
 }
 
-std::vector<std::shared_ptr<Dmp>> GenDMPReinforcer::computeRolloutParamters() {
+std::vector<KUKADU_SHARED_PTR<Dmp> > GenDMPReinforcer::computeRolloutParamters() {
 	
-    vector<std::shared_ptr<Dmp>> ret;
+    vector<KUKADU_SHARED_PTR<Dmp> > ret;
 	ret.push_back(lastUpdate);
 	return ret;
 	
 }
 
-void GenDMPReinforcer::plotFeedback(std::shared_ptr<DMPGeneralizer> dmpGen, std::shared_ptr<Dmp> rollout, std::shared_ptr<ControllerResult> currentRolloutRes) {
+void GenDMPReinforcer::plotFeedback(KUKADU_SHARED_PTR<DMPGeneralizer> dmpGen, KUKADU_SHARED_PTR<Dmp> rollout, KUKADU_SHARED_PTR<ControllerResult> currentRolloutRes) {
 	
 	vector<Gnuplot*> gs;
 	Gnuplot* g1;

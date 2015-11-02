@@ -1,16 +1,17 @@
-#ifndef GENERALDMPLEARNER_H
-#define GENERALDMPLEARNER_H
+#ifndef KUKADU_GENERALDMPLEARNER_H
+#define KUKADU_GENERALDMPLEARNER_H
 
-#include "DMPTrajectoryGenerator.h"
+#include <queue>
+#include <vector>
+#include <cstdlib>
+#include <armadillo>
+
 #include "../utils/utils.h"
 #include "../utils/types.h"
 #include "../types/DMPBase.h"
+#include "../types/KukaduTypes.h"
 #include "../learning/GeneralFitter.h"
-
-#include <vector>
-#include <queue>
-#include <cstdlib>
-#include <armadillo>
+#include "../trajectory/DMPTrajectoryGenerator.h"
 
 class GeneralDmpLearner {
 
@@ -31,7 +32,7 @@ protected:
     double ax;
     double tau;
 
-    virtual std::shared_ptr<Dmp> createDmpInstance(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<arma::vec> fitYs, std::vector<arma::vec> dmpCoeffs, std::vector<DMPBase> dmpBase, std::vector<arma::mat> designMatrices,
+    virtual KUKADU_SHARED_PTR<Dmp> createDmpInstance(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<arma::vec> fitYs, std::vector<arma::vec> dmpCoeffs, std::vector<DMPBase> dmpBase, std::vector<arma::mat> designMatrices,
                                                    double tau, double az, double bz, double ax) = 0;
 
     virtual arma::mat computeFitY(arma::vec& time, arma::mat& y, arma::mat& dy, arma::mat& ddy, arma::vec& vec_g) = 0;
@@ -69,8 +70,8 @@ public:
     /**
      * \brief fit the specified trajectories
      */
-    std::shared_ptr<Dmp> fitTrajectories();
+    KUKADU_SHARED_PTR<Dmp> fitTrajectories();
 
 };
 
-#endif // GENERALDMPLEARNER_H
+#endif

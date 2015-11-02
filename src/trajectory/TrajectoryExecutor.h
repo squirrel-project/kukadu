@@ -1,16 +1,16 @@
-#ifndef TRAJECTORYEXECUTOR
-#define TRAJECTORYEXECUTOR
+#ifndef KUKADU_TRAJECTORYEXECUTOR_H
+#define KUKADU_TRAJECTORYEXECUTOR_H
 
-#include <armadillo>
 #include <vector>
+#include <cstdlib>
 #include <iostream>
 #include <unistd.h>
 #include <iostream>
-#include <cstdlib>
-#include <memory>
+#include <armadillo>
 
 #include "../utils/types.h"
 #include "../types/Trajectory.h"
+#include "../types/KukaduTypes.h"
 #include "../manipulation/Controller.hpp"
 #include "../manipulation/ControllerResult.hpp"
 
@@ -23,12 +23,12 @@ public:
 
     TrajectoryExecutor();
 
-    virtual std::shared_ptr<ControllerResult> executeTrajectory() = 0;
-    virtual std::shared_ptr<ControllerResult> simulateTrajectory() = 0;
+    virtual KUKADU_SHARED_PTR<ControllerResult> executeTrajectory() = 0;
+    virtual KUKADU_SHARED_PTR<ControllerResult> simulateTrajectory() = 0;
 	
-    virtual void setTrajectory(std::shared_ptr<Trajectory> traj) = 0;
+    virtual void setTrajectory(KUKADU_SHARED_PTR<Trajectory> traj) = 0;
 
-    std::shared_ptr<ControllerResult> performAction();
+    KUKADU_SHARED_PTR<ControllerResult> performAction();
 
 };
 

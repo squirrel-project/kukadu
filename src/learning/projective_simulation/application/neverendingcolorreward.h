@@ -1,8 +1,8 @@
-#ifndef NEVERENDINGCOLORREWARD_H
-#define NEVERENDINGCOLORREWARD_H
+#ifndef KUKADU_NEVERENDINGCOLORREWARD_H
+#define KUKADU_NEVERENDINGCOLORREWARD_H
 
-#include <random>
 #include "../core/reward.h"
+#include "../../../types/KukaduTypes.h"
 
 #define NEVERENDINGCOLORREWARD_LEFT 0
 #define NEVERENDINGCOLORREWARD_RIGHT 1
@@ -21,25 +21,25 @@ private:
     int currentT;
     int numberOfActions;
     int numberOfCategories;
-    std::uniform_int_distribution<int> intDist;
-    std::vector<std::shared_ptr<ActionClip>>* actionClips;
-    std::vector<std::shared_ptr<PerceptClip>>* perceptClips;
+    kukadu_uniform_distribution intDist;
+    std::vector<KUKADU_SHARED_PTR<ActionClip> >* actionClips;
+    std::vector<KUKADU_SHARED_PTR<PerceptClip> >* perceptClips;
 
 protected:
 
-    double computeRewardInternal(std::shared_ptr<PerceptClip> providedPercept, std::shared_ptr<ActionClip> takenAction);
+    double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction);
 
 public:
 
-    NeverendingColorReward(std::shared_ptr<std::mt19937> generator, int numberOfActions, int numberOfCategories, bool collectPrevRewards);
+    NeverendingColorReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int numberOfActions, int numberOfCategories, bool collectPrevRewards);
     ~NeverendingColorReward();
 
     int getDimensionality();
-    std::shared_ptr<PerceptClip> generateNextPerceptClip(int immunity);
+    KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
 
-    std::shared_ptr<std::vector<std::shared_ptr<ActionClip>>> generateActionClips();
-    std::shared_ptr<std::vector<std::shared_ptr<PerceptClip> >> generatePerceptClips();
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();
 
 };
 
-#endif // NEVERENDINGCOLORREWARD_H
+#endif

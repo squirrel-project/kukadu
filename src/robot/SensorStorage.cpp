@@ -1,12 +1,10 @@
 #include "SensorStorage.h"
 #include "../types/SensorData.h"
-#include "../utils/easyloggingpp/src/easylogging++.h"
-_INITIALIZE_EASYLOGGINGPP
 
 using namespace std;
 using namespace arma;
 
-void SensorStorage::initSensorStorage(bool simulation, bool useVision, std::shared_ptr<SimInterface> simInterface, std::string objectId, std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands, std::shared_ptr<VisionInterface> vis, double pollingFrequency, bool storeSimObject, bool storeVisObject) {
+void SensorStorage::initSensorStorage(bool simulation, bool useVision, KUKADU_SHARED_PTR<SimInterface> simInterface, std::string objectId, std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, std::vector<KUKADU_SHARED_PTR<GenericHand> > hands, KUKADU_SHARED_PTR<VisionInterface> vis, double pollingFrequency, bool storeSimObject, bool storeVisObject) {
 
     this->vis = vis;
     this->hands = hands;
@@ -19,7 +17,6 @@ void SensorStorage::initSensorStorage(bool simulation, bool useVision, std::shar
     this->storeVisObject = storeVisObject;
     this->pollingFrequency = pollingFrequency;
 
-    thr = nullptr;
     stopped = false;
     storageStopped = true;
 
@@ -28,21 +25,21 @@ void SensorStorage::initSensorStorage(bool simulation, bool useVision, std::shar
 
 }
 
-SensorStorage::SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands, double pollingFrequency) {
+SensorStorage::SensorStorage(std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, std::vector<KUKADU_SHARED_PTR<GenericHand> > hands, double pollingFrequency) {
 
-    initSensorStorage(false, false, nullptr, "", queues, hands, nullptr, pollingFrequency, false, false);
-
-}
-
-SensorStorage::SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands, std::shared_ptr<SimInterface> sim, std::string objectID, double pollingFrequency) {
-
-    initSensorStorage(true, false, sim, objectID, queues, hands, nullptr, pollingFrequency, true, false);
+    initSensorStorage(false, false, KUKADU_SHARED_PTR<SimInterface>(), "", queues, hands, KUKADU_SHARED_PTR<VisionInterface>(), pollingFrequency, false, false);
 
 }
 
-SensorStorage::SensorStorage(std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands, std::shared_ptr<VisionInterface> vis, double pollingFrequency){
+SensorStorage::SensorStorage(std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, std::vector<KUKADU_SHARED_PTR<GenericHand> > hands, KUKADU_SHARED_PTR<SimInterface> sim, std::string objectID, double pollingFrequency) {
 
-    initSensorStorage(false, true, nullptr, "", queues, hands, vis, pollingFrequency, false, true);
+    initSensorStorage(true, false, sim, objectID, queues, hands, KUKADU_SHARED_PTR<VisionInterface>(), pollingFrequency, true, false);
+
+}
+
+SensorStorage::SensorStorage(std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, std::vector<KUKADU_SHARED_PTR<GenericHand> > hands, KUKADU_SHARED_PTR<VisionInterface> vis, double pollingFrequency){
+
+    initSensorStorage(false, true, KUKADU_SHARED_PTR<SimInterface>(), "", queues, hands, vis, pollingFrequency, false, true);
 
 }
 
@@ -83,10 +80,9 @@ void SensorStorage::setExportMode(int mode) {
     if(mode & STORE_VIS_OBJECT)
         storeVisObject =true;
 
-
 }
 
-std::shared_ptr<std::thread> SensorStorage::startDataStorage(std::string folderName) {
+KUKADU_SHARED_PTR<kukadu_thread> SensorStorage::startDataStorage(std::string folderName) {
 
     if(createDirectory(folderName)) {
 
@@ -94,8 +90,8 @@ std::shared_ptr<std::thread> SensorStorage::startDataStorage(std::string folderN
         for(int i = 0; i < queues.size(); ++i) {
             stringstream s;
             s << i;
-            std::shared_ptr<std::ofstream> queueFile = std::shared_ptr<std::ofstream>(new ofstream());
-            queueFile->open(folderName + string("/") + queues.at(i)->getRobotFileName() + string("_") + s.str());
+            KUKADU_SHARED_PTR<std::ofstream> queueFile = KUKADU_SHARED_PTR<std::ofstream>(new ofstream());
+            queueFile->open((folderName + string("/") + queues.at(i)->getRobotFileName() + string("_") + s.str()).c_str());
             queueStreams.push_back(queueFile);
         }
 
@@ -103,34 +99,33 @@ std::shared_ptr<std::thread> SensorStorage::startDataStorage(std::string folderN
         for(int i = 0; i < hands.size(); ++i) {
             stringstream s;
             s << i;
-            std::shared_ptr<std::ofstream> queueFile = std::shared_ptr<std::ofstream>(new ofstream());
-            queueFile->open(folderName + string("/") + hands.at(i)->getHandName() + string("_") + s.str());
+            KUKADU_SHARED_PTR<std::ofstream> queueFile = KUKADU_SHARED_PTR<std::ofstream>(new ofstream());
+            queueFile->open((folderName + string("/") + hands.at(i)->getHandName() + string("_") + s.str()).c_str());
             handStreams.push_back(queueFile);
         }
 
         if(simulation){
-            std::shared_ptr<std::ofstream> queueFile = std::shared_ptr<std::ofstream>(new ofstream());
-            queueFile->open(folderName + string("/") + "simulation");
+            KUKADU_SHARED_PTR<std::ofstream> queueFile = KUKADU_SHARED_PTR<std::ofstream>(new ofstream());
+            queueFile->open((folderName + string("/") + "simulation").c_str());
             simStream = queueFile;
         }
 
         if(vision){
-            std::shared_ptr<std::ofstream> queueFile = std::shared_ptr<std::ofstream>(new ofstream());
-            queueFile->open(folderName + string("/") + "vision");
+            KUKADU_SHARED_PTR<std::ofstream> queueFile = KUKADU_SHARED_PTR<std::ofstream>(new ofstream());
+            queueFile->open((folderName + string("/") + "vision").c_str());
             visStream = queueFile;
 
         }
 
 
-        thr = shared_ptr<thread>(nullptr);
-        thr = std::shared_ptr<std::thread>(new std::thread(&SensorStorage::store, this));
+        thr = KUKADU_SHARED_PTR<kukadu_thread>();
+        thr = KUKADU_SHARED_PTR<kukadu_thread>(new kukadu_thread(&SensorStorage::store, this));
         storageStopped = false;
         return thr;
 
     } else {
 
-        LOG(WARNING) << "(SensorStorage) directory already exists (no data recorded)";
-        return shared_ptr<thread>(nullptr);
+        return KUKADU_SHARED_PTR<kukadu_thread>();
 
     }
 
@@ -158,19 +153,19 @@ void SensorStorage::stopDataStorage() {
 
 }
 
-void SensorStorage::writeVectorInLine(std::shared_ptr<ofstream> stream, arma::vec writeVec) {
+void SensorStorage::writeVectorInLine(KUKADU_SHARED_PTR<ofstream> stream, arma::vec writeVec) {
     for(int i = 0; i < writeVec.n_elem; ++i)
         *stream << writeVec(i) << "\t";
 }
 
-void SensorStorage::writeMatrixInLine(std::shared_ptr<ofstream> stream, arma::mat writeMat) {
+void SensorStorage::writeMatrixInLine(KUKADU_SHARED_PTR<ofstream> stream, arma::mat writeMat) {
     for(int i = 0; i < writeMat.n_rows; ++i)
         for(int j = 0; j < writeMat.n_cols; ++j)
             *stream << writeMat(i, j) << "\t";
     *stream << "|\t";
 }
 
-void SensorStorage::writeLabels(std::shared_ptr<std::ofstream> stream, std::vector<std::string> labels) {
+void SensorStorage::writeLabels(KUKADU_SHARED_PTR<std::ofstream> stream, std::vector<std::string> labels) {
 
     for(int i = 0; i < labels.size(); ++i)
         *stream << labels.at(i) << "\t";
@@ -178,7 +173,7 @@ void SensorStorage::writeLabels(std::shared_ptr<std::ofstream> stream, std::vect
 
 }
 
-void SensorStorage::writeMatrixMetaInfo(std::shared_ptr<std::ofstream> stream, int matrixNum, int xDim, int yDim) {
+void SensorStorage::writeMatrixMetaInfo(KUKADU_SHARED_PTR<std::ofstream> stream, int matrixNum, int xDim, int yDim) {
 
     *stream << "matrix " << matrixNum << ": " << xDim << "x" << yDim << endl;
 
@@ -186,13 +181,13 @@ void SensorStorage::writeMatrixMetaInfo(std::shared_ptr<std::ofstream> stream, i
 
 void SensorStorage::store() {
 
-    storeData(true, queueStreams, std::vector<std::shared_ptr<SensorData>>());
+    storeData(true, queueStreams, std::vector<KUKADU_SHARED_PTR<SensorData> >());
 
 }
 
-void SensorStorage::storeData(bool storeHeader, std::string file, std::shared_ptr<SensorData> data) {
+void SensorStorage::storeData(bool storeHeader, std::string file, KUKADU_SHARED_PTR<SensorData> data) {
 
-    vector<shared_ptr<SensorData>> dataVec;
+    vector<KUKADU_SHARED_PTR<SensorData> > dataVec;
     vector<string> filesVec;
 
     dataVec.push_back(data);
@@ -202,19 +197,20 @@ void SensorStorage::storeData(bool storeHeader, std::string file, std::shared_pt
 
 }
 
-void SensorStorage::storeData(bool storeHeader, std::vector<std::string> files, std::vector<std::shared_ptr<SensorData>> data) {
+void SensorStorage::storeData(bool storeHeader, std::vector<std::string> files, std::vector<KUKADU_SHARED_PTR<SensorData> > data) {
 
-    std::vector<std::shared_ptr<ofstream>> queueStreams;
-    for(string file : files) {
-        shared_ptr<ofstream> currentStream = shared_ptr<ofstream>(new ofstream());
-        currentStream->open(file);
+    std::vector<KUKADU_SHARED_PTR<ofstream> > queueStreams;
+    for(int i = 0; i < files.size(); ++i) {
+        string file = files.at(i);
+        KUKADU_SHARED_PTR<ofstream> currentStream = KUKADU_SHARED_PTR<ofstream>(new ofstream());
+        currentStream->open(file.c_str());
         queueStreams.push_back(currentStream);
     }
     storeData(storeHeader, queueStreams, data);
 
 }
 
-void SensorStorage::storeData(bool storeHeader, std::vector<std::shared_ptr<std::ofstream>> queueStreams, std::vector<std::shared_ptr<SensorData>> data) {
+void SensorStorage::storeData(bool storeHeader, std::vector<KUKADU_SHARED_PTR<std::ofstream> > queueStreams, std::vector<KUKADU_SHARED_PTR<SensorData> > data) {
 
     stopped = false;
     double waitTime = 1.0 / pollingFrequency;
@@ -230,8 +226,8 @@ void SensorStorage::storeData(bool storeHeader, std::vector<std::shared_ptr<std:
 
         for(int i = 0; i < iterationSize; ++i) {
 
-            shared_ptr<ControlQueue> currentQueue = queues.at(i);
-            shared_ptr<ofstream> currentOfStream = queueStreams.at(i);
+            KUKADU_SHARED_PTR<ControlQueue> currentQueue = queues.at(i);
+            KUKADU_SHARED_PTR<ofstream> currentOfStream = queueStreams.at(i);
 
             mes_result joints;
             mes_result cartPos;
@@ -375,8 +371,8 @@ void SensorStorage::storeData(bool storeHeader, std::vector<std::shared_ptr<std:
 
         for(int i = 0; i < hands.size(); ++i) {
 
-            shared_ptr<GenericHand> currentHand = hands.at(i);
-            shared_ptr<ofstream> currentOfStream = handStreams.at(i);
+            KUKADU_SHARED_PTR<GenericHand> currentHand = hands.at(i);
+            KUKADU_SHARED_PTR<ofstream> currentOfStream = handStreams.at(i);
             std::vector<arma::mat> currentSensing = currentHand->getTactileSensing();
 
             if(firstTime && storeHeader) {
@@ -411,7 +407,7 @@ void SensorStorage::storeData(bool storeHeader, std::vector<std::shared_ptr<std:
 
         if(simulation){
 
-            shared_ptr<ofstream> currentOfStream = simStream;
+            KUKADU_SHARED_PTR<ofstream> currentOfStream = simStream;
 
 
             if(firstTime && storeHeader) {
@@ -453,7 +449,7 @@ void SensorStorage::storeData(bool storeHeader, std::vector<std::shared_ptr<std:
         }
         if(vision){
 
-            shared_ptr<ofstream> currentOfStream = visStream;
+            KUKADU_SHARED_PTR<ofstream> currentOfStream = visStream;
 
 
             if(firstTime && storeHeader) {
@@ -506,7 +502,7 @@ void SensorStorage::storeData(bool storeHeader, std::vector<std::shared_ptr<std:
 
 }
 
-std::shared_ptr<SensorData> SensorStorage::readStorage(std::shared_ptr<ControlQueue> queue, std::string file) {
+KUKADU_SHARED_PTR<SensorData> SensorStorage::readStorage(KUKADU_SHARED_PTR<ControlQueue> queue, std::string file) {
 
     vector<string> jointNames = queue->getJointNames();
 
@@ -542,7 +538,7 @@ std::shared_ptr<SensorData> SensorStorage::readStorage(std::shared_ptr<ControlQu
     string line = "";
     string nextToken = "";
     ifstream inFile;
-    inFile.open(file, ios::in | ios::app | ios::binary);
+    inFile.open(file.c_str(), ios::in | ios::app | ios::binary);
 
     getline(inFile, line);
     KukaduTokenizer tok(line);
@@ -577,7 +573,6 @@ std::shared_ptr<SensorData> SensorStorage::readStorage(std::shared_ptr<ControlQu
 
                     } else {
 
-                        LOG(ERROR) << "(SensorStorage) joint names order not ok" << endl;
                         throw "(SensorStorage) joint names order not ok";
 
                     }
@@ -599,7 +594,6 @@ std::shared_ptr<SensorData> SensorStorage::readStorage(std::shared_ptr<ControlQu
 
                 if(tok.next().compare("cart_pos_y") || tok.next().compare("cart_pos_z") ||
                         tok.next().compare("cart_quat_x") || tok.next().compare("cart_quat_y") || tok.next().compare("cart_quat_z") || tok.next().compare("cart_quat_w")) {
-                    LOG(ERROR) << "(SensorStorage) cartesian pos order not ok" << endl;
                     throw "(SensorStorage) cartesian pos order not ok";
                 }
 
@@ -618,7 +612,6 @@ std::shared_ptr<SensorData> SensorStorage::readStorage(std::shared_ptr<ControlQu
 
                 if(tok.next().compare("cart_force_y") || tok.next().compare("cart_force_z") ||
                         tok.next().compare("cart_trq_x") || tok.next().compare("cart_trq_y") || tok.next().compare("cart_trq_z")) {
-                    LOG(ERROR) << "(SensorStorage) cartesian force order not ok" << endl;
                     throw "(SensorStorage) cartesian force order not ok";
                 }
 
@@ -644,7 +637,6 @@ std::shared_ptr<SensorData> SensorStorage::readStorage(std::shared_ptr<ControlQu
 
                     } else {
 
-                        LOG(ERROR) << "(SensorStorage) joint force names order not ok" << endl;
                         throw "(SensorStorage) joint force names order not ok";
 
                     }
@@ -701,7 +693,7 @@ std::shared_ptr<SensorData> SensorStorage::readStorage(std::shared_ptr<ControlQu
     if(cartsAbsForceStartIdx >= 0)
         cartAbsFrcs = mat(mes.cols(cartsAbsForceStartIdx, cartsAbsForceStartIdx + 1 - 1));
 
-    shared_ptr<SensorData> dat = shared_ptr<SensorData>(new SensorData("time", jointPosLabels, jointFrcLabels, cartPosLabels, cartAbsForceLabels, cartFrcTrqLabels,
+    KUKADU_SHARED_PTR<SensorData> dat = KUKADU_SHARED_PTR<SensorData>(new SensorData("time", jointPosLabels, jointFrcLabels, cartPosLabels, cartAbsForceLabels, cartFrcTrqLabels,
                                                                        times, jointPos, jointFrcs, cartPos, cartAbsFrcs, cartFrcTrqs));
 
     inFile.close();

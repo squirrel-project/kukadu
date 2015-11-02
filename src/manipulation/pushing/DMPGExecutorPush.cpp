@@ -3,16 +3,16 @@
 using namespace std;
 using namespace arma;
 
-DMPExecutorPush::DMPExecutorPush( std::shared_ptr<Dmp> dmpL, std::shared_ptr<ControlQueue> execQueue, string env, std::shared_ptr<SimInterface> simI, string objectID): DMPExecutor(dmpL, execQueue), objectID(objectID), simI(simI) {
+DMPExecutorPush::DMPExecutorPush( KUKADU_SHARED_PTR<Dmp> dmpL, KUKADU_SHARED_PTR<ControlQueue> execQueue, string env, KUKADU_SHARED_PTR<SimInterface> simI, string objectID): DMPExecutor(dmpL, execQueue), objectID(objectID), simI(simI) {
 
-    //this->queue = execQueue;
     this->constructPush(env);
 
 }
 
-DMPExecutorPush::DMPExecutorPush( std::shared_ptr<Dmp> dmp, std::shared_ptr<ControlQueue> execQueue, string env, std::shared_ptr<VisionInterface> visI): DMPExecutor(dmp, execQueue), visI(visI) {
+DMPExecutorPush::DMPExecutorPush( KUKADU_SHARED_PTR<Dmp> dmp, KUKADU_SHARED_PTR<ControlQueue> execQueue, string env, KUKADU_SHARED_PTR<VisionInterface> visI): DMPExecutor(dmp, execQueue), visI(visI) {
 
     this->constructPush(env);
+
 }
 
 void DMPExecutorPush::constructPush(string env) {
@@ -24,7 +24,8 @@ void DMPExecutorPush::constructPush(string env) {
 
     Ts = 0.5;
     stopObj = false;
-    thr = shared_ptr<thread>(nullptr);
+    thr = KUKADU_SHARED_PTR<kukadu_thread>();
+    thr.reset();
 
     pcF = zeros(50);
     pcDist = zeros(50);
@@ -32,7 +33,7 @@ void DMPExecutorPush::constructPush(string env) {
 
 }
 
-double DMPExecutorPush::addTerm(double t, const double* currentDesiredYs, int jointNumber, std::shared_ptr<ControlQueue> queue) {
+double DMPExecutorPush::addTerm(double t, const double* currentDesiredYs, int jointNumber, KUKADU_SHARED_PTR<ControlQueue> queue) {
 
     contPosition = true;
     contOrient = true;
@@ -51,16 +52,8 @@ double DMPExecutorPush::addTerm(double t, const double* currentDesiredYs, int jo
     double KxF = 0.0001;
     double Kalfa = 0.1;
 
-    if(contPosition && (eXo.size() > 1)){
-        //KxP = 0.05 * (EeXo - eXo[eXo.size() - 1]) * (EeXo - eXo[eXo.size() - 1]) / vareXo;
+    if(contPosition && (eXo.size() > 1))
         KxP = 0.005 * EeXo / vareXo;
-        // KyP = (EeYo - eYo[eYo.size() - 1]) * (EeYo - eYo[eYo.size() - 1]) / vareYo;
-    }
-
-
-    //    if (contOrient && (eThO.size() > 1)){
-    //        //KxO = (EeThO - eThO[eThO.size() - 1]) * (EeThO - eThO[eThO.size() - 1]) / vareThO;
-    //    }
 
     if(contForce && (Fcart.size() > 1)){
 
@@ -69,49 +62,29 @@ double DMPExecutorPush::addTerm(double t, const double* currentDesiredYs, int jo
         if (gradFx[gradFx.size() - 1] > 0.0) pr = 1.0;
 
         KxF = pr * 0.0001;
-        // KxF = 0.000000001 * gradFx[gradFx.size() - 1];
+
     }
 
 
 
-    if ((jointNumber == 1)){
-        // corrP = - KxP * (ObjCartPos(findIndex(t, ObjTimes), 0) - currentObjPose.position.x); //trajectory following
+    if(jointNumber == 1) {
+
         if(contPosition && (eXo.size() > 1)) corrP =   KxP * eXo[eXo.size() - 1];
         if(contForce && (Fcart.size() > 1)) corrF = KxF * (EFdmin - Fcart[Fcart.size() - 1]);
-        //if (contOrient && (eThO.size() > 1)) corrO = KxO * eThO[eThO.size() - 1];
-        if (contOrient && (eXo.size() > 1)) corrO = KxO * (EthO - tf::getYaw(currentObjPose.orientation)) / vareThO;
-        cout<<" position corr  gains for x "<< KxP << " corrP "<<corrP<< " force " <<KxF<< " corrF "<<corrF<< " corrO "<<corrO<< endl;
+        if(contOrient && (eXo.size() > 1)) corrO = KxO * (EthO - tf::getYaw(currentObjPose.orientation)) / vareThO;
+
     }
-
-
-    //    if ((jointNumber == 2)&&(findIndex(t, ObjTimes))) {
-    //        // corrP = - KyP * (ObjCartPos(findIndex(t, ObjTimes), 1) - currentObjPose.position.y); //trajectory following
-    //        if(contPosition && (eXo.size() > 1)) corrP = - KyP * eYo[eYo.size() - 1];
-    //    cout<<" position corr  gains for y "<< KyP << " corr "<<corrP<< endl;
-    //    }
 
     corr = corrP + corrO + corrF;
 
-//    if(orientTerm && (eXo.size() > 1) && (jointNumber > 3)){
-//        //vec Deta = 2 * tau * log(axisAngle2Quat(0.0, 0.0, 1.0, Kalfa * atan2(eYo[eYo.size() -1], eXo[eXo.size() - 1]))) / stepSize;
-//        vec Deta = 2 * tau * log(axisAngle2Quat(0.0, 0.0, 1.0, Kalfa * atan2(0, eXo[eXo.size() - 1]))) / stepSize;
-
-//        corr = Deta(jointNumber - 3);
-//        cout<<" position corr  gains for angle comp "<< jointNumber << " angle "<<atan2(0, eXo[eXo.size() - 1])<< " corrAngle "<<corr<< endl;
-
-//    }
-//    if (corr > 0.025) corr = 0.025;
-//    if (corr < -0.025) corr = -0.025;
     corr = corr * 100;
     double tmp = 1.0;
-    if ((jointNumber)&&(corr > tmp)) corr = tmp;
-    if ((jointNumber)&&(corr < -1*tmp)) corr = -1*tmp;
-
-    cout<<corr<<endl;
-
+    if((jointNumber) && (corr > tmp)) corr = tmp;
+    if((jointNumber) && (corr < -1*tmp)) corr = -1*tmp;
 
     if(jointNumber == 1) return corr;
     else return 0.0;
+
 }
 
 void DMPExecutorPush::setObjectData(arma::vec times, arma::mat cartPos){
@@ -124,23 +97,21 @@ void DMPExecutorPush::setObjectData(arma::vec times, arma::mat cartPos){
     currentRobPose =  controlQueue->getCartesianPose();
     oldRobPose = currentRobPose;
 
-    if (doSimulation) {
+    if (doSimulation)
         currentObjPose = simI->getObjPose(objectID);
-    }
+
     else currentObjPose = visI->getArPose();
 
     this->ObjTimes = times - times(0);
     this->ObjCartPos = cartPos;
     Ts = ObjTimes(1) - ObjTimes(0);
-    //    Lx1 = cartPos(0, 0);
-    //    Ly1 = cartPos(0, 1);
     Lx1 = currentObjPose.position.x;
     Ly1 = currentObjPose.position.y;
     Lx2 = cartPos(cartPos.n_rows - 1, 0) + currentObjPose.position.x - cartPos(0, 0);
     Ly2 = cartPos(cartPos.n_rows - 1, 1) + currentObjPose.position.y - cartPos(0, 1);;
     Th0 = tf::getYaw(currentObjPose.orientation);
 
-    thr = std::shared_ptr<std::thread>(new std::thread(&DMPExecutorPush::updateData, this));
+    thr = KUKADU_SHARED_PTR<kukadu_thread>(new kukadu_thread(&DMPExecutorPush::updateData, this));
 
 
 }
@@ -168,9 +139,6 @@ void DMPExecutorPush::updateData() {
             xO.push_back(currentObjPose.position.x);
             yO.push_back(currentObjPose.position.y);
 
-
-
-            //distO.push_back(distancePoint2Line(currentObjPose.position.x, currentObjPose.position.y, Lx1, Ly1, Lx2, Ly2));
             distO.push_back(Lx1 - currentObjPose.position.x);
             int idmin = 49;
             for (int i = 0; i < distO.size(); ++i){
@@ -200,7 +168,6 @@ void DMPExecutorPush::updateData() {
                 if (Fcart[Fcart.size() - 2] < 1.0) f = 0;
                 else if (Fcart[Fcart.size() - 2] <= 49.0) f = int(Fcart[Fcart.size() - 2]);
                 else f = 49;
-                //cout<<d<<" "<<f<<" "<<idmin<<endl;
 
                 pcDist(d) = pcDist(d) + 1;
                 pcF(f) = pcF(f) + 1;
@@ -227,25 +194,17 @@ void DMPExecutorPush::updateData() {
 
             vector<double> diffX, diffY, diffThO, diffF;
             diffX.resize(eXo.size());
-            //diffY.resize(eYo.size());
-            //diffF.resize(Fcart.size());
             diffThO.resize(eThO.size());
 
             std::transform(eXo.begin(), eXo.end(), diffX.begin(), bind2nd(std::plus<double>(), - EeXo));
             vareXo = std::inner_product(diffX.begin(), diffX.end(), diffX.begin(), 0.0) / (diffX.size() - 1);
 
-            //        std::transform(eYo.begin(), eYo.end(), diffY.begin(), bind2nd(std::plus<double>(), - EeYo));
-            //        vareYo = std::inner_product(diffY.begin(), diffY.end(), diffY.begin(), 0.0) / (diffY.size() - 1);
-
 
             std::transform(eThO.begin(), eThO.end(), diffThO.begin(), bind2nd(std::plus<double>(), - EeThO));
             vareThO = std::inner_product(diffThO.begin(), diffThO.end(), diffThO.begin(), 0.0) / (diffThO.size() - 1);
 
-            //            std::transform(Fcart.begin(), Fcart.end(), diffF.begin(), bind2nd(std::plus<double>(), - EFcart));
-            //            varFcart = std::inner_product(diffF.begin(), diffF.end(), diffF.begin(), 0.0) / (diffF.size() - 1);
-
-
         }
+
         sleep(10 * Ts);
         t = t + 10 * Ts;
     }
@@ -267,8 +226,8 @@ int DMPExecutorPush::findIndex(double t, vec times) {
 void  DMPExecutorPush::saveData(string path) {
 
     std::ofstream pStream , pStreamP;
-    pStream.open(path + string("/") + "pushRes.txt");
-    pStreamP.open(path + string("/") + "pushResP.txt");
+    pStream.open((path + string("/") + "pushRes.txt").c_str());
+    pStreamP.open((path + string("/") + "pushResP.txt").c_str());
 
     pStreamP << "xR" << "\t";
     for (int i = 0; i < xR.size(); ++i) pStreamP << xR[i] << "\t";
@@ -324,7 +283,6 @@ void  DMPExecutorPush::saveData(string path) {
 
     pStream.close();
     pStreamP.close();
-
 
 }
 

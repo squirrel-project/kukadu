@@ -33,7 +33,9 @@ GeneralDmpLearner::GeneralDmpLearner(vector<double> mysDef, vector<double> sigma
 GeneralDmpLearner::GeneralDmpLearner(double az, double bz, std::string file) {
 
     vector<double> tmpmys;
-    vector<double> tmpsigmas = {0.2, 0.8};
+
+    vector<double> tmpsigmas;
+    tmpsigmas.push_back(0.2); tmpsigmas.push_back(0.8);
     mat joints = readMovements(file);
     int degFreedom = joints.n_cols - 1;
 
@@ -50,7 +52,8 @@ GeneralDmpLearner::GeneralDmpLearner(double az, double bz, std::string file) {
 GeneralDmpLearner::GeneralDmpLearner(double az, double bz, arma::mat joints) {
 
     vector<double> tmpmys;
-    vector<double> tmpsigmas = {0.2, 0.8};
+    vector<double> tmpsigmas;
+    tmpsigmas.push_back(0.2); tmpsigmas.push_back(0.8);
     int degFreedom = joints.n_cols - 1;
 
     tmpmys = constructDmpMys(joints);
@@ -63,7 +66,7 @@ GeneralDmpLearner::GeneralDmpLearner(double az, double bz, arma::mat joints) {
 
 }
 
-std::shared_ptr<Dmp> GeneralDmpLearner::fitTrajectories() {
+KUKADU_SHARED_PTR<Dmp> GeneralDmpLearner::fitTrajectories() {
 
     int dataPointsNum = joints.n_rows;
 

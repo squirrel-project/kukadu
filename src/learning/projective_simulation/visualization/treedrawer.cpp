@@ -84,7 +84,7 @@ TreeDrawer::~TreeDrawer() {
 #endif
 }
 
-int TreeDrawer::compteXOffset(std::shared_ptr<std::set<std::shared_ptr<Clip>, clip_compare> > level) {
+int TreeDrawer::compteXOffset(KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > level) {
 #if VISUALIZATION == 1
     int clipCount = level->size();
     return max(0, (int) ((TREEDRAWER_H_WINDOW_X_SIZE - TREEDRAWER_H_NODE_X_OFFS - TREEDRAWER_H_NODE_X_DIST * clipCount) / 2.0));
@@ -93,21 +93,21 @@ int TreeDrawer::compteXOffset(std::shared_ptr<std::set<std::shared_ptr<Clip>, cl
 #endif
 }
 
-void TreeDrawer::drawTree(std::shared_ptr<ProjectiveSimulator> projSim) {
+void TreeDrawer::drawTree(KUKADU_SHARED_PTR<ProjectiveSimulator> projSim) {
 
 #if VISUALIZATION == 1
 
     int currLayer = 0;
 
     al_clear_to_color(textColor);
-    std::shared_ptr<std::vector<std::shared_ptr<std::set<std::shared_ptr<Clip>, clip_compare>>>> clipLayers = projSim->getClipLayers();
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > > > clipLayers = projSim->getClipLayers();
     int layerCount = clipLayers->size();
 
     currLayer = 0;
-    for(std::shared_ptr<set<std::shared_ptr<Clip>, clip_compare>> level : *clipLayers) {
+    for(KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare>> level : *clipLayers) {
 
         int currIdx = 0;
-        for(std::shared_ptr<Clip> currClip : *level) {
+        for(KUKADU_SHARED_PTR<Clip> currClip : *level) {
 
             double totalSubWeight = 0.0;
             int startPosStartNode = compteXOffset(level);
@@ -117,13 +117,13 @@ void TreeDrawer::drawTree(std::shared_ptr<ProjectiveSimulator> projSim) {
             int subClipCount = currClip->getSubClipCount();
             for(int i = 0; i < subClipCount; ++i) {
 
-                std::shared_ptr<Clip> subClip = currClip->getSubClipByIdx(i);
+                KUKADU_SHARED_PTR<Clip> subClip = currClip->getSubClipByIdx(i);
                 int targetLayer = subClip->getLevel();
                 int startPosEndNode = compteXOffset((targetLayer != -1) ? clipLayers->at(targetLayer) : clipLayers->at(clipLayers->size() - 1));
                 if(targetLayer == CLIP_H_LEVEL_FINAL)
                     targetLayer = layerCount - 1;
 
-                std::shared_ptr<set<std::shared_ptr<Clip>, clip_compare>> subLevel = clipLayers->at(targetLayer);
+                KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare>> subLevel = clipLayers->at(targetLayer);
                 int targetIdx = distance(subLevel->begin(), subLevel->find(subClip));
 
                 al_draw_line(startPosStartNode + TREEDRAWER_H_NODE_X_OFFS + TREEDRAWER_H_NODE_X_DIST * currIdx,
@@ -144,11 +144,11 @@ void TreeDrawer::drawTree(std::shared_ptr<ProjectiveSimulator> projSim) {
     }
 
     currLayer = 0;
-    for(std::shared_ptr<set<std::shared_ptr<Clip>, clip_compare>> level : *clipLayers) {
+    for(KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare>> level : *clipLayers) {
 
         int currIdx = 0;
         int startPos = compteXOffset(level);
-        for(std::shared_ptr<Clip> currClip : *level) {
+        for(KUKADU_SHARED_PTR<Clip> currClip : *level) {
 
             drawNode(startPos + TREEDRAWER_H_NODE_X_OFFS + TREEDRAWER_H_NODE_X_DIST * currIdx,
                      TREEDRAWER_H_NODE_Y_OFFS + TREEDRAWER_H_NODE_Y_DIST * currLayer,

@@ -1,18 +1,16 @@
-#ifndef SENSINGCONTROLLER_H
-#define SENSINGCONTROLLER_H
+#ifndef KUKADU_SENSINGCONTROLLER_H
+#define KUKADU_SENSINGCONTROLLER_H
 
-#include <cstdio>
-#include <iostream>
-#include <fstream>
-#include <thread>
 #include <string>
 #include <vector>
+#include <cstdio>
+#include <fstream>
+#include <iostream>
 #include <wordexp.h>
-#include <memory>
-#include <random>
 
 #include "Controller.hpp"
 #include "ControllerResult.hpp"
+#include "../types/KukaduTypes.h"
 #include "../robot/SensorStorage.h"
 #include "../robot/KukieControlQueue.h"
 
@@ -27,7 +25,7 @@ private:
     int simulationGroundTruth;
     int simulatedClassificationPrecision;
 
-    std::discrete_distribution<int> classifierDist;
+    KUKADU_DISCRETE_DISTRIBUTION<int> classifierDist;
 
     double bestParamC;
     double bestParamD;
@@ -40,49 +38,44 @@ private:
     std::string classifierFile;
     std::string classifierFunction;
 
-    std::shared_ptr<std::mt19937> generator;
+    KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator;
 
-    std::vector<std::shared_ptr<GenericHand>> hands;
-    std::vector<std::shared_ptr<ControlQueue>> queues;
+    std::vector<KUKADU_SHARED_PTR<GenericHand> > hands;
+    std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues;
 
     std::vector<double> callClassifier(std::string trainedPath, std::string passedFilePath, bool classify,
                                        double bestParamC, double bestParamD, double bestParamParam1, double bestParamParam2);
 
-    void writeLabelFile(std::string baseFolderPath, std::vector<std::pair<int, std::string>> collectedSamples);
+    void writeLabelFile(std::string baseFolderPath, std::vector<std::pair<int, std::string> > collectedSamples);
 
 public:
 
-    SensingController(std::shared_ptr<std::mt19937> generator, int hapticMode, std::string caption, std::string databasePath, std::vector<std::shared_ptr<ControlQueue>> queues, std::vector<std::shared_ptr<GenericHand>> hands,
+    SensingController(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int hapticMode, std::string caption, std::string databasePath, std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, std::vector<KUKADU_SHARED_PTR<GenericHand> > hands,
                       std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction);
+
+    void setSimulationGroundTruth(int idx);
+    void gatherData(std::string completePath);
+    void setSimulationClassificationPrecision(int percent);
+    void gatherData(std::string dataBasePath, std::string dataName);
+    void setCLassifierParams(double bestParamC, double bestParamD, double bestParamParam1, double bestParamParam2);
 
     virtual void prepare() = 0;
     virtual void cleanUp() = 0;
     virtual void performCore() = 0;
 
-    void gatherData(std::string completePath);
-    void gatherData(std::string dataBasePath, std::string dataName);
+    int performClassification();
+    int createRandomGroundTruthIdx();
 
     virtual int getSensingCatCount() = 0;
 
-    // classifies the sensor data that comes from the first passed queue; the file has to end with the "_0" postfix as well
-    int performClassification();
-
-    void setCLassifierParams(double bestParamC, double bestParamD, double bestParamParam1, double bestParamParam2);
-
-    std::string getDatabasePath();
-    // returns robot file name of the first passed control queue (the one, from which the force data is sampled)
-    std::string getFirstRobotFileName();
-
-    std::shared_ptr<ControllerResult> performAction();
-
-    // returns cross validation score
     double createDataBase();
 
-    int createRandomGroundTruthIdx();
-    void setSimulationGroundTruth(int idx);
-    void setSimulationClassificationPrecision(int percent);
+    std::string getDatabasePath();
+    std::string getFirstRobotFileName();
 
     std::vector<double> callClassifier();
+
+    KUKADU_SHARED_PTR<ControllerResult> performAction();
 
     static const int HAPTIC_MODE_TERMINAL = 0;
     static const int HAPTIC_MODE_CLASSIFIER = 1;
@@ -91,4 +84,4 @@ public:
 
 
 
-#endif // SENSINGCONTROLLER_H
+#endif

@@ -1,19 +1,19 @@
-#ifndef GENDMPREINFORCER
-#define GENDMPREINFORCER
+#ifndef KUKADU_GENDMPREINFORCER_H
+#define KUKADU_GENDMPREINFORCER_H
 
-#include <armadillo>
 #include <vector>
 #include <cfloat>
-#include <memory>
+#include <armadillo>
 
-#include "../../trajectory/DMPExecutor.h"
 #include "CostComputer.h"
 #include "DMPReinforcer.h"
-#include "../../trajectory/DMPGeneralizer.h"
-#include "../../robot/ControlQueue.h"
-#include "../../learning/GenericKernel.h"
 #include "../../types/DMP.h"
 #include "../../types/QueryPoint.h"
+#include "../../types/KukaduTypes.h"
+#include "../../robot/ControlQueue.h"
+#include "../../learning/GenericKernel.h"
+#include "../../trajectory/DMPExecutor.h"
+#include "../../trajectory/DMPGeneralizer.h"
 #include "../../robot/PlottingControlQueue.h"
 
 /** \brief The GenDMPReinforcer completes the DMPReinforcer implementation by reusing the DMPGeneralizer functionality
@@ -26,26 +26,28 @@
 class GenDMPReinforcer : public DMPReinforcer {
 
 private:
-	
-    std::shared_ptr<DMPGeneralizer> dmpGen;
-	GenericKernel* trajectoryKernel;
-	GenericKernel* parameterKernel;
-	arma::vec initialQueryPoint;
-	arma::vec lastQueryPoint;
-	
-    std::shared_ptr<Dmp> lastUpdate;
-    std::vector<std::shared_ptr<ControllerResult>> genResults;
-	bool isFirstRolloutAfterInit;
-	
-	double ql;
-	double qh;
 
-    std::shared_ptr<PlottingControlQueue> simQueue;
+    bool isFirstRolloutAfterInit;
+
+    double ql;
+    double qh;
+
+    GenericKernel* parameterKernel;
+    GenericKernel* trajectoryKernel;
+
+    arma::vec lastQueryPoint;
+    arma::vec initialQueryPoint;
 	
+    KUKADU_SHARED_PTR<Dmp> lastUpdate;
+    KUKADU_SHARED_PTR<DMPGeneralizer> dmpGen;
+    KUKADU_SHARED_PTR<PlottingControlQueue> simQueue;
+
+    std::vector<KUKADU_SHARED_PTR<ControllerResult> > genResults;
+
 	/**
 	 * \brief plots feedback graphs
 	 */
-    void plotFeedback(std::shared_ptr<DMPGeneralizer> dmpGen, std::shared_ptr<Dmp> rollout, std::shared_ptr<ControllerResult> currentRolloutRes);
+    void plotFeedback(KUKADU_SHARED_PTR<DMPGeneralizer> dmpGen, KUKADU_SHARED_PTR<Dmp> rollout, KUKADU_SHARED_PTR<ControllerResult> currentRolloutRes);
 
 public:
 
@@ -62,33 +64,34 @@ public:
 	 * \param tolAbsErr absolute tolerated error for numerical approximation
 	 * \param tolRelErr relative tolerated error for numerical approximation
 	 */
-    GenDMPReinforcer(arma::vec initialQueryPoint, CostComputer* cost, std::shared_ptr<DMPGeneralizer> dmpGen, GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, std::shared_ptr<ControlQueue> movementQueue,
+    GenDMPReinforcer(arma::vec initialQueryPoint, CostComputer* cost, KUKADU_SHARED_PTR<DMPGeneralizer> dmpGen, GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, KUKADU_SHARED_PTR<ControlQueue> movementQueue,
 			 double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
+
+    /**
+     * \brief returns maximum query point
+     */
+    double getQMin();
+
+    /**
+     * \brief returns minimum query point
+     */
+    double getQMax();
+
+    /**
+     * \brief sets qMin value (can be used to increas rl speed significantly)
+     */
+    double setQMin(double qMin);
+
+    /**
+     * \brief sets qMax value (can be used to increas rl speed significantly)
+     */
+    double setQMax(double qMax);
 	
-    std::vector<std::shared_ptr<Dmp>> getInitialRollout();
-    std::vector<std::shared_ptr<Dmp>> computeRolloutParamters();
-    std::shared_ptr<Dmp> updateStep();
-    std::shared_ptr<Dmp> getLastUpdate();
-	
-	/**
-	 * \brief returns maximum query point
-	 */
-	double getQMin();
-	
-	/**
-	 * \brief returns minimum query point
-	 */
-	double getQMax();
-	
-	/**
-	 * \brief sets qMin value (can be used to increas rl speed significantly)
-	 */
-	double setQMin(double qMin);
-	
-	/**
-	 * \brief sets qMax value (can be used to increas rl speed significantly)
-	 */
-	double setQMax(double qMax);
+    std::vector<KUKADU_SHARED_PTR<Dmp> > getInitialRollout();
+    std::vector<KUKADU_SHARED_PTR<Dmp> > computeRolloutParamters();
+
+    KUKADU_SHARED_PTR<Dmp> updateStep();
+    KUKADU_SHARED_PTR<Dmp> getLastUpdate();
 	
 };
 

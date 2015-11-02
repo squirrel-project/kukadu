@@ -6,7 +6,7 @@
 using namespace std;
 using namespace arma;
 
-GeneralReinforcer::GeneralReinforcer(std::shared_ptr<TrajectoryExecutor> trajEx, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue) {
+GeneralReinforcer::GeneralReinforcer(KUKADU_SHARED_PTR<TrajectoryExecutor> trajEx, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue) {
 	
 	this->trajEx = trajEx;
 	this->cost = cost;
@@ -26,15 +26,15 @@ std::vector<double> GeneralReinforcer::getLastRolloutCost() {
 	return lastCost;
 }
 
-std::vector<std::shared_ptr<Trajectory>> GeneralReinforcer::getLastRolloutParameters() {
+std::vector<KUKADU_SHARED_PTR<Trajectory> > GeneralReinforcer::getLastRolloutParameters() {
 	return rollout;
 }
 
-std::vector<std::shared_ptr<ControllerResult> > GeneralReinforcer::getLastExecutionResults() {
+std::vector<KUKADU_SHARED_PTR<ControllerResult> > GeneralReinforcer::getLastExecutionResults() {
 	return dmpResult;
 }
 
-std::shared_ptr<ControllerResult> GeneralReinforcer::getLastUpdateRes() {
+KUKADU_SHARED_PTR<ControllerResult> GeneralReinforcer::getLastUpdateRes() {
 	return lastUpdateRes;
 }
 
@@ -130,7 +130,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 	}
 
 	double tmpCost = lastUpdateCost;
-    std::shared_ptr<Trajectory> tmpUpdate = lastUpdate->copy();
+    KUKADU_SHARED_PTR<Trajectory> tmpUpdate = lastUpdate->copy();
     shared_ptr<ControllerResult> tmpRes = lastUpdateRes;
     lastUpdate = updateStep();
 
@@ -204,12 +204,12 @@ double GeneralReinforcer::getLastUpdateReward() {
 	return lastUpdateCost;
 }
 
-std::shared_ptr<Trajectory> GeneralReinforcer::getLastUpdate() {
+KUKADU_SHARED_PTR<Trajectory> GeneralReinforcer::getLastUpdate() {
 	
 	return lastUpdate;
 	
 }
 
-void GeneralReinforcer::setLastUpdate(std::shared_ptr<Trajectory> lastUpdate) {
+void GeneralReinforcer::setLastUpdate(KUKADU_SHARED_PTR<Trajectory> lastUpdate) {
 	this->lastUpdate = lastUpdate;
 }

@@ -58,14 +58,15 @@ include_directories(
 
 set(ENABLE_VISUALIZATION 1)
 
-#set(CMAKE_BUILD_TYPE Debug)
+## do not switch to debug --> pcl tools will not work anymore due to pcl bug
 set(CMAKE_BUILD_TYPE Release)
 
-add_definitions(-O0)
+#add_definitions(-O0)
 add_definitions(-fPIC)
 add_definitions(-shared)
 add_definitions(-pthread)
-add_definitions(-std=c++0x)
+add_definitions(-DUSEBOOST)
+#add_definitions(-std=c++11)
 add_definitions(-DROS_SUPPORT)
 add_definitions(-DOSNAME_LINUX=1)
 
@@ -92,10 +93,10 @@ AUX_SOURCE_DIRECTORY(src/learning/reinforcement_learning/ KUKADUSRC)
 
 add_subdirectory(src/learning/projective_simulation)
 
-add_library(kukadu
+add_library(${PROJECT_NAME}
     ${KUKADUSRC}
 )
 
-target_link_libraries(kukadu ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a pthread dl util m python3.4m prosim ${PCL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a pthread dl util m python3.4m prosim ${PCL_LIBRARIES})
 
 catkin_add_gtest(kukadutest test/kukadutest.cpp)

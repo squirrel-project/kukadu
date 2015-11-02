@@ -2,12 +2,12 @@
 
 using namespace std;
 
-InvasionGameReward::InvasionGameReward(std::shared_ptr<std::mt19937> generator, bool collectPrevRewards) : Reward(generator, collectPrevRewards) {
+InvasionGameReward::InvasionGameReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, bool collectPrevRewards) : Reward(generator, collectPrevRewards) {
     currentTimeStep = 0;
     intDist = std::uniform_int_distribution<int>(0, 1);
 }
 
-double InvasionGameReward::computeRewardInternal(std::shared_ptr<PerceptClip> providedPercept, std::shared_ptr<ActionClip> takenAction) {
+double InvasionGameReward::computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction) {
 
     int perceptId = providedPercept->getPerceptId();
     int actionId = takenAction->getActionId();
@@ -18,22 +18,22 @@ double InvasionGameReward::computeRewardInternal(std::shared_ptr<PerceptClip> pr
 
 }
 
-std::shared_ptr<PerceptClip> InvasionGameReward::generateNextPerceptClip(int immunity) {
+KUKADU_SHARED_PTR<PerceptClip> InvasionGameReward::generateNextPerceptClip(int immunity) {
     return perceptClips->at(intDist(*generator));
 }
 
-std::shared_ptr<std::vector<std::shared_ptr<ActionClip> > > InvasionGameReward::generateActionClips() {
-    std::shared_ptr<vector<std::shared_ptr<ActionClip>>> actionClips = std::shared_ptr<vector<std::shared_ptr<ActionClip>>>(new vector<std::shared_ptr<ActionClip>>());
-    actionClips->push_back(std::shared_ptr<ActionClip>(new ActionClip(INVASIONGAMEREWARD_H_LEFT_ACTION, 1, "left action", generator)));
-    actionClips->push_back(std::shared_ptr<ActionClip>(new ActionClip(INVASIONGAMEREWARD_H_RIGHT_ACTION, 1, "right action", generator)));
+KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > InvasionGameReward::generateActionClips() {
+    KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<ActionClip>>> actionClips = KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<ActionClip>>>(new vector<KUKADU_SHARED_PTR<ActionClip>>());
+    actionClips->push_back(KUKADU_SHARED_PTR<ActionClip>(new ActionClip(INVASIONGAMEREWARD_H_LEFT_ACTION, 1, "left action", generator)));
+    actionClips->push_back(KUKADU_SHARED_PTR<ActionClip>(new ActionClip(INVASIONGAMEREWARD_H_RIGHT_ACTION, 1, "right action", generator)));
     return actionClips;
 }
 
-std::shared_ptr<std::vector<std::shared_ptr<PerceptClip> >> InvasionGameReward::generatePerceptClips() {
-    std::shared_ptr<vector<std::shared_ptr<PerceptClip>>> perceptClips = std::shared_ptr<vector<std::shared_ptr<PerceptClip>>>(new vector<std::shared_ptr<PerceptClip>>());
-    perceptClips->push_back(std::shared_ptr<PerceptClip>(new PerceptClip(INVASIONGAMEREWARD_H_LEFT_PERCEPT, "left sign", generator, std::shared_ptr<vector<int>>(new vector<int>({INVASIONGAMEREWARD_H_LEFT_PERCEPT})), PS_DEFAULT_IMMUNITY)));
-    perceptClips->push_back(std::shared_ptr<PerceptClip>(new PerceptClip(INVASIONGAMEREWARD_H_RIGHT_PERCEPT, "right sign", generator, std::shared_ptr<vector<int>>(new vector<int>({INVASIONGAMEREWARD_H_RIGHT_PERCEPT})), PS_DEFAULT_IMMUNITY)));
-    return std::shared_ptr<std::vector<std::shared_ptr<PerceptClip> >>(this->perceptClips = perceptClips);
+KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> >> InvasionGameReward::generatePerceptClips() {
+    KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<PerceptClip>>> perceptClips = KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<PerceptClip>>>(new vector<KUKADU_SHARED_PTR<PerceptClip>>());
+    perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(INVASIONGAMEREWARD_H_LEFT_PERCEPT, "left sign", generator, KUKADU_SHARED_PTR<vector<int>>(new vector<int>({INVASIONGAMEREWARD_H_LEFT_PERCEPT})), PS_DEFAULT_IMMUNITY)));
+    perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(INVASIONGAMEREWARD_H_RIGHT_PERCEPT, "right sign", generator, KUKADU_SHARED_PTR<vector<int>>(new vector<int>({INVASIONGAMEREWARD_H_RIGHT_PERCEPT})), PS_DEFAULT_IMMUNITY)));
+    return KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> >>(this->perceptClips = perceptClips);
 }
 
 int InvasionGameReward::getDimensionality() {

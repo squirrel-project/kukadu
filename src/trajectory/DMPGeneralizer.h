@@ -1,22 +1,23 @@
-#ifndef DMPGENERALIZER
-#define DMPGENERALIZER
+#ifndef KUKADU_DMPGENERALIZER_H
+#define KUKADU_DMPGENERALIZER_H
 
 #include <string>
 #include <vector>
 #include <armadillo>
 
-#include "../types/DictionaryTrajectory.h"
+#include "../types/DMP.h"
 #include "../utils/types.h"
 #include "../utils/utils.h"
-#include "../types/DMP.h"
 #include "../types/DMPBase.h"
-#include "../types/QueryPoint.h"
-#include "../trajectory/DMPTrajectoryGenerator.h"
-#include "../trajectory/JointDMPLearner.h"
-#include "../learning/GenericKernel.h"
-#include "../learning/GaussianProcessRegressor.h"
-#include "../learning/LWRRegressor.h"
 #include "GenericGeneralizer.h"
+#include "../types/QueryPoint.h"
+#include "../types/KukaduTypes.h"
+#include "../learning/LWRRegressor.h"
+#include "../learning/GenericKernel.h"
+#include "../trajectory/JointDMPLearner.h"
+#include "../types/DictionaryTrajectory.h"
+#include "../trajectory/DMPTrajectoryGenerator.h"
+#include "../learning/GaussianProcessRegressor.h"
 
 /**
  * \defgroup ControlPolicyFramework
@@ -35,14 +36,14 @@ private:
 	
 	double ax;
 	double tau;
+    double degOfFreedom;
 	
 	std::string baseFolder;
+
 	DictionaryTrajectory* dictTraj;
 	
+    arma::mat computeCovarianceMatrix(int level, GenericKernel* kernel, double beta);
 	std::vector<QueryPoint> mapFiles(std::vector<std::string> queryFiles, std::vector<std::string> trajFiles, std::string prefix1, std::string prefix2);
-	arma::mat computeCovarianceMatrix(int level, GenericKernel* kernel, double beta);
-	
-	double degOfFreedom;
 
 public:
 
@@ -77,7 +78,7 @@ public:
 	 * \param query required query point
 	 * \param beta beta for Gaussian processes
 	 */
-    std::shared_ptr<JointDmp> generalizeDmp(GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, arma::vec query, double beta);
+    KUKADU_SHARED_PTR<JointDmp> generalizeDmp(GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, arma::vec query, double beta);
     
 };
 

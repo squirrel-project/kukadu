@@ -1,12 +1,13 @@
-#ifndef GENERICGENERALIZER
-#define GENERICGENERALIZER
+#ifndef KUKADU_GENERICGENERALIZER_H
+#define KUKADU_GENERICGENERALIZER_H
 
-#include <armadillo>
 #include <vector>
 #include <string>
+#include <armadillo>
 
-#include "../types/jointdmp.h"
 #include "../utils/types.h"
+#include "../types/jointdmp.h"
+#include "../types/KukaduTypes.h"
 
 /** \brief 
  * 
@@ -19,7 +20,7 @@ private:
 
 public:
 
-    virtual std::shared_ptr<JointDmp> generalizeDmp(GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, arma::vec query, double beta) = 0;
+    virtual KUKADU_SHARED_PTR<JointDmp> generalizeDmp(GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, arma::vec query, double beta) = 0;
 	
 };
 

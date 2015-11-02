@@ -1,19 +1,18 @@
-#ifndef PROJECTIVESIMULATOR_H
-#define PROJECTIVESIMULATOR_H
+#ifndef KUKADU_PROJECTIVESIMULATOR_H
+#define KUKADU_PROJECTIVESIMULATOR_H
+
+#include <set>
+#include <map>
+#include <limits>
+#include <vector>
+#include <utility>
+#include <algorithm>
 
 #include "clip.h"
 #include "reward.h"
 #include "actionclip.h"
 #include "perceptclip.h"
-
-#include <set>
-#include <map>
-#include <vector>
-#include <random>
-#include <utility>
-#include <algorithm>
-#include <limits>
-#include <memory>
+#include "../../../types/KukaduTypes.h"
 
 #define PS_PRINT_DEBUG_INFO 0
 #define PS_PRINT_RANKING_DEBUG_INFO 0
@@ -24,7 +23,7 @@
 
 struct clip_compare {
 
-    bool operator() (std::shared_ptr<Clip> const& lhs, std::shared_ptr<Clip> const& rhs) {
+    bool operator() (KUKADU_SHARED_PTR<Clip> const& lhs, KUKADU_SHARED_PTR<Clip> const& rhs) {
 
         /*
          *This object determines the order of the elements in the container:
@@ -65,45 +64,41 @@ private:
     double gamma;
     double boredom;
 
-    std::shared_ptr<Reward> reward;
+    std::vector<std::pair<double, KUKADU_SHARED_PTR<Clip> > > rankVec;
 
-    std::shared_ptr<std::mt19937> generator;
-    std::uniform_int_distribution<int> intDist;
+    KUKADU_SHARED_PTR<Reward> reward;
+    KUKADU_SHARED_PTR<Clip> lastClipBeforeAction;
+    KUKADU_SHARED_PTR<ActionClip> lastActionClip;
+    KUKADU_SHARED_PTR<PerceptClip> lastPerceptClip;
+    KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator;
+    KUKADU_SHARED_PTR<PerceptClip> lastGeneralizedPercept;
+    KUKADU_SHARED_PTR<std::vector<int> > intermediateHops;
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > actionClips;
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > perceptClips;
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > > > clipLayers;
 
-    std::shared_ptr<Clip> lastClipBeforeAction;
-    std::shared_ptr<ActionClip> lastActionClip;
-    std::shared_ptr<PerceptClip> lastPerceptClip;
-    std::shared_ptr<PerceptClip> lastGeneralizedPercept;
-
-    std::shared_ptr<std::vector<int>> intermediateHops;
-    std::vector<std::pair<double, std::shared_ptr<Clip>>> rankVec;
-    std::shared_ptr<std::vector<std::shared_ptr<ActionClip>>> actionClips;
-    std::shared_ptr<std::vector<std::shared_ptr<PerceptClip>>> perceptClips;
-
-    // includes action clips
-    std::shared_ptr<std::vector<std::shared_ptr<std::set<std::shared_ptr<Clip>, clip_compare>>>> clipLayers;
+    kukadu_uniform_distribution intDist;
 
     void cleanByRank();
     void printRankVec();
     void computeRankVec();
+    void construct(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, double gamma, int operationMode, bool useRanking);
 
     bool fileExists(const std::string filePath);
 
-    int getIdVecLevel(std::shared_ptr<std::vector<int>> idVec);
+    int getIdVecLevel(KUKADU_SHARED_PTR<std::vector<int> > idVec);
 
-    double computeBoredem(std::shared_ptr<Clip> clip);
+    double computeBoredem(KUKADU_SHARED_PTR<Clip> clip);
 
-    std::shared_ptr<Clip> findClipByIdVec(std::shared_ptr<std::vector<int>> idVec);
-    std::shared_ptr<Clip> findClipInLevelByIdVec(std::shared_ptr<std::vector<int>> idVec, int level);
-
-    void construct(std::shared_ptr<Reward> reward, std::shared_ptr<std::mt19937> generator, double gamma, int operationMode, bool useRanking);
+    KUKADU_SHARED_PTR<Clip> findClipByIdVec(KUKADU_SHARED_PTR<std::vector<int> > idVec);
+    KUKADU_SHARED_PTR<Clip> findClipInLevelByIdVec(KUKADU_SHARED_PTR<std::vector<int> > idVec, int level);
 
 public:
 
-    ProjectiveSimulator(std::shared_ptr<Reward> reward, std::shared_ptr<std::mt19937> generator, std::string file);
-    ProjectiveSimulator(std::shared_ptr<Reward> reward, std::shared_ptr<std::mt19937> generator, double gamma, int operationMode, bool useRanking);
-    ProjectiveSimulator(std::shared_ptr<Reward> reward, std::shared_ptr<std::mt19937> generator,
-                        std::shared_ptr<std::vector<std::shared_ptr<PerceptClip>>> network,
+    ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file);
+    ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, double gamma, int operationMode, bool useRanking);
+    ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator,
+                        KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > network,
                         double gamma, int operationMode, bool useRanking);
     ~ProjectiveSimulator();
 
@@ -112,28 +107,28 @@ public:
     void setTrainingMode(bool doTraining);
     void setStandardImmunity(int immunity);
     void setMaxNumberOfClips(int maxNumberOfClips);
-    void connectNewClip(std::shared_ptr<Clip> conClip);
-    void eliminateClip(std::shared_ptr<Clip> currClip);
-    void generalize(std::shared_ptr<PerceptClip> nextClip);
-    void fillClipLayersFromNetwork(std::shared_ptr<Clip> cl);
+    void connectNewClip(KUKADU_SHARED_PTR<Clip> conClip);
+    void eliminateClip(KUKADU_SHARED_PTR<Clip> currClip);
+    void generalize(KUKADU_SHARED_PTR<PerceptClip> nextClip);
+    void fillClipLayersFromNetwork(KUKADU_SHARED_PTR<Clip> cl);
 
     int getClipCount();
     int getStandardImmunity();
 
     std::pair<bool, double> performRewarding();
 
-    std::shared_ptr<std::vector<int>> getIntermediateHopIdx();
+    KUKADU_SHARED_PTR<std::vector<int> > getIntermediateHopIdx();
 
-    std::shared_ptr<ActionClip> performRandomWalk();
+    KUKADU_SHARED_PTR<ActionClip> performRandomWalk();
 
     // returns list of clips that have to be created
-    std::shared_ptr<std::set<std::shared_ptr<Clip>, clip_compare>> createNewClips(std::shared_ptr<PerceptClip> nextClip);
-    std::shared_ptr<std::vector<std::shared_ptr<PerceptClip>>> getPerceptClips();
-    std::shared_ptr<std::vector<std::shared_ptr<ActionClip>>> getActionClips();
-    std::shared_ptr<std::vector<std::shared_ptr<std::set<std::shared_ptr<Clip>, clip_compare>>>> getClipLayers();
+    KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > createNewClips(KUKADU_SHARED_PTR<PerceptClip> nextClip);
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > getPerceptClips();
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > getActionClips();
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > > > getClipLayers();
 
     void storePS(std::string targetFile);
 
 };
 
-#endif // PROJECTIVESIMULATOR_H
+#endif

@@ -1,33 +1,22 @@
-#ifndef PLOTTINGCONTROLQUEUE
-#define PLOTTINGCONTROLQUEUE
+#ifndef KUKADU_PLOTTINGCONTROLQUEUE_H
+#define KUKADU_PLOTTINGCONTROLQUEUE_H
 
-#include <unistd.h>
 #include <queue>
-#include <iostream>
-#include <cstdlib>
-#include <math.h>
-#include <thread>
-#include <mutex>
 #include <time.h>
-#include <thread>
+#include <math.h>
+#include <cstdlib>
+#include <iostream>
+#include <unistd.h>
 
-// Custom librairies
-#include "ControlQueue.h"
-#include "../utils/DestroyableObject.h"
-#include "../utils/types.h"
-#include "../utils/utils.h"
-#include "robotDriver/src/kuka/friRemote.h"
-
-#include "ros/ros.h"
-#include "std_msgs/String.h"
-
-#include <sensor_msgs/JointState.h>
+#include <ros/ros.h>
 #include <std_msgs/Int32.h>
+#include <std_msgs/String.h>
+#include <geometry_msgs/Pose.h>
+#include <sensor_msgs/JointState.h>
 #include <std_msgs/Int32MultiArray.h>
 #include <std_msgs/Float64MultiArray.h>
 #include <std_msgs/Float32MultiArray.h>
 #include <std_msgs/MultiArrayDimension.h>
-#include <geometry_msgs/Pose.h>
 
 #include <iis_robot_dep/KukieError.h>
 #include <iis_robot_dep/FriRobotData.h>
@@ -36,6 +25,14 @@
 #include <iis_robot_dep/FriRobotJntData.h>
 #include <iis_robot_dep/FriJointImpedance.h>
 #include <iis_robot_dep/CartesianImpedance.h>
+
+// Custom librairies
+#include "../utils/types.h"
+#include "../utils/utils.h"
+#include "../types/KukaduTypes.h"
+#include "../robot/ControlQueue.h"
+#include "../utils/DestroyableObject.h"
+#include "robotDriver/src/kuka/friRemote.h"
 
 #define COMMAND_NOT_SET -100
 
@@ -50,14 +47,12 @@ class PlottingControlQueue : public ControlQueue {
 
 private:
 	
-    int sleepTime;
+    int isInit;
 	int finish;
-	int isInit;
-	int argc;
-	
+    int impMode;
+    int sleepTime;
 	int ptpReached;
 	int monComMode;
-	int impMode;
 	int currentMode;
 	
     double currentTime;
@@ -68,8 +63,8 @@ private:
 
     std::vector<std::string> jointNames;
 	
-	std::mutex currentJointsMutex;
-	std::mutex currentCartsMutex;
+    kukadu_mutex currentJointsMutex;
+    kukadu_mutex currentCartsMutex;
 	
     void construct(std::vector<std::string> jointNames, double timeStep);
 
@@ -85,7 +80,9 @@ public:
     PlottingControlQueue(std::vector<std::string> jointNames, double timeStep);
 	
 	void run();
+    void shutUp();
 	void setFinish();
+    void startTalking();
     void safelyDestroy();
     void setInitValues();
     void stopCurrentMode();
@@ -120,9 +117,6 @@ public:
     mes_result getCurrentCartesianFrcTrq();
 
     geometry_msgs::Pose getCartesianPose();
-
-    void shutUp();
-    void startTalking();
 
     virtual void rollBack(double time);
     virtual void stopJointRollBackMode();

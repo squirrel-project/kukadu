@@ -5,7 +5,7 @@ using namespace std;
 
 //bool rewardComparator(pair <double, Trajectory*> i, pair <double, Trajectory*> j) { return (i.first > j.first); }
 
-GradientDescent::GradientDescent(std::shared_ptr<TrajectoryExecutor> trajEx, std::vector<std::shared_ptr<Trajectory>> initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
+GradientDescent::GradientDescent(KUKADU_SHARED_PTR<TrajectoryExecutor> trajEx, std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
 
     throw "(GradientDescent) currently broken";
 
@@ -14,7 +14,7 @@ GradientDescent::GradientDescent(std::shared_ptr<TrajectoryExecutor> trajEx, std
     // init sampler
     for(int i = 0; i < initDmp.at(0)->getCoefficients().at(0).n_elem; ++i) {
         vec currCoeff = initDmp.at(0)->getCoefficients().at(0);
-        normal_distribution<double> normal(0, explorationSigma);
+        kukadu_normal_distribution normal(0, explorationSigma);
         normals.push_back(normal);
         intSigmas.push_back(abs(explorationSigma));
     }
@@ -23,7 +23,7 @@ GradientDescent::GradientDescent(std::shared_ptr<TrajectoryExecutor> trajEx, std
 
 }
 
-GradientDescent::GradientDescent(std::shared_ptr<TrajectoryExecutor> trajEx, std::vector<std::shared_ptr<Trajectory>> initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
+GradientDescent::GradientDescent(KUKADU_SHARED_PTR<TrajectoryExecutor> trajEx, std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
 
     throw "(GradientDescent) currently broken";
 
@@ -31,7 +31,7 @@ GradientDescent::GradientDescent(std::shared_ptr<TrajectoryExecutor> trajEx, std
     for(int i = 0; i < initDmp.at(0)->getCoefficients().at(0).n_elem; ++i) {
 
         vec currCoeff = initDmp.at(0)->getCoefficients().at(0);
-        normal_distribution<double> normal(0, explorationSigmas.at(i));
+        kukadu_normal_distribution normal(0, explorationSigmas.at(i));
         normals.push_back(normal);
 
     }
@@ -40,7 +40,7 @@ GradientDescent::GradientDescent(std::shared_ptr<TrajectoryExecutor> trajEx, std
 
 }
 
-void GradientDescent::construct(std::vector<std::shared_ptr<Trajectory>> initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, std::shared_ptr<CostComputer> cost, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) {
+void GradientDescent::construct(std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) {
 
     setLastUpdate(initDmp.at(0));
 
@@ -53,17 +53,17 @@ void GradientDescent::construct(std::vector<std::shared_ptr<Trajectory>> initDmp
 
 }
 
-std::vector<std::shared_ptr<Trajectory>> GradientDescent::getInitialRollout() {
-    vector<std::shared_ptr<Trajectory>> ret;
+std::vector<KUKADU_SHARED_PTR<Trajectory> > GradientDescent::getInitialRollout() {
+    vector<KUKADU_SHARED_PTR<Trajectory> > ret;
     ret.push_back(initDmp.at(0));
     return ret;
 }
 
-std::vector<std::shared_ptr<Trajectory>> GradientDescent::computeRolloutParamters() {
+std::vector<KUKADU_SHARED_PTR<Trajectory> > GradientDescent::computeRolloutParamters() {
 
-    std::shared_ptr<Trajectory> lastUp = getLastUpdate();
+    KUKADU_SHARED_PTR<Trajectory> lastUp = getLastUpdate();
     vector<vec> dmpCoeffs = lastUp->getCoefficients();
-    vector<std::shared_ptr<Trajectory>> nextCoeffs;
+    vector<KUKADU_SHARED_PTR<Trajectory> > nextCoeffs;
 
     for(int k = 0; k < updatesPerRollout; ++k) {
 
@@ -73,7 +73,7 @@ std::vector<std::shared_ptr<Trajectory>> GradientDescent::computeRolloutParamter
 
             for(int j = 0; j < currCoeff.n_elem; ++j) {
 
-                normal_distribution<double> normal = normals.at(j);
+                kukadu_normal_distribution normal = normals.at(j);
                 double eps = normal(generator);
 
                 currCoeff(j) += eps;
@@ -84,7 +84,7 @@ std::vector<std::shared_ptr<Trajectory>> GradientDescent::computeRolloutParamter
 
         }
 
-        std::shared_ptr<Trajectory> nextUp = lastUp->copy();
+        KUKADU_SHARED_PTR<Trajectory> nextUp = lastUp->copy();
         nextUp->setCoefficients(dmpCoeffs);
 
         nextCoeffs.push_back(nextUp);
@@ -95,47 +95,48 @@ std::vector<std::shared_ptr<Trajectory>> GradientDescent::computeRolloutParamter
 
 }
 
-std::shared_ptr<Trajectory> GradientDescent::updateStep() {
+KUKADU_SHARED_PTR<Trajectory> GradientDescent::updateStep() {
 
     ++updateNum;
-    std::shared_ptr<Trajectory> lastUp = getLastUpdate();
-    std::shared_ptr<Trajectory> newUp = std::shared_ptr<Trajectory>(nullptr);
+    KUKADU_SHARED_PTR<Trajectory> lastUp = getLastUpdate();
+    KUKADU_SHARED_PTR<Trajectory> newUp = KUKADU_SHARED_PTR<Trajectory>();
 
-    vector<std::shared_ptr<Trajectory>> lastDmps = getLastRolloutParameters();
+    vector<KUKADU_SHARED_PTR<Trajectory> > lastDmps = getLastRolloutParameters();
     vector<double> lastRewards = getLastRolloutCost();
 
     vec lastEstimate = lastDmps.at(0)->getCoefficients().at(0);
 
     if(lastDmps.size() > 1) {
 
-    // add rollouts to history
-    for(int i = 0; i < lastRewards.size(); ++i) {
-        pair <double, std::shared_ptr<Trajectory>> p(lastRewards.at(i), lastDmps.at(i));
-        sampleHistory.push_back(p);
-    }
-
-    double lastUpdateRew = getLastUpdateReward();
-    mat deltaTheta(lastDmps.at(0)->getCoefficients().at(0).n_elem, lastRewards.size());
-    vec deltaJ(lastRewards.size());
-    for(int i = 0; i < deltaTheta.n_cols; ++i) {
-        std::shared_ptr<Trajectory> currDmp = lastDmps.at(i);
-        vector<vec> currCoeffs = currDmp->getCoefficients();
-        deltaJ(i) = lastRewards.at(i) - lastUpdateRew;
-        for(int j = 0; j < deltaTheta.n_rows; ++j) {
-            vec currCoeffsVec = currCoeffs.at(0);
-            deltaTheta(j, i) = currCoeffsVec(j);
+        // add rollouts to history
+        for(int i = 0; i < lastRewards.size(); ++i) {
+            pair <double, KUKADU_SHARED_PTR<Trajectory> > p(lastRewards.at(i), lastDmps.at(i));
+            sampleHistory.push_back(p);
         }
 
-    }
+        double lastUpdateRew = getLastUpdateReward();
+        mat deltaTheta(lastDmps.at(0)->getCoefficients().at(0).n_elem, lastRewards.size());
+        vec deltaJ(lastRewards.size());
+        for(int i = 0; i < deltaTheta.n_cols; ++i) {
+            KUKADU_SHARED_PTR<Trajectory> currDmp = lastDmps.at(i);
+            vector<vec> currCoeffs = currDmp->getCoefficients();
+            deltaJ(i) = lastRewards.at(i) - lastUpdateRew;
+            for(int j = 0; j < deltaTheta.n_rows; ++j) {
+                vec currCoeffsVec = currCoeffs.at(0);
+                deltaTheta(j, i) = currCoeffsVec(j);
+            }
 
-    vec gradEstimate = inv(deltaTheta * deltaTheta.t()) * deltaTheta * deltaJ;
-    vec newEstimate = lastEstimate + gradEstimate / updateNum;
-    cout << "last estimate: " << lastEstimate.t();
-    cout << "gradient estimate" << gradEstimate.t() / updateNum << endl << endl;
-    vector<vec> newCoeffs = {newEstimate};
+        }
 
-    newUp = lastUp->copy();
-    newUp->setCoefficients(newCoeffs);
+        vec gradEstimate = inv(deltaTheta * deltaTheta.t()) * deltaTheta * deltaJ;
+        vec newEstimate = lastEstimate + gradEstimate / updateNum;
+        cout << "last estimate: " << lastEstimate.t();
+        cout << "gradient estimate" << gradEstimate.t() / updateNum << endl << endl;
+        vector<vec> newCoeffs;
+        newCoeffs.push_back(newEstimate);
+
+        newUp = lastUp->copy();
+        newUp->setCoefficients(newCoeffs);
 
     } else {
         newUp = lastDmps.at(0);

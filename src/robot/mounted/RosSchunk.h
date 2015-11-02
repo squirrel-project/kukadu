@@ -1,25 +1,24 @@
-#ifndef ROSSCHUNK
-#define ROSSCHUNK
+#ifndef KUKADU_ROSSCHUNK_H
+#define KUKADU_ROSSCHUNK_H
 
-#include <iostream>
 #include <vector>
 #include <string>
-#include <mutex>
 #include <limits>
-
+#include <iostream>
+#include <ros/ros.h>
+#include <std_msgs/String.h>
 #include <sensor_msgs/JointState.h>
-#include <control_msgs/FollowJointTrajectoryGoal.h>
-#include <control_msgs/FollowJointTrajectoryActionGoal.h>
-#include <trajectory_msgs/JointTrajectory.h>
-#include <trajectory_msgs/JointTrajectoryPoint.h>
 #include <std_msgs/Float64MultiArray.h>
+#include <trajectory_msgs/JointTrajectory.h>
 #include <iis_schunk_hardware/TactileMatrix.h>
 #include <iis_schunk_hardware/TactileSensor.h>
+#include <trajectory_msgs/JointTrajectoryPoint.h>
+#include <control_msgs/FollowJointTrajectoryGoal.h>
+#include <control_msgs/FollowJointTrajectoryActionGoal.h>
 
 #include "GenericHand.h"
-#include "ros/ros.h"
-#include "std_msgs/String.h"
 #include "../../utils/utils.h"
+#include "../../types/KukaduTypes.h"
 
 #define SDH_IGNORE_JOINT std::numeric_limits<double>::min()
 
@@ -60,10 +59,10 @@ private:
     std::vector<double> currentCommandedPos;
     std::vector<double> initCurrentPos;
     std::vector<double> currentPos;
-    std::vector<std::vector<double>> previousCurrentPosQueue;
+    std::vector<std::vector<double> > previousCurrentPosQueue;
 
-    std::mutex currentPosMutex;
-    std::mutex tactileMutex;
+    kukadu_mutex currentPosMutex;
+    kukadu_mutex tactileMutex;
 
     void stateCallback(const sensor_msgs::JointState& state);
     void tactileCallback(const iis_schunk_hardware::TactileSensor& state);
@@ -77,17 +76,16 @@ public:
     RosSchunk(ros::NodeHandle node, std::string type, std::string hand);
 
     virtual void connectHand();
-    virtual void closeHand(double percentage, double velocity);
+    virtual void safelyDestroy();
     virtual void disconnectHand();
     virtual void setGrasp(kukadu_grasps grasp);
-    virtual void safelyDestroy();
-
-    virtual std::vector<arma::mat> getTactileSensing();
-
-    virtual void publishSdhJoints(std::vector<double> positions);
     virtual void publishSingleJoint(int idx, double pos);
+    virtual void closeHand(double percentage, double velocity);
+    virtual void publishSdhJoints(std::vector<double> positions);
 
     virtual std::string getHandName();
+
+    virtual std::vector<arma::mat> getTactileSensing();
 
 };
 

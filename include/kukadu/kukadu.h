@@ -76,6 +76,7 @@
 #include "../../src/utils/DestroyableObject.h"
 
 #include "../../src/vision/Kinect.hpp"
+#include "../../src/vision/PCLTools.hpp"
 
 #ifdef ROS_SUPPORT
 #include "../../src/robot/KukieControlQueue.h"

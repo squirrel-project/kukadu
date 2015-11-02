@@ -1,16 +1,15 @@
-#ifndef CONTROLLER_H
-#define CONTROLLER_H
+#ifndef KUKADU_CONTROLLER_H
+#define KUKADU_CONTROLLER_H
 
 #include <cstdio>
-#include <iostream>
-#include <fstream>
-#include <thread>
 #include <string>
 #include <vector>
+#include <fstream>
+#include <iostream>
 #include <wordexp.h>
-#include <memory>
 
 #include "ControllerResult.hpp"
+#include "../types/KukaduTypes.h"
 
 class Controller {
 
@@ -30,17 +29,16 @@ public:
 
     Controller(std::string caption);
 
-    std::string getCaption();
-    virtual std::shared_ptr<ControllerResult> performAction() = 0;
-
-    void setSimulationMode(bool simulationMode);
-    bool getSimulationMode();
-
     void shutUp();
     void startTalking();
+    void setSimulationMode(bool simulationMode);
+
+    bool getSimulationMode();
+
+    std::string getCaption();
+
+    virtual KUKADU_SHARED_PTR<ControllerResult> performAction() = 0;
 
 };
 
-
-
-#endif // CONTROLLER_H
+#endif

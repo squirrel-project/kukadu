@@ -1,9 +1,10 @@
-#ifndef PERCEPTCLIP_H
-#define PERCEPTCLIP_H
+#ifndef KUKADU_PERCEPTCLIP_H
+#define KUKADU_PERCEPTCLIP_H
 
 #include <string>
-#include <random>
+
 #include "clip.h"
+#include "../../../types/KukaduTypes.h"
 
 class PerceptClip : public Clip {
 
@@ -16,13 +17,14 @@ private:
 
 public:
 
-    PerceptClip(int perceptId, std::string label, std::shared_ptr<std::mt19937> generator, std::string clipDimensionValues, int immunity);
-    PerceptClip(int perceptId, std::string label, std::shared_ptr<std::mt19937> generator, std::shared_ptr<std::vector<int>> clipDimensionValues, int immunity);
+    PerceptClip(int perceptId, std::string label, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string clipDimensionValues, int immunity);
+    PerceptClip(int perceptId, std::string label, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, KUKADU_SHARED_PTR<std::vector<int> > clipDimensionValues, int immunity);
 
     int getPerceptId();
+
     std::string getLabel();
     std::string toString() const;
 
 };
 
-#endif // PERCEPTCLIP_H
+#endif

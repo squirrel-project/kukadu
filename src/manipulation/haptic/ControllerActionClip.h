@@ -1,5 +1,5 @@
-#ifndef CONTROLLERACTIONCLIP_H
-#define CONTROLLERACTIONCLIP_H
+#ifndef KUKADU_CONTROLLERACTIONCLIP_H
+#define KUKADU_CONTROLLERACTIONCLIP_H
 
 #include "../Controller.hpp"
 #include "../../learning/projective_simulation/core/actionclip.h"
@@ -7,7 +7,6 @@
 #include <cstdio>
 #include <string>
 #include <vector>
-#include <memory>
 
 class ControllerActionClip : public ActionClip {
 
@@ -15,12 +14,12 @@ private:
 
     std::string caption;
 
-    std::shared_ptr<Controller> actionController;
+    KUKADU_SHARED_PTR<Controller> actionController;
 
 public:
 
-    ControllerActionClip(int actionId, std::shared_ptr<Controller> actionController,
-                          std::shared_ptr<std::mt19937> generator);
+    ControllerActionClip(int actionId, KUKADU_SHARED_PTR<Controller> actionController,
+                          KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator);
 
     void performAction();
 

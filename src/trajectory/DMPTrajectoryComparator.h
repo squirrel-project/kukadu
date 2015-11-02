@@ -1,12 +1,13 @@
-#ifndef DMPTRAJECTORYCOMPARATOR
-#define DMPTRAJECTORYCOMPARATOR
+#ifndef KUKADU_DMPTRAJECTORYCOMPARATOR_H
+#define KUKADU_DMPTRAJECTORYCOMPARATOR_H
 
+#include <memory>
 #include <algorithm>
 #include <armadillo>
-#include <memory>
 
-#include "../utils/utils.h"
 #include "../types/DMP.h"
+#include "../utils/utils.h"
+#include "../types/KukaduTypes.h"
 #include "../trajectory/DMPExecutor.h"
 #include "../robot/PlottingControlQueue.h"
 
@@ -21,23 +22,24 @@ private:
 	
 	arma::vec degOfFreedomWeights;
 	
-    std::shared_ptr<Dmp> traj1;
-    std::shared_ptr<Dmp> traj2;
+    KUKADU_SHARED_PTR<Dmp> traj1;
+    KUKADU_SHARED_PTR<Dmp> traj2;
 
-    std::shared_ptr<PlottingControlQueue> simQueue;
+    KUKADU_SHARED_PTR<PlottingControlQueue> simQueue;
 	
-    std::shared_ptr<ControllerResult> dmp1Result;
-    std::shared_ptr<ControllerResult> dmp2Result;
+    KUKADU_SHARED_PTR<ControllerResult> dmp1Result;
+    KUKADU_SHARED_PTR<ControllerResult> dmp2Result;
 	
 	void initAll(double integrationStep, double tolAbsErr, double tolRelErr, arma::vec degOfFreedomWeights, double tTolerance);
-    std::shared_ptr<ControllerResult> executeTrajectory(std::shared_ptr<Dmp> traj);
+
+    KUKADU_SHARED_PTR<ControllerResult> executeTrajectory(KUKADU_SHARED_PTR<Dmp> traj);
 	
 public:
 	
-    DMPTrajectoryComparator(std::shared_ptr<Dmp> traject1, std::shared_ptr<Dmp> traject2, arma::vec degOfFreedomWeights, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance);
-    DMPTrajectoryComparator(std::shared_ptr<ControllerResult> res1, std::shared_ptr<ControllerResult> res2, arma::vec degOfFreedomWeights);
+    DMPTrajectoryComparator(KUKADU_SHARED_PTR<ControllerResult> res1, KUKADU_SHARED_PTR<ControllerResult> res2, arma::vec degOfFreedomWeights);
+    DMPTrajectoryComparator(KUKADU_SHARED_PTR<Dmp> traject1, KUKADU_SHARED_PTR<Dmp> traject2, arma::vec degOfFreedomWeights, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance);
 	
-    void setTrajectories(std::shared_ptr<Dmp> traj1, std::shared_ptr<Dmp> traj2, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance);
+    void setTrajectories(KUKADU_SHARED_PTR<Dmp> traj1, KUKADU_SHARED_PTR<Dmp> traj2, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance);
 	
 	double computeDistance();
 	

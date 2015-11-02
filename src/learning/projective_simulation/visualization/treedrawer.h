@@ -1,9 +1,8 @@
-#ifndef TREEDRAWER_H
-#define TREEDRAWER_H
+#ifndef KUKADU_TREEDRAWER_H
+#define KUKADU_TREEDRAWER_H
 
 #include <vector>
 #include <iostream>
-#include <memory>
 
 #if VISUALIZATION == 1
     #include <allegro5/allegro.h>
@@ -41,7 +40,7 @@ private:
     void construct();
     void drawNode(int x, int y, std::string text, int level);
 
-    int compteXOffset(std::shared_ptr<std::set<std::shared_ptr<Clip>, clip_compare>> level);
+    int compteXOffset(KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare>> level);
 
 public:
 
@@ -50,8 +49,8 @@ public:
     ~TreeDrawer();
 
     void waitForEnter();
-    void drawTree(std::shared_ptr<ProjectiveSimulator> projSim);
+    void drawTree(KUKADU_SHARED_PTR<ProjectiveSimulator> projSim);
 
 };
 
-#endif // TREEDRAWER_H
+#endif

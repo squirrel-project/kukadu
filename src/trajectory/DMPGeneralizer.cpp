@@ -28,7 +28,7 @@ int DMPGeneralizer::getQueryPointCount() {
 }
 
 // TODO: adapt DMPGeneralizer to new architecture
-std::shared_ptr<JointDmp> DMPGeneralizer::generalizeDmp(GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, vec query, double beta) {
+KUKADU_SHARED_PTR<JointDmp> DMPGeneralizer::generalizeDmp(GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, vec query, double beta) {
 	
 	string errStr = "(DMPGeneralizer) not adapted to new implementation yet";
 	cerr << errStr << endl;
@@ -72,7 +72,7 @@ std::shared_ptr<JointDmp> DMPGeneralizer::generalizeDmp(GenericKernel* trajector
 		
 	}
 	
-    return shared_ptr<JointDmp>(new JointDmp(vec(), vector<vec>(), vector<vec>(), dmpCoeffs, dictTraj->getQueryPoints().at(0).getDmp()->getDmpBase(), vector<mat>(), dictTraj->getQueryPoints().at(0).getDmp()->getTau(),
+    return KUKADU_SHARED_PTR<JointDmp>(new JointDmp(vec(), vector<vec>(), vector<vec>(), dmpCoeffs, dictTraj->getQueryPoints().at(0).getDmp()->getDmpBase(), vector<mat>(), dictTraj->getQueryPoints().at(0).getDmp()->getTau(),
            dictTraj->getQueryPoints().at(0).getDmp()->getAz(), dictTraj->getQueryPoints().at(0).getDmp()->getBz(), dictTraj->getQueryPoints().at(0).getDmp()->getAx()));
 
 }
@@ -94,7 +94,7 @@ vector<QueryPoint> DMPGeneralizer::mapFiles(vector<string> queryFiles, vector<st
 			string trajAppendix = currentTrajFile.substr(prefix2Size, currentTrajFile.size() - 1);
 			if(!queryAppendix.compare(trajAppendix)) {
 				// QueryPoint(std::string fileQueryPath, std::string fileDataPath, Dmp dmp, arma::vec queryPoint);
-                QueryPoint toAdd(queryFiles.at(i), trajFiles.at(j), string("dmp_") + trajAppendix + string(".txt"), shared_ptr<JointDmp>(new JointDmp()), vec());
+                QueryPoint toAdd(queryFiles.at(i), trajFiles.at(j), string("dmp_") + trajAppendix + string(".txt"), KUKADU_SHARED_PTR<JointDmp>(new JointDmp()), vec());
 				ret.push_back(toAdd);
 			}
 		}

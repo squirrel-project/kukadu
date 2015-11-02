@@ -1,12 +1,11 @@
-#ifndef COSTCOMPUTER
-#define COSTCOMPUTER
+#ifndef KUKADU_COSTCOMPUTER_H
+#define KUKADU_COSTCOMPUTER_H
 
 #include <vector>
-#include <memory>
 #include <armadillo>
 
-
 #include "../../utils/types.h"
+#include "../../types/KukaduTypes.h"
 #include "../../manipulation/ControllerResult.hpp"
 
 /** \brief Interface for reinforcement learning cost function computation used by DMPReinforcer
@@ -20,12 +19,12 @@ private:
 
 public:
 
-	/**
-	 * \brief computes cost for a given dmp execution
-	 * \param results measured results of the last dmp execution
-	 */
-    virtual double computeCost(std::shared_ptr<ControllerResult> results) = 0;
-	
+    /**
+     * \brief computes cost for a given dmp execution
+     * \param results measured results of the last dmp execution
+     */
+    virtual double computeCost(KUKADU_SHARED_PTR<ControllerResult> results) = 0;
+
 };
 
 #endif

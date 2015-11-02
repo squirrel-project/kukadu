@@ -23,8 +23,8 @@ bool JointDmp::isCartesian() {
     return false;
 }
 
-std::shared_ptr<Trajectory> JointDmp::copy() {
+KUKADU_SHARED_PTR<Trajectory> JointDmp::copy() {
 
-    return std::shared_ptr<Trajectory>(new JointDmp(*this));
+    return KUKADU_SHARED_PTR<Trajectory>(new JointDmp(*this));
 
 }

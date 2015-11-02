@@ -1,41 +1,40 @@
-#ifndef REWARD_H
-#define REWARD_H
+#ifndef KUKADU_REWARD_H
+#define KUKADU_REWARD_H
+
+#include <vector>
 
 #include "actionclip.h"
 #include "perceptclip.h"
-
-#include <memory>
-#include <random>
-#include <vector>
+#include "../../../types/KukaduTypes.h"
 
 class Reward {
 
 private:
 
     bool collectPrevRewards;
+
     std::vector<double> previousRewards;
 
 protected:
 
-    std::shared_ptr<std::mt19937> generator;
+    KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator;
 
-    virtual double computeRewardInternal(std::shared_ptr<PerceptClip> providedPercept, std::shared_ptr<ActionClip> takenAction) = 0;
+    virtual double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction) = 0;
 
 public:
 
-    Reward(std::shared_ptr<std::mt19937> generator, bool collectPrevRewards);
-
-    std::vector<double> getPreviousRewards();
-    double computeReward(std::shared_ptr<PerceptClip> providedPercept, std::shared_ptr<ActionClip> takenAction);
+    Reward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, bool collectPrevRewards);
 
     virtual int getDimensionality() = 0;
 
-    // same percept must always have same id
-    virtual std::shared_ptr<PerceptClip> generateNextPerceptClip(int immunity) = 0;
+    double computeReward(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction);
 
-    virtual std::shared_ptr<std::vector<std::shared_ptr<ActionClip>>> generateActionClips() = 0;
-    virtual std::shared_ptr<std::vector<std::shared_ptr<PerceptClip>>> generatePerceptClips() = 0;
+    std::vector<double> getPreviousRewards();
+
+    virtual KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity) = 0;
+    virtual KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips() = 0;
+    virtual KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips() = 0;
 
 };
 
-#endif // REWARD_H
+#endif

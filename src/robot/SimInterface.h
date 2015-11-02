@@ -1,30 +1,26 @@
-#ifndef SIMINTERFACE_H
-#define SIMINTERFACE_H
+#ifndef KUKADU_SIMINTERFACE_H
+#define KUKADU_SIMINTERFACE_H
 
-
-#include <unistd.h>
 #include <queue>
-#include <iostream>
-#include <cstdlib>
 #include <math.h>
-#include <thread>
-#include <mutex>
 #include <time.h>
-#include <thread>
+#include <cstdlib>
+#include <unistd.h>
+#include <iostream>
 
-#include "ros/ros.h"
-#include "std_msgs/String.h"
+#include <ros/ros.h>
+#include <std_msgs/String.h>
 #include <std_msgs/Float64MultiArray.h>
 
-#include "planning_scene_plugin/AddPrimitiveShape.h"
-#include "planning_scene_plugin/ImportMeshFile.h"
-#include "planning_scene_plugin/SetObjectPose.h"
-#include "planning_scene_plugin/SetObjectColor.h"
-#include "planning_scene_plugin/SetObjectMaterial.h"
-#include "vrep_common/simRosGetObjectPose.h"
-#include "vrep_common/simRosGetObjectHandle.h"
-#include "vrep_common/simRosGetObjectPose.h"
-#include "vrep_common/simRosRemoveObject.h"
+#include <vrep_common/simRosRemoveObject.h>
+#include <vrep_common/simRosGetObjectPose.h>
+#include <vrep_common/simRosGetObjectPose.h>
+#include <vrep_common/simRosGetObjectHandle.h>
+#include <planning_scene_plugin/SetObjectPose.h>
+#include <planning_scene_plugin/ImportMeshFile.h>
+#include <planning_scene_plugin/SetObjectColor.h>
+#include <planning_scene_plugin/AddPrimitiveShape.h>
+#include <planning_scene_plugin/SetObjectMaterial.h>
 
 #define REF_FRAME_ORIGIN 166
 
@@ -74,4 +70,4 @@ public:
 
 };
 
-#endif // SIMINTERFACE_H
+#endif

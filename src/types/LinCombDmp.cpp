@@ -70,8 +70,8 @@ void LinCombDmp::initializeMetric() {
 	
 	vector<QueryPoint> qps = getQueryPoints();
 	//Dmp traject1, Dmp traject2, arma::vec degOfFreedomWeights, double integrationStep, double tolAbsErr, double tolRelErr, double tTolerance
-    std::shared_ptr<Dmp> d1 = qps.at(0).getDmp();
-    std::shared_ptr<Dmp> d2 = qps.at(1).getDmp();
+    KUKADU_SHARED_PTR<Dmp> d1 = qps.at(0).getDmp();
+    KUKADU_SHARED_PTR<Dmp> d2 = qps.at(1).getDmp();
 	
     double integrationStep = d1->getStepSize();
     double tolAbsErr = d1->getTolAbsErr();
@@ -182,9 +182,9 @@ int LinCombDmp::operator==(LinCombDmp const& comp) const {
 	return 0;
 }
 
-std::shared_ptr<Trajectory> LinCombDmp::copy() {
+KUKADU_SHARED_PTR<Trajectory> LinCombDmp::copy() {
 
-    return std::shared_ptr<Trajectory>(new LinCombDmp(*this));
+    return KUKADU_SHARED_PTR<Trajectory>(new LinCombDmp(*this));
 
 }
 

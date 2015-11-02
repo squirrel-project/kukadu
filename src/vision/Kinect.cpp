@@ -1,5 +1,7 @@
 #include "Kinect.hpp"
 
+#include "../utils/utils.h"
+
 using namespace std;
 
 Kinect::Kinect(ros::NodeHandle node) {
@@ -17,6 +19,8 @@ Kinect::Kinect(std::string kinectPrefix, std::string targetFrame, ros::NodeHandl
 
 void Kinect::construct(std::string kinectPrefix, std::string targetFrame, ros::NodeHandle node) {
 
+    stdVisPubTopic = "/kukadu/rviz";
+
     isInit = false;
     keepRunning = false;
     pcRequested = false;
@@ -27,7 +31,10 @@ void Kinect::construct(std::string kinectPrefix, std::string targetFrame, ros::N
     this->kinectPrefix = "/" + kinectPrefix;
     subKinect = node.subscribe(kinectPrefix + "/depth_registered/points", 1, &Kinect::callbackKinectPointCloud, this);
 
-    transformListener = shared_ptr<tf::TransformListener>(new tf::TransformListener());
+    this->visPubTopic = stdVisPubTopic;
+    visPublisher = node.advertise<sensor_msgs::PointCloud2>(visPubTopic, 1);
+
+    transformListener = KUKADU_SHARED_PTR<tf::TransformListener>(new tf::TransformListener());
 
     sleep(1);
 
@@ -35,9 +42,9 @@ void Kinect::construct(std::string kinectPrefix, std::string targetFrame, ros::N
 
 }
 
-std::shared_ptr<std::thread> Kinect::startSensing() {
+KUKADU_SHARED_PTR<kukadu_thread> Kinect::startSensing() {
     keepRunning = true;
-    thr = std::shared_ptr<std::thread>(new std::thread(&Kinect::runThread, this));
+    thr = KUKADU_SHARED_PTR<kukadu_thread>(new kukadu_thread(&Kinect::runThread, this));
     while(!this->isInitialized());
     return thr;
 }
@@ -93,4 +100,22 @@ sensor_msgs::PointCloud2 Kinect::getCurrentPointCloud() {
 
     return retCloud;
 
+}
+
+std::string Kinect::getVisPubTopic() {
+    return visPubTopic;
+}
+
+void Kinect::setVisPubTopic(std::string visPubTopic) {
+    this->visPubTopic = visPubTopic;
+    visPublisher = node.advertise<sensor_msgs::PointCloud2>(this->visPubTopic, 1);
+}
+
+void Kinect::visualizeCurrentPc() {
+    visPublisher.publish(getCurrentPointCloud());
+}
+
+void Kinect::visualizeCurrentTransformedPc(KUKADU_SHARED_PTR<PCTransformator> transformator) {
+    pcl::PointCloud<pcl::PointXYZ> transformed = transformator->transformPc(sensorMsgsPcToPclPc(getCurrentPointCloud()));
+    visPublisher.publish(pclPcToSensorMsgsPc(transformed));
 }

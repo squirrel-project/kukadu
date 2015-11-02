@@ -1,13 +1,13 @@
-#ifndef INTERMEDIATEEVENTCLIP_H
-#define INTERMEDIATEEVENTCLIP_H
+#ifndef KUKADU_INTERMEDIATEEVENTCLIP_H
+#define KUKADU_INTERMEDIATEEVENTCLIP_H
 
 #include "../SensingController.hpp"
+#include "../../types/KukaduTypes.h"
 #include "../../learning/projective_simulation/core/clip.h"
 
 #include <cstdio>
 #include <string>
 #include <vector>
-#include <memory>
 
 class IntermediateEventClip : public Clip {
 
@@ -17,17 +17,17 @@ private:
 
     std::string caption;
 
-    std::shared_ptr<SensingController> sensingEvent;
+    KUKADU_SHARED_PTR<SensingController> sensingEvent;
 
 public:
 
-    IntermediateEventClip(std::shared_ptr<SensingController> sensingEvent,
-                          int level, std::shared_ptr<std::mt19937> generator, std::shared_ptr<std::vector<int>> clipValues, int immunity);
+    IntermediateEventClip(KUKADU_SHARED_PTR<SensingController> sensingEvent,
+                          int level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, KUKADU_SHARED_PTR<std::vector<int> > clipValues, int immunity);
 
     std::string toString() const;
-    std::pair<int, std::shared_ptr<Clip>> jumpNextRandom();
+    std::pair<int, KUKADU_SHARED_PTR<Clip> > jumpNextRandom();
 
-    std::shared_ptr<SensingController> getSensingController();
+    KUKADU_SHARED_PTR<SensingController> getSensingController();
 
 };
 

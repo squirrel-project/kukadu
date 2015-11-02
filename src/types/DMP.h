@@ -1,12 +1,14 @@
 #ifndef DMP
 #define DMP
 
-#include "DMPBase.h"
-#include "SingleSampleTrajectory.h"
-#include "../utils/conversion_utils.h"
-
 #include <vector>
 #include <armadillo>
+
+#include "DMPBase.h"
+#include "SingleSampleTrajectory.h"
+
+#include "../types/KukaduTypes.h"
+#include "../utils/conversion_utils.h"
 
 class Dmp : public SingleSampleTrajectory {
 	
@@ -97,7 +99,7 @@ public:
 
     virtual bool isCartesian() = 0;
 	
-    int operator==(std::shared_ptr<Dmp> const& comp) const;
+    int operator==(KUKADU_SHARED_PTR<Dmp> const& comp) const;
 
 };
 

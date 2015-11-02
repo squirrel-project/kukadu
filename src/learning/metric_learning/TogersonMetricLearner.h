@@ -1,15 +1,15 @@
-#ifndef TOGERSON
-#define TOGERSON
+#ifndef KUKADU_TOGERSON_H
+#define KUKADU_TOGERSON_H
 
-#include "../../utils/CustomSet.h"
-#include "Mahalanobis.h"
-#include "MahalanobisLearner.h"
-
-#include <unordered_set>
 #include <set>
 #include <math.h>
 #include <vector>
 #include <armadillo>
+
+#include "Mahalanobis.h"
+#include "MahalanobisLearner.h"
+#include "../../utils/CustomSet.h"
+#include "../../types/KukaduTypes.h"
 
 struct armacomp {
 	
@@ -49,34 +49,31 @@ private:
 	
 	arma::mat D;
 	
-//	std::set<arma::vec, armacomp> xsSet;
 	CustomSet xsSet;
 	
 	std::vector<arma::vec> expandedX1s;
 	std::vector<arma::vec> expandedX2s;
 	std::vector<double> expandedDistances;
 	
+    void generateD();
 	void expandConstraints();
+
 	int selectI();
+    int compareArmadilloVec(arma::vec vec1, arma::vec vec2);
 	
 	std::vector<int> getDRowIdxs(arma::vec x);
-	
-	void generateD();
+
+    arma::mat generateA();
 	arma::mat generateX();
 	arma::mat generateB(int iIdx);
 	arma::mat generateY(arma::mat B);
 	arma::mat generateZ(arma::mat X, arma::mat Y);
-	arma::mat generateA();
-	
-	int compareArmadilloVec(arma::vec vec1, arma::vec vec2);
 	
 public:
 	
 	TogersonMetricLearner(std::vector<arma::vec> x1s, std::vector<arma::vec> x2s, std::vector<double> distances);
 	
 	Mahalanobis learnMetric();
-	
-	
 	
 };
 

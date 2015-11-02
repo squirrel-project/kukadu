@@ -1,29 +1,28 @@
 #include "projectivesimulator.h"
 
 #include <utility>
-#include <iostream>
 #include <fstream>
+#include <fstream>
+#include <iostream>
 
 #include "../utils/Tokenizer.h"
-
-#include <fstream>
-#include <iostream>
+#include "../../../types/KukaduTypes.h"
 
 using namespace std;
 
-ProjectiveSimulator::ProjectiveSimulator(std::shared_ptr<Reward> reward, std::shared_ptr<std::mt19937> generator, std::string file) {
+ProjectiveSimulator::ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file) {
 
     this->reward = reward;
     this->generator = generator;
 
-    this->lastActionClip = nullptr;
-    this->lastPerceptClip = nullptr;
+    this->lastActionClip;
+    this->lastPerceptClip;
 
-    actionClips = std::shared_ptr<std::vector<std::shared_ptr<ActionClip>>>(new std::vector<std::shared_ptr<ActionClip>>());
-    perceptClips = std::shared_ptr<std::vector<std::shared_ptr<PerceptClip>>>(new std::vector<std::shared_ptr<PerceptClip>>());
-    clipLayers = std::shared_ptr<std::vector<std::shared_ptr<std::set<std::shared_ptr<Clip>, clip_compare>>>>(new std::vector<std::shared_ptr<std::set<std::shared_ptr<Clip>, clip_compare>>>());
+    actionClips = KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > >(new std::vector<KUKADU_SHARED_PTR<ActionClip> >());
+    perceptClips = KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > >(new std::vector<KUKADU_SHARED_PTR<PerceptClip> >());
+    clipLayers = KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > > >(new std::vector<KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > >());
 
-    intermediateHops = std::shared_ptr<vector<int>>(new vector<int>());
+    intermediateHops = KUKADU_SHARED_PTR<vector<int> >(new vector<int>());
 
     string line = "";
     ifstream inputFile;
@@ -67,7 +66,7 @@ ProjectiveSimulator::ProjectiveSimulator(std::shared_ptr<Reward> reward, std::sh
         tok.next(); levels = atoi(tok.next().c_str());
 
         for(int i = 0; i < levels; ++i)
-            clipLayers->push_back(std::shared_ptr<set<std::shared_ptr<Clip>, clip_compare>>(new set<std::shared_ptr<Clip>, clip_compare>()));
+            clipLayers->push_back(KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare> >(new set<KUKADU_SHARED_PTR<Clip>, clip_compare>()));
 
         getline(inputFile, line);
         getline(inputFile, line);
@@ -90,7 +89,7 @@ ProjectiveSimulator::ProjectiveSimulator(std::shared_ptr<Reward> reward, std::sh
 
                 // it is no t a layer line (must be a clip line
                 tok = Tokenizer(line, ";");
-                shared_ptr<Clip> nextClip = nullptr;
+                KUKADU_SHARED_PTR<Clip> nextClip;
 
                 // first line is the id vector
                 if(currentLayer == 0) {
@@ -98,7 +97,7 @@ ProjectiveSimulator::ProjectiveSimulator(std::shared_ptr<Reward> reward, std::sh
                     string idVec = tok.next();
                     string label = tok.next();
                     int immunity = atoi(tok.next().c_str());
-                    std::shared_ptr<PerceptClip> pc = std::shared_ptr<PerceptClip>(new PerceptClip(atoi(tok.next().c_str()), label, generator, idVec, immunity));
+                    KUKADU_SHARED_PTR<PerceptClip> pc = KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(atoi(tok.next().c_str()), label, generator, idVec, immunity));
                     nextClip = pc;
 
                     if(isFirstPercept) {
@@ -116,7 +115,7 @@ ProjectiveSimulator::ProjectiveSimulator(std::shared_ptr<Reward> reward, std::sh
                     tok.next();
                     string label = tok.next();
                     int immunity = atoi(tok.next().c_str());
-                    std::shared_ptr<ActionClip> ac = std::shared_ptr<ActionClip>(new ActionClip(atoi(tok.next().c_str()), perceptDimensionality, label, generator));
+                    KUKADU_SHARED_PTR<ActionClip> ac = KUKADU_SHARED_PTR<ActionClip>(new ActionClip(atoi(tok.next().c_str()), perceptDimensionality, label, generator));
                     nextClip = ac;
                     actionClips->push_back(ac);
 
@@ -124,7 +123,7 @@ ProjectiveSimulator::ProjectiveSimulator(std::shared_ptr<Reward> reward, std::sh
 
                     string idVec = tok.next();
                     int immunity = atoi(tok.next().c_str());
-                    std::shared_ptr<Clip> c = nextClip = std::shared_ptr<Clip>(new Clip(currentLayer, generator, idVec, immunity));
+                    KUKADU_SHARED_PTR<Clip> c = nextClip = KUKADU_SHARED_PTR<Clip>(new Clip(currentLayer, generator, idVec, immunity));
 
                 }
 
@@ -142,9 +141,9 @@ ProjectiveSimulator::ProjectiveSimulator(std::shared_ptr<Reward> reward, std::sh
 
         // load the clips
         currentLayer = 0;
-        shared_ptr<Clip> currentParent = nullptr;
+        KUKADU_SHARED_PTR<Clip> currentParent;
         std::vector<double> newChildrenWeights;
-        std::shared_ptr<std::vector<std::shared_ptr<Clip>>> newChildren = std::shared_ptr<std::vector<std::shared_ptr<Clip>>>(new std::vector<std::shared_ptr<Clip>>());
+        KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > newChildren = KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > >(new std::vector<KUKADU_SHARED_PTR<Clip> >());
         while(getline(inputFile, line)) {
 
             // check if its a layer line
@@ -161,9 +160,9 @@ ProjectiveSimulator::ProjectiveSimulator(std::shared_ptr<Reward> reward, std::sh
                 if(!line.compare("")) {
 
                     currentParent->setChildren(newChildren, newChildrenWeights);
-                    currentParent = nullptr;
+                    currentParent.reset();
                     newChildrenWeights.clear();
-                    newChildren = std::shared_ptr<std::vector<std::shared_ptr<Clip>>>(new std::vector<std::shared_ptr<Clip>>());
+                    newChildren = KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > >(new std::vector<KUKADU_SHARED_PTR<Clip> >());
 
                 }
                 // its a new parent clip
@@ -177,7 +176,7 @@ ProjectiveSimulator::ProjectiveSimulator(std::shared_ptr<Reward> reward, std::sh
                     tok = Tokenizer(line, ";");
                     string idVecString = tok.next();
                     double connectionWeight = atof(tok.next().c_str());
-                    shared_ptr<Clip> currentChild = findClipByIdVec(Clip::getIdVectorFromString(idVecString));
+                    KUKADU_SHARED_PTR<Clip> currentChild = findClipByIdVec(Clip::getIdVectorFromString(idVecString));
                     newChildren->push_back(currentChild);
                     newChildrenWeights.push_back(connectionWeight);
 
@@ -193,7 +192,7 @@ ProjectiveSimulator::ProjectiveSimulator(std::shared_ptr<Reward> reward, std::sh
 
 }
 
-int ProjectiveSimulator::getIdVecLevel(std::shared_ptr<std::vector<int> > idVec) {
+int ProjectiveSimulator::getIdVecLevel(KUKADU_SHARED_PTR<std::vector<int> > idVec) {
 
     int retCount = 0;
     for(int val : *idVec)
@@ -204,10 +203,10 @@ int ProjectiveSimulator::getIdVecLevel(std::shared_ptr<std::vector<int> > idVec)
 
 }
 
-std::shared_ptr<Clip> ProjectiveSimulator::findClipInLevelByIdVec(std::shared_ptr<std::vector<int>> idVec, int level) {
-    std::shared_ptr<std::set<std::shared_ptr<Clip>, clip_compare>> currentLayer = clipLayers->at(level);
-    for(shared_ptr<Clip> c : *currentLayer) {
-        shared_ptr<vector<int>> clipDim = c->getClipDimensions();
+KUKADU_SHARED_PTR<Clip> ProjectiveSimulator::findClipInLevelByIdVec(KUKADU_SHARED_PTR<std::vector<int> > idVec, int level) {
+    KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > currentLayer = clipLayers->at(level);
+    for(KUKADU_SHARED_PTR<Clip> c : *currentLayer) {
+        KUKADU_SHARED_PTR<vector<int> > clipDim = c->getClipDimensions();
         if(Clip::compareIdVecs(clipDim, idVec)) {
             return c;
         }
@@ -215,12 +214,12 @@ std::shared_ptr<Clip> ProjectiveSimulator::findClipInLevelByIdVec(std::shared_pt
     return nullptr;
 }
 
-std::shared_ptr<Clip> ProjectiveSimulator::findClipByIdVec(std::shared_ptr<std::vector<int>> idVec) {
+KUKADU_SHARED_PTR<Clip> ProjectiveSimulator::findClipByIdVec(KUKADU_SHARED_PTR<std::vector<int> > idVec) {
 
     if(operationMode == PS_USE_ORIGINAL) {
 
         for(int level = 0; level < clipLayers->size() - 1; ++level) {
-            std::shared_ptr<Clip> retVal = findClipInLevelByIdVec(idVec, level);
+            KUKADU_SHARED_PTR<Clip> retVal = findClipInLevelByIdVec(idVec, level);
             if(retVal != nullptr)
                 return retVal;
         }
@@ -231,8 +230,8 @@ std::shared_ptr<Clip> ProjectiveSimulator::findClipByIdVec(std::shared_ptr<std::
         return findClipInLevelByIdVec(idVec, level);
     }
 
-    for(shared_ptr<Clip> ac : *actionClips) {
-        shared_ptr<vector<int>> clipDim = ac->getClipDimensions();
+    for(KUKADU_SHARED_PTR<Clip> ac : *actionClips) {
+        KUKADU_SHARED_PTR<vector<int> > clipDim = ac->getClipDimensions();
         if(Clip::compareIdVecs(clipDim, idVec)) {
             return ac;
         }
@@ -256,7 +255,7 @@ void ProjectiveSimulator::setTrainingMode(bool doTraining) {
     this->doTraining = doTraining;
 }
 
-void ProjectiveSimulator::construct(std::shared_ptr<Reward> reward, std::shared_ptr<std::mt19937> generator, double gamma, int operationMode, bool useRanking) {
+void ProjectiveSimulator::construct(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, double gamma, int operationMode, bool useRanking) {
 
     this->boredom = 0.0;
     this->doTraining = true;
@@ -265,7 +264,7 @@ void ProjectiveSimulator::construct(std::shared_ptr<Reward> reward, std::shared_
     this->useRanking = useRanking;
     this->operationMode = operationMode;
     this->gamma = gamma;
-    intermediateHops = std::shared_ptr<vector<int>>(new vector<int>());
+    intermediateHops = KUKADU_SHARED_PTR<vector<int> >(new vector<int>());
 
     this->lastActionClip = nullptr;
     this->lastPerceptClip = nullptr;
@@ -274,12 +273,12 @@ void ProjectiveSimulator::construct(std::shared_ptr<Reward> reward, std::shared_
     this->maxNumberOfClips = PS_MAX_NUMBER_OF_CLIPS;
 
     this->generator = generator;
-    intDist = std::uniform_int_distribution<int>(0, perceptClips->size() - 1);
+    intDist = kukadu_uniform_distribution(0, perceptClips->size() - 1);
 
-    clipLayers = std::shared_ptr<std::vector<std::shared_ptr<std::set<std::shared_ptr<Clip>, clip_compare>>>>(new std::vector<std::shared_ptr<std::set<std::shared_ptr<Clip>, clip_compare>>>());
+    clipLayers = KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > > >(new std::vector<KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > >());
 
     for(int i = 0; i < levels + 1; ++i)
-        clipLayers->push_back(std::shared_ptr<set<std::shared_ptr<Clip>, clip_compare>>(new set<std::shared_ptr<Clip>, clip_compare>()));
+        clipLayers->push_back(KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare> >(new set<KUKADU_SHARED_PTR<Clip>, clip_compare>()));
 
     clipLayers->at(0)->insert(perceptClips->begin(), perceptClips->end());
     clipLayers->at(clipLayers->size() - 1)->insert(actionClips->begin(), actionClips->end());
@@ -288,7 +287,7 @@ void ProjectiveSimulator::construct(std::shared_ptr<Reward> reward, std::shared_
 
 }
 
-ProjectiveSimulator::ProjectiveSimulator(std::shared_ptr<Reward> reward, std::shared_ptr<std::mt19937> generator, double gamma, int operationMode, bool useRanking) {
+ProjectiveSimulator::ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, double gamma, int operationMode, bool useRanking) {
 
     this->perceptClips = reward->generatePerceptClips();
     this->actionClips = reward->generateActionClips();
@@ -300,20 +299,20 @@ ProjectiveSimulator::ProjectiveSimulator(std::shared_ptr<Reward> reward, std::sh
         // + 1 for the (#, #, #, ...) layer
         levels = reward->getDimensionality() + 1;
 
-    std::shared_ptr<std::vector<std::shared_ptr<Clip>>> clipActionClips = shared_ptr<std::vector<std::shared_ptr<Clip>>>(new std::vector<std::shared_ptr<Clip>>());
-    for(std::shared_ptr<Clip> t : *actionClips)
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > clipActionClips = KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > >(new std::vector<KUKADU_SHARED_PTR<Clip> >());
+    for(KUKADU_SHARED_PTR<Clip> t : *actionClips)
         clipActionClips->push_back(dynamic_pointer_cast<Clip>(t));
 
     // has to be changed for multi level ps
-    for(std::shared_ptr<Clip> currentClip : *perceptClips)
+    for(KUKADU_SHARED_PTR<Clip> currentClip : *perceptClips)
         currentClip->setChildren(clipActionClips);
 
     construct(reward, generator, gamma, operationMode, useRanking);
 
 }
 
-ProjectiveSimulator::ProjectiveSimulator(std::shared_ptr<Reward> reward, std::shared_ptr<std::mt19937> generator,
-                    std::shared_ptr<std::vector<std::shared_ptr<PerceptClip>>> network,
+ProjectiveSimulator::ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator,
+                    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > network,
                     double gamma, int operationMode, bool useRanking) {
 
     this->perceptClips = network;
@@ -321,29 +320,29 @@ ProjectiveSimulator::ProjectiveSimulator(std::shared_ptr<Reward> reward, std::sh
     // set levels and action clips
     // walk down to last percept
     levels = 0;
-    shared_ptr<Clip> lastClip = nullptr;
-    shared_ptr<Clip> currClip = perceptClips->at(0);
+    KUKADU_SHARED_PTR<Clip> lastClip = nullptr;
+    KUKADU_SHARED_PTR<Clip> currClip = perceptClips->at(0);
     while(currClip->getSubClipCount()) {
         lastClip = currClip;
         currClip = currClip->getSubClipByIdx(0);
         ++levels;
     }
 
-    actionClips = shared_ptr<vector<shared_ptr<ActionClip>>>(new vector<shared_ptr<ActionClip>>());
+    actionClips = KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<ActionClip> > >(new vector<KUKADU_SHARED_PTR<ActionClip> >());
     for(int i = 0; i < lastClip->getSubClipCount(); ++i) {
-        shared_ptr<ActionClip> nextActClip = dynamic_pointer_cast<ActionClip>(lastClip->getSubClipByIdx(i));
+        KUKADU_SHARED_PTR<ActionClip> nextActClip = KUKADU_DYNAMIC_POINTER_CAST<ActionClip>(lastClip->getSubClipByIdx(i));
         actionClips->push_back(nextActClip);
     }
 
     construct(reward, generator, gamma, operationMode, useRanking);
 
     // fill inbetween layers (clipLayers)
-    for(shared_ptr<PerceptClip> pc : *perceptClips)
+    for(KUKADU_SHARED_PTR<PerceptClip> pc : *perceptClips)
         fillClipLayersFromNetwork(pc);
 
 }
 
-void ProjectiveSimulator::fillClipLayersFromNetwork(std::shared_ptr<Clip> cl) {
+void ProjectiveSimulator::fillClipLayersFromNetwork(KUKADU_SHARED_PTR<Clip> cl) {
 
     int level = cl->getLevel();
 
@@ -358,7 +357,7 @@ void ProjectiveSimulator::fillClipLayersFromNetwork(std::shared_ptr<Clip> cl) {
 
 }
 
-std::shared_ptr<std::vector<int>> ProjectiveSimulator::getIntermediateHopIdx() {
+KUKADU_SHARED_PTR<std::vector<int> > ProjectiveSimulator::getIntermediateHopIdx() {
     return intermediateHops;
 }
 
@@ -366,14 +365,14 @@ ProjectiveSimulator::~ProjectiveSimulator() {
 
 }
 
-void ProjectiveSimulator::eliminateClip(std::shared_ptr<Clip> currClip) {
+void ProjectiveSimulator::eliminateClip(KUKADU_SHARED_PTR<Clip> currClip) {
 
     int level = currClip->getLevel();
-    std::shared_ptr<set<std::shared_ptr<Clip>, clip_compare>> currLayer = clipLayers->at(level);
+    KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare> > currLayer = clipLayers->at(level);
     currLayer->erase(currClip);
-    std::set<std::shared_ptr<Clip>> parents = std::set<std::shared_ptr<Clip>>(currClip->getParents()->begin(), currClip->getParents()->end());
+    std::set<KUKADU_SHARED_PTR<Clip> > parents = std::set<KUKADU_SHARED_PTR<Clip> >(currClip->getParents()->begin(), currClip->getParents()->end());
 
-    for(std::shared_ptr<Clip> parent : parents)
+    for(KUKADU_SHARED_PTR<Clip> parent : parents)
         parent->removeSubClip(currClip);
 
     if(level == 0 && operationMode != PS_USE_ORIGINAL)
@@ -398,7 +397,7 @@ void ProjectiveSimulator::cleanByRank() {
 
         for(int i = 0; i < clipNumber; ++i) {
 
-            std::shared_ptr<Clip> currClip = rankVec.at(i).second;
+            KUKADU_SHARED_PTR<Clip> currClip = rankVec.at(i).second;
             if(!currClip->isImmune()) {
 
                 ++alreadyDeleted;
@@ -419,7 +418,7 @@ void ProjectiveSimulator::cleanByRank() {
 
         for(int i = 0; alreadyDeleted < toDelete; ++i, ++alreadyDeleted) {
 
-            std::shared_ptr<Clip> currClip = rankVec.at(i).second;
+            KUKADU_SHARED_PTR<Clip> currClip = rankVec.at(i).second;
             eliminateClip(currClip);
 
             rankVec.erase(rankVec.begin() + i);
@@ -439,16 +438,16 @@ void ProjectiveSimulator::setMaxNumberOfClips(int maxNumberOfClips) {
     this->maxNumberOfClips = maxNumberOfClips;
 }
 
-std::shared_ptr<std::vector<std::shared_ptr<ActionClip>>> ProjectiveSimulator::getActionClips() {
+KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > ProjectiveSimulator::getActionClips() {
     return actionClips;
 }
 
-std::shared_ptr<ActionClip> ProjectiveSimulator::performRandomWalk() {
+KUKADU_SHARED_PTR<ActionClip> ProjectiveSimulator::performRandomWalk() {
 
     lastClipBeforeAction = nullptr;
     intermediateHops->clear();
-    std::shared_ptr<Clip> previousClip = nullptr;
-    std::shared_ptr<Clip> currentClip = nullptr;
+    KUKADU_SHARED_PTR<Clip> previousClip = nullptr;
+    KUKADU_SHARED_PTR<Clip> currentClip = nullptr;
 
     if(operationMode == PS_USE_GEN) {
         if(!lastGeneralizedPercept) {
@@ -461,13 +460,13 @@ std::shared_ptr<ActionClip> ProjectiveSimulator::performRandomWalk() {
         currentClip = reward->generateNextPerceptClip(immunityThresh);
     }
 
-    std::vector<std::shared_ptr<PerceptClip>>::iterator it = std::find(perceptClips->begin(), perceptClips->end() + 1, currentClip);
+    std::vector<KUKADU_SHARED_PTR<PerceptClip> >::iterator it = std::find(perceptClips->begin(), perceptClips->end() + 1, currentClip);
     int previousIdx = it - perceptClips->begin();
-    lastPerceptClip = std::dynamic_pointer_cast<PerceptClip>(currentClip);
+    lastPerceptClip = KUKADU_DYNAMIC_POINTER_CAST<PerceptClip>(currentClip);
 
     while(previousClip != currentClip) {
         intermediateHops->push_back(previousIdx);
-        pair<int, std::shared_ptr<Clip>> nextHop;
+        pair<int, KUKADU_SHARED_PTR<Clip> > nextHop;
         lastClipBeforeAction = previousClip;
         previousClip = currentClip;
         nextHop = currentClip->jumpNextRandom();
@@ -476,12 +475,12 @@ std::shared_ptr<ActionClip> ProjectiveSimulator::performRandomWalk() {
 
     }
 
-    lastActionClip = std::dynamic_pointer_cast<ActionClip>(currentClip);
+    lastActionClip = KUKADU_DYNAMIC_POINTER_CAST<ActionClip>(currentClip);
     return lastActionClip;
 
 }
 
-double ProjectiveSimulator::computeBoredem(std::shared_ptr<Clip> clip) {
+double ProjectiveSimulator::computeBoredem(KUKADU_SHARED_PTR<Clip> clip) {
     
     double entropy = clip->computeSubEntropy();
     double numberOfSubclips = clip->getSubClipCount();
@@ -515,9 +514,9 @@ pair<bool, double> ProjectiveSimulator::performRewarding() {
         computedReward = reward->computeReward(lastPerceptClip, lastActionClip);
 
         if(doTraining) {
-            for(std::shared_ptr<set<std::shared_ptr<Clip>, clip_compare>> currLevel : *clipLayers) {
+            for(KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare> > currLevel : *clipLayers) {
 
-                for(std::shared_ptr<Clip> currClip : *currLevel) {
+                for(KUKADU_SHARED_PTR<Clip> currClip : *currLevel) {
 
                     currClip->updateWeights(computedReward, gamma);
 
@@ -542,14 +541,14 @@ pair<bool, double> ProjectiveSimulator::performRewarding() {
 
 }
 
-void ProjectiveSimulator::generalize(std::shared_ptr<PerceptClip> nextClip) {
+void ProjectiveSimulator::generalize(KUKADU_SHARED_PTR<PerceptClip> nextClip) {
 
     lastGeneralizedPercept = nextClip;
 
-    std::shared_ptr<std::set<std::shared_ptr<Clip>, clip_compare>> toConnect = createNewClips(nextClip);
+    KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > toConnect = createNewClips(nextClip);
 
     // first connect everything...
-    for(std::shared_ptr<Clip> con : *toConnect) {
+    for(KUKADU_SHARED_PTR<Clip> con : *toConnect) {
 
         if(PS_PRINT_DEBUG_INFO)
             cout << "calling connect function for " << *con << endl;
@@ -569,11 +568,11 @@ void ProjectiveSimulator::generalize(std::shared_ptr<PerceptClip> nextClip) {
 void ProjectiveSimulator::printWeights() {
 
     int level = 0;
-    for(std::shared_ptr<set<std::shared_ptr<Clip>, clip_compare>> currLevel : *clipLayers) {
+    for(KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare> > currLevel : *clipLayers) {
 
         cout << "clips on layer " << level << endl << "=========================" << endl;
 
-        for(std::shared_ptr<Clip> currClip : *currLevel) {
+        for(KUKADU_SHARED_PTR<Clip> currClip : *currLevel) {
 
             int subClipCount = currClip->getSubClipCount();
             for(int i = 0; i < subClipCount; ++i) {
@@ -588,14 +587,14 @@ void ProjectiveSimulator::printWeights() {
 
 }
 
-void ProjectiveSimulator::connectNewClip(std::shared_ptr<Clip> conClip) {
+void ProjectiveSimulator::connectNewClip(KUKADU_SHARED_PTR<Clip> conClip) {
 
     int currentLevel = 0;
-    for(std::shared_ptr<set<std::shared_ptr<Clip>, clip_compare>> currLevel : *clipLayers) {
+    for(KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare> > currLevel : *clipLayers) {
 
         if(currLevel->size() > 0 && conClip->getLevel() != currentLevel) {
 
-            for(std::shared_ptr<Clip> currClip : *currLevel) {
+            for(KUKADU_SHARED_PTR<Clip> currClip : *currLevel) {
 
                 // if they are compatible
                 if(currClip->isCompatibleSubclip(conClip)) {
@@ -618,35 +617,35 @@ void ProjectiveSimulator::connectNewClip(std::shared_ptr<Clip> conClip) {
 
 }
 
-std::shared_ptr<std::set<std::shared_ptr<Clip>, clip_compare>> ProjectiveSimulator::createNewClips(std::shared_ptr<PerceptClip> newClip) {
+KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > ProjectiveSimulator::createNewClips(KUKADU_SHARED_PTR<PerceptClip> newClip) {
 
-    std::shared_ptr<set<std::shared_ptr<Clip>, clip_compare>> conClips = std::shared_ptr<set<std::shared_ptr<Clip>, clip_compare>>(new set<std::shared_ptr<Clip>, clip_compare>());
+    KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare> > conClips = KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare> >(new set<KUKADU_SHARED_PTR<Clip>, clip_compare>());
 
     // insert new percept clip
-    pair<set<std::shared_ptr<Clip>, clip_compare>::iterator, bool> inserted = clipLayers->at(0)->insert(newClip);
+    pair<set<KUKADU_SHARED_PTR<Clip>, clip_compare>::iterator, bool> inserted = clipLayers->at(0)->insert(newClip);
 
     // check if new clip was already there
     if(inserted.second) {
 
         // if it wasnt there yet, add it to the new clips that have to be freshly connected
         conClips->insert(newClip);
-        perceptClips->push_back(std::dynamic_pointer_cast<PerceptClip>(newClip));
+        perceptClips->push_back(KUKADU_DYNAMIC_POINTER_CAST<PerceptClip>(newClip));
 
         // check in each level, if there will be new clips
-        for(std::shared_ptr<set<std::shared_ptr<Clip>, clip_compare>> currLevel : *clipLayers) {
+        for(KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare> > currLevel : *clipLayers) {
 
-            std::shared_ptr<Clip> firstClipOnLevel = nullptr;
+            KUKADU_SHARED_PTR<Clip> firstClipOnLevel = nullptr;
             if(currLevel->size())
                 firstClipOnLevel = *(currLevel->begin());
             if(currLevel->size() && firstClipOnLevel->getLevel() != CLIP_H_LEVEL_FINAL) {
 
-                for(std::shared_ptr<Clip> currClip : *currLevel) {
+                for(KUKADU_SHARED_PTR<Clip> currClip : *currLevel) {
 
                     // create new clip that gets generated as a cascade
-                    std::shared_ptr<Clip> nextClip = currClip->compareClip(newClip);
+                    KUKADU_SHARED_PTR<Clip> nextClip = currClip->compareClip(newClip);
 
                     // check if already there and insert it if not
-                    pair<set<std::shared_ptr<Clip>, clip_compare>::iterator, bool> inserted2 = clipLayers->at(nextClip->getLevel())->insert(nextClip);
+                    pair<set<KUKADU_SHARED_PTR<Clip>, clip_compare>::iterator, bool> inserted2 = clipLayers->at(nextClip->getLevel())->insert(nextClip);
 
                     // if new && not already there
                     if(inserted2.second && nextClip != currClip) {
@@ -654,7 +653,7 @@ std::shared_ptr<std::set<std::shared_ptr<Clip>, clip_compare>> ProjectiveSimulat
                         nextClip = *inserted2.first;
 
                         // insert to the new set of clips that should be connected
-                        pair<set<std::shared_ptr<Clip>, clip_compare>::iterator, bool> inserted3 = conClips->insert(nextClip);
+                        pair<set<KUKADU_SHARED_PTR<Clip>, clip_compare>::iterator, bool> inserted3 = conClips->insert(nextClip);
 
 
                     }
@@ -676,15 +675,15 @@ std::shared_ptr<std::set<std::shared_ptr<Clip>, clip_compare>> ProjectiveSimulat
 
 }
 
-std::shared_ptr<std::vector<std::shared_ptr<std::set<std::shared_ptr<Clip>, clip_compare>>>> ProjectiveSimulator::getClipLayers() {
+KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > > > ProjectiveSimulator::getClipLayers() {
     return clipLayers;
 }
 
-std::shared_ptr<std::vector<std::shared_ptr<PerceptClip>>> ProjectiveSimulator::getPerceptClips() {
+KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > ProjectiveSimulator::getPerceptClips() {
     return perceptClips;
 }
 
-bool compareRanks(std::pair<double, std::shared_ptr<Clip>> p1, std::pair<double, std::shared_ptr<Clip>> p2) {
+bool compareRanks(std::pair<double, KUKADU_SHARED_PTR<Clip> > p1, std::pair<double, KUKADU_SHARED_PTR<Clip> > p2) {
     return (p1.first < p2.first);
 }
 
@@ -693,18 +692,12 @@ void ProjectiveSimulator::computeRankVec() {
     rankVec.clear();
     for(int i = 0; i < clipLayers->size() - 1; i++) {
 
-        std::shared_ptr<set<std::shared_ptr<Clip>, clip_compare>> currLevel = clipLayers->at(i);
-        for(std::shared_ptr<Clip> currClip : *currLevel) {
-            rankVec.push_back(pair<double, std::shared_ptr<Clip>>(currClip->computeRank(), currClip));
+        KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare> > currLevel = clipLayers->at(i);
+        for(KUKADU_SHARED_PTR<Clip> currClip : *currLevel) {
+            rankVec.push_back(pair<double, KUKADU_SHARED_PTR<Clip> >(currClip->computeRank(), currClip));
         }
     }
     std::sort(rankVec.begin(), rankVec.end(), compareRanks);
-    /*
-    cout << "======================" << endl << "current ranking vec" << endl << "======================" << endl;
-    for(int i = 0; i < rankVec.size(); ++i) {
-        cout << *rankVec.at(i).second << " with rank " << rankVec.at(i).first << endl;
-    }
-    */
 
     if(PS_PRINT_RANKING_DEBUG_INFO)
         printRankVec();
@@ -716,21 +709,6 @@ int ProjectiveSimulator::getClipCount() {
 }
 
 void ProjectiveSimulator::printRankVec() {
-
-    /*
-    cout << "start printing rank vec" << endl;
-
-    int prevRank = -1;
-    for(std::pair<double, Clip*> p : rankVec) {
-        if(prevRank != p.first) {
-            cout << endl << "================================" << endl << p.first << endl << "================================" << endl;
-            prevRank = p.first;
-        }
-        cout << *(p.second) << endl;
-    }
-
-    cout << "end printing rank vec" << endl;
-    */
 
     cout << rankVec.size() << endl;
 
@@ -775,17 +753,17 @@ void ProjectiveSimulator::storePS(std::string targetFile) {
     outFile << endl;
 
     outFile << "clips" << endl;
-    for(std::shared_ptr<std::set<std::shared_ptr<Clip>, clip_compare>> layer : *clipLayers) {
+    for(KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > layer : *clipLayers) {
         if(layer->size() > 0) {
             int currentLevel = (*layer->begin())->getLevel();
             outFile << "layer=" << currentLevel << endl;
-            for(std::shared_ptr<Clip> cClip : *layer) {
+            for(KUKADU_SHARED_PTR<Clip> cClip : *layer) {
                 outFile << cClip->getIdVecString() << ";" << *cClip << ";" << cClip->getCurrentImmunity();
                 if(currentLevel == 0) {
-                    shared_ptr<PerceptClip> cpc = dynamic_pointer_cast<PerceptClip>(cClip);
+                    KUKADU_SHARED_PTR<PerceptClip> cpc = KUKADU_DYNAMIC_POINTER_CAST<PerceptClip>(cClip);
                     outFile << ";" << cpc->getPerceptId();
                 } else if(currentLevel == CLIP_H_LEVEL_FINAL) {
-                    shared_ptr<ActionClip> cpc = dynamic_pointer_cast<ActionClip>(cClip);
+                    KUKADU_SHARED_PTR<ActionClip> cpc = KUKADU_DYNAMIC_POINTER_CAST<ActionClip>(cClip);
                     outFile << ";" << cpc->getActionId();
                 }
                 outFile << endl;
@@ -795,12 +773,12 @@ void ProjectiveSimulator::storePS(std::string targetFile) {
     outFile << endl;
 
     outFile << "connections" << endl;
-    for(std::shared_ptr<std::set<std::shared_ptr<Clip>, clip_compare>> layer : *clipLayers) {
+    for(KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > layer : *clipLayers) {
         if(layer->size() > 0) {
             int currentLevel = (*layer->begin())->getLevel();
             if(currentLevel != CLIP_H_LEVEL_FINAL) {
                 outFile << "layer=" << currentLevel << endl;
-                for(std::shared_ptr<Clip> cClip : *layer) {
+                for(KUKADU_SHARED_PTR<Clip> cClip : *layer) {
                     int subClipCount = cClip->getSubClipCount();
                     outFile << cClip->getIdVecString() << ":" << endl;
                     for(int j = 0;  j < subClipCount; ++j) {

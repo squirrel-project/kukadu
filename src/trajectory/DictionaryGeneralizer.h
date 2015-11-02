@@ -1,25 +1,24 @@
-#ifndef DICTIONARYGENERALIZER
-#define DICTIONARYGENERALIZER
+#ifndef KUKADU_DICTIONARYGENERALIZER_H
+#define KUKADU_DICTIONARYGENERALIZER_H
 
-#include <armadillo>
 #include <vector>
 #include <string>
-#include <mutex>
-#include <memory>
+#include <armadillo>
 
 #include "../utils/types.h"
 #include "../utils/utils.h"
-#include "../utils/conversion_utils.h"
 #include "../types/LinCombDmp.h"
+#include "../types/KukaduTypes.h"
+#include "../robot/ControlQueue.h"
+#include "../learning/LWRRegressor.h"
+#include "../trajectory/DMPExecutor.h"
+#include "../utils/conversion_utils.h"
+#include "../learning/GenericKernel.h"
+#include "../trajectory/DMPGeneralizer.h"
+#include "../trajectory/JointDMPLearner.h"
 #include "../trajectory/TrajectoryExecutor.h"
 #include "../trajectory/DMPTrajectoryGenerator.h"
-#include "../trajectory/JointDMPLearner.h"
-#include "../learning/GenericKernel.h"
 #include "../learning/GaussianProcessRegressor.h"
-#include "../learning/LWRRegressor.h"
-#include "../robot/ControlQueue.h"
-#include "DMPExecutor.h"
-#include "DMPGeneralizer.h"
 
 /** \brief 
  * 
@@ -30,53 +29,49 @@ class DictionaryGeneralizer : public TrajectoryExecutor {
 
 private:
 	
-	int newQpSwitch;
     int firstTime;
+    int newQpSwitch;
+
+    double ac;
 	double as;
-	double switchTime;
     double alpham;
+    double stepSize;
+    double tolAbsErr;
+    double tolRelErr;
+	double switchTime;
+    double currentTime;
+    double maxRelativeToMeanDistance;
+
+    arma::vec currentQuery;
+    arma::vec extendedQuery;
 	arma::vec oldCoefficients;
 	arma::vec newCoefficients;
 	arma::vec currentCoefficients;
 	
-	std::mutex switcherMutex;
+    kukadu_mutex switcherMutex;
 	
-    std::shared_ptr<LinCombDmp> dictTraj;
-	
-	double stepSize;
-	double tolAbsErr;
-	double tolRelErr;
-	double ac;
-	
-	double currentTime;
-	
-	double maxRelativeToMeanDistance;
-	
-    std::shared_ptr<ControlQueue> simulationQueue;
-    std::shared_ptr<ControlQueue> executionQueue;
-	
-	arma::vec currentQuery;
-    arma::vec extendedQuery;
-	
-    std::shared_ptr<ControllerResult> executeGen(arma::vec query, double tEnd, double ac, double as, int simulate);
+    KUKADU_SHARED_PTR<LinCombDmp> dictTraj;
+    KUKADU_SHARED_PTR<ControlQueue> executionQueue;
+    KUKADU_SHARED_PTR<ControlQueue> simulationQueue;
+    KUKADU_SHARED_PTR<ControllerResult> executeGen(arma::vec query, double tEnd, double ac, double as, int simulate);
+
     int computeClosestT(double t, arma::vec times);
 
-    arma::vec computeExtendedQuery(double time, int correspondingIdx, arma::vec query);
     arma::vec computeExtendedQuery(double time, arma::vec query);
-
+    arma::vec computeExtendedQuery(double time, int correspondingIdx, arma::vec query);
     arma::vec computeNewCoefficients(Mahalanobis metric, int correspondingIdx, arma::vec query);
 
 public:
 	
-    DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, std::string dictionaryPath, double az, double bz,
+    DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, std::string dictionaryPath, double az, double bz,
                   double stepSize, double tolAbsErr, double tolRelErr, double ac, arma::vec trajMetricWeights, double maxRelativeToMeanDistance, double as, double alpham);
 	
-    DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, std::shared_ptr<ControlQueue> simulationQueue, std::shared_ptr<ControlQueue> executionQueue, std::string dictionaryPath, double az, double bz,
+    DictionaryGeneralizer(arma::vec timeCenters, arma::vec initQueryPoint, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, std::string dictionaryPath, double az, double bz,
                   double stepSize, double tolAbsErr, double tolRelErr, double ac, double as, arma::mat metric, double maxRelativeToMeanDistance, double alpham);
 	
     void setAs(double as);
     void switchQueryPoint(arma::vec query);
-    void setTrajectory(std::shared_ptr<Trajectory> traj);
+    void setTrajectory(KUKADU_SHARED_PTR<Trajectory> traj);
 
     int getDegOfFreedom();
     int getQueryPointCount();
@@ -85,10 +80,9 @@ public:
 
     QueryPoint getQueryPointByIndex(int idx);
 
-    std::shared_ptr<Trajectory> getTrajectory();
-
-    std::shared_ptr<ControllerResult> executeTrajectory();
-    std::shared_ptr<ControllerResult> simulateTrajectory();
+    KUKADU_SHARED_PTR<Trajectory> getTrajectory();
+    KUKADU_SHARED_PTR<ControllerResult> executeTrajectory();
+    KUKADU_SHARED_PTR<ControllerResult> simulateTrajectory();
 
 };
 

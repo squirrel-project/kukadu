@@ -1,10 +1,12 @@
-#ifndef CARTESIANDMP_H
-#define CARTESIANDMP_H
+#ifndef KUKADU_CARTESIANDMP_H
+#define KUKADU_CARTESIANDMP_H
 
-#include "DMP.h"
-#include <tf/transform_datatypes.h>
 #include <math.h>
 #include <armadillo>
+#include <tf/transform_datatypes.h>
+
+#include "DMP.h"
+#include "../types/KukaduTypes.h"
 
 
 class CartesianDMP : public Dmp {
@@ -20,7 +22,6 @@ public:
 
     CartesianDMP();
 
-
     bool isCartesian();
 
     tf::Quaternion getQ0();
@@ -30,9 +31,9 @@ public:
     arma::vec getEta0();
     arma::vec getEtaByIdx(int idx);
 
+    KUKADU_SHARED_PTR<Trajectory> copy();
 
-    std::shared_ptr<Trajectory> copy();
 };
 
 
-#endif // CARTESIANDMP_H
+#endif

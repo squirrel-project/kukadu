@@ -4,29 +4,29 @@
 
 using namespace std;
 
-ManualReward::ManualReward(shared_ptr<std::mt19937> generator, int numberOfActions, int numberOfPercepts, bool collectPrevRewards, double stdReward) : Reward(generator, collectPrevRewards) {
+ManualReward::ManualReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int numberOfActions, int numberOfPercepts, bool collectPrevRewards, double stdReward) : Reward(generator, collectPrevRewards) {
 
     this->numberOfActions = numberOfActions;
     this->numberOfPercepts = numberOfPercepts;
     this->nextPerceptId = 0;
     this->stdReward = stdReward;
 
-    perceptClips = shared_ptr<vector<shared_ptr<PerceptClip>>>(new vector<shared_ptr<PerceptClip>>());
+    perceptClips = KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<PerceptClip> > >(new vector<KUKADU_SHARED_PTR<PerceptClip> >());
     for(int i = 0; i < numberOfPercepts; ++i) {
         stringstream s;
         s << i;
-        std::shared_ptr<std::vector<int>> clipDimensionValues = std::shared_ptr<std::vector<int>>(new vector<int>());
+        KUKADU_SHARED_PTR<std::vector<int> > clipDimensionValues = KUKADU_SHARED_PTR<std::vector<int>>(new vector<int>());
         clipDimensionValues->push_back(i);
-        perceptClips->push_back(std::shared_ptr<PerceptClip>(new PerceptClip(i, s.str(), generator, clipDimensionValues, PS_DEFAULT_IMMUNITY)));
+        perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(i, s.str(), generator, clipDimensionValues, PS_DEFAULT_IMMUNITY)));
     }
 
-    actionClips = shared_ptr<vector<shared_ptr<ActionClip>>>(new vector<shared_ptr<ActionClip>>());
+    actionClips = KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<ActionClip> > >(new vector<KUKADU_SHARED_PTR<ActionClip> >());
     for(int i = 0; i < numberOfActions; ++i) {
         stringstream s;
         s << i;
-        std::shared_ptr<std::vector<int>> clipDimensionValues = std::shared_ptr<std::vector<int>>(new vector<int>());
+        KUKADU_SHARED_PTR<std::vector<int>> clipDimensionValues = KUKADU_SHARED_PTR<std::vector<int>>(new vector<int>());
         clipDimensionValues->push_back(i);
-        actionClips->push_back(std::shared_ptr<ActionClip>(new ActionClip(i, 1, s.str(), generator)));
+        actionClips->push_back(KUKADU_SHARED_PTR<ActionClip>(new ActionClip(i, 1, s.str(), generator)));
     }
 
 }
@@ -45,13 +45,13 @@ int ManualReward::getDimensionality() {
 
 }
 
-std::shared_ptr<PerceptClip> ManualReward::generateNextPerceptClip(int immunity) {
+KUKADU_SHARED_PTR<PerceptClip> ManualReward::generateNextPerceptClip(int immunity) {
 
     return perceptClips->at(nextPerceptId);
 
 }
 
-double ManualReward::computeRewardInternal(std::shared_ptr<PerceptClip> providedPercept, std::shared_ptr<ActionClip> takenAction) {
+double ManualReward::computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction) {
 
     int worked = 0;
     double retReward = 0.0;
@@ -71,10 +71,10 @@ double ManualReward::computeRewardInternal(std::shared_ptr<PerceptClip> provided
 
 }
 
-std::shared_ptr<std::vector<std::shared_ptr<ActionClip>>> ManualReward::generateActionClips() {
+KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip>>> ManualReward::generateActionClips() {
     return actionClips;
 }
 
-std::shared_ptr<std::vector<std::shared_ptr<PerceptClip>>> ManualReward::generatePerceptClips() {
+KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip>>> ManualReward::generatePerceptClips() {
     return perceptClips;
 }

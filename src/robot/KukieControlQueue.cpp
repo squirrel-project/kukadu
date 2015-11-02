@@ -224,7 +224,9 @@ std::string KukieControlQueue::getRobotName() {
 }
 
 std::vector<std::string> KukieControlQueue::getJointNames() {
-    return {"A1", "A2", "E1", "A3", "A4", "A5", "A6"};
+    vector<string> retVal;
+    retVal.push_back("A1"); retVal.push_back("A2"); retVal.push_back("E1"); retVal.push_back("A3"); retVal.push_back("A4"); retVal.push_back("A5"); retVal.push_back("A6");
+    return retVal;
 }
 
 void KukieControlQueue::jntMoveCallback(const std_msgs::Float64MultiArray& msg) {

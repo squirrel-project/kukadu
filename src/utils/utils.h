@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 #include <iostream>
-#include <thread>
 #include <termios.h>
 #include <unistd.h>
 #include <stdbool.h>
@@ -17,7 +16,6 @@
 #include <cstring>
 #include <armadillo>
 #include <wordexp.h>
-#include <memory>
 #include <signal.h>
 #include <utility>
 #include <limits>
@@ -37,6 +35,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+#include <sensor_msgs/PointCloud2.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 
 #include "../trajectory/DMPTrajectoryGenerator.h"
 #include "../learning/GaussianProcessRegressor.h"
@@ -115,7 +117,7 @@ arma::mat columnToSquareMatrix(arma::vec c);
 arma::vec symmetricMatrixToColumn(arma::mat m);
 arma::mat columnToSymmetricMatrix(arma::vec c);
 
-std::shared_ptr<ControllerResult> executeDemo(std::shared_ptr<ControlQueue> movementQu, std::string file, double az, double bz, int plotResults);
+KUKADU_SHARED_PTR<ControllerResult> executeDemo(KUKADU_SHARED_PTR<ControlQueue> movementQu, std::string file, double az, double bz, int plotResults);
 
 void set_ctrlc_exit_handler();
 void exit_handler(int s);
@@ -142,5 +144,7 @@ bool isDirectory(const std::string dirPath);
 bool fileExists(const std::string filePath);
 void copyFile(const std::string source, const std::string destination);
 
+pcl::PointCloud<pcl::PointXYZ> sensorMsgsPcToPclPc(sensor_msgs::PointCloud2 pc);
+sensor_msgs::PointCloud2 pclPcToSensorMsgsPc(pcl::PointCloud<pcl::PointXYZ> pc);
 
 #endif
