@@ -28,7 +28,7 @@ PouringRewardComputer::PouringRewardComputer(double targetWeight) {
     this->targetWeight = targetWeight;
 }
 
-double PouringRewardComputer::computeCost(std::shared_ptr<ControllerResult> results) {
+double PouringRewardComputer::computeCost(KUKADU_SHARED_PTR<ControllerResult> results) {
 
     double weight = 0.0;
     cout << "(PouringRewardComputer) Enter measured weight: ";
@@ -107,7 +107,7 @@ GraspingRewardComputer::GraspingRewardComputer(std::vector<double> finalJointPos
 	
 }
 
-double GraspingRewardComputer::computeCost(std::shared_ptr<ControllerResult> results) {
+double GraspingRewardComputer::computeCost(KUKADU_SHARED_PTR<ControllerResult> results) {
 	
 	double rightR2WTM[4][4] = {
 		{-0.7162,0.6041,0.3496,-0.4837},

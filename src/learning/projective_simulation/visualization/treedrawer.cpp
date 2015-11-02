@@ -104,10 +104,15 @@ void TreeDrawer::drawTree(KUKADU_SHARED_PTR<ProjectiveSimulator> projSim) {
     int layerCount = clipLayers->size();
 
     currLayer = 0;
-    for(KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare>> level : *clipLayers) {
+
+    for(int i = 0; i < clipLayers->size(); ++i) {
+        KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare> > level = clipLayers->at(i);
 
         int currIdx = 0;
-        for(KUKADU_SHARED_PTR<Clip> currClip : *level) {
+
+        set<KUKADU_SHARED_PTR<Clip>, clip_compare>::iterator it;
+        for(it = level->begin(); it != level->end(); ++it) {
+            KUKADU_SHARED_PTR<Clip> currClip = *it;
 
             double totalSubWeight = 0.0;
             int startPosStartNode = compteXOffset(level);
@@ -123,7 +128,7 @@ void TreeDrawer::drawTree(KUKADU_SHARED_PTR<ProjectiveSimulator> projSim) {
                 if(targetLayer == CLIP_H_LEVEL_FINAL)
                     targetLayer = layerCount - 1;
 
-                KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare>> subLevel = clipLayers->at(targetLayer);
+                KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare> > subLevel = clipLayers->at(targetLayer);
                 int targetIdx = distance(subLevel->begin(), subLevel->find(subClip));
 
                 al_draw_line(startPosStartNode + TREEDRAWER_H_NODE_X_OFFS + TREEDRAWER_H_NODE_X_DIST * currIdx,
@@ -144,11 +149,14 @@ void TreeDrawer::drawTree(KUKADU_SHARED_PTR<ProjectiveSimulator> projSim) {
     }
 
     currLayer = 0;
-    for(KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare>> level : *clipLayers) {
+    for(int i = 0; i < clipLayers->size(); ++i) {
+        KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare> > level = clipLayers->at(i);
 
         int currIdx = 0;
         int startPos = compteXOffset(level);
-        for(KUKADU_SHARED_PTR<Clip> currClip : *level) {
+        set<KUKADU_SHARED_PTR<Clip>, clip_compare>::iterator it;
+        for(it = level->begin(); it != level->end(); ++it) {
+            KUKADU_SHARED_PTR<Clip> currClip = *it;
 
             drawNode(startPos + TREEDRAWER_H_NODE_X_OFFS + TREEDRAWER_H_NODE_X_DIST * currIdx,
                      TREEDRAWER_H_NODE_Y_OFFS + TREEDRAWER_H_NODE_Y_DIST * currLayer,

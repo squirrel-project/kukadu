@@ -40,7 +40,7 @@ private:
     void construct();
     void drawNode(int x, int y, std::string text, int level);
 
-    int compteXOffset(KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare>> level);
+    int compteXOffset(KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > level);
 
 public:
 

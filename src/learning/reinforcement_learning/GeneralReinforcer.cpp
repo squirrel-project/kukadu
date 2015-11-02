@@ -64,7 +64,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
         vec startingPos = rollout.at(k)->getStartingPos();
         startingJoints = startingPos;
 
-        shared_ptr<ControllerResult> simRes;
+        KUKADU_SHARED_PTR<ControllerResult> simRes;
         if(doSimulation) {
 
             simulationQueue->moveJoints(startingJoints);
@@ -105,7 +105,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
         if(doSimulation || doExecution) {
 
             dmpResult.push_back(simRes);
-            shared_ptr<ControllerResult> resK = simRes;
+            KUKADU_SHARED_PTR<ControllerResult> resK = simRes;
             double delta = cost->computeCost(resK);
             lastCost.push_back(delta);
 
@@ -131,15 +131,16 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 
 	double tmpCost = lastUpdateCost;
     KUKADU_SHARED_PTR<Trajectory> tmpUpdate = lastUpdate->copy();
-    shared_ptr<ControllerResult> tmpRes = lastUpdateRes;
+    KUKADU_SHARED_PTR<ControllerResult> tmpRes = lastUpdateRes;
     lastUpdate = updateStep();
 
     trajEx->setTrajectory(lastUpdate);
 
     if(!isFirstIteration) {
+
         cout << "(GeneralReinforcer) performing newest update" << endl;
 
-        shared_ptr<ControllerResult> simRes;
+        KUKADU_SHARED_PTR<ControllerResult> simRes;
         if(doSimulation) {
             cout << "(DMPReinforcer) simulating update" << endl;
             simulationQueue->moveJoints(startingJoints);

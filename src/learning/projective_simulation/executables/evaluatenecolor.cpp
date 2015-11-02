@@ -1,39 +1,24 @@
 #include <ctime>
-#include <chrono>
 #include <vector>
-#include <numeric>
-#include <random>
-#include <iostream>
-#include <fstream>
 #include <cstdlib>
+#include <numeric>
+#include <sstream>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <getopt.h>
 #include <stdexcept>
 #include <execinfo.h>
-#include <sstream>
 
 #include "../core/clip.h"
+#include "../utils/utils.h"
 #include "../core/actionclip.h"
+#include "../utils/Tokenizer.h"
 #include "../core/perceptclip.h"
 #include "../core/psevaluator.h"
 #include "../core/projectivesimulator.h"
-
 #include "../visualization/treedrawer.h"
-#include "../utils/Tokenizer.h"
-
-#include "../utils/utils.h"
 #include "../application/neverendingcolorreward.h"
-
-#include <ctime>
-#include <chrono>
-#include <vector>
-#include <numeric>
-#include <random>
-#include <iostream>
-#include <fstream>
-#include <cstdlib>
-#include <stdexcept>
-#include <execinfo.h>
-#include <sstream>
-#include <getopt.h>
 
 using namespace std;
 
@@ -62,10 +47,11 @@ int main(int argc, char** args) {
     vector<string> selectedFilesList = filterByPrefix(folderFiles, filePrefix);
     vector<string> selectedFiles;
     vector<int> selectedFilesPos;
-    for(string s : selectedFilesList) {
+    for(int i = 0; i < selectedFilesList.size(); ++i) {
+        string s = selectedFilesList.at(i);
         selectedFiles.push_back(inputFolder + s);
         ifstream ifs;
-        ifs.open(inputFolder + s);
+        ifs.open((inputFolder + s).c_str());
         string tmp;
         getline(ifs, tmp); getline(ifs, tmp); getline(ifs, tmp);
         selectedFilesPos.push_back(ifs.tellg());
@@ -77,12 +63,12 @@ int main(int argc, char** args) {
     vector<double> stat;
     stat.push_back(0);
     ifstream firstStream;
-    firstStream.open(selectedFiles.at(0));
+    firstStream.open(selectedFiles.at(0).c_str());
 
     while(selectedFiles.size() && stat.size()) {
 
         cout << "current number of cats: " << (numOfCats + 2) << endl;
-        pair<vector<int>, vector<double>> retStat = PSEvaluator::evaluateStatistics(selectedFiles, selectedFilesPos);
+        pair<vector<int>, vector<double> > retStat = PSEvaluator::evaluateStatistics(selectedFiles, selectedFilesPos);
         selectedFilesPos = retStat.first;
         stat = retStat.second;
 
@@ -91,7 +77,7 @@ int main(int argc, char** args) {
         cout << "writing to file: " << s.str() << endl;
 
         ofstream outFile;
-        outFile.open(s.str());
+        outFile.open(s.str().c_str());
 
         for(int i = 0; i < stat.size(); ++i) {
             outFile << i << "\t" << stat.at(i) << endl;
@@ -101,7 +87,7 @@ int main(int argc, char** args) {
         for(int i = 0; i < selectedFiles.size(); ++i) {
             ifstream currentS;
             string currentFile = selectedFiles.at(i);
-            currentS.open(currentFile);
+            currentS.open(currentFile.c_str());
             currentS.seekg(selectedFilesPos.at(i));
             getline(currentS, line); getline(currentS, line);
             selectedFilesPos.at(i) = currentS.tellg();

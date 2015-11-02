@@ -5,18 +5,25 @@ using namespace std;
 TrafficLightReward::TrafficLightReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, bool collectPrevRewards) : Reward(generator, collectPrevRewards) {
 
     currentT = 0;
-    intDist = std::uniform_int_distribution<int>(0, 3);
-    actionClips = KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip>>>(new vector<KUKADU_SHARED_PTR<ActionClip>>());
+    intDist = kukadu_uniform_distribution(0, 3);
+    actionClips = KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > >(new vector<KUKADU_SHARED_PTR<ActionClip> >());
     actionClips->push_back(KUKADU_SHARED_PTR<ActionClip>(new ActionClip(0, 2, "drive", generator)));
     actionClips->push_back(KUKADU_SHARED_PTR<ActionClip>(new ActionClip(1, 2, "stop", generator)));
 
-    perceptClips = KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip>>>(new vector<KUKADU_SHARED_PTR<PerceptClip>>());
-    // (0, 0) = (green, left)
+    perceptClips = KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > >(new vector<KUKADU_SHARED_PTR<PerceptClip> >());
 
-    perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(TRAFFICLIGHTREWARD_GREEN_RIGHT, "(green, left)", generator, KUKADU_SHARED_PTR<vector<int>>(new vector<int>({0, 0})), PS_DEFAULT_IMMUNITY)));
-    perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(TRAFFICLIGHTREWARD_GREEN_LEFT, "(green, right)", generator, KUKADU_SHARED_PTR<vector<int>>(new vector<int>({0, 1})), PS_DEFAULT_IMMUNITY)));
-    perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(TRAFFICLIGHTREWARD_RED_RIGHT, "(red, left)", generator, KUKADU_SHARED_PTR<vector<int>>(new vector<int>({1, 0})), PS_DEFAULT_IMMUNITY)));
-    perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(TRAFFICLIGHTREWARD_RED_LEFT, "(red, right)", generator, KUKADU_SHARED_PTR<vector<int>>(new vector<int>({1, 1})), PS_DEFAULT_IMMUNITY)));
+    vector<int>* tmp1 = new vector<int>();
+    vector<int>* tmp2 = new vector<int>();
+    vector<int>* tmp3 = new vector<int>();
+    vector<int>* tmp4 = new vector<int>();
+    tmp1->push_back(0); tmp1->push_back(0);
+    tmp2->push_back(0); tmp2->push_back(1);
+    tmp3->push_back(1); tmp3->push_back(0);
+    tmp4->push_back(1); tmp4->push_back(1);
+    perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(TRAFFICLIGHTREWARD_GREEN_RIGHT, "(green, left)", generator, KUKADU_SHARED_PTR<vector<int> >(tmp1), PS_DEFAULT_IMMUNITY)));
+    perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(TRAFFICLIGHTREWARD_GREEN_LEFT, "(green, right)", generator, KUKADU_SHARED_PTR<vector<int> >(tmp2), PS_DEFAULT_IMMUNITY)));
+    perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(TRAFFICLIGHTREWARD_RED_RIGHT, "(red, left)", generator, KUKADU_SHARED_PTR<vector<int> >(tmp3), PS_DEFAULT_IMMUNITY)));
+    perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(TRAFFICLIGHTREWARD_RED_LEFT, "(red, right)", generator, KUKADU_SHARED_PTR<vector<int> >(tmp4), PS_DEFAULT_IMMUNITY)));
 
 }
 
@@ -90,8 +97,8 @@ KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > TrafficLightRewa
     return actionClips;
 }
 
-KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip>>> TrafficLightReward::generatePerceptClips() {
-    return KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip>>>(new std::vector<KUKADU_SHARED_PTR<PerceptClip>>());
+KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > TrafficLightReward::generatePerceptClips() {
+    return KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > >(new std::vector<KUKADU_SHARED_PTR<PerceptClip> >());
 }
 
 int TrafficLightReward::getDimensionality() {

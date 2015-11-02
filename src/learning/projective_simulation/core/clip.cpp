@@ -31,9 +31,9 @@ void Clip::construct(int level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> gener
 
 }
 
-KUKADU_SHARED_PTR<std::vector<int>> Clip::getIdVectorFromString(std::string str) {
+KUKADU_SHARED_PTR<std::vector<int> > Clip::getIdVectorFromString(std::string str) {
 
-    KUKADU_SHARED_PTR<std::vector<int>> retVec = KUKADU_SHARED_PTR<std::vector<int> >(new std::vector<int>());
+    KUKADU_SHARED_PTR<std::vector<int> > retVec = KUKADU_SHARED_PTR<std::vector<int> >(new std::vector<int>());
     Tokenizer tok(str, "(),");
 
     string t = "";
@@ -46,9 +46,9 @@ KUKADU_SHARED_PTR<std::vector<int>> Clip::getIdVectorFromString(std::string str)
 }
 
 Clip::~Clip() {
-    subClips = nullptr;
-    parents = nullptr;
-    subClipsSet = nullptr;
+    subClips.reset();
+    parents.reset();
+    subClipsSet.reset();
 }
 
 double Clip::computeSubEntropy() const {
@@ -56,8 +56,10 @@ double Clip::computeSubEntropy() const {
     double entropy = 0.0;
     vector<double> probs = discDist.probabilities();
 
-    for(double prob : probs)
+    for(int i = 0; i < probs.size(); ++i) {
+        double prob = probs.at(i);
         entropy -= prob * log2(prob);
+    }
 
     return entropy;
 
@@ -87,18 +89,26 @@ void Clip::addParent(KUKADU_SHARED_PTR<Clip> par) {
 void Clip::addParentDownwards(KUKADU_SHARED_PTR<Clip> par) {
     addParent(par);
     par->addSubClip(shared_from_this(), CLIP_H_STD_WEIGHT);
-    for(KUKADU_SHARED_PTR<Clip> child : *subClips) {
+
+    for(int i = 0; i < subClips->size(); ++i) {
+        KUKADU_SHARED_PTR<Clip> child = subClips->at(i);
         child->addParentDownwards(par);
     }
+
 }
 
 void Clip::addChildUpwards(KUKADU_SHARED_PTR<Clip> sub) {
     this->addSubClip(sub, CLIP_H_STD_WEIGHT);
-    for(KUKADU_SHARED_PTR<Clip> parent : *parents)
+
+    set<KUKADU_SHARED_PTR<Clip> >::iterator it;
+    for(it = parents->begin(); it != parents->end(); ++it) {
+        KUKADU_SHARED_PTR<Clip> parent = *it;
         parent->addChildUpwards(sub);
+    }
+
 }
 
-std::pair<int, KUKADU_SHARED_PTR<Clip>> Clip::jumpNextRandom() {
+std::pair<int, KUKADU_SHARED_PTR<Clip> > Clip::jumpNextRandom() {
 
     visitedSubNode = discDist(*generator);
     return pair<int, KUKADU_SHARED_PTR<Clip> >(visitedSubNode, subClips->at(visitedSubNode));
@@ -113,7 +123,7 @@ void Clip::initRandomGenerator() {
 
 void Clip::addSubClip(KUKADU_SHARED_PTR<Clip> sub, int weight) {
 
-    pair<set<KUKADU_SHARED_PTR<Clip>>::iterator, bool> inserted = subClipsSet->insert(sub);
+    pair<set<KUKADU_SHARED_PTR<Clip> >::iterator, bool> inserted = subClipsSet->insert(sub);
     if(inserted.second) {
         subClips->push_back(sub);
         subH.push_back(weight);
@@ -123,7 +133,7 @@ void Clip::addSubClip(KUKADU_SHARED_PTR<Clip> sub, int weight) {
 
 }
 
-void Clip::setChildren(KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip>>> children) {
+void Clip::setChildren(KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > children) {
 
     int childCount = children->size();
     std::vector<double> newH;
@@ -139,7 +149,7 @@ void Clip::setChildren(KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip>>> c
 
 void Clip::setChildren(KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > children, std::vector<double> weights) {
 
-    subClips = nullptr;
+    subClips.reset();
     this->subClips = children;
     this->subH = weights;
     initRandomGenerator();
@@ -244,7 +254,7 @@ bool Clip::isCompatibleSubclip(KUKADU_SHARED_PTR<Clip> c) {
     else if(this->getLevel() == CLIP_H_LEVEL_FINAL)
         return false;
 
-    KUKADU_SHARED_PTR<std::vector<int>> cClips = c->clipDimensionValues;
+    KUKADU_SHARED_PTR<std::vector<int> > cClips = c->clipDimensionValues;
     int clipSize = cClips->size();
     if(this->clipDimensionValues->size() == clipSize) {
         for(int i = 0; i < cClips->size(); ++i) {
@@ -257,7 +267,7 @@ bool Clip::isCompatibleSubclip(KUKADU_SHARED_PTR<Clip> c) {
 
 }
 
-void Clip::setClipDimensionValues(KUKADU_SHARED_PTR<std::vector<int>> vals) {
+void Clip::setClipDimensionValues(KUKADU_SHARED_PTR<std::vector<int> > vals) {
     this->clipDimensionValues = vals;
 }
 
@@ -273,11 +283,14 @@ string Clip::toString() const {
 
     stringstream ss;
     ss << "(";
-    for(int dim : *clipDimensionValues)
+    for(int i = 0; i < clipDimensionValues->size(); ++i) {
+        int dim = clipDimensionValues->at(i);
         if(dim != CLIP_H_HASH_VAL)
             ss << dim << ", ";
         else
             ss << "#, ";
+    }
+
     string retStr = ss.str();
     return retStr.substr(0, retStr.length() - 2) + ")";
 
@@ -291,13 +304,14 @@ KUKADU_SHARED_PTR<std::vector<int> > Clip::getClipDimensions() const {
     return clipDimensionValues;
 }
 
-KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>>> Clip::getParents() {
+KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip> > > Clip::getParents() {
     return parents;
 }
 
 void Clip::removeAllSubClips() {
-    vector<KUKADU_SHARED_PTR<Clip>> subClipCopy(*subClips);
-    for(KUKADU_SHARED_PTR<Clip> subClip : subClipCopy) {
+    vector<KUKADU_SHARED_PTR<Clip> > subClipCopy(*subClips);
+    for(int i = 0; i < subClipCopy.size(); ++i) {
+        KUKADU_SHARED_PTR<Clip> subClip = subClipCopy.at(i);
         removeSubClipWoRand(subClip);
     }
     gotDeleted = 1;
@@ -317,7 +331,7 @@ void Clip::removeSubClip(KUKADU_SHARED_PTR<Clip> clip) {
 void Clip::removeSubClipWoRand(KUKADU_SHARED_PTR<Clip> clip) {
 
     subClipsSet->erase(clip);
-    vector<KUKADU_SHARED_PTR<Clip>>::iterator foundIt = std::find(subClips->begin(), subClips->end() + 1, clip);
+    vector<KUKADU_SHARED_PTR<Clip> >::iterator foundIt = std::find(subClips->begin(), subClips->end() + 1, clip);
     int elIdx = foundIt - subClips->begin();
     subClips->erase(foundIt);
     subH.erase(subH.begin() + elIdx);
@@ -331,14 +345,14 @@ int Clip::getInitialImmunity() {
 
 KUKADU_SHARED_PTR<Clip> Clip::compareClip(KUKADU_SHARED_PTR<Clip> c) {
 
-    KUKADU_SHARED_PTR<vector<int>> cVec = c->clipDimensionValues;
+    KUKADU_SHARED_PTR<vector<int> > cVec = c->clipDimensionValues;
     int cVecSize = cVec->size();
     int thisVecSize = clipDimensionValues->size();
     if(cVecSize != thisVecSize)
-        return NULL;
+        return KUKADU_SHARED_PTR<Clip>();
 
     int hashCount = 0;
-    KUKADU_SHARED_PTR<vector<int>> clipValues = KUKADU_SHARED_PTR<vector<int>>(new vector<int>());
+    KUKADU_SHARED_PTR<vector<int> > clipValues = KUKADU_SHARED_PTR<vector<int> >(new vector<int>());
     for(int i = 0, val = 0; i < cVecSize; ++i) {
         if((val = cVec->at(i)) == clipDimensionValues->at(i) && cVec->at(i) != CLIP_H_HASH_VAL)
             clipValues->push_back(val);
@@ -372,8 +386,8 @@ std::string Clip::getIdVecString() const {
     s << "(";
 
     bool isFirst = true;
-    for(int val : *clipDimensionValues) {
-
+    for(int i = 0; i < clipDimensionValues->size(); ++i) {
+        int val = clipDimensionValues->at(i);
         if(isFirst)
             isFirst = false;
         else

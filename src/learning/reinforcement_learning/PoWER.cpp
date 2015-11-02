@@ -5,16 +5,15 @@ using namespace std;
 
 bool rewardComparator (pair <double, KUKADU_SHARED_PTR<Trajectory> > i, pair <double, KUKADU_SHARED_PTR<Trajectory> > j) { return (i.first > j.first); }
 
-PoWER::PoWER(KUKADU_SHARED_PTR<TrajectoryExecutor> trajEx, std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
+PoWER::PoWER(KUKADU_SHARED_PTR<TrajectoryExecutor> trajEx, std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr, unsigned seed) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
 	
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    generator = std::default_random_engine(seed);
+    generator = kukadu_mersenne_twister(seed);
 
 	vector<double> intSigmas;
 	
 	// init sampler
 	for(int i = 0; i < initDmp.at(0)->getCoefficients().at(0).n_elem; ++i) {
-		normal_distribution<double> normal(0, explorationSigma);
+        kukadu_normal_distribution normal(0, explorationSigma);
 		normals.push_back(normal);
 		intSigmas.push_back(abs(explorationSigma));
 	}
@@ -23,9 +22,10 @@ PoWER::PoWER(KUKADU_SHARED_PTR<TrajectoryExecutor> trajEx, std::vector<KUKADU_SH
 	
 }
 
-PoWER::PoWER(KUKADU_SHARED_PTR<TrajectoryExecutor> trajEx, std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
+PoWER::PoWER(KUKADU_SHARED_PTR<TrajectoryExecutor> trajEx, std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr, unsigned seed) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
 
 	// init sampler
+    generator = kukadu_mersenne_twister(seed);
 
     if(explorationSigmas.size() < initDmp.at(0)->getCoefficients().at(0).n_elem) {
         cerr << "you defined too less exploration sigmas" << endl;
@@ -34,7 +34,7 @@ PoWER::PoWER(KUKADU_SHARED_PTR<TrajectoryExecutor> trajEx, std::vector<KUKADU_SH
 
 	for(int i = 0; i < initDmp.at(0)->getCoefficients().at(0).n_elem; ++i) {
 
-		normal_distribution<double> normal(0, explorationSigmas.at(i));
+        kukadu_normal_distribution normal(0, explorationSigmas.at(i));
 		normals.push_back(normal);
 
 	}
@@ -76,7 +76,7 @@ std::vector<KUKADU_SHARED_PTR<Trajectory> > PoWER::computeRolloutParamters() {
 			
 			for(int j = 0; j < currCoeff.n_elem; ++j) {
 			
-				normal_distribution<double> normal = normals.at(j);
+                kukadu_normal_distribution normal = normals.at(j);
 				double eps = normal(generator);
 				
 				currCoeff(j) += eps;
@@ -87,12 +87,8 @@ std::vector<KUKADU_SHARED_PTR<Trajectory> > PoWER::computeRolloutParamters() {
 			
 		}
 
-        //TODO: blew1 und blew2 do not deliver same result if there are more time centers (maybe not decompose whole extended M but single submatrices)
-
-//        cout << "blew1: " << dmpCoeffs.at(0).t() << endl;
         KUKADU_SHARED_PTR<Trajectory> nextUp = lastUp->copy();
         nextUp->setCoefficients(dmpCoeffs);
-//        cout << "blew2: " << nextUp->getCoefficients().at(0).t() << endl;
 		
 		nextCoeffs.push_back(nextUp);
 
@@ -151,11 +147,8 @@ KUKADU_SHARED_PTR<Trajectory> PoWER::updateStep() {
 		
 	}
 
-	//Dmp newUp(lastUp);
     KUKADU_SHARED_PTR<Trajectory> newUp = lastUp->copy();
 	newUp->setCoefficients(newCoeffs);
-
-//	cout << newCoeffs.at(0).t() << endl;
 	
 	return newUp;
 

@@ -1,5 +1,12 @@
 #include "DmpRewardComputer.h"
 
+#include "../../types/DMP.h"
+#include "../../types/SensorData.h"
+#include "../../robot/SensorStorage.h"
+#include "../../trajectory/DMPExecutor.h"
+#include "../../trajectory/JointDMPLearner.h"
+
+
 using namespace std;
 using namespace arma;
 
@@ -9,18 +16,16 @@ DmpRewardComputer::DmpRewardComputer(string file, double az, double bz, double t
     this->az = az;
     this->bz = bz;
     this->timeStep = timeStep;
-    std::shared_ptr<ControlQueue> pcq = std::shared_ptr<ControlQueue>(new PlottingControlQueue(degOfFreedom, timeStep));
+    KUKADU_SHARED_PTR<ControlQueue> pcq = KUKADU_SHARED_PTR<ControlQueue>(new PlottingControlQueue(degOfFreedom, timeStep));
 
     cout << "(DmpRewardComputer) starting execution of sample trajectory with timeStep size " << timeStep << endl;
-    executionResult = executeDemo(pcq, file, az, bz, 0);
-
-    /*
-    cout << "(DmpRewardComputer) performing binary tree search" << endl;
-    int idx = binaryTimeSearch(executionResult.t, 0.51);
-
-    cout << "(DmpRewardComputer) found t at index " << idx << endl;
-    cout << "(DmpRewardComputer) value is " << executionResult.t(idx) << " and " << executionResult.t(idx + 1) << endl;
-    */
+    //executionResult = executeDemo(pcq, file, az, bz, 0);
+    KUKADU_SHARED_PTR<SensorData> data = SensorStorage::readStorage(pcq, file);
+    arma::vec times = data->getTimes();
+    KUKADU_SHARED_PTR<JointDMPLearner> dmpLearner = KUKADU_SHARED_PTR<JointDMPLearner>(new JointDMPLearner(az, bz, join_rows(times, data->getJointPos())));
+    KUKADU_SHARED_PTR<Dmp> finalDmp = dmpLearner->fitTrajectories();
+    DMPExecutor execDmp(finalDmp, pcq);
+    executionResult = execDmp.executeTrajectory(0, 0, finalDmp->getTmax(), timeStep, 0.1, 0.1);
 
 }
 
@@ -29,7 +34,6 @@ arma::vec DmpRewardComputer::computeFun(double t) {
     vec time = executionResult->getTimes();
     vec retVec(executionResult->getYs().size());
 
-//    cout << "(DmpRewardComputer) dim: " << executionResult.y.size() << endl;
     if(t >= time(time.n_elem - 1)) {
         for(int i = 0; i < retVec.n_elem; ++i)
                 retVec(i) = executionResult->getYs().at(i)(time.n_elem - 1);

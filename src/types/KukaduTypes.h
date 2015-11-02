@@ -1,6 +1,11 @@
 #ifndef KUKADU_KUKADUTYPES_H
 #define KUKADU_KUKADUTYPES_H
 
+    #if __cplusplus > 199711L
+    #else
+        #define USEBOOST
+    #endif
+
     // shared_ptr
     #ifdef USEBOOST
         #include <boost/shared_ptr.hpp>
@@ -45,10 +50,10 @@
         typedef boost::random::uniform_int_distribution<int> kukadu_uniform_distribution;
     #else
         #include <random>
-        #define KUKADU_DISCRETE_DISTRIBUTION boost::random::discrete_distribution
+        #define KUKADU_DISCRETE_DISTRIBUTION std::discrete_distribution
         typedef std::mt19937 kukadu_mersenne_twister;
         typedef std::uniform_int_distribution<int> kukadu_uniform_distribution;
-        typedef boost::random::normal_distribution<double> std::normal_distribution<double>;
+        typedef std::normal_distribution<double> kukadu_uniform_distribution;
     #endif
 
 #endif

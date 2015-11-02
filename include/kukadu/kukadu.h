@@ -58,6 +58,7 @@
 #include "../../src/types/SensorData.h"
 #include "../../src/types/LinCombDmp.h"
 #include "../../src/types/QueryPoint.h"
+#include "../../src/types/KukaduTypes.h"
 #include "../../src/types/CartesianDMP.h"
 #include "../../src/types/DictionaryTrajectory.h"
 #include "../../src/types/SingleSampleTrajectory.h"

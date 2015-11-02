@@ -45,7 +45,7 @@ public:
     PCLTools();
 
     static FitCube fitBox(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
-    //static pcl::PointCloud<pcl::PointXYZ>::Ptr segmentPlanar(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, bool negative);
+    static pcl::PointCloud<pcl::PointXYZ>::Ptr segmentPlanar(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, bool negative);
 
     void visualizePointCloud(std::string id, pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
 

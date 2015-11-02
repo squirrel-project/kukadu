@@ -23,7 +23,8 @@ std::vector<std::string> getFilesInDir(std::string directory) {
 std::vector<std::string> filterByPrefix(std::vector<std::string>& vec, string prefix) {
 
     vector<string> retVec;
-    for(string s : vec) {
+    for(int i = 0; i < vec.size(); ++i) {
+        string s = vec.at(i);
         if(!s.find(prefix))
             retVec.push_back(s);
     }

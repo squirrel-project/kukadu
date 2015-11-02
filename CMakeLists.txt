@@ -26,7 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 set(CURSES_USE_NCURSES TRUE)
 find_package(PCL REQUIRED)
-find_package(Boost COMPONENTS filesystem program_options)
+find_package(Boost REQUIRED)
 find_package(Eigen REQUIRED)
 find_package(Curses REQUIRED)
 find_package(PythonLibs REQUIRED)
@@ -58,14 +58,9 @@ include_directories(
 
 set(ENABLE_VISUALIZATION 1)
 
-## do not switch to debug --> pcl tools will not work anymore due to pcl bug
-set(CMAKE_BUILD_TYPE Release)
-
-#add_definitions(-O0)
 add_definitions(-fPIC)
 add_definitions(-shared)
 add_definitions(-pthread)
-add_definitions(-DUSEBOOST)
 #add_definitions(-std=c++11)
 add_definitions(-DROS_SUPPORT)
 add_definitions(-DOSNAME_LINUX=1)

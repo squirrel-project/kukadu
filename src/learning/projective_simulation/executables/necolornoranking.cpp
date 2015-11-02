@@ -1,26 +1,25 @@
-#include "../core/clip.h"
-#include "../core/actionclip.h"
-#include "../core/perceptclip.h"
-#include "../core/psevaluator.h"
-#include "../core/projectivesimulator.h"
-
-#include "../visualization/treedrawer.h"
-#include "../utils/Tokenizer.h"
-
-#include "../application/neverendingcolorreward.h"
-
 #include <ctime>
-#include <chrono>
 #include <vector>
-#include <numeric>
-#include <random>
-#include <iostream>
+#include <time.h>
 #include <fstream>
+#include <numeric>
 #include <cstdlib>
+#include <sstream>
+#include <stdlib.h>
+#include <getopt.h>
+#include <iostream>
 #include <stdexcept>
 #include <execinfo.h>
-#include <sstream>
-#include <getopt.h>
+
+#include "../core/clip.h"
+#include "../core/actionclip.h"
+#include "../utils/Tokenizer.h"
+#include "../core/perceptclip.h"
+#include "../core/psevaluator.h"
+#include "../../../types/KukaduTypes.h"
+#include "../core/projectivesimulator.h"
+#include "../visualization/treedrawer.h"
+#include "../application/neverendingcolorreward.h"
 
 #define ASY_WOR_NUMBER_OF_WALKS 20000
 #define ASY_WOR_NUMBER_OF_ACTIONS 2
@@ -32,10 +31,7 @@ using namespace std;
 
 int main(int argc, char** args) {
 
-    chrono::time_point<std::chrono::system_clock> timePoint1 = chrono::system_clock::now();
-    chrono::system_clock::duration dtn = timePoint1.time_since_epoch();
-
-    int seed = dtn.count();
+    int seed = time(NULL);
     int numberOfWalks = ASY_WOR_NUMBER_OF_WALKS;
     int startNumberOfCats = ASY_WOR_START_NUMER_OF_CATS;
     int maxNumberOfCats = ASY_WOR_NUMBER_OF_CATS;
@@ -74,10 +70,10 @@ int main(int argc, char** args) {
     cout << "randomSeed: " << seed << endl;
     cout << "======================================" << endl << endl;
 
-    std::shared_ptr<std::mt19937> generator = std::shared_ptr<std::mt19937>(new std::mt19937(seed));
+    KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator = KUKADU_SHARED_PTR<kukadu_mersenne_twister>(new kukadu_mersenne_twister(seed));
 
     ofstream outFile;
-    outFile.open(outFilePath);
+    outFile.open(outFilePath.c_str());
 
     outFile << "program mode is neverending color scenario without ranking" << endl;
 
@@ -89,19 +85,18 @@ int main(int argc, char** args) {
         for(int i = 0; i < numberOfWalks; ++i)
             asymptoticRewards.push_back(0.0);
 
-        std::shared_ptr<NeverendingColorReward> trafficReward = nullptr;
-        std::shared_ptr<ProjectiveSimulator> currentProjSim = nullptr;
+        KUKADU_SHARED_PTR<NeverendingColorReward> trafficReward;
+        KUKADU_SHARED_PTR<ProjectiveSimulator> currentProjSim;
 
         outFile << "agent number " << 0 << " with " << numberOfCats << " cats" << endl;
 
-        trafficReward = std::shared_ptr<NeverendingColorReward>(new NeverendingColorReward(generator, ASY_WOR_NUMBER_OF_ACTIONS, numberOfCats, false));
-        currentProjSim = std::shared_ptr<ProjectiveSimulator>(new ProjectiveSimulator(trafficReward, generator, ASY_WOR_GAMMA, PS_USE_GEN, false));
+        trafficReward = KUKADU_SHARED_PTR<NeverendingColorReward>(new NeverendingColorReward(generator, ASY_WOR_NUMBER_OF_ACTIONS, numberOfCats, false));
+        currentProjSim = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(trafficReward, generator, ASY_WOR_GAMMA, PS_USE_GEN, false));
 
         PSEvaluator::produceStatistics(currentProjSim, trafficReward, numberOfWalks, PS_DEFAULT_IMMUNITY, NEVERENDINGCOLORREWARD_SUCCESSFUL_REWARD, outFile);
 
-        currentProjSim = nullptr;
-        trafficReward = nullptr;
-
+        currentProjSim.reset();
+        trafficReward.reset();
 
     }
 

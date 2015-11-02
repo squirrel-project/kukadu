@@ -20,7 +20,7 @@ private:
 
 public:
 
-    double computeCost(std::shared_ptr<ControllerResult> results);
+    double computeCost(KUKADU_SHARED_PTR<ControllerResult> results);
 	
 };
 

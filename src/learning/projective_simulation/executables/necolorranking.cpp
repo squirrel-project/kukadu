@@ -1,38 +1,25 @@
 #include <ctime>
-#include <chrono>
 #include <vector>
-#include <numeric>
-#include <random>
-#include <iostream>
+#include <time.h>
 #include <fstream>
+#include <numeric>
 #include <cstdlib>
+#include <sstream>
+#include <stdlib.h>
+#include <getopt.h>
+#include <iostream>
 #include <stdexcept>
 #include <execinfo.h>
-#include <sstream>
 
 #include "../core/clip.h"
 #include "../core/actionclip.h"
+#include "../utils/Tokenizer.h"
 #include "../core/perceptclip.h"
 #include "../core/psevaluator.h"
+#include "../../../types/KukaduTypes.h"
 #include "../core/projectivesimulator.h"
-
 #include "../visualization/treedrawer.h"
-#include "../utils/Tokenizer.h"
-
 #include "../application/neverendingcolorreward.h"
-
-#include <ctime>
-#include <chrono>
-#include <vector>
-#include <numeric>
-#include <random>
-#include <iostream>
-#include <fstream>
-#include <cstdlib>
-#include <stdexcept>
-#include <execinfo.h>
-#include <sstream>
-#include <getopt.h>
 
 #define ASY_WR_CONVERGENCE_TOL 0.01
 #define ASY_WR_NUMBER_OF_AGENTS 2000
@@ -48,7 +35,7 @@ using namespace std;
 
 int main(int argc, char** args) {
 
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    int seed = time(NULL);
     int numberOfWalks = ASY_WR_NUMBER_OF_WALKS;
     int startNumberOfCats = ASY_WR_START_NUMER_OF_CATS;
     int maxNumberOfCats = ASY_WR_NUMBER_OF_CATS;
@@ -97,10 +84,10 @@ int main(int argc, char** args) {
     cout << "maxClipNumber: " << maxClipNumber << endl;
     cout << "======================================" << endl << endl;
 
-    std::shared_ptr<std::mt19937> generator = std::shared_ptr<std::mt19937>(new std::mt19937(seed));
+    KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator = KUKADU_SHARED_PTR<kukadu_mersenne_twister>(new kukadu_mersenne_twister(seed));
 
     ofstream outFile;
-    outFile.open(outFilePath);
+    outFile.open(outFilePath.c_str());
 
     outFile << "program mode is neverending color scenario without ranking" << endl;
 
@@ -112,22 +99,21 @@ int main(int argc, char** args) {
         for(int i = 0; i < numberOfWalks; ++i)
             asymptoticRewards.push_back(0.0);
 
-        std::shared_ptr<NeverendingColorReward> trafficReward = nullptr;
-        std::shared_ptr<ProjectiveSimulator> currentProjSim = nullptr;
+        KUKADU_SHARED_PTR<NeverendingColorReward> trafficReward;
+        KUKADU_SHARED_PTR<ProjectiveSimulator> currentProjSim;
 
         outFile << "agent number " << 0 << " with " << numberOfCats << " cats" << endl;
 
-        trafficReward = std::shared_ptr<NeverendingColorReward>(new NeverendingColorReward(generator, ASY_WR_NUMBER_OF_ACTIONS, numberOfCats, true));
-        currentProjSim = std::shared_ptr<ProjectiveSimulator>(new ProjectiveSimulator(trafficReward, generator, ASY_WR_GAMMA, PS_USE_GEN, true));
+        trafficReward = KUKADU_SHARED_PTR<NeverendingColorReward>(new NeverendingColorReward(generator, ASY_WR_NUMBER_OF_ACTIONS, numberOfCats, true));
+        currentProjSim = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(trafficReward, generator, ASY_WR_GAMMA, PS_USE_GEN, true));
 
         currentProjSim->setStandardImmunity(clipImmunity);
         currentProjSim->setMaxNumberOfClips(maxClipNumber);
 
         PSEvaluator::produceStatistics(currentProjSim, trafficReward, numberOfWalks, clipImmunity, NEVERENDINGCOLORREWARD_SUCCESSFUL_REWARD, outFile);
 
-        currentProjSim = nullptr;
-        trafficReward = nullptr;
-
+        currentProjSim.reset();
+        trafficReward.reset();
 
     }
 

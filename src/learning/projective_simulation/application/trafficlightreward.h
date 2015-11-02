@@ -17,9 +17,9 @@ class TrafficLightReward : public Reward {
 private:
 
     int currentT;
-    std::uniform_int_distribution<int> intDist;
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip>>> actionClips;
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip>>> perceptClips;
+    kukadu_uniform_distribution intDist;
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > actionClips;
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > perceptClips;
 
 protected:
 
@@ -32,8 +32,8 @@ public:
     int getDimensionality();
     KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
 
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip>>> generateActionClips();
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> >> generatePerceptClips();
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();
 
 };
 

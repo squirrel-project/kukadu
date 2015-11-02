@@ -6,7 +6,7 @@ PerceptClip::PerceptClip(int perceptId, std::string label, KUKADU_SHARED_PTR<kuk
     construct(perceptId, label);
 }
 
-PerceptClip::PerceptClip(int perceptId, std::string label, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, KUKADU_SHARED_PTR<std::vector<int>> clipDimensionValues, int immunity) : Clip(0, generator, clipDimensionValues, immunity) {
+PerceptClip::PerceptClip(int perceptId, std::string label, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, KUKADU_SHARED_PTR<std::vector<int> > clipDimensionValues, int immunity) : Clip(0, generator, clipDimensionValues, immunity) {
     construct(perceptId, label);
 }
 

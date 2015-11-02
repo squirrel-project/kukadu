@@ -18,7 +18,7 @@ private:
 
     int currentTimeStep;
 
-    std::uniform_int_distribution<int> intDist;
+    kukadu_uniform_distribution intDist;
 
     KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > perceptClips;
 

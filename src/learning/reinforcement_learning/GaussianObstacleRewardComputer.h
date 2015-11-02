@@ -1,14 +1,14 @@
-#ifndef GAUSSIANOBSTACLEREWARDCOMPUTER
-#define GAUSSIANOBSTACLEREWARDCOMPUTER
+#ifndef KUKADU_GAUSSIANOBSTACLEREWARDCOMPUTER_H
+#define KUKADU_GAUSSIANOBSTACLEREWARDCOMPUTER_H
 
-#include <armadillo>
-#include <vector>
 #include <cmath>
-
+#include <vector>
+#include <armadillo>
 #include <RedundantKin.h>
 
-#include "SampleRewardComputer.h"
 #include "../../utils/types.h"
+#include "SampleRewardComputer.h"
+#include "../../types/KukaduTypes.h"
 
 class GaussianObstacleRewardComputer : public TrajectoryBasedReward {
 
@@ -53,7 +53,7 @@ public:
 	
 	GraspingRewardComputer(std::vector<double> finalJointPos);
 
-    double computeCost(std::shared_ptr<ControllerResult> results);
+    double computeCost(KUKADU_SHARED_PTR<ControllerResult> results);
 	
 };
 
@@ -67,7 +67,7 @@ public:
 
     PouringRewardComputer(double targetWeight);
 
-    double computeCost(std::shared_ptr<ControllerResult> results);
+    double computeCost(KUKADU_SHARED_PTR<ControllerResult> results);
 
 };
 

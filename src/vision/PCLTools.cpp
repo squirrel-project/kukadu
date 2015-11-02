@@ -113,7 +113,6 @@ FitCube PCLTools::fitBox(PointCloud<PointXYZ>::Ptr cloud) {
 
 }
 
-/*
 PointCloud<PointXYZ>::Ptr PCLTools::segmentPlanar(PointCloud<PointXYZ>::Ptr cloud, bool negative) {
 
     // Create the segmentation object for the planar model and set all the parameters
@@ -154,4 +153,3 @@ PointCloud<PointXYZ>::Ptr PCLTools::segmentPlanar(PointCloud<PointXYZ>::Ptr clou
     return cloud_f;
 
 }
-*/

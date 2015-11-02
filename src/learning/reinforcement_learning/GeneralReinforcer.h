@@ -25,9 +25,9 @@ private:
 	bool isFirstIteration;
 	
 	double ac;
-	double dmpStepSize;
 	double tolAbsErr;
 	double tolRelErr;
+    double dmpStepSize;
 	double lastUpdateCost;
 
     KUKADU_SHARED_PTR<CostComputer> cost;

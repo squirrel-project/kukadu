@@ -4,7 +4,7 @@
 using namespace std;
 using namespace arma;
 
-DMPReinforcer::DMPReinforcer(CostComputer* cost, std::shared_ptr<ControlQueue> movementQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) {
+DMPReinforcer::DMPReinforcer(CostComputer* cost, KUKADU_SHARED_PTR<ControlQueue> movementQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) {
 	
 	this->cost = cost;
 	this->movementQueue = movementQueue;
@@ -25,11 +25,11 @@ std::vector<double> DMPReinforcer::getLastRolloutCost() {
 	return lastCost;
 }
 
-std::vector<std::shared_ptr<Dmp>> DMPReinforcer::getLastRolloutParameters() {
+std::vector<KUKADU_SHARED_PTR<Dmp> > DMPReinforcer::getLastRolloutParameters() {
 	return rollout;
 }
 
-std::vector<std::shared_ptr<ControllerResult> > DMPReinforcer::getLastExecutionResults() {
+std::vector<KUKADU_SHARED_PTR<ControllerResult> > DMPReinforcer::getLastExecutionResults() {
 	return dmpResult;
 }
 
@@ -45,7 +45,7 @@ double DMPReinforcer::getTolRelErr() {
 	return tolRelErr;
 }
 
-std::shared_ptr<ControllerResult> DMPReinforcer::getLastUpdateRes() {
+KUKADU_SHARED_PTR<ControllerResult> DMPReinforcer::getLastUpdateRes() {
 	return lastUpdateRes;
 }
 
@@ -75,37 +75,15 @@ void DMPReinforcer::performRollout(int doSimulation, int doExecution) {
 	lastCost.clear();
 	dmpResult.clear();
 	
-//	cout << "(DMPReinforcer) performing next rollout" << endl;
 	for(int k = 0; k < rollout.size(); ++k) {
 		
         DMPExecutor dmpsim(rollout.at(k), movementQueue);
 		
 		if(doSimulation) {
 
-            shared_ptr<ControllerResult> simRes = dmpsim.simulateTrajectory(0, rollout.at(k)->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+            KUKADU_SHARED_PTR<ControllerResult> simRes = dmpsim.simulateTrajectory(0, rollout.at(k)->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
 			dmpResult.push_back(simRes);
 
-/*
-			for(int plotTraj = 0; plotTraj < rollout.at(k).getDegreesOfFreedom(); ++plotTraj) {
-
-				ostringstream convert;   // stream used for the conversion
-				convert << plotTraj;
-				
-				string title = string("fitted sensor data (joint") + convert.str() + string(")");
-				g1 = new Gnuplot(title);
-				g1->set_style("lines").plot_xy(armadilloToStdVec(dmpResult.at(k).t), armadilloToStdVec(dmpResult.at(k).y[plotTraj]), "dmp y");
-				g1->showonscreen();
-				
-				gs.push_back(g1);
-
-			}
-
-			for(int i = 0; i < gs.size(); ++i) {
-				g1 = gs.at(i);
-				delete g1;
-			}
-			gs.clear();
-*/
 		}
 		
 		if(doExecution) {
@@ -121,7 +99,7 @@ void DMPReinforcer::performRollout(int doSimulation, int doExecution) {
 				
 				movementQueue->setStartingJoints(startingJoints);
 				movementQueue->setStiffness(2200, 300, 1.0, 15000, 150, 2.0);
-                std::shared_ptr<std::thread> thr = movementQueue->startQueueThread();
+                KUKADU_SHARED_PTR<kukadu_thread> thr = movementQueue->startQueueThread();
 				
                 dmpResult.push_back(dmpsim.executeTrajectory(ac, 0, rollout.at(k)->getTmax(), dmpStepSize, tolAbsErr, tolRelErr));
 				
@@ -145,18 +123,16 @@ void DMPReinforcer::performRollout(int doSimulation, int doExecution) {
 	
 	this->lastUpdate = lastUpdate;
 	
-	cout << "(DMPReinforcer) last update reward/cost: " << lastUpdateCost << endl;
-	
-	cout << endl;
+    cout << "(DMPReinforcer) last update reward/cost: " << lastUpdateCost << endl << endl;
 
 }
 
-std::shared_ptr<Dmp> DMPReinforcer::getLastUpdate() {
+KUKADU_SHARED_PTR<Dmp> DMPReinforcer::getLastUpdate() {
 	
 	return lastUpdate;
 	
 }
 
-void DMPReinforcer::setLastUpdate(std::shared_ptr<Dmp> lastUpdate) {
+void DMPReinforcer::setLastUpdate(KUKADU_SHARED_PTR<Dmp> lastUpdate) {
 	this->lastUpdate = lastUpdate;
 }

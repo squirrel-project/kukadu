@@ -20,7 +20,7 @@ std::pair<std::vector<int>, std::vector<double> > PSEvaluator::evaluateStatistic
         string dataLine = "";
         string currentStreamFile = inputFiles.at(streamNum);
         ifstream currentStream;
-        currentStream.open(currentStreamFile);
+        currentStream.open(currentStreamFile.c_str());
         currentStream.seekg(inputPos.at(streamNum));
         memblock[0] = '\0';
         size_t endPos = 0;
@@ -77,7 +77,7 @@ std::pair<std::vector<int>, std::vector<double> > PSEvaluator::evaluateStatistic
             retSuccess.push_back(walkSuccess.at(i) / usedFilesCount);
         }
 
-    return std::pair<std::vector<int>, std::vector<double>>(inputPos, retSuccess);
+    return std::pair<std::vector<int>, std::vector<double> >(inputPos, retSuccess);
 
 }
 

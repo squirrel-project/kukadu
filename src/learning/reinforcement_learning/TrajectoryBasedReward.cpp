@@ -22,7 +22,7 @@ TrajectoryBasedReward::TrajectoryBasedReward(int degOfFreedom, arma::vec rewards
 
 }
 
-double TrajectoryBasedReward::computeCost(std::shared_ptr<ControllerResult> results) {
+double TrajectoryBasedReward::computeCost(KUKADU_SHARED_PTR<ControllerResult> results) {
 
     int tCount = results->getTimes().n_elem;
     tmax = results->getTimes()(tCount - 1);
@@ -51,7 +51,7 @@ double TrajectoryBasedReward::computeCost(std::shared_ptr<ControllerResult> resu
 void TrajectoryBasedReward::writeToFile(std::string file, double tStart, double tEnd, double stepSize) {
 
     ofstream outFile;
-    outFile.open(file);
+    outFile.open(file.c_str());
 
     for(; tStart < tEnd; tStart += stepSize) {
         arma::vec currentY = computeFun(tStart);
@@ -62,11 +62,11 @@ void TrajectoryBasedReward::writeToFile(std::string file, double tStart, double 
 
 }
 
-std::shared_ptr<ControllerResult> TrajectoryBasedReward::getOptimalTraj() {
+KUKADU_SHARED_PTR<ControllerResult> TrajectoryBasedReward::getOptimalTraj() {
     return getOptimalTraj(tmax);
 }
 
-std::shared_ptr<ControllerResult> TrajectoryBasedReward::getOptimalTraj(double tmax) {
+KUKADU_SHARED_PTR<ControllerResult> TrajectoryBasedReward::getOptimalTraj(double tmax) {
 
     double tmin = 0;
 
@@ -79,15 +79,15 @@ std::shared_ptr<ControllerResult> TrajectoryBasedReward::getOptimalTraj(double t
         retT(i) = t - tmin;
     }
 
-    return std::shared_ptr<ControllerResult>(new ControllerResult(retT, computeFun(retT)));
+    return KUKADU_SHARED_PTR<ControllerResult>(new ControllerResult(retT, computeFun(retT)));
 
 }
 
-std::shared_ptr<ControllerResult> TrajectoryBasedReward::getOptimalTraj(double tmax, int freedomIdx) {
+KUKADU_SHARED_PTR<ControllerResult> TrajectoryBasedReward::getOptimalTraj(double tmax, int freedomIdx) {
     return getOptimalTraj(0, tmax, freedomIdx);
 }
 
-std::shared_ptr<ControllerResult> TrajectoryBasedReward::getOptimalTraj(double tmin, double tmax, int freedomIdx) {
+KUKADU_SHARED_PTR<ControllerResult> TrajectoryBasedReward::getOptimalTraj(double tmin, double tmax, int freedomIdx) {
 	
 
     //TODO: revise this
@@ -106,7 +106,7 @@ std::shared_ptr<ControllerResult> TrajectoryBasedReward::getOptimalTraj(double t
 	
     vector<vec> yss;
     yss.push_back(ys);
-    return shared_ptr<ControllerResult>(new ControllerResult(retT, yss));
+    return KUKADU_SHARED_PTR<ControllerResult>(new ControllerResult(retT, yss));
 	
 }
 
