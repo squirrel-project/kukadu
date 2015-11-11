@@ -116,6 +116,7 @@ void Kinect::visualizeCurrentPc() {
 }
 
 void Kinect::visualizeCurrentTransformedPc(KUKADU_SHARED_PTR<PCTransformator> transformator) {
-    pcl::PointCloud<pcl::PointXYZ> transformed = transformator->transformPc(sensorMsgsPcToPclPc(getCurrentPointCloud()));
+    pcl::PointCloud<pcl::PointXYZ> currentPc = sensorMsgsPcToPclPc(getCurrentPointCloud());
+    pcl::PointCloud<pcl::PointXYZ>::Ptr transformed = transformator->transformPc(currentPc.makeShared());
     visPublisher.publish(pclPcToSensorMsgsPc(transformed));
 }

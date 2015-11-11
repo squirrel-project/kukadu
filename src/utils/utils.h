@@ -1,33 +1,33 @@
-#ifndef DMPUTILS
-#define DMPUTILS
+#ifndef KUKADU_KUKADUUTILS
+#define KUKADU_KUKADUUTILS
 
-#include <stdio.h>
-#include <iostream>
-#include <termios.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include <math.h>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <sstream>
 #include <queue>
 #include <vector>
+#include <math.h>
+#include <vector>
+#include <string>
+#include <limits>
 #include <cstring>
+#include <sstream>
+#include <stdio.h>
+#include <fstream>
+#include <utility>
+#include <stdarg.h>
+#include <iostream>
+#include <unistd.h>
+#include <signal.h>
+#include <dirent.h>
+#include <termios.h>
+#include <stdbool.h>
 #include <armadillo>
 #include <wordexp.h>
-#include <signal.h>
-#include <utility>
-#include <limits>
 #include <eigen3/Eigen/Dense>
 
-
-#include <dirent.h>
+#include <gsl/gsl_poly.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
-#include <gsl/gsl_multifit.h>
-#include <gsl/gsl_poly.h>
 #include <gsl/gsl_linalg.h>
+#include <gsl/gsl_multifit.h>
 
 #include <tf/transform_datatypes.h>
 #include <geometry_msgs/Quaternion.h>
@@ -142,9 +142,11 @@ bool isDirectory(const std::string dirPath);
 bool fileExists(const std::string filePath);
 void copyFile(const std::string source, const std::string destination);
 
+std::vector<double> createJointsVector(int n_args, ...);
 std::vector<double> createJointsVector(double j1, double j2, double j3, double j4, double j5, double j6, double j7);
 
 pcl::PointCloud<pcl::PointXYZ> sensorMsgsPcToPclPc(sensor_msgs::PointCloud2 pc);
 sensor_msgs::PointCloud2 pclPcToSensorMsgsPc(pcl::PointCloud<pcl::PointXYZ> pc);
+sensor_msgs::PointCloud2 pclPcToSensorMsgsPc(pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
 
 #endif

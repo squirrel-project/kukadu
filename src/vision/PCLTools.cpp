@@ -34,7 +34,7 @@ void PCLTools::stopVisualizationWindow() {
 
 void PCLTools::runVisThread() {
 
-    viewer = boost::shared_ptr<pcl::visualization::PCLVisualizer>(new pcl::visualization::PCLVisualizer("3D Viewer"));
+    viewer = KUKADU_SHARED_PTR<pcl::visualization::PCLVisualizer>(new pcl::visualization::PCLVisualizer("3D Viewer"));
     viewer->setBackgroundColor(0, 0, 0);
     viewer->initCameraParameters();
 
@@ -51,11 +51,11 @@ void PCLTools::runVisThread() {
 
 }
 
-boost::shared_ptr<boost::thread> PCLTools::initializeVisualizationWindow() {
+KUKADU_SHARED_PTR<boost::thread> PCLTools::initializeVisualizationWindow() {
 
     keepShowingVis = true;
 
-    visThread = boost::shared_ptr<boost::thread>(new boost::thread(&PCLTools::runVisThread, this));
+    visThread = KUKADU_SHARED_PTR<boost::thread>(new boost::thread(&PCLTools::runVisThread, this));
     ros::Rate s(10);
     while(!isVisInit)
         s.sleep();
@@ -152,4 +152,8 @@ PointCloud<PointXYZ>::Ptr PCLTools::segmentPlanar(PointCloud<PointXYZ>::Ptr clou
 
     return cloud_f;
 
+}
+
+KUKADU_SHARED_PTR<pcl::visualization::PCLVisualizer> PCLTools::getVisualizer() {
+    return viewer;
 }

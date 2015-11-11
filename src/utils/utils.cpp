@@ -1011,12 +1011,31 @@ pcl::PointCloud<pcl::PointXYZ> sensorMsgsPcToPclPc(sensor_msgs::PointCloud2 pc) 
     return output;
 }
 
+sensor_msgs::PointCloud2 pclPcToSensorMsgsPc(pcl::PointCloud<pcl::PointXYZ>::Ptr pc) {
+    sensor_msgs::PointCloud2 output;
+    pcl::PCLPointCloud2 intermediate;
+    pcl::toPCLPointCloud2(*pc, intermediate);
+    pcl_conversions::fromPCL(intermediate, output);
+    return output;
+}
+
 sensor_msgs::PointCloud2 pclPcToSensorMsgsPc(pcl::PointCloud<pcl::PointXYZ> pc) {
     sensor_msgs::PointCloud2 output;
     pcl::PCLPointCloud2 intermediate;
     pcl::toPCLPointCloud2(pc, intermediate);
     pcl_conversions::fromPCL(intermediate, output);
     return output;
+}
+
+std::vector<double> createJointsVector(int n_args, ...) {
+    va_list ap;
+    va_start(ap, n_args);
+    vector<double> retVec;
+    for(int i = 1; i < (n_args + 1); ++i) {
+        double curVal = va_arg(ap, double);
+        retVec.push_back(curVal);
+    }
+    return retVec;
 }
 
 std::vector<double> createJointsVector(double j1, double j2, double j3, double j4, double j5, double j6, double j7) {

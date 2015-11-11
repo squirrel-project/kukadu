@@ -10,7 +10,7 @@ private:
 
 public:
 
-    virtual pcl::PointCloud<pcl::PointXYZ> transformPc(pcl::PointCloud<pcl::PointXYZ> pc) = 0;
+    virtual pcl::PointCloud<pcl::PointXYZ>::Ptr transformPc(pcl::PointCloud<pcl::PointXYZ>::Ptr pc) = 0;
 
 };
 
