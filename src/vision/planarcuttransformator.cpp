@@ -9,8 +9,7 @@ using namespace std;
 using namespace arma;
 
 PlanarCutTransformator::PlanarCutTransformator(arma::vec normalVec, arma::vec plainOriginVec) {
-    this->normalVec = normalVec;
-    this->plainOriginVec = plainOriginVec;
+    setPlane(normalVec, plainOriginVec);
 }
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr PlanarCutTransformator::transformPc(pcl::PointCloud<pcl::PointXYZ>::Ptr pc) {
@@ -35,4 +34,8 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr PlanarCutTransformator::transformPc(pcl::Poi
 
     return retPc.makeShared();
 
+}
+void PlanarCutTransformator::setPlane(arma::vec normalVec, arma::vec plainOriginalVec) {
+    this->normalVec = normalise(normalVec);
+    this->plainOriginVec = plainOriginalVec;
 }

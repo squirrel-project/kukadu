@@ -15,7 +15,10 @@ private:
 public:
 
     PlanarCutTransformator(arma::vec normalVec, arma::vec plainOriginVec);
+
     virtual pcl::PointCloud<pcl::PointXYZ>::Ptr transformPc(pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
+
+    void setPlane(arma::vec normalVec, arma::vec plainOriginalVec);
 
 };
 

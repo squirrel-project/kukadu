@@ -61,6 +61,7 @@ public:
 
     void stopSensing();
     void visualizeCurrentPc();
+    void storeCurrentPc(std::string fileName);
     void setVisPubTopic(std::string visPubTopic);
     void visualizeCurrentTransformedPc(KUKADU_SHARED_PTR<PCTransformator> transformator);
 

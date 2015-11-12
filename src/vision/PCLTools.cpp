@@ -157,3 +157,33 @@ PointCloud<PointXYZ>::Ptr PCLTools::segmentPlanar(PointCloud<PointXYZ>::Ptr clou
 KUKADU_SHARED_PTR<pcl::visualization::PCLVisualizer> PCLTools::getVisualizer() {
     return viewer;
 }
+
+void PCLTools::visDrawPlaneWithNormal(std::string id, arma::vec r0, arma::vec n) {
+
+    pcl::ModelCoefficients plane_coeff;
+    plane_coeff.values.resize(4);
+    plane_coeff.values[0] = n(0);
+    plane_coeff.values[1] = n(1);
+    plane_coeff.values[2] = n(2);
+    plane_coeff.values[3] = -(n(0) * r0(0) + n(1) * r0(1) + n(2) * r0(2));
+    viewer->addPlane(plane_coeff, r0(0), r0(1), r0(2), id);
+
+    arma::vec newLineEndPoint(3);
+    newLineEndPoint(0) = r0(0) + n(0);
+    newLineEndPoint(1) = r0(1) + n(1);
+    newLineEndPoint(2) = r0(2) + n(2);
+    PointXYZ p1, p2;
+    p1.data[0] = r0(0); p1.data[1] = r0(1); p1.data[2] = r0(2);
+    p2.data[0] = newLineEndPoint(0); p2.data[1] = newLineEndPoint(1); p2.data[2] = newLineEndPoint(2);
+    viewer->addLine(p1, p2, id + "line");
+
+}
+
+void PCLTools::updateVisualizedPointCloud(std::string id, pcl::PointCloud<pcl::PointXYZ>::Ptr pc) {
+    viewer->updatePointCloud(pc, id);
+}
+
+void PCLTools::visDrawBox(std::string id, struct FitCube dim) {
+    viewer->addCube(dim.translation, dim.rotation, dim.width, dim.height, dim.depth, id);
+}
+

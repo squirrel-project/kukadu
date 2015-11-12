@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <fstream>
 #include <utility>
+#include <unistd.h>
 #include <stdarg.h>
 #include <iostream>
 #include <unistd.h>
@@ -21,38 +22,31 @@
 #include <stdbool.h>
 #include <armadillo>
 #include <wordexp.h>
-#include <eigen3/Eigen/Dense>
-
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <gsl/gsl_poly.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_linalg.h>
-#include <gsl/gsl_multifit.h>
-
-#include <tf/transform_datatypes.h>
-#include <geometry_msgs/Quaternion.h>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
-#include <sensor_msgs/PointCloud2.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <gsl/gsl_multifit.h>
+#include <eigen3/Eigen/Dense>
+#include <pcl/PCLPointCloud2.h>
+#include <tf/transform_datatypes.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <geometry_msgs/Quaternion.h>
 
-#include "../trajectory/DMPTrajectoryGenerator.h"
-#include "../learning/GaussianProcessRegressor.h"
-#include "../learning/TricubeKernel.h"
-#include "../learning/GaussianKernel.h"
-#include "../robot/ControlQueue.h"
-#include "../types/DMPBase.h"
 #include "types.h"
 #include "KukaduTokenizer.h"
-#include "../manipulation/ControllerResult.hpp"
-
+#include "../types/DMPBase.h"
+#include "../robot/ControlQueue.h"
 #include "gnuplot-cpp/gnuplot_i.hpp"
-
-
+#include "../learning/TricubeKernel.h"
+#include "../learning/GaussianKernel.h"
+#include "../manipulation/ControllerResult.hpp"
+#include "../trajectory/DMPTrajectoryGenerator.h"
+#include "../learning/GaussianProcessRegressor.h"
 
 int createDirectory(std::string path);
 void deleteDirectory(std::string path);
@@ -147,6 +141,7 @@ std::vector<double> createJointsVector(double j1, double j2, double j3, double j
 
 pcl::PointCloud<pcl::PointXYZ> sensorMsgsPcToPclPc(sensor_msgs::PointCloud2 pc);
 sensor_msgs::PointCloud2 pclPcToSensorMsgsPc(pcl::PointCloud<pcl::PointXYZ> pc);
+pcl::PCLPointCloud2 sensorMsgsPcToPclPc2(sensor_msgs::PointCloud2 pc);
 sensor_msgs::PointCloud2 pclPcToSensorMsgsPc(pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
 
 #endif

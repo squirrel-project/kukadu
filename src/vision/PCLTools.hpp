@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <utility>
+#include <armadillo>
 #include <boost/thread.hpp>
 #include <pcl/common/pca.h>
 #include <pcl/point_cloud.h>
@@ -48,7 +49,10 @@ public:
     static pcl::PointCloud<pcl::PointXYZ>::Ptr segmentPlanar(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, bool negative);
 
     void stopVisualizationWindow();
+    void visDrawBox(std::string id, struct FitCube dim);
+    void visDrawPlaneWithNormal(std::string id, arma::vec r0, arma::vec n);
     void visualizePointCloud(std::string id, pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
+    void updateVisualizedPointCloud(std::string id, pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
 
     KUKADU_SHARED_PTR<boost::thread> initializeVisualizationWindow();
     KUKADU_SHARED_PTR<pcl::visualization::PCLVisualizer> getVisualizer();

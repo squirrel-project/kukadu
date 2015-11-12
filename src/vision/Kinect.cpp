@@ -2,6 +2,9 @@
 
 #include "../utils/utils.h"
 
+#include <pcl/io/pcd_io.h>
+#include <pcl_conversions/pcl_conversions.h>
+
 using namespace std;
 
 Kinect::Kinect(ros::NodeHandle node) {
@@ -119,4 +122,8 @@ void Kinect::visualizeCurrentTransformedPc(KUKADU_SHARED_PTR<PCTransformator> tr
     pcl::PointCloud<pcl::PointXYZ> currentPc = sensorMsgsPcToPclPc(getCurrentPointCloud());
     pcl::PointCloud<pcl::PointXYZ>::Ptr transformed = transformator->transformPc(currentPc.makeShared());
     visPublisher.publish(pclPcToSensorMsgsPc(transformed));
+}
+
+void Kinect::storeCurrentPc(std::string fileName) {
+    pcl::io::savePCDFile(fileName, sensorMsgsPcToPclPc2(getCurrentPointCloud()), Eigen::Vector4f::Zero(), Eigen::Quaternionf::Identity(), true);
 }
