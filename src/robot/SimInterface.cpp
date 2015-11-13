@@ -2,15 +2,9 @@
 
 using namespace std;
 
-SimInterface::SimInterface(int argc, char** argv, int sleepTime, ros::NodeHandle node) {
+SimInterface::SimInterface(ros::NodeHandle node) {
 
-    currentTime = 0.0;
-    this->sleepTime= sleepTime;
-
-    this->argc = argc;
-    this->argv = argv;
     this->node = node;
-    loop_rate = new ros::Rate(1.0 / sleepTime * 1e+6);
     pubObj = node.advertise<planning_scene_plugin::AddPrimitiveShape>                ("/simulation/scene/AddPrimitiveShape",1);
     createObjClient  = node.serviceClient<planning_scene_plugin::ImportMeshFile>     ("/simulation/scene/ImportMeshFile");
     objHandleClient  = node.serviceClient<vrep_common::simRosGetObjectHandle>        ("/vrep/simRosGetObjectHandle");
@@ -75,7 +69,6 @@ void SimInterface::addPrimShape(int type,string object_id) {
     primObj.pose.orientation.y = 0.0;
     primObj.pose.orientation.z = 0.0;
     primObj.pose.orientation.w = 0.0;
-
 
     primObj.mass = 0.4;
 
@@ -170,7 +163,6 @@ void SimInterface::importMesh(string object_id, string path) {
 }
 
 //getting pose of the object
-
 geometry_msgs::Pose SimInterface::getObjPose(string object_id) {
 
     geometry_msgs::Pose objPose;

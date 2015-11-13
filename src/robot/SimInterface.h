@@ -27,15 +27,8 @@
 class SimInterface {
 
 private:
-    int argc;
-    int sleepTime;
-
-    double currentTime;
-
-    char** argv;
 
     ros::NodeHandle node;
-    ros::Rate* loop_rate;
 
     ros::Publisher pubObj;
     ros::ServiceClient createObjClient;
@@ -53,7 +46,7 @@ public:
         FRICTION_HIGH, FRICTION_LOW, FRICTION_NO, FRICTION_BULLET, FRICTION_STACKGRASP
     };
 
-    SimInterface(int argc, char** argv, int sleepTime, ros::NodeHandle node);
+    SimInterface(ros::NodeHandle node);
 
     void addPrimShape(int type, std::string object_id);
     void addPrimShape(int type, std::string object_id, std::vector<double> position, std::vector<double> orientation, std::vector<double> dim, double mass);

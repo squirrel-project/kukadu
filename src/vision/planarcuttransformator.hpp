@@ -1,11 +1,11 @@
-#ifndef PLANARCUTTRANSFORMATOR
-#define PLANARCUTTRANSFORMATOR
+#ifndef KUKADU_PLANARCUTTRANSFORMATOR_H
+#define KUKADU_PLANARCUTTRANSFORMATOR_H
 
 #include <armadillo>
 
 #include "PCTransformator.hpp"
 
-class PlanarCutTransformator {
+class PlanarCutTransformator : public PCTransformator {
 
 private:
 

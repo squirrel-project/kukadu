@@ -78,6 +78,7 @@
 
 #include "../../src/vision/Kinect.hpp"
 #include "../../src/vision/PCLTools.hpp"
+#include "../../src/vision/openboxfilter.hpp"
 #include "../../src/vision/planarcuttransformator.hpp"
 
 #ifdef ROS_SUPPORT

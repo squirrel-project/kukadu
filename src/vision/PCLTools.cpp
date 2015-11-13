@@ -82,32 +82,28 @@ FitCube PCLTools::fitBox(PointCloud<PointXYZ>::Ptr cloud) {
     PointXYZ max;
     pca.reconstruct(proj_min, min);
     pca.reconstruct(proj_max, max);
-    std::cout << " min.x= " << min.x << " max.x= " << max.x << " min.y= " << min.y << " max.y= " << max.y << " min.z= " << min.z << " max.z= " << max.z << std::endl;
 
-    //Rotation of PCA
+    // Rotation of PCA
     Eigen::Matrix3f rot_mat = pca.getEigenVectors();
 
-    //translation of PCA
+    // Translation of PCA
     Eigen::Vector3f cl_translation = pca.getMean().head(3);
 
     Eigen::Matrix3f affine_trans;
-    std::cout << rot_mat << std::endl;
-    //Reordering of principal components
+
+    // Reordering of principal components
     affine_trans.col(2) << (rot_mat.col(0).cross(rot_mat.col(1))).normalized();
     affine_trans.col(0) << rot_mat.col(0);
     affine_trans.col(1) << rot_mat.col(1);
-    //affine_trans.col(3) << cl_translation,1;
-
-    std::cout << affine_trans << std::endl;
 
     retCube.rotation = Eigen::Quaternionf(affine_trans);
     Eigen::Vector4f t = pca.getMean();
 
     retCube.translation = Eigen::Vector3f(t.x(), t.y(), t.z());
 
-    retCube.width = fabs(proj_max.x-proj_min.x);
-    retCube.height = fabs(proj_max.y-proj_min.y);
-    retCube.depth = fabs(proj_max.z-proj_min.z);
+    retCube.width = fabs(proj_max.x - proj_min.x);
+    retCube.height = fabs(proj_max.y - proj_min.y);
+    retCube.depth = fabs(proj_max.z - proj_min.z);
 
     return retCube;
 
