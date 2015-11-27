@@ -90,7 +90,6 @@ void DMPExecutor::runCheckMaxForces() {
         pollingRate.sleep();
     }
 
-    cout << "(DMPExecutor " << this << ") doRollback: " << doRollback << endl;
     // if maxforce event detected --> kill execution and roll back
     if(rollBack && doRollback) {
 
@@ -499,7 +498,6 @@ KUKADU_SHARED_PTR<ControllerResult> DMPExecutor::executeDMP(double tStart, doubl
             retY.at(i)(j) = nextJoints(i);
 
         if(simulate == EXECUTE_ROBOT) {
-
             controlQueue->synchronizeToControlQueue(1);
 
         }

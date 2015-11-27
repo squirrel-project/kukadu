@@ -127,7 +127,11 @@ tf::Quaternion exp(arma::vec logQuat);
 double distQuat(tf::Quaternion q1, tf::Quaternion q2);
 
 tf::Transform Matrix4f2Transform(Eigen::Matrix4f Tm);
-tf::Quaternion axisAngle2Quat (const double xx, const double &yy, const double &zz, const double &a);
+/*
+ * converts roll pitch yaw to quaternions
+ */
+tf::Quaternion rpyToQuat(const double roll, const double pitch, const double yaw);
+tf::Quaternion axisAngle2Quat (const double& xx, const double &yy, const double &zz, const double &a);
 
 double distancePoint2Line(double xp,double yp,double x1,double y1,double x2,double y2);
 arma::vec pointOnLine2Point(double xp,double yp,double x1,double y1,double x2,double y2);

@@ -936,7 +936,10 @@ tf::Transform Matrix4f2Transform(Eigen::Matrix4f Tm) {
 
 }
 
-tf::Quaternion axisAngle2Quat(const double xx, const double &yy, const double &zz, const double &a) {
+/*
+ * provides rotation quaterion with angle a around the vector that is defined by xx, yy, zz
+ */
+tf::Quaternion axisAngle2Quat(const double &xx, const double &yy, const double &zz, const double &a) {
 
     double result = sin( a / 2.0 );
 
@@ -1054,4 +1057,9 @@ std::vector<double> createJointsVector(double j1, double j2, double j3, double j
     ret.push_back(j6);
     ret.push_back(j7);
     return ret;
+}
+
+tf::Quaternion rpyToQuat(const double roll, const double pitch, const double yaw) {
+    tf::Quaternion quat(yaw, pitch, roll);
+    return quat;
 }

@@ -146,9 +146,9 @@ private:
 
 public:
 
-    KukieControlQueue(int sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node);
+    KukieControlQueue(double sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node);
 
-    void constructQueue(int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
+    void constructQueue(double sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
                         std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
                         std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic,
                         std::string cartPtpTopic, std::string cartPtpReachedTopic, std::string cartMoveRfQueueTopic, std::string cartMoveWfQueueTopic, std::string cartPoseRfTopic,

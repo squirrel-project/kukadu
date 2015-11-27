@@ -72,32 +72,32 @@ void SimInterface::addPrimShape(int type,string object_id) {
 
     primObj.mass = 0.4;
 
-    if(type==1) {
+    if(type == 1) {
 
-        primObj.type=1;
+        primObj.type = 1;
         vector<double> dim;
         dim.push_back(0.2);
         dim.push_back(0.2);
         dim.push_back(0.2);
         primObj.dimensions = dim;
     }
-    else if(type==2) {
-        primObj.type=2;
+    else if(type == 2) {
+        primObj.type = 2;
         vector<double> dim;
         dim.push_back(0.2);
         primObj.dimensions = dim;
     }
-    else if(type==3) {
+    else if(type == 3) {
 
-        primObj.type=3;
+        primObj.type = 3;
         vector<double> dim;
         dim.push_back(0.2);
         dim.push_back(0.05);
         primObj.dimensions = dim;
     }
-    else if(type==4) {
+    else if(type == 4) {
 
-        primObj.type=4;
+        primObj.type = 4;
         vector<double> dim;
         dim.push_back(0.2);
         dim.push_back(0.05);

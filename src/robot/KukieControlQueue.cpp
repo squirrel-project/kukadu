@@ -6,7 +6,7 @@
 using namespace std;
 using namespace arma;
 
-void KukieControlQueue::constructQueue(int sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
+void KukieControlQueue::constructQueue(double sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
                     std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
                     std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic,
                     std::string cartPtpTopic, std::string cartPtpReachedTopic, std::string cartMoveRfQueueTopic, std::string cartMoveWfQueueTopic, std::string cartPoseRfTopic, std::string jntSetPtpThreshTopic, ros::NodeHandle node
@@ -47,7 +47,11 @@ void KukieControlQueue::constructQueue(int sleepTime, std::string commandTopic, 
     startingJoints = arma::vec(1);
     currentJntFrqTrq = arma::vec(1);
     this->node = node;
-    sleepTimeInSec = sleepTime * 1e-6;
+    sleepTimeInSec = sleepTime;
+    if(sleepTime == 0.0) {
+        cerr << "(KukieControlQueue) the sleep time you provided is 0. note that it is required in seconds" << endl;
+        throw "(KukieControlQueue) the sleep time you provided is 0. note that it is required in seconds";
+    }
     loop_rate = new ros::Rate(1.0 / sleepTimeInSec);
 
     subJntPos = node.subscribe(retPosTopic, 2, &KukieControlQueue::robotJointPosCallback, this);
@@ -77,7 +81,7 @@ void KukieControlQueue::constructQueue(int sleepTime, std::string commandTopic, 
 
 }
 
-KukieControlQueue::KukieControlQueue(int sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node) : ControlQueue(LBR_MNJ) {
+KukieControlQueue::KukieControlQueue(double sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node) : ControlQueue(LBR_MNJ) {
 
     commandTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/move";
     retJointPosTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/get_state";

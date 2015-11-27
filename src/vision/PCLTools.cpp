@@ -140,7 +140,6 @@ PointCloud<PointXYZ>::Ptr PCLTools::segmentPlanar(PointCloud<PointXYZ>::Ptr clou
 
     // Get the points associated with the planar surface
     extract.filter(*cloud_plane);
-    cout << "PointCloud representing the planar component: " << cloud_plane->points.size() << " data points." << endl;
 
     // Remove the planar inliers, extract the rest
     extract.setNegative(negative);

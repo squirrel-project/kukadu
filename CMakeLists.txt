@@ -45,10 +45,10 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
+    ${PCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
     ${Eigen_INCLUDE_DIRS}
     ${catkin_INCLUDE_DIRS}
-    ${PCL_INCLUDE_DIRS}
     /usr/include/python3.4m
     $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/
     $ENV{IIS_INCLUDE_PATH}/external_rosmake_ws/motion_control/motion_control_msgs/msg_gen/cpp/include
@@ -94,3 +94,6 @@ add_library(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a pthread dl util m python3.4m prosim ${PCL_LIBRARIES})
 
 catkin_add_gtest(kukadutest test/kukadutest.cpp)
+
+add_executable(kukadu_demo_guided src/demo/guided.cpp)
+target_link_libraries(kukadu_demo_guided kukadu ${PCL_LIBRARIES} ${catkin_LIBRARIES})
