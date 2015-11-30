@@ -1,5 +1,5 @@
-#ifndef SENSORDATA
-#define SENSORDATA
+#ifndef KUKDADU_SENSORDATA_H
+#define KUKDADU_SENSORDATA_H
 
 #include <vector>
 #include <string>

@@ -11,17 +11,13 @@ find_package(catkin REQUIRED COMPONENTS
     roscpp
     pcl_ros
     std_msgs
-    iis_kukie
     sensor_msgs
-    vrep_common
     geometry_msgs
     iis_robot_dep
     tf_conversions
     pcl_conversions
     message_runtime
     message_generation
-    iis_schunk_hardware
-    planning_scene_plugin
 )
 
 set(CURSES_USE_NCURSES TRUE)

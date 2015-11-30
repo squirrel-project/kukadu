@@ -9,7 +9,6 @@
 #include <ros/ros.h>
 
 // Custom librairies
-#include "SimInterface.h"
 #include "../utils/types.h"
 #include "../utils/utils.h"
 #include "VisionInterface.h"
@@ -33,35 +32,24 @@ class SensorStorage {
 
 private:
 
-    bool vision;
     bool stopped;
     bool storeTime;
-    bool simulation;
     bool storeJntPos;
     bool storeJntFrc;
     bool storeCartPos;
     bool storeHndTctle;
     bool storageStopped;
     bool storeHndJntPos;
-    bool storeSimObject;
-    bool storeVisObject;
     bool storeCartFrcTrq;
     bool storeCartAbsFrc;
 
     double pollingFrequency;
-
-    std::string objectID;
 
     KUKADU_SHARED_PTR<kukadu_thread> thr;
 
     std::vector<KUKADU_SHARED_PTR<GenericHand> > hands;
     std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues;
 
-    KUKADU_SHARED_PTR<SimInterface> sim;
-    KUKADU_SHARED_PTR<VisionInterface> vis;
-
-    KUKADU_SHARED_PTR<std::ofstream> simStream;
-    KUKADU_SHARED_PTR<std::ofstream> visStream;
     std::vector<KUKADU_SHARED_PTR<std::ofstream> > handStreams;
     std::vector<KUKADU_SHARED_PTR<std::ofstream> > queueStreams;
 
@@ -70,13 +58,11 @@ private:
     void writeMatrixInLine(KUKADU_SHARED_PTR<std::ofstream> stream, arma::mat writeMat);
     void writeLabels(KUKADU_SHARED_PTR<std::ofstream> stream, std::vector<std::string> labels);
     void writeMatrixMetaInfo(KUKADU_SHARED_PTR<std::ofstream> stream, int matrixNum, int xDim, int yDim);
-    void initSensorStorage(bool simulation, bool useVision, KUKADU_SHARED_PTR<SimInterface> simInterface, std::string objectId, std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, std::vector<KUKADU_SHARED_PTR<GenericHand> > hands, KUKADU_SHARED_PTR<VisionInterface> vis, double pollingFrequency, bool storeSimObject, bool storeVisObject);
+    void initSensorStorage(std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, std::vector<KUKADU_SHARED_PTR<GenericHand> > hands, double pollingFrequency);
 
 public:
 
     SensorStorage(std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, std::vector<KUKADU_SHARED_PTR<GenericHand> > hands, double pollingFrequency);
-    SensorStorage(std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, std::vector<KUKADU_SHARED_PTR<GenericHand> > hands, KUKADU_SHARED_PTR<VisionInterface> vis, double pollingFrequency);
-    SensorStorage(std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, std::vector<KUKADU_SHARED_PTR<GenericHand> > hands, KUKADU_SHARED_PTR<SimInterface> sim, std::string objectID, double pollingFrequency);
 
     void stopDataStorage();
     void setExportMode(int mode);

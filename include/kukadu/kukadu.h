@@ -30,9 +30,7 @@
 #include "../../src/learning/reinforcement_learning/TrajectoryBasedReward.h"
 
 #include "../../src/robot/ControlQueue.h"
-#include "../../src/robot/SimInterface.h"
 #include "../../src/robot/SensorStorage.h"
-#include "../../src/robot/KukieSimulator.h"
 #include "../../src/robot/VisionInterface.h"
 #include "../../src/robot/mounted/RosSchunk.h"
 #include "../../src/robot/mounted/GenericHand.h"
@@ -67,7 +65,6 @@
 #include "../../src/manipulation/ComplexController.hpp"
 #include "../../src/manipulation/SensingController.hpp"
 #include "../../src/manipulation/haptic/HapticPlanner.h"
-#include "../../src/manipulation/pushing/DMPGExecutorPush.h"
 
 #include "../../src/utils/types.h"
 #include "../../src/utils/utils.h"

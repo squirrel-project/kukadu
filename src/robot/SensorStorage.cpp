@@ -4,47 +4,25 @@
 using namespace std;
 using namespace arma;
 
-void SensorStorage::initSensorStorage(bool simulation, bool useVision, KUKADU_SHARED_PTR<SimInterface> simInterface, std::string objectId, std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, std::vector<KUKADU_SHARED_PTR<GenericHand> > hands, KUKADU_SHARED_PTR<VisionInterface> vis, double pollingFrequency, bool storeSimObject, bool storeVisObject) {
+void SensorStorage::initSensorStorage(std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, std::vector<KUKADU_SHARED_PTR<GenericHand> > hands, double pollingFrequency) {
 
-    this->vis = vis;
     this->hands = hands;
     this->queues = queues;
-    this->vision = useVision;
-    this->sim = simInterface;
-    this->objectID = objectId;
-    this->simulation = simulation;
-    this->storeSimObject = storeSimObject;
-    this->storeVisObject = storeVisObject;
     this->pollingFrequency = pollingFrequency;
 
     stopped = false;
     storageStopped = true;
 
-    storeCartAbsFrc = storeSimObject = storeVisObject = false;
+    storeCartAbsFrc = false;
     storeTime = storeJntPos = storeCartPos = storeJntFrc = storeCartFrcTrq = storeHndJntPos = storeHndTctle = true;
 
 }
 
 SensorStorage::SensorStorage(std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, std::vector<KUKADU_SHARED_PTR<GenericHand> > hands, double pollingFrequency) {
 
-    initSensorStorage(false, false, KUKADU_SHARED_PTR<SimInterface>(), "", queues, hands, KUKADU_SHARED_PTR<VisionInterface>(), pollingFrequency, false, false);
+    initSensorStorage(queues, hands, pollingFrequency);
 
 }
-
-SensorStorage::SensorStorage(std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, std::vector<KUKADU_SHARED_PTR<GenericHand> > hands, KUKADU_SHARED_PTR<SimInterface> sim, std::string objectID, double pollingFrequency) {
-
-    initSensorStorage(true, false, sim, objectID, queues, hands, KUKADU_SHARED_PTR<VisionInterface>(), pollingFrequency, true, false);
-
-}
-
-SensorStorage::SensorStorage(std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, std::vector<KUKADU_SHARED_PTR<GenericHand> > hands, KUKADU_SHARED_PTR<VisionInterface> vis, double pollingFrequency){
-
-    initSensorStorage(false, true, KUKADU_SHARED_PTR<SimInterface>(), "", queues, hands, vis, pollingFrequency, false, true);
-
-}
-
-
-
 
 void SensorStorage::setExportMode(int mode) {
 
@@ -74,12 +52,6 @@ void SensorStorage::setExportMode(int mode) {
     if(mode & STORE_CART_ABS_FRC)
         storeCartAbsFrc = true;
 
-    if(mode & STORE_SIM_OBJECT)
-        storeSimObject =true;
-
-    if(mode & STORE_VIS_OBJECT)
-        storeVisObject =true;
-
 }
 
 KUKADU_SHARED_PTR<kukadu_thread> SensorStorage::startDataStorage(std::string folderName) {
@@ -103,20 +75,6 @@ KUKADU_SHARED_PTR<kukadu_thread> SensorStorage::startDataStorage(std::string fol
             queueFile->open((folderName + string("/") + hands.at(i)->getHandName() + string("_") + s.str()).c_str());
             handStreams.push_back(queueFile);
         }
-
-        if(simulation){
-            KUKADU_SHARED_PTR<std::ofstream> queueFile = KUKADU_SHARED_PTR<std::ofstream>(new ofstream());
-            queueFile->open((folderName + string("/") + "simulation").c_str());
-            simStream = queueFile;
-        }
-
-        if(vision){
-            KUKADU_SHARED_PTR<std::ofstream> queueFile = KUKADU_SHARED_PTR<std::ofstream>(new ofstream());
-            queueFile->open((folderName + string("/") + "vision").c_str());
-            visStream = queueFile;
-
-        }
-
 
         thr = KUKADU_SHARED_PTR<kukadu_thread>();
         thr = KUKADU_SHARED_PTR<kukadu_thread>(new kukadu_thread(&SensorStorage::store, this));
@@ -146,10 +104,6 @@ void SensorStorage::stopDataStorage() {
     for(int i = 0; i < handStreams.size(); ++i)
         handStreams.at(i)->close();
     handStreams.clear();
-
-    if(simulation) simStream->close();
-    if(vision) visStream->close();
-
 
 }
 
@@ -402,92 +356,6 @@ void SensorStorage::storeData(bool storeHeader, std::vector<KUKADU_SHARED_PTR<st
 
             if(queues.size() == 0)
                 currentTime += waitTime;
-
-        }
-
-        if(simulation){
-
-            KUKADU_SHARED_PTR<ofstream> currentOfStream = simStream;
-
-
-            if(firstTime && storeHeader) {
-
-                vector<string> labels;
-
-                labels.push_back("time");
-
-                if(storeSimObject) {
-
-                    labels.push_back("cart_pos_x");
-                    labels.push_back("cart_pos_y");
-                    labels.push_back("cart_pos_z");
-                    labels.push_back("cart_quat_x");
-                    labels.push_back("cart_quat_y");
-                    labels.push_back("cart_quat_z");
-                    labels.push_back("cart_quat_w");
-
-                }
-
-                writeLabels(currentOfStream, labels);
-
-            }
-            else{
-
-
-                *currentOfStream << currentTime << "\t";
-
-                if(storeSimObject){
-
-                    geometry_msgs::Pose currentPose = sim->getObjPose(objectID);
-                    writeVectorInLine(simStream, pose2vectorarma(currentPose));
-
-                }
-
-                *currentOfStream << endl;
-
-            }
-        }
-        if(vision){
-
-            KUKADU_SHARED_PTR<ofstream> currentOfStream = visStream;
-
-
-            if(firstTime && storeHeader) {
-
-                vector<string> labels;
-
-                labels.push_back("time");
-
-                if(storeVisObject) {
-
-                    labels.push_back("cart_pos_x");
-                    labels.push_back("cart_pos_y");
-                    labels.push_back("cart_pos_z");
-                    labels.push_back("cart_quat_x");
-                    labels.push_back("cart_quat_y");
-                    labels.push_back("cart_quat_z");
-                    labels.push_back("cart_quat_w");
-
-                }
-
-                writeLabels(currentOfStream, labels);
-
-            }
-            else{
-
-
-                *currentOfStream << currentTime << "\t";
-
-                if(storeVisObject){
-
-                    geometry_msgs::Pose currentPose = vis->getArPose();
-                    writeVectorInLine(currentOfStream, pose2vectorarma(currentPose));
-
-                }
-
-                *currentOfStream << endl;
-
-            }
 
         }
 
