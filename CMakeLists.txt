@@ -85,7 +85,7 @@ add_library(${PROJECT_NAME}
     ${KUKADUSRC}
 )
 
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a ncurses gsl gslcblas stdc++ armadillo $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/libRedundantKin.a pthread dl util m python3.4m prosim ${PCL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ncurses gsl gslcblas stdc++ armadillo pthread dl util m python3.4m prosim ${PCL_LIBRARIES})
 
 catkin_add_gtest(kukadutest test/kukadutest.cpp)
 
