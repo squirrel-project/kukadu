@@ -2,7 +2,7 @@
 
 using namespace std;
 using namespace arma;
-using namespace iis_schunk_hardware;
+using namespace iis_robot_dep;
 
 RosSchunk::RosSchunk(std::string type, std::string hand) {
 
@@ -36,7 +36,7 @@ std::string RosSchunk::getHandName() {
     return string("schunk_") + hand;
 }
 
-void RosSchunk::tactileCallback(const iis_schunk_hardware::TactileSensor& state) {
+void RosSchunk::tactileCallback(const iis_robot_dep::TactileSensor& state) {
 
     tactileMutex.lock();
 

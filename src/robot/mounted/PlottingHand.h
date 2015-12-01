@@ -10,8 +10,8 @@
 #include <sensor_msgs/JointState.h>
 #include <std_msgs/Float64MultiArray.h>
 #include <trajectory_msgs/JointTrajectory.h>
-#include <iis_schunk_hardware/TactileMatrix.h>
-#include <iis_schunk_hardware/TactileSensor.h>
+#include <iis_robot_dep/TactileMatrix.h>
+#include <iis_robot_dep/TactileSensor.h>
 #include <trajectory_msgs/JointTrajectoryPoint.h>
 #include <control_msgs/FollowJointTrajectoryGoal.h>
 #include <control_msgs/FollowJointTrajectoryActionGoal.h>
