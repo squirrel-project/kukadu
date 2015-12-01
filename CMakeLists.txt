@@ -44,11 +44,9 @@ include_directories(
     ${PCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
     ${Eigen_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIR}
     ${catkin_INCLUDE_DIRS}
     /usr/include/python3.4m
-    $ENV{IIS_INCLUDE_PATH}/external_libs/RedundantKin/
-    $ENV{IIS_INCLUDE_PATH}/external_rosmake_ws/motion_control/motion_control_msgs/msg_gen/cpp/include
-    ${EIGEN3_INCLUDE_DIR}
 )
 
 set(ENABLE_VISUALIZATION 1)
