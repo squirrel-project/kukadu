@@ -24,13 +24,14 @@ set(CURSES_USE_NCURSES TRUE)
 find_package(PCL REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Eigen REQUIRED)
+find_package(Armadillo REQUIRED)
 find_package(PythonLibs REQUIRED)
 
 catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
     CATKIN_DEPENDS roscpp
-    DEPENDS armadillo prosim gsl gslcblas ncurses stdc++ ${Boost_LIBRARIES} ${Eigen_Libraries} ${PCL_LIBRARIES}
+    DEPENDS ${ARMADILLO_LIBRARIES} prosim gsl gslcblas ncurses stdc++ ${Boost_LIBRARIES} ${Eigen_Libraries} ${PCL_LIBRARIES}
 )
 
 ###########
@@ -85,7 +86,7 @@ add_library(${PROJECT_NAME}
     ${KUKADUSRC}
 )
 
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ncurses gsl gslcblas stdc++ armadillo pthread dl util m python3.4m prosim ${PCL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES} ${PCL_LIBRARIES} ncurses gsl gslcblas stdc++ pthread dl util m python3.4m prosim)
 
 catkin_add_gtest(kukadutest test/kukadutest.cpp)
 
