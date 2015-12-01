@@ -11,7 +11,6 @@
 #include <unistd.h>
 #include <termios.h>
 #include <ros/ros.h>
-#include <RedundantKin.h>
 #include <std_msgs/Int32.h>
 #include <boost/program_options.hpp>
 
