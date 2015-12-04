@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
     roscpp
     pcl_ros
     std_msgs
+    moveit_core
     sensor_msgs
     control_msgs
     geometry_msgs
@@ -20,7 +21,6 @@ find_package(catkin REQUIRED COMPONENTS
     pcl_conversions
     message_runtime
     message_generation
-    moveit_core
     moveit_ros_planning_interface
 )
 
@@ -64,7 +64,7 @@ add_definitions(-DROS_SUPPORT)
 add_definitions(-DOSNAME_LINUX=1)
 
 ## python definitions
-link_directories(/usr/lib/python3.4/config-3.4m-x86_64-linux-gnu /usr/lib)
+link_directories(/usr/lib/python3.4/config-3.4m-x86_64-linux-gnu)
 
 AUX_SOURCE_DIRECTORY(src/utils/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/robot/ KUKADUSRC)
