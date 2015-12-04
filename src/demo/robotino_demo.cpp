@@ -8,12 +8,18 @@ using namespace std;
 
 int main(int argc, char** args) {
 
+    // squirrel
+    // string groupPrefix = "arm";
+
+    // kuka
+    string groupPrefix = "right_arm";
+
     /*
     RobotinoQueue robotino;
     cout << robotino.getCurrentJoints() << endl;
     */
     ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
-    moveit::planning_interface::MoveGroup group("arm");
+    moveit::planning_interface::MoveGroup group(groupPrefix);
     group.setEndEffectorLink("link5");
 
     group.startStateMonitor();
