@@ -12,12 +12,16 @@ find_package(catkin REQUIRED COMPONENTS
     pcl_ros
     std_msgs
     sensor_msgs
+    control_msgs
     geometry_msgs
     iis_robot_dep
     tf_conversions
+    actionlib_msgs
     pcl_conversions
     message_runtime
     message_generation
+    moveit_core
+    moveit_ros_planning_interface
 )
 
 set(CURSES_USE_NCURSES TRUE)
@@ -70,6 +74,7 @@ AUX_SOURCE_DIRECTORY(src/learning/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/trajectory/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/manipulation/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/robot/mounted/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/robot/robotino/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/utils/gnuplot-cpp/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/learning/clustering/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/manipulation/haptic/ KUKADUSRC)
@@ -92,3 +97,6 @@ catkin_add_gtest(kukadutest test/kukadutest.cpp)
 
 add_executable(kukadu_demo_guided src/demo/guided.cpp)
 target_link_libraries(kukadu_demo_guided kukadu ${PCL_LIBRARIES} ${catkin_LIBRARIES})
+
+add_executable(robotino_demo src/demo/robotino_demo.cpp)
+target_link_libraries(robotino_demo kukadu ${PCL_LIBRARIES} ${catkin_LIBRARIES})
