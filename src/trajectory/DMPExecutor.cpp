@@ -445,7 +445,7 @@ void DMPExecutor::destroyIntegration() {
 }
 
 KUKADU_SHARED_PTR<ControllerResult> DMPExecutor::executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
-
+cout << "step size: " << stepSize << endl;
     // two variables are really required here, because executionRunning is changed by other functions that really need to know
     // whether the exeuction was stopped (this is checked by executionStoppingDone)
     executionRunning = true;

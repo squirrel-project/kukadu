@@ -28,7 +28,6 @@ int main(int argc, char** args) {
 
     string storeDir = resolvePath("/tmp/kukadu_demo_guided");
     string prefix = "simulation";
-    string right_hardware = "right_arm";
 
     // Declare the supported options.
     po::options_description desc("Allowed options");
@@ -89,7 +88,7 @@ int main(int argc, char** args) {
     SensorStorage scaredOfSenka(queueVectors, std::vector<KUKADU_SHARED_PTR<GenericHand> >(), 1000);
     scaredOfSenka.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS);
     scaredOfSenka.startDataStorage(storeDir);
-    cout << "measurment started" << endl;
+    cout << "measuerment started" << endl;
 
     if(!prefix.compare("simulation")) {
         cout << "moving arm in simulation" << endl;
@@ -104,6 +103,12 @@ int main(int argc, char** args) {
     }
 
     scaredOfSenka.stopDataStorage();
+
+    mes_result finalJoints = leftQueue->getCurrentJoints();
+    for(int i = 0; i < 10; ++i)
+        leftQueue->addJointsPosToQueue(finalJoints.joints);
+    sleep(0.5);
+
     leftQueue->stopCurrentMode();
 
     cout << "press enter to execute in simulation" << endl;
@@ -115,7 +120,7 @@ int main(int argc, char** args) {
 
     arma::vec timesFinalPush;
 
-    dataFinalPush = SensorStorage::readStorage(simLeftQueue, storeDir + "/kuka_lwr_simulation_left_arm_0");
+    dataFinalPush = SensorStorage::readStorage(simLeftQueue, storeDir + string("/kuka_lwr_") + prefix + string("_left_arm_0"));
     timesFinalPush = dataFinalPush->getTimes();
     learnerFinalPush = KUKADU_SHARED_PTR<JointDMPLearner>(new JointDMPLearner(az, bz, join_rows(timesFinalPush, dataFinalPush->getJointPos())));
     dmpFinalPush = learnerFinalPush->fitTrajectories();
@@ -134,7 +139,13 @@ int main(int argc, char** args) {
     getchar();
 
     // leftQueue->setStiffness(KukieControlQueue::KUKA_STD_XYZ_STIFF, KukieControlQueue::KUKA_STD_ABC_STIFF, KukieControlQueue::KUKA_STD_CPDAMPING, 15000, 150, 1500);
-    leftQueue->switchMode(KukieControlQueue::KUKA_JNT_POS_MODE);
+    if(!prefix.compare("simulation")) {
+        leftQueue->switchMode(KukieControlQueue::KUKA_JNT_POS_MODE);
+    } else {
+        leftQueue->setStiffness(KukieControlQueue::KUKA_STD_XYZ_STIFF, KukieControlQueue::KUKA_STD_ABC_STIFF, KukieControlQueue::KUKA_STD_CPDAMPING, 15000, 150, 1500);
+        leftQueue->switchMode(KukieControlQueue::KUKA_JNT_IMP_MODE);
+    }
+
     laThr = leftQueue->startQueueThread();
     DMPExecutor execFinalPush2(dmpFinalPush, leftQueue);
     execFinalPush2.executeTrajectory(ac, 0, dmpFinalPush->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
