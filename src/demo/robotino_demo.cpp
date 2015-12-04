@@ -9,10 +9,10 @@ using namespace std;
 int main(int argc, char** args) {
 
     // squirrel
-    // string groupPrefix = "arm";
+    string groupPrefix = "arm";
 
     // kuka
-    string groupPrefix = "right_arm";
+    // string groupPrefix = "right_arm";
 
     /*
     RobotinoQueue robotino;
