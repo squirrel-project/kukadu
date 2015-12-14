@@ -9,20 +9,24 @@ using namespace std;
 int main(int argc, char** args) {
 
     // squirrel
-    string groupPrefix = "arm";
+    // string groupPrefix = "arm";
 
     // kuka
-    // string groupPrefix = "right_arm";
+    string groupPrefix = "right_arm";
 
-    /*
-    RobotinoQueue robotino;
-    cout << robotino.getCurrentJoints() << endl;
-    */
+    // RobotinoQueue robotino;
+    // cout << robotino.getCurrentJoints() << endl;
+
+    cout << "creating ros interface...";
     ros::init(argc, args, "kukadu"); ros::NodeHandle* node = new ros::NodeHandle(); usleep(1e6);
-    moveit::planning_interface::MoveGroup group(groupPrefix);
-    group.setEndEffectorLink("link5");
+    cout << "done" << endl;
 
-    group.startStateMonitor();
+    ros::AsyncSpinner spinner(1);
+    spinner.start();
+
+    cout << "creating moveit group...";
+    moveit::planning_interface::MoveGroup group(groupPrefix);
+    cout << "done" << endl;
 
     /*
     ros::Publisher display_publisher = node_handle.advertise<moveit_msgs::DisplayTrajectory>("/move_group/display_planned_path", 1, true);
@@ -35,6 +39,7 @@ int main(int argc, char** args) {
     ros::spinOnce();
 
     vector<double> jointVals = group.getCurrentJointValues();
+    cout << "joint values: ";
     for(int i = 0; i < jointVals.size(); ++i) {
         cout << jointVals.at(i) << " ";
     }
