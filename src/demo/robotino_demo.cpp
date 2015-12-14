@@ -9,7 +9,7 @@ using namespace std;
 int main(int argc, char** args) {
 
     // squirrel
-    string groupPrefix = "arm";
+    string groupPrefix = "Arm";
 
     // kuka
     // string groupPrefix = "right_arm";
