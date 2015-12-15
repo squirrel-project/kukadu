@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
     pcl_ros
     std_msgs
     moveit_core
+    moveit_msgs
     sensor_msgs
     control_msgs
     geometry_msgs
