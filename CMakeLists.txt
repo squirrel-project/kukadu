@@ -28,7 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
 set(CURSES_USE_NCURSES TRUE)
 find_package(PCL REQUIRED)
 find_package(Boost REQUIRED)
-find_package(Eigen REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(Armadillo REQUIRED)
 find_package(PythonLibs REQUIRED)
 
@@ -36,7 +36,7 @@ catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
     CATKIN_DEPENDS roscpp
-    DEPENDS ${ARMADILLO_LIBRARIES} prosim gsl gslcblas ncurses stdc++ ${Boost_LIBRARIES} ${Eigen_Libraries} ${PCL_LIBRARIES}
+    DEPENDS ${ARMADILLO_LIBRARIES} prosim gsl gslcblas ncurses stdc++ ${Boost_LIBRARIES} ${Eigen3_Libraries} ${PCL_LIBRARIES}
 )
 
 ###########
@@ -49,7 +49,6 @@ catkin_package(
 include_directories(
     ${PCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
-    ${Eigen_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIR}
     ${catkin_INCLUDE_DIRS}
     /usr/include/python3.4m
