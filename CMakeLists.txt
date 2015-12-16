@@ -31,7 +31,6 @@ find_package(PythonLibs 3.4 REQUIRED)
 find_package(cmake_modules REQUIRED)
 find_package(PCL REQUIRED)
 find_package(Boost REQUIRED)
-find_package(Eigen 3 REQUIRED)
 find_package(Armadillo REQUIRED)
 find_package(PythonLibs REQUIRED)
 
@@ -39,7 +38,7 @@ catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
     CATKIN_DEPENDS roscpp
-    DEPENDS prosim gsl gslcblas ncurses stdc++ ${Boost_LIBRARIES} ${Eigen_Libraries} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES}
+    DEPENDS prosim gsl gslcblas ncurses stdc++ ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES}
 )
 
 ###########
@@ -52,7 +51,6 @@ catkin_package(
 include_directories(
     ${PCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
-    ${EIGEN_INCLUDE_DIR}
     ${catkin_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
 )
