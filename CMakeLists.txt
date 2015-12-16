@@ -36,7 +36,7 @@ catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
     CATKIN_DEPENDS roscpp
-    DEPENDS prosim gsl gslcblas ncurses stdc++ ${Boost_LIBRARIES} ${Eigen3_Libraries} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES}
+    DEPENDS prosim gsl gslcblas ncurses stdc++ ${Boost_LIBRARIES} ${Eigen_Libraries} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES}
 )
 
 ###########
@@ -49,7 +49,7 @@ catkin_package(
 include_directories(
     ${PCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
-    ${EIGEN3_INCLUDE_DIR}
+    ${EIGEN_INCLUDE_DIR}
     ${catkin_INCLUDE_DIRS}
     /usr/include/python3.4m
 )
