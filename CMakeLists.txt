@@ -26,6 +26,8 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 set(CURSES_USE_NCURSES TRUE)
+set(Python_ADDITIONAL_VERSIONS 3.4)
+find_package(PythonLibs 3.4 REQUIRED)
 find_package(cmake_modules REQUIRED)
 find_package(PCL REQUIRED)
 find_package(Boost REQUIRED)
@@ -52,7 +54,7 @@ include_directories(
     ${Boost_INCLUDE_DIRS}
     ${EIGEN_INCLUDE_DIR}
     ${catkin_INCLUDE_DIRS}
-    /usr/include/python3.4m
+    ${PYTHON_INCLUDE_DIRS}
 )
 
 set(ENABLE_VISUALIZATION 1)
@@ -63,9 +65,6 @@ add_definitions(-pthread)
 #add_definitions(-std=c++11)
 add_definitions(-DROS_SUPPORT)
 add_definitions(-DOSNAME_LINUX=1)
-
-## python definitions
-link_directories(/usr/lib/python3.4/config-3.4m-x86_64-linux-gnu)
 
 AUX_SOURCE_DIRECTORY(src/utils/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/robot/ KUKADUSRC)
@@ -92,7 +91,7 @@ add_library(${PROJECT_NAME}
     ${KUKADUSRC}
 )
 
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES} ${PCL_LIBRARIES} ncurses gsl gslcblas stdc++ pthread dl util m python3.4m prosim)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES} ${PCL_LIBRARIES} ncurses gsl gslcblas stdc++ pthread dl util m ${PYTHON_LIBRARIES} prosim)
 
 catkin_add_gtest(kukadutest test/kukadutest.cpp)
 
