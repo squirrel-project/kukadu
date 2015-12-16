@@ -28,7 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
 set(CURSES_USE_NCURSES TRUE)
 find_package(PCL REQUIRED)
 find_package(Boost REQUIRED)
-find_package(Eigen3 REQUIRED)
+find_package(Eigen 3 REQUIRED)
 find_package(Armadillo REQUIRED)
 find_package(PythonLibs REQUIRED)
 
