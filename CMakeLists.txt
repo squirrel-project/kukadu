@@ -35,7 +35,7 @@ catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
     CATKIN_DEPENDS roscpp
-    DEPENDS ${ARMADILLO_LIBRARIES} prosim gsl gslcblas ncurses stdc++ ${Boost_LIBRARIES} ${Eigen3_Libraries} ${PCL_LIBRARIES}
+    DEPENDS prosim gsl gslcblas ncurses stdc++ ${Boost_LIBRARIES} ${Eigen3_Libraries} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES}
 )
 
 ###########
