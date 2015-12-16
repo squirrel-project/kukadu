@@ -89,7 +89,7 @@ add_library(${PROJECT_NAME}
     ${KUKADUSRC}
 )
 
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES} ${PCL_LIBRARIES} ncurses gsl gslcblas stdc++ pthread dl util m ${PYTHON_LIBRARIES} prosim)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES} ncurses gsl gslcblas stdc++ pthread dl util m prosim)
 
 catkin_add_gtest(kukadutest test/kukadutest.cpp)
 
