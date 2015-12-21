@@ -392,6 +392,7 @@ void KukieControlQueue::run() {
 
     if(!isShutUp)
         cout << "thread finished" << endl;
+
 }
 
 void KukieControlQueue::setInitValues() {
