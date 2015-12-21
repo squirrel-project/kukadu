@@ -3,22 +3,21 @@
 using namespace std;
 using namespace arma;
 
-PlottingControlQueue::PlottingControlQueue(int degOfFreedom, double timeStep) : ControlQueue(degOfFreedom) {
+PlottingControlQueue::PlottingControlQueue(int degOfFreedom, double timeStep) : ControlQueue(degOfFreedom, 0.0000001) {
     vector<string> jntNames;
     for(int i = 0; i < degOfFreedom; ++i) {
         stringstream s;
         s << i;
         jntNames.push_back(string("joint_") + s.str());
     }
-    construct(jntNames, timeStep);
+    construct(jntNames);
 }
 
-PlottingControlQueue::PlottingControlQueue(std::vector<std::string> jointNames, double timeStep) : ControlQueue(jointNames.size()) {
-    construct(jointNames, timeStep);
+PlottingControlQueue::PlottingControlQueue(std::vector<std::string> jointNames, double timeStep) : ControlQueue(jointNames.size(), timeStep) {
+    construct(jointNames);
 }
 
-void PlottingControlQueue::construct(std::vector<std::string> jointNames, double timeStep) {
-    this->sleepTime = timeStep;
+void PlottingControlQueue::construct(std::vector<std::string> jointNames) {
     this->jointNames = jointNames;
     setInitValues();
 }
@@ -26,26 +25,17 @@ void PlottingControlQueue::construct(std::vector<std::string> jointNames, double
 void PlottingControlQueue::setInitValues() {
 
     set_ctrlc_exit_handler();
+    currTime = getCurrentTime();
+    currJoints = arma::vec(1);
 
-	isInit = false;
-	finish = 0;
-    currentTime = 0.0;
-	
-    currentJoints = arma::vec(1);
-    currentCarts = arma::vec(1);
-
-}
-
-double PlottingControlQueue::getTimeStep() {
-    return sleepTime * 1e-6;
 }
 
 std::string PlottingControlQueue::getRobotFileName() {
-    return "simulation_plotting_control_queue";
+    return string("simulation_plotting_control_queue");
 }
 
 std::string PlottingControlQueue::getRobotName() {
-    return "Simulation (PlottingControlQueue)";
+    return string("Simulation (PlottingControlQueue)");
 }
 
 std::vector<std::string> PlottingControlQueue::getJointNames() {
@@ -64,28 +54,12 @@ void PlottingControlQueue::startJointRollBackMode(double possibleTime) {
     throw "(PlottingControlQueue) roll back mode not supported";
 }
 
-void PlottingControlQueue::shutUp() {
-    // nothing to do
-}
-
-void PlottingControlQueue::startTalking() {
-    // nothing to do
-}
-
 void PlottingControlQueue::setJntPtpThresh(double thresh) {
 
 }
 
-void PlottingControlQueue::run() {
-
-    setInitValues();
-    isInit = true;
-
-    while(!finish) {
-
-        usleep(sleepTime);
-
-    }
+double PlottingControlQueue::getCurrentTime() {
+    return currTime;
 }
 
 mes_result PlottingControlQueue::getCurrentCartesianFrcTrq() {
@@ -95,7 +69,7 @@ mes_result PlottingControlQueue::getCurrentCartesianFrcTrq() {
     frcTrq.fill(0.0);
 
     ret.joints = frcTrq;
-    ret.time = currentTime;
+    ret.time = getCurrentTime();
 
     return ret;
 
@@ -108,20 +82,19 @@ mes_result PlottingControlQueue::getCurrentJntFrcTrq() {
     frcTrq.fill(0.0);
 
     ret.joints = frcTrq;
-    ret.time = currentTime;
+    ret.time = getCurrentTime();
 
     return ret;
 
 }
 
-void PlottingControlQueue::setFinish() {
-	finish = 1;
-    startingJoints = arma::vec(1);
+arma::vec PlottingControlQueue::getStartingJoints() {
+    return startJoints;
 }
 
 void PlottingControlQueue::addJointsPosToQueue(arma::vec joints) {
-    currentJoints = joints;
-    currentTime += sleepTime * 1e-6;
+    currJoints = joints;
+    currTime += getTimeStep();
 }
 
 void PlottingControlQueue::addCartesianPosToQueue(geometry_msgs::Pose pose) {
@@ -132,6 +105,22 @@ void PlottingControlQueue::switchMode(int mode) {
 
 }
 
+void PlottingControlQueue::submitNextJointMove(arma::vec joints) {
+
+}
+
+void PlottingControlQueue::submitNextCartMove(geometry_msgs::Pose pose) {
+
+}
+
+bool PlottingControlQueue::stopQueueWhilePtp() {
+    return false;
+}
+
+void PlottingControlQueue::setCurrentControlTypeInternal(int controlType) {
+
+}
+
 void PlottingControlQueue::stopCurrentMode() {
 }
 
@@ -139,24 +128,20 @@ void PlottingControlQueue::synchronizeToControlQueue(int maxNumJointsInQueue) {
 }
 
 void PlottingControlQueue::setStartingJoints(arma::vec joints) {
-    currentJoints = joints;
-    startingJoints = joints;
+    currJoints = joints;
+    startJoints = joints;
 }
 
-void PlottingControlQueue::moveCartesianNb(geometry_msgs::Pose pos) {
+void PlottingControlQueue::cartPtpInternal(geometry_msgs::Pose pos) {
     throw "not supported yet";
 }
 
-void PlottingControlQueue::moveCartesian(geometry_msgs::Pose pos) {
-    throw "not supported yet";
+void PlottingControlQueue::jointPtpInternal(arma::vec joints) {
+    currJoints = joints;
 }
 
-void PlottingControlQueue::moveJoints(arma::vec joints) {
-    currentJoints = joints;
-}
-
-void PlottingControlQueue::moveJointsNb(arma::vec joints) {
-    moveJoints(joints);
+int PlottingControlQueue::getCurrentControlType() {
+    return CONTROLQUEUE_JNT_POS_MODE;
 }
 
 void PlottingControlQueue::setAdditionalLoad(float loadMass, float loadPos) {
@@ -165,31 +150,19 @@ void PlottingControlQueue::setAdditionalLoad(float loadMass, float loadPos) {
 void PlottingControlQueue::setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq) {
 }
 
-mes_result PlottingControlQueue::getCartesianPos() {
+mes_result PlottingControlQueue::getCurrentCartesianPos() {
     throw "not supported yet";
 }
 
-geometry_msgs::Pose PlottingControlQueue::getCartesianPose() {
+geometry_msgs::Pose PlottingControlQueue::getCurrentCartesianPose() {
     throw "not supported yet";
-}
-
-arma::vec PlottingControlQueue::getStartingJoints() {
-	return startingJoints;
-}
-
-arma::vec PlottingControlQueue::retrieveJointsFromRobot() {
-	return currentJoints;
 }
 
 mes_result PlottingControlQueue::getCurrentJoints() {
-	mes_result res;
-	res.time = currentTime;
-	res.joints = retrieveJointsFromRobot();
-	return res;
-}
-
-bool PlottingControlQueue::isInitialized() {
-	return isInit;
+    mes_result res;
+    res.time = getCurrentTime();
+    res.joints = currJoints;
+    return res;
 }
 
 void PlottingControlQueue::safelyDestroy() {

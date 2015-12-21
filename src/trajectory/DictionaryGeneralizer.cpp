@@ -353,7 +353,7 @@ KUKADU_SHARED_PTR<ControllerResult> DictionaryGeneralizer::executeGen(arma::vec 
         if(isFirstIteration) {
 
         //    cout << "(DictionaryGeneralizer) moving to initial execution position" << endl;
-            queue->moveJoints(nextJoints);
+            queue->jointPtp(nextJoints);
             isFirstIteration = 0;
         //    cout << "(DictionaryGeneralizer) starting trajectory execution" << endl;
 

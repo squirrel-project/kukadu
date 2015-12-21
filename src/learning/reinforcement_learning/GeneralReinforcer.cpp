@@ -67,7 +67,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
         KUKADU_SHARED_PTR<ControllerResult> simRes;
         if(doSimulation) {
 
-            simulationQueue->moveJoints(startingJoints);
+            simulationQueue->jointPtp(startingJoints);
             trajEx->setTrajectory(rollout.at(k));
 
             simRes = trajEx->simulateTrajectory();
@@ -90,7 +90,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 				
                 cout << "(DMPReinforcer) executing rollout" << endl;
 				
-                simulationQueue->moveJoints(startingJoints);
+                simulationQueue->jointPtp(startingJoints);
 				
 				trajEx->setTrajectory(rollout.at(k));
                 simRes = trajEx->executeTrajectory();
@@ -117,9 +117,9 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
         }
 
         if(doSimulation)
-            simulationQueue->moveJoints(startingJoints);
+            simulationQueue->jointPtp(startingJoints);
         if(doExecution)
-            executionQueue->moveJoints(startingJoints);
+            executionQueue->jointPtp(startingJoints);
 
         if(doExecution) {
             cout << "(GeneralReinforcer) press a key to perform next rollout (rollout number " << (k + 2) << ")" << endl;
@@ -143,7 +143,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
         KUKADU_SHARED_PTR<ControllerResult> simRes;
         if(doSimulation) {
             cout << "(DMPReinforcer) simulating update" << endl;
-            simulationQueue->moveJoints(startingJoints);
+            simulationQueue->jointPtp(startingJoints);
             simRes = trajEx->simulateTrajectory();
 
             if(!doExecution) {
@@ -160,7 +160,7 @@ void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 
                 cout << "(DMPReinforcer) executing update" << endl;
 
-                simulationQueue->moveJoints(startingJoints);
+                simulationQueue->jointPtp(startingJoints);
                 simRes = trajEx->executeTrajectory();
 
             } else {

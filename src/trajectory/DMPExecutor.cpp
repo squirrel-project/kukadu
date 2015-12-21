@@ -215,7 +215,7 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 
         if(!isCartesian) currentJoints = controlQueue->getCurrentJoints().joints;
         else {
-            geometry_msgs::Pose currentPose = controlQueue->getCartesianPose();
+            geometry_msgs::Pose currentPose = controlQueue->getCurrentCartesianPose();
             currentJoints(0) = currentPose.position.x;
             currentJoints(1) = currentPose.position.y;
             currentJoints(2) = currentPose.position.x;
@@ -467,11 +467,11 @@ cout << "step size: " << stepSize << endl;
 
     if(!isCartesian) {
 
-        controlQueue->moveJoints(y0s);
+        controlQueue->jointPtp(y0s);
 
     } else {
 
-        start = controlQueue->getCartesianPose();
+        start = controlQueue->getCurrentCartesianPose();
         controlQueue->addCartesianPosToQueue(vectorarma2pose(&y0s));
 
     }

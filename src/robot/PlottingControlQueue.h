@@ -47,26 +47,27 @@ class PlottingControlQueue : public ControlQueue {
 
 private:
 	
-    int isInit;
-	int finish;
     int impMode;
-    int sleepTime;
 	int ptpReached;
 	int monComMode;
 	int currentMode;
-	
-    double currentTime;
 
-    arma::vec startingJoints;
-    arma::vec currentJoints;
-    arma::vec currentCarts;
+    double currTime;
+
+    arma::vec currJoints;
+    arma::vec startJoints;
 
     std::vector<std::string> jointNames;
 	
-    kukadu_mutex currentJointsMutex;
-    kukadu_mutex currentCartsMutex;
-	
-    void construct(std::vector<std::string> jointNames, double timeStep);
+    void construct(std::vector<std::string> jointNames);
+
+protected:
+
+    virtual void submitNextJointMove(arma::vec joints);
+    virtual void submitNextCartMove(geometry_msgs::Pose pose);
+    virtual void setCurrentControlTypeInternal(int controlType);
+
+    virtual bool stopQueueWhilePtp();
 
 public:
 
@@ -79,29 +80,23 @@ public:
 
     PlottingControlQueue(std::vector<std::string> jointNames, double timeStep);
 	
-	void run();
-    void shutUp();
-	void setFinish();
-    void startTalking();
     void safelyDestroy();
     void setInitValues();
     void stopCurrentMode();
     void switchMode(int mode);
-    void moveJoints(arma::vec joints);
-    void moveJointsNb(arma::vec joints);
+    void jointPtpInternal(arma::vec joints);
     void setJntPtpThresh(double thresh);
     void setStartingJoints(arma::vec joints);
     void addJointsPosToQueue(arma::vec joints);
-    void moveCartesian(geometry_msgs::Pose pos);
-    void moveCartesianNb(geometry_msgs::Pose pos);
+    void cartPtpInternal(geometry_msgs::Pose pos);
     void addCartesianPosToQueue(geometry_msgs::Pose pose);
     void setAdditionalLoad(float loadMass, float loadPos);
 	void synchronizeToControlQueue(int maxNumJointsInQueue);
 	void setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq);
 
-    bool isInitialized();
+    virtual int getCurrentControlType();
 
-    double getTimeStep();
+    double getCurrentTime();
 
     std::string getRobotName();
     std::string getRobotFileName();
@@ -111,12 +106,12 @@ public:
 
     std::vector<std::string> getJointNames();
 
-    mes_result getCartesianPos();
     mes_result getCurrentJoints();
     mes_result getCurrentJntFrcTrq();
+    mes_result getCurrentCartesianPos();
     mes_result getCurrentCartesianFrcTrq();
 
-    geometry_msgs::Pose getCartesianPose();
+    geometry_msgs::Pose getCurrentCartesianPose();
 
     virtual void rollBack(double time);
     virtual void stopJointRollBackMode();

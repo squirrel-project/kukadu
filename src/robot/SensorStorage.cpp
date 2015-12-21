@@ -227,7 +227,7 @@ void SensorStorage::storeData(bool storeHeader, std::vector<KUKADU_SHARED_PTR<st
             } else {
 
                 joints = currentQueue->getCurrentJoints();
-                cartPos = currentQueue->getCartesianPos();
+                cartPos = currentQueue->getCurrentCartesianPos();
                 jntFrcTrq = currentQueue->getCurrentJntFrcTrq();
                 cartFrcTrq = currentQueue->getCurrentCartesianFrcTrq();
 
