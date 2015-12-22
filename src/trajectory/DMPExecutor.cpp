@@ -135,27 +135,26 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 
     if(!isCartesian) {
 
-        // joint / cartesian position
-
         // TODO: remove equation for z' and merge the first two equations
         // y' = z / tau
         // z' = 1 / tau * ( az * (bz * (g - y) - z) + f);
         // x' = -ax / tau * x
+
         for(int i = 0; i < odeSystemSizeMinOne; i = i + 2) {
 
             double yPlusOne = y[i + 1];
-
             int currentSystem = (int) (i / 2);
             f[i] = yPlusOne * oneDivTau;
             double g = gs(currentSystem);
             arma::vec currentCoeffs = dmpCoeffs.at(currentSystem);
 
             if(t <= (dmp->getTmax() - 1)) {
-
                 double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
-                double x= this->addTerm(t, y, currentSystem, controlQueue);
-               if(!std::isnan(x)) f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm) + x; // + this->addTerm(t, y, currentSystem, controlQueue);
-                else f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm);
+                double x = this->addTerm(t, y, currentSystem, controlQueue);
+                if(!std::isnan(x))
+                    f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm) + x; // + this->addTerm(t, y, currentSystem, controlQueue);
+                else
+                    f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm);
             } else {
                 f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne));
             }
@@ -167,20 +166,18 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
         vec vecF0(3);
         vec vecExtAdd(3);
 
-        //currentEta = nextEta;
-
         for(int i = 0, dim = 0; i < odeSystemSizeMinOne; i = i + 3, ++dim) {
+
             arma::vec currentCoeffs = dmpCoeffs.at(dim + 3);
             vecF0(dim) = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
             vecExtAdd(dim) =  this->addTerm(t, y, dim + 3, controlQueue);
-            // AT(dim + 3) = vecF0(dim);
+
         }
 
         if(t <= (dmp->getTmax() - 1))
             nextDEta = oneDivTau * (az * (2.0 * bz * log(qG * currentQ.inverse()) - currentEta) + vecF0);
         else
             nextDEta = oneDivTau * az * (2.0 * bz * log(qG * currentQ.inverse()) - currentEta);
-
 
         // cartesian position and orientation
         for(int i = 0; i < odeSystemSizeMinOne; i = i + 3) {
@@ -195,12 +192,11 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
             if(t <= (dmp->getTmax() - 1)) {
 
                 double addTerm = trajGen->evaluateByCoefficientsSingleNonExponential(y[odeSystemSizeMinOne], currentCoeffs);
-                // AT(currentSystem) = addTerm;
-               // if (currentSystem == 1) cout << oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm) <<endl ;
-                double x= this->addTerm(t, y, currentSystem, controlQueue);
-                if (currentSystem==1) cout<<oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm)<< " x is "<< x <<endl;
-                if(!std::isnan(x)) f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm) + x; // + this->addTerm(t, y, currentSystem, controlQueue);
-                 else f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm);
+                double x = this->addTerm(t, y, currentSystem, controlQueue);
+                if(!std::isnan(x))
+                    f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm) + x; // + this->addTerm(t, y, currentSystem, controlQueue);
+                else
+                    f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne) + addTerm);
             } else {
                 f[i + 1] = oneDivTau * (az * (bz * (g - y[i]) - yPlusOne));
             }
@@ -213,18 +209,18 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 
     if(this->simulate == EXECUTE_ROBOT) {
 
-        if(!isCartesian) currentJoints = controlQueue->getCurrentJoints().joints;
+        if(!isCartesian)
+            currentJoints = controlQueue->getCurrentJoints().joints;
         else {
             geometry_msgs::Pose currentPose = controlQueue->getCurrentCartesianPose();
             currentJoints(0) = currentPose.position.x;
             currentJoints(1) = currentPose.position.y;
             currentJoints(2) = currentPose.position.x;
             arma::vec currentOrient = log(tf::Quaternion(currentPose.orientation.x, currentPose.orientation.y, currentPose.orientation.z, currentPose.orientation.w));
-            for (int i=0; i < 3; i++) currentJoints(i+3) = currentOrient(i);
+            for (int i = 0; i < 3; i++) currentJoints(i + 3) = currentOrient(i);
 
         }
         double corrector = 0.0;
-
         if(!usesExternalError()) {
 
             // include original  phase stopping
@@ -239,9 +235,7 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 
         f[odeSystemSizeMinOne] = -axDivTau * y[odeSystemSizeMinOne] / corrector;
 
-    }
-
-    else if(this->simulate == SIMULATE_DMP) {
+    } else if(this->simulate == SIMULATE_DMP) {
 
         // progress as usual
         f[odeSystemSizeMinOne] = - axDivTau * y[odeSystemSizeMinOne];
@@ -254,14 +248,6 @@ int DMPExecutor::func(double t, const double* y, double* f, void* params) {
 
 double DMPExecutor::computeDistance(const arma::vec yDes, arma::vec yCurr) {
 
-    /*
-    double dist = 0.0;
-    for(int i = 0; i < degofFreedom; ++i) {
-        dist += pow( yDes[i] - yCurr[i]  , 2);
-    }
-    return dist;
-    */
-
     if(!isCartesian) {
         // distance for quaternion has to be introduced if this is enabled
         arma::vec tmp = (yDes - yCurr).t() * (yDes - yCurr);
@@ -269,6 +255,7 @@ double DMPExecutor::computeDistance(const arma::vec yDes, arma::vec yCurr) {
     }
     else
         return 0;
+
 }
 
 int DMPExecutor::jac(double t, const double* y, double *dfdy, double* dfdt, void* params) {
@@ -445,7 +432,7 @@ void DMPExecutor::destroyIntegration() {
 }
 
 KUKADU_SHARED_PTR<ControllerResult> DMPExecutor::executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
-cout << "step size: " << stepSize << endl;
+
     // two variables are really required here, because executionRunning is changed by other functions that really need to know
     // whether the exeuction was stopped (this is checked by executionStoppingDone)
     executionRunning = true;
@@ -489,8 +476,7 @@ cout << "step size: " << stepSize << endl;
             nextJoints = doIntegrationStep(ac);
 
         } catch(const char* s) {
-            puts(s);
-            cerr << ": stopped execution at time " << currentTime << endl;
+            cerr << string(s) << ": stopped execution at time " << currentTime << endl;
             break;
         }
 

@@ -69,6 +69,7 @@
 
 #include "../../src/utils/types.h"
 #include "../../src/utils/utils.h"
+#include "../../src/utils/tictoc.hpp"
 #include "../../src/utils/CustomSet.h"
 #include "../../src/utils/KukaduTokenizer.h"
 #include "../../src/utils/conversion_utils.h"

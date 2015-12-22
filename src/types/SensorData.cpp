@@ -3,13 +3,6 @@
 using namespace std;
 using namespace arma;
 
-SensorData::SensorData(std::vector<std::string> labels, arma::mat values) {
-
-    this->labels = labels;
-    this->values = values;
-
-}
-
 SensorData::SensorData(std::string timeLabel, std::vector<std::string> jointPosLabels, std::vector<std::string> jointFrcLabels, std::vector<std::string> cartPosLabels,
            std::vector<std::string> cartForceAbsLabel, std::vector<std::string> cartFrcTrqLabels, arma::vec time, arma::mat jointPos, arma::mat jointFrc, arma::mat cartPos, arma::mat cartForceAbs, arma::mat cartFrcTrq) {
 
@@ -20,7 +13,6 @@ SensorData::SensorData(std::string timeLabel, std::vector<std::string> jointPosL
     this->cartForceAbsLabel = cartForceAbsLabel;
 
     labels.push_back(timeLabel);
-
     if(jointPos.n_cols > 1) {
         for(int i = 0; i < jointPosLabels.size(); ++i)
             labels.push_back(jointPosLabels.at(i));

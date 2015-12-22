@@ -93,6 +93,7 @@ void ControlQueue::setInitValuesInternal() {
     while(!cartesianMovementQueue.empty()) cartesianMovementQueue.pop();
 
     setInitValues();
+
 }
 
 double ControlQueue::getCurrentTime() {
@@ -187,7 +188,11 @@ void ControlQueue::run() {
 
     isInit = true;
 
+    t.tic("r");
+
     while(!finish && ros::ok) {
+
+        currentTime = t.toc("r");
 
         currentJoints = getCurrentJoints().joints;
         currentCartPose = getCurrentCartesianPose();
@@ -239,7 +244,6 @@ void ControlQueue::run() {
 
         }
 
-        currentTime += sleepTimeInSec;
         sleepRate.sleep();
 
         ros::spinOnce();

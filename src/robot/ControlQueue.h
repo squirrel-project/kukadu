@@ -2,6 +2,7 @@
 #define KUKADU_CONTROLQUEUE
 
 #include "../utils/types.h"
+#include "../utils/tictoc.hpp"
 #include "../types/KukaduTypes.h"
 #include "../utils/DestroyableObject.h"
 
@@ -54,6 +55,8 @@ private:
     std::queue<geometry_msgs::Pose> cartesianMovementQueue;
 
     std::deque<arma::vec> rollBackQueue;
+
+    TicToc t;
 
     KUKADU_SHARED_PTR<kukadu_thread> thr;
     KUKADU_SHARED_PTR<kukadu_thread> cartPtpThr;
