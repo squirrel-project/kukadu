@@ -40,9 +40,11 @@ private:
     int rollBackQueueSize;
     int currentControlType;
 
+    double sleepTime;
     double currentTime;
     double rollBackTime;
-    double sleepTimeInSec;
+    double lastDuration;
+    double desiredCycleTime;
 
     arma::vec currentJoints;
     arma::vec startingJoints;
@@ -87,7 +89,7 @@ public:
 	/** \brief Constructor taking the robot dependent degrees of freedom
 	 * \param degOfFreedom number of robots degrees of freedom
 	 */
-    ControlQueue(int degOfFreedom, double sleepTimeInSec);
+    ControlQueue(int degOfFreedom, double desiredCycleTime);
 	
 	/**
 	 * \brief Returns number of robots degrees of freedom
@@ -105,6 +107,8 @@ public:
     virtual void run();
 
     virtual double getTimeStep();
+
+    virtual double getMeasuredTimeStep();
 	
 	/**
 	 * \brief Sets a flag to stop the control thread after current iteration is executed

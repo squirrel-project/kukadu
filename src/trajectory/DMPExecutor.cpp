@@ -39,7 +39,6 @@ void DMPExecutor::construct(KUKADU_SHARED_PTR<Dmp> traj, KUKADU_SHARED_PTR<Contr
     this->dmp = traj;
     this->ac = 0.0;
     this->vecYs = arma::vec(1);
-    this->stepSize = execQueue->getTimeStep();
 
     this->dmpCoeffs = traj->getDmpCoeffs();
     this->baseDef = traj->getDmpBase();
@@ -265,18 +264,18 @@ int DMPExecutor::jac(double t, const double* y, double *dfdy, double* dfdt, void
 
 }
 
-KUKADU_SHARED_PTR<ControllerResult> DMPExecutor::executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
+KUKADU_SHARED_PTR<ControllerResult> DMPExecutor::executeTrajectory(double ac, double tStart, double tEnd, double tolAbsErr, double tolRelErr) {
 
     this->ac = ac;
     this->simulate = EXECUTE_ROBOT;
-    return this->executeDMP(tStart, tEnd, stepSize, tolAbsErr, tolRelErr);
+    return this->executeDMP(tStart, tEnd, tolAbsErr, tolRelErr);
 
 }
 
-KUKADU_SHARED_PTR<ControllerResult> DMPExecutor::simulateTrajectory(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
+KUKADU_SHARED_PTR<ControllerResult> DMPExecutor::simulateTrajectory(double tStart, double tEnd, double tolAbsErr, double tolRelErr) {
 
     this->simulate = SIMULATE_DMP;
-    KUKADU_SHARED_PTR<ControllerResult> ret = this->executeDMP(tStart, tEnd, stepSize, tolAbsErr, tolRelErr);
+    KUKADU_SHARED_PTR<ControllerResult> ret = this->executeDMP(tStart, tEnd, tolAbsErr, tolRelErr);
     return ret;
 
 }
@@ -293,18 +292,18 @@ void DMPExecutor::enableMaxForceMode(double maxAbsForce) {
 KUKADU_SHARED_PTR<ControllerResult> DMPExecutor::simulateTrajectory() {
 
     this->simulate = SIMULATE_DMP;
-    return this->executeDMP(0, dmp->getTmax(), dmp->getStepSize(), dmp->getTolAbsErr(), dmp->getTolRelErr());
+    return this->executeDMP(0, dmp->getTmax(), dmp->getTolAbsErr(), dmp->getTolRelErr());
 
 }
 
 KUKADU_SHARED_PTR<ControllerResult> DMPExecutor::executeTrajectory() {
 
     this->simulate = EXECUTE_ROBOT;
-    return this->executeDMP(0, dmp->getTmax(), dmp->getStepSize(), dmp->getTolAbsErr(), dmp->getTolRelErr());
+    return this->executeDMP(0, dmp->getTmax(), dmp->getTolAbsErr(), dmp->getTolRelErr());
 
 }
 
-void DMPExecutor::initializeIntegration(double tStart, double stepSize, double tolAbsErr, double tolRelErr) {
+void DMPExecutor::initializeIntegration(double tStart, double tolAbsErr, double tolRelErr) {
 
     t = tStart;
 
@@ -334,9 +333,7 @@ void DMPExecutor::initializeIntegration(double tStart, double stepSize, double t
 
     gsl_odeiv2_system tmp_sys = {static_func, NULL, odeSystemSize, this};
     sys = tmp_sys;
-    d = KUKADU_SHARED_PTR<gsl_odeiv2_driver>(gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rkf45, stepSize, tolAbsErr, tolRelErr), gsl_delete_expression());
-
-    this->stepSize = stepSize;
+    d = KUKADU_SHARED_PTR<gsl_odeiv2_driver>(gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rkf45, controlQueue->getMeasuredTimeStep(), tolAbsErr, tolRelErr), gsl_delete_expression());
 
     for(int i = 0; i < odeSystemSize; ++i) {
         vecYs(i) = ys[i];
@@ -384,7 +381,7 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
 
     if(t < dmp->getTmax()) {
 
-        int s = gsl_odeiv2_driver_apply_fixed_step(d.get(), &t, stepSize, 1, ys);
+        int s = gsl_odeiv2_driver_apply_fixed_step(d.get(), &t, controlQueue->getMeasuredTimeStep(), 1, ys);
 
 
         if (s != GSL_SUCCESS) {
@@ -409,7 +406,7 @@ arma::vec DMPExecutor::doIntegrationStep(double ac) {
 
 
         vec alteredCurrentEta(3);
-        alteredCurrentEta = stepSize / 2.0 * oneDivTau * nextEta;
+        alteredCurrentEta = controlQueue->getMeasuredTimeStep() / 2.0 * oneDivTau * nextEta;
 
         currentQ = exp(alteredCurrentEta) * currentQ;
 
@@ -431,7 +428,7 @@ void DMPExecutor::destroyIntegration() {
 
 }
 
-KUKADU_SHARED_PTR<ControllerResult> DMPExecutor::executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr) {
+KUKADU_SHARED_PTR<ControllerResult> DMPExecutor::executeDMP(double tStart, double tEnd, double tolAbsErr, double tolRelErr) {
 
     // two variables are really required here, because executionRunning is changed by other functions that really need to know
     // whether the exeuction was stopped (this is checked by executionStoppingDone)
@@ -442,7 +439,7 @@ KUKADU_SHARED_PTR<ControllerResult> DMPExecutor::executeDMP(double tStart, doubl
         controlQueue->startJointRollBackMode(3.0);
     }
 
-    int stepCount = (tEnd - tStart) / stepSize;
+    int stepCount = (tEnd - tStart) / controlQueue->getMeasuredTimeStep();
     double currentTime = 0.0;
 
     vector<vec> retY;
@@ -463,13 +460,13 @@ KUKADU_SHARED_PTR<ControllerResult> DMPExecutor::executeDMP(double tStart, doubl
 
     }
 
-    initializeIntegration(0, stepSize, tolAbsErr, tolRelErr);
+    initializeIntegration(0, tolAbsErr, tolRelErr);
 
     vec nextJoints(degofFreedom);
     nextJoints.fill(0.0);
 
     // execute dmps and compute linear combination
-    for(int j = 0; j < stepCount && executionRunning; ++j, currentTime += stepSize) {
+    for(int j = 0; currentTime < tEnd && executionRunning; ++j, currentTime += controlQueue->getMeasuredTimeStep()) {
 
         try {
 

@@ -4,12 +4,11 @@
 using namespace std;
 using namespace arma;
 
-DMPReinforcer::DMPReinforcer(CostComputer* cost, KUKADU_SHARED_PTR<ControlQueue> movementQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) {
+DMPReinforcer::DMPReinforcer(CostComputer* cost, KUKADU_SHARED_PTR<ControlQueue> movementQueue, double ac, double tolAbsErr, double tolRelErr) {
 	
 	this->cost = cost;
 	this->movementQueue = movementQueue;
 	this->ac = ac;
-	this->dmpStepSize = dmpStepSize;
 	this->tolAbsErr = tolAbsErr;
 	this->tolRelErr = tolRelErr;
 	this->isFirstIteration = true;
@@ -31,10 +30,6 @@ std::vector<KUKADU_SHARED_PTR<Dmp> > DMPReinforcer::getLastRolloutParameters() {
 
 std::vector<KUKADU_SHARED_PTR<ControllerResult> > DMPReinforcer::getLastExecutionResults() {
 	return dmpResult;
-}
-
-double DMPReinforcer::getDmpStepSize() {
-	return dmpStepSize;
 }
 
 double DMPReinforcer::getTolAbsErr() {
@@ -62,7 +57,7 @@ void DMPReinforcer::performRollout(int doSimulation, int doExecution) {
         DMPExecutor dmpsim(rollout.at(0), movementQueue);
 		
 		// TODO: switch this to new class scheme (not explicetely use DMPExecutor, but trajectory executor)
-        lastUpdateRes = dmpsim.simulateTrajectory(0, rollout.at(0)->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+        lastUpdateRes = dmpsim.simulateTrajectory(0, rollout.at(0)->getTmax(), tolAbsErr, tolRelErr);
 		
 		
 	}
@@ -81,7 +76,7 @@ void DMPReinforcer::performRollout(int doSimulation, int doExecution) {
 		
 		if(doSimulation) {
 
-            KUKADU_SHARED_PTR<ControllerResult> simRes = dmpsim.simulateTrajectory(0, rollout.at(k)->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+            KUKADU_SHARED_PTR<ControllerResult> simRes = dmpsim.simulateTrajectory(0, rollout.at(k)->getTmax(), tolAbsErr, tolRelErr);
 			dmpResult.push_back(simRes);
 
 		}
@@ -101,7 +96,7 @@ void DMPReinforcer::performRollout(int doSimulation, int doExecution) {
 				movementQueue->setStiffness(2200, 300, 1.0, 15000, 150, 2.0);
                 KUKADU_SHARED_PTR<kukadu_thread> thr = movementQueue->startQueueThread();
 				
-                dmpResult.push_back(dmpsim.executeTrajectory(ac, 0, rollout.at(k)->getTmax(), dmpStepSize, tolAbsErr, tolRelErr));
+                dmpResult.push_back(dmpsim.executeTrajectory(ac, 0, rollout.at(k)->getTmax(), tolAbsErr, tolRelErr));
 				
 				movementQueue->setFinish();
 				thr->join();
@@ -117,7 +112,7 @@ void DMPReinforcer::performRollout(int doSimulation, int doExecution) {
 	
 	lastUpdate = updateStep();
     DMPExecutor dmpsim(lastUpdate, movementQueue);
-    lastUpdateRes = dmpsim.simulateTrajectory(0, lastUpdate->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+    lastUpdateRes = dmpsim.simulateTrajectory(0, lastUpdate->getTmax(), tolAbsErr, tolRelErr);
 	
 	double lastUpdateCost = cost->computeCost(lastUpdateRes);
 	

@@ -69,7 +69,6 @@ protected:
 	double tau;
     // for optimization
     double axDivTau;
-    double stepSize;
     double oneDivTau;
 	double externalError;
     double maxAllowedForce;
@@ -118,7 +117,7 @@ protected:
 
     double computeDistance(const arma::vec yDes, arma::vec yCurr);
 
-    KUKADU_SHARED_PTR<ControllerResult> executeDMP(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr);
+    KUKADU_SHARED_PTR<ControllerResult> executeDMP(double tStart, double tEnd, double tolAbsErr, double tolRelErr);
 
 protected:
 
@@ -146,7 +145,7 @@ public:
     void enableMaxForceMode(double maxAbsForce);
     void doRollBackOnMaxForceEvent(bool doRollback);
     void setTrajectory(KUKADU_SHARED_PTR<Trajectory> traj);
-    void initializeIntegration(double tStart, double stepSize, double tolAbsErr, double tolRelErr);
+    void initializeIntegration(double tStart, double tolAbsErr, double tolRelErr);
     void construct(KUKADU_SHARED_PTR<Dmp> dmp, KUKADU_SHARED_PTR<ControlQueue> execQueue, int suppressMessages);
 
     double getExternalError();
@@ -155,8 +154,8 @@ public:
 	
     KUKADU_SHARED_PTR<ControllerResult> executeTrajectory();
     KUKADU_SHARED_PTR<ControllerResult> simulateTrajectory();
-    KUKADU_SHARED_PTR<ControllerResult> simulateTrajectory(double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr);
-    KUKADU_SHARED_PTR<ControllerResult> executeTrajectory(double ac, double tStart, double tEnd, double stepSize, double tolAbsErr, double tolRelErr);
+    KUKADU_SHARED_PTR<ControllerResult> simulateTrajectory(double tStart, double tEnd, double tolAbsErr, double tolRelErr);
+    KUKADU_SHARED_PTR<ControllerResult> executeTrajectory(double ac, double tStart, double tEnd, double tolAbsErr, double tolRelErr);
 
 };
 

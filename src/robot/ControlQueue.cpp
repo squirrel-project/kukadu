@@ -12,14 +12,15 @@ KUKADU_SHARED_PTR<kukadu_thread> ControlQueue::startQueueThread() {
     return thr;
 }
 
-ControlQueue::ControlQueue(int degOfFreedom, double sleepTimeInSec) {
+ControlQueue::ControlQueue(int degOfFreedom, double desiredCycleTime) {
 
     jointPtpRunning = false;
     cartesianPtpRunning = false;
 
     currentTime = 0.0;
 	this->degOfFreedom = degOfFreedom;
-    this->sleepTimeInSec = sleepTimeInSec;
+    this->desiredCycleTime = desiredCycleTime;
+    this->sleepTime = desiredCycleTime;
 
 }
 
@@ -37,7 +38,7 @@ double ControlQueue::getAbsoluteCartForce() {
 }
 
 double ControlQueue::getTimeStep() {
-    return sleepTimeInSec;
+    return desiredCycleTime;
 }
 
 arma::vec ControlQueue::getStartingJoints() {
@@ -167,10 +168,14 @@ KUKADU_SHARED_PTR<kukadu_thread> ControlQueue::cartesianPtpNb(geometry_msgs::Pos
 
 }
 
+double ControlQueue::getMeasuredTimeStep() {
+    return lastDuration;
+}
+
 void ControlQueue::run() {
 
     setInitValuesInternal();
-    ros::Rate sleepRate(1.0 / sleepTimeInSec);
+    ros::Rate sleepRate(1.0 / sleepTime);
 
     arma::vec movement = arma::vec(1);
     geometry_msgs::Pose movementPose;
@@ -188,9 +193,22 @@ void ControlQueue::run() {
 
     isInit = true;
 
+    lastDuration = 0.0;
+    double toleratedMaxDuration = 1.1 * desiredCycleTime;
+    double toleratedMinDuration = 0.9 * desiredCycleTime;
+
     t.tic("r");
 
     while(!finish && ros::ok) {
+
+        t.tic("d");
+
+        if(toleratedMinDuration < lastDuration || lastDuration > toleratedMaxDuration) {
+
+            sleepTime = max(0.000000001, sleepTime + 0.3 * (desiredCycleTime -  lastDuration));
+            sleepRate = ros::Rate(1.0 / sleepTime);
+
+        }
 
         currentTime = t.toc("r");
 
@@ -248,6 +266,8 @@ void ControlQueue::run() {
 
         ros::spinOnce();
 
+        lastDuration = t.toc("d");
+
     }
 
     if(!isShutUp())
@@ -272,7 +292,7 @@ void ControlQueue::startJointRollBackMode(double possibleTime) {
     rollbackMode = true;
     rollBackTime = possibleTime;
     // buffer of 1.0 more second
-    rollBackQueueSize = (int) ((possibleTime + 1.0) / sleepTimeInSec);
+    rollBackQueueSize = (int) ((possibleTime + 1.0) / desiredCycleTime);
 
 }
 
@@ -286,7 +306,7 @@ void ControlQueue::stopJointRollBackMode() {
 void ControlQueue::rollBack(double time) {
 
     rollbackMode = false;
-    int rollBackCount = (int) (time / sleepTimeInSec);
+    int rollBackCount = (int) (time / desiredCycleTime);
 
     int stretchFactor = ceil((double) rollBackCount / (double) rollBackQueue.size());
     stretchFactor = max((double) stretchFactor, 1.0);

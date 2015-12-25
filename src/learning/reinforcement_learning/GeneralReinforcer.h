@@ -7,9 +7,7 @@
 
 #include "CostComputer.h"
 #include "../../types/Trajectory.h"
-#include "../../types/LinCombDmp.h"
 #include "../../robot/ControlQueue.h"
-#include "../../trajectory/DMPExecutor.h"
 #include "../../trajectory/TrajectoryExecutor.h"
 
 /** \brief The GeneralReinforcer provides a general framework for reinforcement learning.
