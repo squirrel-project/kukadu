@@ -1,5 +1,5 @@
-#ifndef GAUSSIANKERNEL
-#define GAUSSIANKERNEL
+#ifndef KUKADU_GAUSSIANKERNEL
+#define KUKADU_GAUSSIANKERNEL
 
 #include "GenericKernel.h"
 #include <armadillo>

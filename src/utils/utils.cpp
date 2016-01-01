@@ -1063,3 +1063,9 @@ tf::Quaternion rpyToQuat(const double roll, const double pitch, const double yaw
     tf::Quaternion quat(yaw, pitch, roll);
     return quat;
 }
+
+long getFileSize(std::string filename) {
+    struct stat stat_buf;
+    int rc = stat(filename.c_str(), &stat_buf);
+    return rc == 0 ? stat_buf.st_size : -1;
+}

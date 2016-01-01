@@ -24,6 +24,7 @@
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Wrench.h>
 #include <sensor_msgs/JointState.h>
+#include <iis_fast_ik/kinematics.h>
 #include <iis_robot_dep/KukieError.h>
 #include <std_msgs/Int32MultiArray.h>
 #include <std_msgs/Float64MultiArray.h>
@@ -62,6 +63,7 @@ private:
     bool isShutUp;
     bool isRealRobot;
     bool rollbackMode;
+    bool fastIkInitializationWorked;
 
     double currentTime;
     double rollBackTime;
@@ -85,7 +87,6 @@ private:
     geometry_msgs::Pose currentCartPose;
     geometry_msgs::Pose currentCartPoseRf;
 	
-
     std::string ptpTopic;
     std::string armPrefix;
     std::string deviceType;
@@ -130,6 +131,8 @@ private:
     ros::Subscriber subCartFrqTrq;
     ros::Subscriber subCartPoseRf;
     ros::Subscriber subCartPtpReached;
+
+    KUKADU_SHARED_PTR<uibk_kinematics::Kinematics> kin;
 
     /* Kukie callback functions */
     void cartPosRfCallback(const geometry_msgs::Pose msg);
@@ -199,6 +202,7 @@ public:
 	
     geometry_msgs::Pose getCartesianPose();
     geometry_msgs::Pose getCartesianPoseRf();
+    geometry_msgs::Pose computeFk(std::vector<double> joints);
     geometry_msgs::Pose moveCartesianRelativeWf(geometry_msgs::Pose basePoseRf, geometry_msgs::Pose offset);
 
     arma::vec getFrcTrqCart();

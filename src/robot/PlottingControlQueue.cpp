@@ -36,6 +36,10 @@ void PlottingControlQueue::setInitValues() {
 
 }
 
+geometry_msgs::Pose PlottingControlQueue::computeFk(std::vector<double> joints) {
+    throw "(PlottingControlQueue) forward kinematics is not supported";
+}
+
 double PlottingControlQueue::getTimeStep() {
     return sleepTime * 1e-6;
 }

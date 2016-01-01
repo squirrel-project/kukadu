@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
     moveit_core
     moveit_msgs
     sensor_msgs
+    iis_fast_ik
     control_msgs
     geometry_msgs
     iis_robot_dep

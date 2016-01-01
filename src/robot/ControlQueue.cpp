@@ -1,5 +1,5 @@
 #include "ControlQueue.h"
-
+#include "../utils/utils.h"
 #include "../types/KukaduTypes.h"
 
 using namespace std;
@@ -26,4 +26,8 @@ double ControlQueue::getAbsoluteCartForce() {
     vec prod = forces.t() * forces;
     return sqrt(prod(0));
 
+}
+
+geometry_msgs::Pose ControlQueue::computeFk(arma::vec joints) {
+    return computeFk(armadilloToStdVec(joints));
 }

@@ -118,6 +118,8 @@ public:
 
     geometry_msgs::Pose getCartesianPose();
 
+    virtual geometry_msgs::Pose computeFk(std::vector<double> joints);
+
     virtual void rollBack(double time);
     virtual void stopJointRollBackMode();
     virtual void startJointRollBackMode(double possibleTime);

@@ -2,6 +2,7 @@
 #include "../utils/KukaduTokenizer.h"
 
 #include <tf/tf.h>
+#include <stdexcept>
 
 using namespace std;
 using namespace arma;
@@ -37,6 +38,14 @@ void KukieControlQueue::constructQueue(double sleepTime, std::string commandTopi
     this->cartMoveRfQueueTopic = cartMoveRfQueueTopic;
     this->cartMoveWfQueueTopic = cartMoveWfQueueTopic;
     this->jntSetPtpThreshTopic = jntSetPtpThreshTopic;
+
+    fastIkInitializationWorked = false;
+    try {
+        kin = KUKADU_SHARED_PTR<uibk_kinematics::Kinematics>(new uibk_kinematics::Kinematics());
+        fastIkInitializationWorked = true;
+    } catch(runtime_error) {
+        ROS_INFO("(KukieControlQueue) iis fast ik not reachable - disabled");
+    }
 
     monComMode = -1;
     impMode = -1;
@@ -108,6 +117,18 @@ KukieControlQueue::KukieControlQueue(double sleepTime, std::string deviceType, s
     constructQueue(sleepTime, commandTopic, retJointPosTopic, switchModeTopic, retCartPosTopic, stiffnessTopic,
                    jntStiffnessTopic, ptpTopic, commandStateTopic, ptpReachedTopic, addLoadTopic, jntFrcTrqTopic, cartFrcTrqTopic,
                    cartPtpTopic, cartPtpReachedTopic, cartMoveRfQueueTopic, cartMoveWfQueueTopic, cartPoseRfTopic, jntSetPtpThreshTopic, node);
+
+}
+
+geometry_msgs::Pose KukieControlQueue::computeFk(std::vector<double> joints) {
+
+    geometry_msgs::Pose targetPose;
+    if(fastIkInitializationWorked)
+        if(armPrefix.find("right") != string::npos)
+            kin->computeFK("right", joints, targetPose);
+        else
+            kin->computeFK("left", joints, targetPose);
+    return targetPose;
 
 }
 

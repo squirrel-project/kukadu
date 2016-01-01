@@ -55,6 +55,9 @@ public:
 	 * \brief Sets a flag to stop the control thread after current iteration is executed
 	 */
 	virtual void setFinish() = 0;
+
+    virtual geometry_msgs::Pose computeFk(arma::vec joints);
+    virtual geometry_msgs::Pose computeFk(std::vector<double> joints) = 0;
 	
 	/**
 	 * \brief Adds next joint position to queue
