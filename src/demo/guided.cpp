@@ -76,7 +76,6 @@ int main(int argc, char** args) {
 
     leftQueue->stopCurrentMode();
     KUKADU_SHARED_PTR<kukadu_thread> laThr = leftQueue->startQueueThread();
-
     if(!prefix.compare("simulation")) {
         leftQueue->switchMode(KukieControlQueue::KUKA_JNT_POS_MODE);
     } else {
@@ -92,7 +91,7 @@ int main(int argc, char** args) {
 
     if(!prefix.compare("simulation")) {
         cout << "moving arm in simulation" << endl;
-        leftQueue->moveJoints(createJointsVector(-0.9692263007164001, 1.113829493522644, 1.1473214626312256, -1.444376826286316, -0.28663957118988037, -0.8957559466362, -0.2651996612548828));
+        leftQueue->jointPtp(createJointsVector(-0.9692263007164001, 1.113829493522644, 1.1473214626312256, -1.444376826286316, -0.28663957118988037, -0.8957559466362, -0.2651996612548828));
         cout << "movement done" << endl;
     } else {
         ros::Rate r(1);
@@ -129,7 +128,7 @@ int main(int argc, char** args) {
     simLeftQueue->switchMode(KukieControlQueue::KUKA_JNT_POS_MODE);
     laThr = simLeftQueue->startQueueThread();
     DMPExecutor execFinalPush(dmpFinalPush, simLeftQueue);
-    execFinalPush.executeTrajectory(ac, 0, dmpFinalPush->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+    execFinalPush.executeTrajectory(ac, 0, dmpFinalPush->getTmax(), tolAbsErr, tolRelErr);
 
     simLeftQueue->stopCurrentMode();
     simLeftQueue->setFinish();
@@ -148,7 +147,7 @@ int main(int argc, char** args) {
 
     laThr = leftQueue->startQueueThread();
     DMPExecutor execFinalPush2(dmpFinalPush, leftQueue);
-    execFinalPush2.executeTrajectory(ac, 0, dmpFinalPush->getTmax(), dmpStepSize, tolAbsErr, tolRelErr);
+    execFinalPush2.executeTrajectory(ac, 0, dmpFinalPush->getTmax(), tolAbsErr, tolRelErr);
 
     leftQueue->stopCurrentMode();
     leftQueue->setFinish();

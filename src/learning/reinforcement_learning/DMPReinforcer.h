@@ -26,7 +26,6 @@ private:
     double ac;
     double tolAbsErr;
     double tolRelErr;
-    double dmpStepSize;
 	
 	CostComputer* cost;
 
@@ -49,7 +48,7 @@ public:
 	 * \param tolAbsErr absolute tolerated error for numerical approximation
 	 * \param tolRelErr relative tolerated error for numerical approximation
 	 */
-    DMPReinforcer(CostComputer* cost, KUKADU_SHARED_PTR<ControlQueue> movementQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
+    DMPReinforcer(CostComputer* cost, KUKADU_SHARED_PTR<ControlQueue> movementQueue, double ac, double tolAbsErr, double tolRelErr);
 	
     void setLastUpdate(KUKADU_SHARED_PTR<Dmp> lastUpdate);
     /**
@@ -73,10 +72,6 @@ public:
      * \brief returns simulation tolerated relative error
      */
     double getTolRelErr();
-    /**
-     * \brief returns simulation dmp step size
-     */
-    double getDmpStepSize();
 
     KUKADU_SHARED_PTR<Dmp> getLastUpdate();
     KUKADU_SHARED_PTR<ControllerResult> getLastUpdateRes();

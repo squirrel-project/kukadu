@@ -29,7 +29,6 @@ find_package(catkin REQUIRED COMPONENTS
 set(CURSES_USE_NCURSES TRUE)
 set(Python_ADDITIONAL_VERSIONS 3.4)
 find_package(PythonLibs 3.4 REQUIRED)
-find_package(cmake_modules REQUIRED)
 find_package(PCL REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Armadillo REQUIRED)
@@ -42,13 +41,6 @@ catkin_package(
     DEPENDS prosim gsl gslcblas ncurses stdc++ ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES}
 )
 
-###########
-## Build ##
-###########
-
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
-# include_directories(include)
 include_directories(
     ${PCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
@@ -61,7 +53,6 @@ set(ENABLE_VISUALIZATION 1)
 add_definitions(-fPIC)
 add_definitions(-shared)
 add_definitions(-pthread)
-#add_definitions(-std=c++11)
 add_definitions(-DROS_SUPPORT)
 add_definitions(-DOSNAME_LINUX=1)
 

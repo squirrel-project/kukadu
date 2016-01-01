@@ -67,7 +67,7 @@ bool plan(const geometry_msgs::Pose &goal,
     }
 
     request.goal_constraints.push_back(c);
-cout << request << endl;
+
     /*
     // compute a set of ik solutions and construct goal constraint
     for (int i = 0; i < 5; ++i) {

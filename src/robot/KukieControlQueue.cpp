@@ -15,13 +15,7 @@ void KukieControlQueue::constructQueue(double sleepTime, std::string commandTopi
 
     set_ctrlc_exit_handler();
 
-    isShutUp = true;
-    currentTime = 0.0;
-    rollbackMode = false;
-    rollBackQueueSize = 0;
-
     this->ptpTopic = ptpTopic;
-    this->sleepTime= sleepTime;
     this->addLoadTopic = addLoadTopic;
     this->commandTopic = commandTopic;
     this->cartPtpTopic = cartPtpTopic;
@@ -39,6 +33,8 @@ void KukieControlQueue::constructQueue(double sleepTime, std::string commandTopi
     this->cartMoveWfQueueTopic = cartMoveWfQueueTopic;
     this->jntSetPtpThreshTopic = jntSetPtpThreshTopic;
 
+	loop_rate = new ros::Rate(1.0 / sleepTime);
+
     fastIkInitializationWorked = false;
     try {
         kin = KUKADU_SHARED_PTR<uibk_kinematics::Kinematics>(new uibk_kinematics::Kinematics());
@@ -47,21 +43,16 @@ void KukieControlQueue::constructQueue(double sleepTime, std::string commandTopi
         ROS_INFO("(KukieControlQueue) iis fast ik not reachable - disabled");
     }
 
-    monComMode = -1;
-    impMode = -1;
-    ptpReached = 0;
     cartesianPtpReached = 0;
 
     setInitValues();
-    startingJoints = arma::vec(1);
     currentJntFrqTrq = arma::vec(1);
     this->node = node;
-    sleepTimeInSec = sleepTime;
+
     if(sleepTime == 0.0) {
-        cerr << "(KukieControlQueue) the sleep time you provided is 0. note that it is required in seconds" << endl;
+        ROS_ERROR("(KukieControlQueue) the sleep time you provided is 0. note that it is required in seconds");
         throw "(KukieControlQueue) the sleep time you provided is 0. note that it is required in seconds";
     }
-    loop_rate = new ros::Rate(1.0 / sleepTimeInSec);
 
     subJntPos = node.subscribe(retPosTopic, 2, &KukieControlQueue::robotJointPosCallback, this);
     subCartPos = node.subscribe(retCartPosTopic, 2, &KukieControlQueue::robotCartPosCallback, this);
@@ -82,7 +73,6 @@ void KukieControlQueue::constructQueue(double sleepTime, std::string commandTopi
     pubCommand = node.advertise<std_msgs::Float64MultiArray>(commandTopic, 10);
     pubSwitchMode = node.advertise<std_msgs::Int32>(switchModeTopic, 1);
     pubPtp = node.advertise<std_msgs::Float64MultiArray>(ptpTopic, 10);
-//	pubAddLoad = node.advertise<std_msgs::Float32MultiArray>(addLoadTopic, 1);
 
     isRealRobot = (getRobotDeviceType().compare("real")) ? false : true;
 
@@ -90,7 +80,7 @@ void KukieControlQueue::constructQueue(double sleepTime, std::string commandTopi
 
 }
 
-KukieControlQueue::KukieControlQueue(double sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node) : ControlQueue(LBR_MNJ) {
+KukieControlQueue::KukieControlQueue(double sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node) : ControlQueue(LBR_MNJ, sleepTime) {
 
     commandTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/move";
     retJointPosTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/get_state";
@@ -120,68 +110,19 @@ KukieControlQueue::KukieControlQueue(double sleepTime, std::string deviceType, s
 
 }
 
-geometry_msgs::Pose KukieControlQueue::computeFk(std::vector<double> joints) {
+void KukieControlQueue::submitNextJointMove(arma::vec joints) {
 
-    geometry_msgs::Pose targetPose;
-    if(fastIkInitializationWorked)
-        if(armPrefix.find("right") != string::npos)
-            kin->computeFK("right", joints, targetPose);
-        else
-            kin->computeFK("left", joints, targetPose);
-    return targetPose;
+    std_msgs::Float64MultiArray nextCommand;
+    for(int i = 0; i < getMovementDegreesOfFreedom(); ++i)
+        nextCommand.data.push_back(joints[i]);
+
+    pubCommand.publish(nextCommand);
 
 }
 
-void KukieControlQueue::startJointRollBackMode(double possibleTime) {
+void KukieControlQueue::submitNextCartMove(geometry_msgs::Pose pose) {
 
-    rollBackQueue.clear();
-    rollbackMode = true;
-    rollBackTime = possibleTime;
-    // buffer of 1.0 more second
-    rollBackQueueSize = (int) ((possibleTime + 1.0) / sleepTimeInSec);
-
-}
-
-void KukieControlQueue::stopJointRollBackMode() {
-
-    rollbackMode = false;
-    rollBackQueue.clear();
-
-}
-
-void KukieControlQueue::rollBack(double time) {
-
-    rollbackMode = false;
-    int rollBackCount = (int) (time / sleepTimeInSec);
-
-    int stretchFactor = ceil((double) rollBackCount / (double) rollBackQueue.size());
-    stretchFactor = max((double) stretchFactor, 1.0);
-
-    vec lastCommand(LBR_MNJ);
-    if(rollBackQueue.size())
-        lastCommand = rollBackQueue.front();
-
-    int newRollBackCount = ceil((double) rollBackCount / (double) stretchFactor);
-
-    // fill command queue with last commands (backwards)
-    for(int i = 0; i < newRollBackCount && rollBackQueue.size(); ++i) {
-
-        vec nextCommand = rollBackQueue.front();
-
-        // interpolate to stretch the trajectory in case there are not enough measured packets (happens in usage with simulator)
-        vec diffUnit = (nextCommand - lastCommand) / (double) stretchFactor;
-        for(int j = 0; j < stretchFactor; ++j) {
-            addJointsPosToQueue(lastCommand + j * diffUnit);
-        }
-
-        lastCommand = nextCommand;
-        rollBackQueue.pop_front();
-
-    }
-
-    // wait until everything has been executed
-    synchronizeToControlQueue(1);
-    rollBackQueue.clear();
+    pubCartMoveWfQueue.publish(pose);
 
 }
 
@@ -192,19 +133,11 @@ std::string KukieControlQueue::getRobotSidePrefix() {
 
 }
 
-double KukieControlQueue::getTimeStep() {
-    return sleepTime * 1e-6;
-}
-
-void KukieControlQueue::addCartesianPosToQueue(geometry_msgs::Pose pose) {
-    cartesianMovementQueue.push(pose);
-}
-
 void KukieControlQueue::cartPosRfCallback(const geometry_msgs::Pose msg) {
     currentCartPoseRf = msg;
 }
 
-geometry_msgs::Pose KukieControlQueue::getCartesianPoseRf() {
+geometry_msgs::Pose KukieControlQueue::getCurrentCartesianPoseRf() {
     return currentCartPoseRf;
 }
 
@@ -259,6 +192,7 @@ void KukieControlQueue::jntMoveCallback(const std_msgs::Float64MultiArray& msg) 
 }
 
 void KukieControlQueue::cartFrcTrqCallback(const geometry_msgs::Wrench& msg) {
+
     cartFrcTrqMutex.lock();
         currentCartFrqTrq = vec(6);
         if(isRealRobot) {
@@ -272,6 +206,7 @@ void KukieControlQueue::cartFrcTrqCallback(const geometry_msgs::Wrench& msg) {
             currentCartFrqTrq.fill(0.0);
         }
     cartFrcTrqMutex.unlock();
+
 }
 
 void KukieControlQueue::jntFrcTrqCallback(const std_msgs::Float64MultiArray& msg) {
@@ -288,17 +223,8 @@ void KukieControlQueue::jntFrcTrqCallback(const std_msgs::Float64MultiArray& msg
 void KukieControlQueue::robotJointPosCallback(const sensor_msgs::JointState& msg) {
 
 	currentJointsMutex.lock();
-        currentJoints = arma::vec(msg.position.size());
-        for(int i = 0; i < msg.position.size(); ++i) currentJoints(i) = msg.position.at(i);
-
-        if(rollbackMode) {
-            rollBackQueue.push_front(currentJoints);
-
-            // if queue is full --> go back
-            if(rollBackQueue.size() > rollBackQueueSize)
-                rollBackQueue.pop_back();
-
-        }
+        currJoints = arma::vec(msg.position.size());
+        for(int i = 0; i < msg.position.size(); ++i) currJoints(i) = msg.position.at(i);
 
     currentJointsMutex.unlock();
 
@@ -311,30 +237,20 @@ arma::vec KukieControlQueue::getFrcTrqCart(){
 
 void KukieControlQueue::robotCartPosCallback(const geometry_msgs::Pose& msg) {
 
-	currentCartsMutex.lock();
+    currentCartsMutex.lock();
 
-        currentCarts = arma::vec(7);
-        currentCarts(0) = msg.position.x;
-        currentCarts(1) = msg.position.y;
-        currentCarts(2) = msg.position.z;
-        currentCarts(3) = msg.orientation.x;
-        currentCarts(4) = msg.orientation.y;
-        currentCarts(5) = msg.orientation.z;
-        currentCarts(6) = msg.orientation.w;
+        currCarts = msg;
 
-        currentCartPose = msg;
-
-	currentCartsMutex.unlock();
+    currentCartsMutex.unlock();
 
 }
 
-geometry_msgs::Pose KukieControlQueue::getCartesianPose() {
-    return currentCartPose;
+geometry_msgs::Pose KukieControlQueue::getCurrentCartesianPose() {
+    return currCarts;
 }
 
 void KukieControlQueue::commandStateCallback(const std_msgs::Float32MultiArray& msg) {
-	monComMode = msg.data[0];
-	impMode = msg.data[1];
+    impMode = msg.data[1];
 }
 
 void KukieControlQueue::ptpReachedCallback(const std_msgs::Int32MultiArray& msg) {
@@ -345,86 +261,13 @@ void KukieControlQueue::cartPtpReachedCallback(const std_msgs::Int32MultiArray& 
     cartesianPtpReached = msg.data[0];
 }
 
-void KukieControlQueue::run() {
-
-    setInitValues();
-    ros::Rate sleepRate(1.0 / sleepTimeInSec);
-
-    arma::vec movement = arma::vec(1);
-    geometry_msgs::Pose movementPose;
-
-    if(startingJoints.n_elem > 1) {
-        if(!isShutUp)
-            cout << "start moving to start position" << endl;
-        moveJoints(startingJoints);
-
-        if(!isShutUp)
-            cout << "finished moving to start position" << endl;
-    }
-	
-	isInit = true;
-	
-	while(!finish && ros::ok) {
-
-        if(currentMode == KUKA_JNT_IMP_MODE || currentMode == KUKA_JNT_POS_MODE) {
-
-            if(movementQueue.size() > 0) {
-
-                // move to position in queue
-                movement = movementQueue.front();
-                movementQueue.pop();
-
-                std_msgs::Float64MultiArray nextCommand;
-                for(int i = 0; i < getMovementDegreesOfFreedom(); ++i)
-                    nextCommand.data.push_back(movement[i]);
-
-                pubCommand.publish(nextCommand);
-
-            } else {
-
-                movement = currentJoints;
-
-            }
-
-        } else if(currentMode == KUKA_CART_IMP_MODE) {
-
-            if(cartesianMovementQueue.size() > 0) {
-
-                // move to position in queue
-                movementPose = cartesianMovementQueue.front();
-                cartesianMovementQueue.pop();
-
-                pubCartMoveWfQueue.publish(movementPose);
-
-            } else {
-
-                movementPose = currentCartPose;
-
-            }
-
-        }
-
-        currentTime += sleepTimeInSec;
-        sleepRate.sleep();
-		
-        ros::spinOnce();
-
-	}
-
-    if(!isShutUp)
-        cout << "thread finished" << endl;
+void KukieControlQueue::setInitValues() {
+    impMode = -1;
+    ptpReached = false;
 }
 
-void KukieControlQueue::setInitValues() {
-
-	isInit = false;
-	finish = 0;
-	
-    currentJoints = arma::vec(1);
-    currentCarts = arma::vec(1);
-
-    while(!movementQueue.empty()) movementQueue.pop();
-
+int KukieControlQueue::getCurrentControlType() {
+    return impMode;
 }
 
 mes_result KukieControlQueue::getCurrentCartesianFrcTrq() {
@@ -435,10 +278,14 @@ mes_result KukieControlQueue::getCurrentCartesianFrcTrq() {
         ret.joints = currentCartFrqTrq;
     cartFrcTrqMutex.unlock();
 
-    ret.time = currentTime;
+    ret.time = getCurrentTime();
 
     return ret;
 
+}
+
+bool KukieControlQueue::stopQueueWhilePtp() {
+    return true;
 }
 
 mes_result KukieControlQueue::getCurrentJntFrcTrq() {
@@ -446,71 +293,36 @@ mes_result KukieControlQueue::getCurrentJntFrcTrq() {
     mes_result ret;
 
     ret.joints = currentJntFrqTrq;
-    ret.time = currentTime;
+    ret.time = getCurrentTime();
 
     return ret;
 
 }
 
-void KukieControlQueue::setFinish() {
-	finish = 1;
-    startingJoints = arma::vec(1);
-}
+void KukieControlQueue::setCurrentControlTypeInternal(int controlType) {
 
-void KukieControlQueue::addJointsPosToQueue(arma::vec joints) {
-    movementQueue.push(joints);
-}
-
-void KukieControlQueue::switchMode(int mode) {
-	if(ros::ok) {
-        if(!isShutUp)
-            cout << "(KukieControlQueue) switching to mode " << mode << endl;
-		std_msgs::Int32 newMode;
-		newMode.data = currentMode = mode;
-		if(ros::ok()) {
-			pubSwitchMode.publish(newMode);
-			ros::spinOnce();
-		}
-		while(impMode != mode) {
-			loop_rate->sleep();
-			ros::spinOnce();
-		}
-	} else {
-        if(!isShutUp)
-            cout << "(KukieControlQueue) ros error" << endl;
-	}
-}
-
-void KukieControlQueue::stopCurrentMode() {
-    switchMode(KUKA_STOP_MODE);
-    switchMode(KUKA_JNT_POS_MODE);
-    switchMode(KUKA_STOP_MODE);
-}
-
-void KukieControlQueue::synchronizeToControlQueue(int maxNumJointsInQueue) {
-    if(currentMode == KUKA_JNT_IMP_MODE || currentMode == KUKA_JNT_POS_MODE) {
-        while(movementQueue.size() > maxNumJointsInQueue);
-    } else if(currentMode == KUKA_CART_IMP_MODE) {
-        while(cartesianMovementQueue.size() > maxNumJointsInQueue);
+    std_msgs::Int32 newMode;
+    newMode.data = controlType;
+    if(ros::ok()) {
+        pubSwitchMode.publish(newMode);
+        ros::spinOnce();
     }
+    while(impMode != controlType) {
+        loop_rate->sleep();
+        ros::spinOnce();
+    }
+
 }
 
-void KukieControlQueue::setStartingJoints(arma::vec joints) {
-	startingJoints = joints;
-}
+void KukieControlQueue::cartPtpInternal(geometry_msgs::Pose pos) {
 
-void KukieControlQueue::moveCartesianNb(geometry_msgs::Pose pos) {
-    pubCartPtp.publish(pos);
-}
-
-void KukieControlQueue::moveCartesian(geometry_msgs::Pose pos) {
-
-    cartesianPtpReached = 0;
+    cartesianPtpReached = false;
 
     if(ros::ok) {
 
-        if(!isShutUp)
-            cout << "(KukieControlQueue) moving" << endl;
+        if(!isShutUp())
+            ROS_INFO("(KukieControlQueue) moving");
+
         pubCartPtp.publish(pos);
         ros::spinOnce();
 
@@ -525,61 +337,72 @@ void KukieControlQueue::moveCartesian(geometry_msgs::Pose pos) {
             loop_rate->sleep();
             loop_rate->sleep();
             ros::spinOnce();
-            if (ros::Time().toSec()-start > 30.0){
+            if (ros::Time().toSec() - start > 30.0){
                 throw new std::string("(KukieControlQueue) time limit reached; ptp movement not done ");
             }
         }
-        if(!isShutUp)
-            cout << "(KukieControlQueue) ptp movement done" << endl;
+        if(!isShutUp())
+            ROS_INFO("(KukieControlQueue) ptp movement done");
 
     } else {
-        if(!isShutUp)
-            cout << "(KukieControlQueue) ros error" << endl;
+        if(!isShutUp())
+            ROS_INFO("(KukieControlQueue) ros error");
     }
 
 }
 
-void KukieControlQueue::moveJoints(arma::vec joints) {
+void KukieControlQueue::jointPtpInternal(arma::vec joints) {
 	
-	ptpReached = 0;
-	
+    ptpReached = false;
+    ros::Rate sl(4);
 	if(ros::ok) {
-        moveJointsNb(joints);
+
+        if(!isShutUp())
+            ROS_INFO("(KukieControlQueue) moving");
+
+        std_msgs::Float64MultiArray newJoints;
+        for(int i = 0; i < getMovementDegreesOfFreedom(); ++i) newJoints.data.push_back(joints[i]);
+        newJoints.layout.dim.push_back(std_msgs::MultiArrayDimension());
+        newJoints.layout.dim[0].size = getMovementDegreesOfFreedom();
+        newJoints.layout.dim[0].stride = 0;
+        newJoints.layout.dim[0].label = "RAD";
+
+        pubPtp.publish(newJoints);
+
 		ros::spinOnce();
 		
 		// just to make sure, arm really reached target
 		ros::spinOnce();
-		usleep(0.5 * 1e6);
+
+        sl.sleep();
 		ros::spinOnce();
 		loop_rate->sleep();
 		ros::spinOnce();
 		
 		while(!ptpReached) {
-			loop_rate->sleep();
-			loop_rate->sleep();
-			loop_rate->sleep();
+            sl.sleep();
 			ros::spinOnce();
 		}
-        if(!isShutUp)
-            cout << "(KukieControlQueue) ptp movement done" << endl;
+        if(!isShutUp())
+            ROS_INFO("(KukieControlQueue) ptp movement done");
 		
 	} else {
-        if(!isShutUp)
-            cout << "(KukieControlQueue) ros error" << endl;
+        if(!isShutUp())
+            ROS_INFO("(KukieControlQueue) ros error");
 	}
 	
 }
 
-void KukieControlQueue::moveJointsNb(arma::vec joints) {
-    if(!isShutUp)
-        cout << "(KukieControlQueue) moving" << endl;
-    std_msgs::Float64MultiArray newJoints;
-    for(int i = 0; i < getMovementDegreesOfFreedom(); ++i) newJoints.data.push_back(joints[i]);
-    newJoints.layout.dim.push_back(std_msgs::MultiArrayDimension());
-    newJoints.layout.dim[0].size = getMovementDegreesOfFreedom();
-    newJoints.layout.dim[0].stride = 0;
-    newJoints.layout.dim[0].label = "RAD";
-    pubPtp.publish(newJoints);
+geometry_msgs::Pose KukieControlQueue::computeFk(std::vector<double> joints) {
+
+    geometry_msgs::Pose targetPose;
+    if(fastIkInitializationWorked)
+        if(armPrefix.find("right") != string::npos)
+            kin->computeFK("right", joints, targetPose);
+        else
+            kin->computeFK("left", joints, targetPose);
+    return targetPose;
+
 }
 
 double KukieControlQueue::computeDistance(float* a1, float* a2, int size) {
@@ -587,8 +410,7 @@ double KukieControlQueue::computeDistance(float* a1, float* a2, int size) {
 	for(int i = 0 ; i < size; ++i) {
 		ret = pow(a1[i] - a2[i], 2);
 	}
-    if(!isShutUp)
-        cout << "current distance: " << ret << endl;
+
 	return ret;
 }
 
@@ -606,13 +428,13 @@ void KukieControlQueue::setAdditionalLoad(float loadMass, float loadPos) {
 
         pubAddLoad.publish(msg);
 
-        int tmpMode = currentMode;
+        int tmpMode = getCurrentControlType();
         stopCurrentMode();
         switchMode(tmpMode);
 
     } else {
-        if(!isShutUp)
-            cout << "(setAdditionalLoad) this functionality is not available in simulator - ignored" << endl;
+        if(!isShutUp())
+            ROS_INFO("(setAdditionalLoad) this functionality is not available in simulator - ignored");
     }
 
 }
@@ -639,45 +461,18 @@ void KukieControlQueue::setStiffness(float cpstiffnessxyz, float cpstiffnessabc,
         pub_set_joint_stiffness.publish(newImpedance);
         ros::spinOnce();
     } else {
-        if(!isShutUp)
-            cout << "(setStiffness) this functionality is not available in simulator - ignored" << endl;
+        if(!isShutUp())
+            ROS_INFO("(setStiffness) this functionality is not available in simulator - ignored");
     }
 
 }
 
-mes_result KukieControlQueue::getCartesianPos() {
-    mes_result ret;
-    ret.joints = currentCarts;
-    ret.time = currentTime;
-    return ret;
-}
-
-arma::vec KukieControlQueue::getStartingJoints() {
-	return startingJoints;
-}
-
-arma::vec KukieControlQueue::retrieveJointsFromRobot() {
-	return currentJoints;
-}
-
 mes_result KukieControlQueue::getCurrentJoints() {
 	mes_result res;
-	res.time = currentTime;
-	res.joints = retrieveJointsFromRobot();
+    res.time = getCurrentTime();
+    res.joints = currJoints;
 	return res;
 }
 
-bool KukieControlQueue::isInitialized() {
-	return isInit;
-}
-
 void KukieControlQueue::safelyDestroy() {
-}
-
-void KukieControlQueue::shutUp() {
-    isShutUp = true;
-}
-
-void KukieControlQueue::startTalking() {
-    isShutUp = false;
 }

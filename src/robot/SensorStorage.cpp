@@ -226,10 +226,17 @@ void SensorStorage::storeData(bool storeHeader, std::vector<KUKADU_SHARED_PTR<st
 
             } else {
 
-                joints = currentQueue->getCurrentJoints();
-                cartPos = currentQueue->getCartesianPos();
-                jntFrcTrq = currentQueue->getCurrentJntFrcTrq();
-                cartFrcTrq = currentQueue->getCurrentCartesianFrcTrq();
+                if(storeCartPos)
+                    joints = currentQueue->getCurrentJoints();
+
+                if(storeCartPos)
+                    cartPos = currentQueue->getCurrentCartesianPos();
+
+                if(storeJntFrc)
+                    jntFrcTrq = currentQueue->getCurrentJntFrcTrq();
+
+                if(storeCartAbsFrc)
+                    cartFrcTrq = currentQueue->getCurrentCartesianFrcTrq();
 
                 time = joints.time;
 
@@ -288,8 +295,6 @@ void SensorStorage::storeData(bool storeHeader, std::vector<KUKADU_SHARED_PTR<st
 
                 writeLabels(currentOfStream, labels);
 
-
-
             }
 
             if(storeTime)
@@ -318,7 +323,6 @@ void SensorStorage::storeData(bool storeHeader, std::vector<KUKADU_SHARED_PTR<st
             }
 
             *currentOfStream << endl;
-
             currentTime = time;
 
         }
@@ -424,8 +428,10 @@ KUKADU_SHARED_PTR<SensorData> SensorStorage::readStorage(KUKADU_SHARED_PTR<Contr
         foundDimension = false;
 
         if(!nextToken.compare("time")) {
+
             foundDimension = true;
             timeIdx = tok.getTokenIdx();
+
         } else {
 
             // if first joint token found, all of them have to be in consecutive order

@@ -50,33 +50,14 @@ class KukieControlQueue : public ControlQueue {
 
 private:
 	
-    int isInit;
-    int finish;
     int impMode;
-	int sleepTime;
-    int ptpReached;
-    int monComMode;
-    int currentMode;
-    int rollBackQueueSize;
     int cartesianPtpReached;
 
-    bool isShutUp;
+    bool ptpReached;
     bool isRealRobot;
-    bool rollbackMode;
     bool fastIkInitializationWorked;
 
-    double currentTime;
-    double rollBackTime;
-    double sleepTimeInSec;
-
-    std::deque<arma::vec> rollBackQueue;
-
-    std::queue<arma::vec> movementQueue;
-    std::queue<geometry_msgs::Pose> cartesianMovementQueue;
-	
-    arma::vec currentCarts;
-    arma::vec currentJoints;
-    arma::vec startingJoints;
+    arma::vec currJoints;
     arma::vec currentJntFrqTrq;
     arma::vec currentCartFrqTrq;
 
@@ -84,9 +65,10 @@ private:
     kukadu_mutex currentCartsMutex;
     kukadu_mutex currentJointsMutex;
 
+    geometry_msgs::Pose currCarts;
     geometry_msgs::Pose currentCartPose;
     geometry_msgs::Pose currentCartPoseRf;
-	
+
     std::string ptpTopic;
     std::string armPrefix;
     std::string deviceType;
@@ -145,7 +127,17 @@ private:
     void commandStateCallback(const std_msgs::Float32MultiArray& msg);
     void cartPtpReachedCallback(const std_msgs::Int32MultiArray& msg);
 
+    void jointPtpInternal(arma::vec joints);
+
     double computeDistance(float* a1, float* a2, int size);
+
+protected:
+
+    virtual void setInitValues();
+    virtual void submitNextJointMove(arma::vec joints);
+    virtual void submitNextCartMove(geometry_msgs::Pose pose);
+
+    virtual bool stopQueueWhilePtp();
 
 public:
 
@@ -158,35 +150,16 @@ public:
                         std::string setPtpThresh, ros::NodeHandle node
                     );
 	
-	void run();
-	void setFinish();
     void safelyDestroy();
-    void setInitValues();
-    void stopCurrentMode();
-    void switchMode(int mode);
-    void moveJoints(arma::vec joints);
-    void moveJointsNb(arma::vec joints);
+
+    geometry_msgs::Pose computeFk(std::vector<double> joints);
+
     void setJntPtpThresh(double thresh);
-    void setStartingJoints(arma::vec joints);
-    void addJointsPosToQueue(arma::vec joints);
-    void moveCartesian(geometry_msgs::Pose pos);
-    void moveCartesianNb(geometry_msgs::Pose pos);
-    void addCartesianPosToQueue(geometry_msgs::Pose pose);
+    void cartPtpInternal(geometry_msgs::Pose pos);
     void setAdditionalLoad(float loadMass, float loadPos);
-	void synchronizeToControlQueue(int maxNumJointsInQueue);
 	void setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq);
 
-    void shutUp();
-    void startTalking();
-
-    /* roll back stops the roll back mode (recording) and kills previous experience (can only be used once per recording) */
-    void rollBack(double time);
-    void stopJointRollBackMode();
-    void startJointRollBackMode(double possibleTime);
-
-    bool isInitialized();
-
-    double getTimeStep();
+    int getCurrentControlType();
 
     std::string getRobotName();
     std::string getRobotFileName();
@@ -195,19 +168,17 @@ public:
 
     std::vector<std::string> getJointNames();
 
-    mes_result getCartesianPos();
     mes_result getCurrentJoints();
     mes_result getCurrentJntFrcTrq();
     mes_result getCurrentCartesianFrcTrq();
 	
-    geometry_msgs::Pose getCartesianPose();
-    geometry_msgs::Pose getCartesianPoseRf();
-    geometry_msgs::Pose computeFk(std::vector<double> joints);
+    geometry_msgs::Pose getCurrentCartesianPose();
+    geometry_msgs::Pose getCurrentCartesianPoseRf();
     geometry_msgs::Pose moveCartesianRelativeWf(geometry_msgs::Pose basePoseRf, geometry_msgs::Pose offset);
 
     arma::vec getFrcTrqCart();
-    arma::vec getStartingJoints();
-    arma::vec retrieveJointsFromRobot();
+
+    virtual void setCurrentControlTypeInternal(int controlType);
 
     static const int KUKA_STOP_MODE = 0;
     static const int KUKA_JNT_POS_MODE = 10;

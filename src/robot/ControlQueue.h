@@ -1,11 +1,14 @@
-#ifndef CONTROLQUEUE
-#define CONTROLQUEUE
+#ifndef KUKADU_CONTROLQUEUE
+#define KUKADU_CONTROLQUEUE
 
 #include "../utils/types.h"
+#include "../utils/tictoc.hpp"
 #include "../types/KukaduTypes.h"
 #include "../utils/DestroyableObject.h"
 
+#include <queue>
 #include <armadillo>
+#include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
 
 #define COMMAND_NOT_SET -100
@@ -25,14 +28,68 @@ class ControlQueue : public DestroyableObject {
 
 private:
 	
-	int degOfFreedom;
+    bool isInit;
+    bool finish;
+    bool isShutUpFlag;
+    bool rollbackMode;
+
+    bool jointPtpRunning;
+    bool cartesianPtpRunning;
+
+    int degOfFreedom;
+    int rollBackQueueSize;
+    int currentControlType;
+
+    double sleepTime;
+    double currentTime;
+    double rollBackTime;
+    double lastDuration;
+    double desiredCycleTime;
+
+    arma::vec currentJoints;
+    arma::vec startingJoints;
+    arma::vec internalJointPasser;
+
+    geometry_msgs::Pose currentCartPose;
+    geometry_msgs::Pose internalPosePasser;
+
+    std::queue<arma::vec> movementQueue;
+    std::queue<geometry_msgs::Pose> cartesianMovementQueue;
+
+    std::deque<arma::vec> rollBackQueue;
+
+    TicToc t;
+
     KUKADU_SHARED_PTR<kukadu_thread> thr;
+    KUKADU_SHARED_PTR<kukadu_thread> cartPtpThr;
+    KUKADU_SHARED_PTR<kukadu_thread> jointPtpThr;
+
+    void setInitValuesInternal();
+    void internalCartPtpCaller();
+    void internalJointPtpCaller();
+
+protected:
+
+    virtual void setInitValues() = 0;
+    virtual void jointPtpInternal(arma::vec joints) = 0;
+    virtual void submitNextJointMove(arma::vec joints) = 0;
+    virtual void cartPtpInternal(geometry_msgs::Pose pose) = 0;
+    virtual void submitNextCartMove(geometry_msgs::Pose pose) = 0;
+    virtual void setCurrentControlTypeInternal(int controlType) = 0;
+
+    /**
+     * @brief this method determines, if the queue execetion should be stopped while ptp commands are executed
+     * (this is typically the case when ptp is done outside of the control queue implementation). if two different
+     * controls interfere it can result in dangerous behaviour
+     * @return
+     */
+    virtual bool stopQueueWhilePtp() = 0;
 
 public:
 	/** \brief Constructor taking the robot dependent degrees of freedom
 	 * \param degOfFreedom number of robots degrees of freedom
 	 */
-	ControlQueue(int degOfFreedom);
+    ControlQueue(int degOfFreedom, double desiredCycleTime);
 	
 	/**
 	 * \brief Returns number of robots degrees of freedom
@@ -47,76 +104,75 @@ public:
 	/**
 	 * \brief This method is started in a new thread by startQueue
 	 */
-	virtual void run() = 0;
+    virtual void run();
 
-    virtual double getTimeStep() = 0;
+    virtual double getTimeStep();
+
+    virtual double getMeasuredTimeStep();
 	
 	/**
 	 * \brief Sets a flag to stop the control thread after current iteration is executed
 	 */
-	virtual void setFinish() = 0;
-
-    virtual geometry_msgs::Pose computeFk(arma::vec joints);
-    virtual geometry_msgs::Pose computeFk(std::vector<double> joints) = 0;
+    virtual void setFinish();
 	
 	/**
 	 * \brief Adds next joint position to queue
 	 * \param joints joints to add
 	 */
-    virtual void addJointsPosToQueue(arma::vec joints) = 0;
+    virtual void addJointsPosToQueue(arma::vec joints);
 
     /**
      * \brief Adds next cartesian position to queue
      * \param pose end-effector pose to add
      */
-    virtual void addCartesianPosToQueue(geometry_msgs::Pose pose) = 0;
+    virtual void addCartesianPosToQueue(geometry_msgs::Pose pose);
 	
 	/**
 	 * \brief Switches robot modes. A state might be a real time command mode or an monitoring mode
 	 * \param mode mode id
 	 */
-	virtual void switchMode(int mode) = 0;
+    virtual void switchMode(int mode);
 	
 	/**
 	 * \brief Stops current mode and switches back to default mode (e.g. monitoring mode)
 	 */
-	virtual void stopCurrentMode() = 0;
+    virtual void stopCurrentMode();
 	
 	/**
 	 * \brief Blocks, if more than the defined maximum element count is in the queue
 	 * \param maxNumJointsInQueue maximum number of joints in queue
 	 */
-	virtual void synchronizeToControlQueue(int maxNumJointsInQueue) = 0;
+    virtual void synchronizeToControlQueue(int maxNumJointsInQueue);
 	
 	/**
 	 * \brief Sets joints in which the should be in before robot enters command mode
 	 * \param joints array of joint positions
 	 */
-    virtual void setStartingJoints(arma::vec joints) = 0;
+    virtual void setStartingJoints(arma::vec joints);
 	
 	/**
      * \brief Implements simple point to point movement in joint space (blocks until target reached)
 	 * \param joints array of joint positions
 	 */
-    virtual void moveJoints(arma::vec joints) = 0;
+    virtual void jointPtp(arma::vec joints);
 
     /**
      * \brief Implements simple point to point movement in joint space (not blocking)
      * \param joints array of joint positions
      */
-    virtual void moveJointsNb(arma::vec joints) = 0;
+    KUKADU_SHARED_PTR<kukadu_thread> jointPtpNb(arma::vec joints);
 
     /**
      * \brief Implements simple point to point movement in cartesian space
      * \param pose of end-effector
      */
-    virtual void moveCartesian(geometry_msgs::Pose pos) = 0;
+    virtual void cartesianPtp(geometry_msgs::Pose pos);
 
     /**
      * \brief Implements simple point to point movement in cartesian space (does not block until the position is reached)
      * \param pose of end-effector
      */
-    virtual void moveCartesianNb(geometry_msgs::Pose pos) = 0;
+    virtual KUKADU_SHARED_PTR<kukadu_thread> cartesianPtpNb(geometry_msgs::Pose pos);
 	
 	/**
 	 * \brief Changes the load data of the robot (e.g. needs to be used whenever robot picks up an object)
@@ -136,25 +192,23 @@ public:
 	 */
 	virtual void setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq) = 0;
 	
+    virtual geometry_msgs::Pose computeFk(arma::vec joints);
+    virtual geometry_msgs::Pose computeFk(std::vector<double> joints) = 0;
+
 	/**
 	 * \brief Returns current robot position in cartesian space
 	 */
-    virtual mes_result getCartesianPos() = 0;
+    virtual mes_result getCurrentCartesianPos();
 
     /**
      * \brief Returns current robot position in cartesian space
      */
-    virtual geometry_msgs::Pose getCartesianPose() = 0;
+    virtual geometry_msgs::Pose getCurrentCartesianPose() = 0;
 	
 	/**
 	 * \brief Returns the robot joints the robot has been directly before starting command mode
 	 */
-    virtual arma::vec getStartingJoints() = 0;
-	
-	/**
-	 * \brief Returns joints if the robot is in monitor mode
-	 */
-    virtual arma::vec retrieveJointsFromRobot() = 0;
+    virtual arma::vec getStartingJoints();
 	
 	/**
 	 * \brief Returns joints if the robot is in command mode
@@ -170,7 +224,7 @@ public:
 	/**
 	 * \brief Returns true if the command mode initialization is done
 	 */
-	virtual bool isInitialized() = 0;
+    virtual bool isInitialized();
 
     virtual std::string getRobotName() = 0;
     virtual std::string getRobotFileName() = 0;
@@ -179,12 +233,23 @@ public:
     virtual double getAbsoluteCartForce();
 
     // kills command line output of queue
-    virtual void shutUp() = 0;
-    virtual void startTalking() = 0;
+    virtual void shutUp();
+    virtual void startTalking();
 
-    virtual void rollBack(double time) = 0;
-    virtual void stopJointRollBackMode() = 0;
-    virtual void startJointRollBackMode(double possibleTime) = 0;
+    virtual void rollBack(double time);
+    virtual void stopJointRollBackMode();
+    virtual void startJointRollBackMode(double possibleTimeReach);
+
+    virtual double getCurrentTime();
+
+    bool isShutUp();
+
+    virtual int getCurrentControlType() = 0;
+
+    static const int CONTROLQUEUE_STOP_MODE = 0;
+    static const int CONTROLQUEUE_JNT_POS_MODE = 10;
+    static const int CONTROLQUEUE_CART_IMP_MODE = 20;
+    static const int CONTROLQUEUE_JNT_IMP_MODE = 30;
     
 };
 

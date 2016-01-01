@@ -25,7 +25,7 @@ DmpRewardComputer::DmpRewardComputer(string file, double az, double bz, double t
     KUKADU_SHARED_PTR<JointDMPLearner> dmpLearner = KUKADU_SHARED_PTR<JointDMPLearner>(new JointDMPLearner(az, bz, join_rows(times, data->getJointPos())));
     KUKADU_SHARED_PTR<Dmp> finalDmp = dmpLearner->fitTrajectories();
     DMPExecutor execDmp(finalDmp, pcq);
-    executionResult = execDmp.executeTrajectory(0, 0, finalDmp->getTmax(), timeStep, 0.1, 0.1);
+    executionResult = execDmp.executeTrajectory(0, 0, finalDmp->getTmax(), 0.1, 0.1);
 
 }
 
