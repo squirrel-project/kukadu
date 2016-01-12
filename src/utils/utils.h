@@ -81,6 +81,8 @@ double* polyder(double* c, int len);
 double* poly_eval_multiple(double* data, int data_len, double* c, int c_len);
 float* copyJoints(const float* arr, int arrSize);
 
+double roundByDigits(double number, int numDigitsBehindComma);
+
 double** createDoubleArrayFromMatrix(gsl_matrix* data);
 
 arma::vec stdToArmadilloVec(std::vector<double> stdVec);
@@ -149,5 +151,6 @@ pcl::PCLPointCloud2 sensorMsgsPcToPclPc2(sensor_msgs::PointCloud2 pc);
 sensor_msgs::PointCloud2 pclPcToSensorMsgsPc(pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
 
 long getFileSize(std::string filename);
+std::wstring stringToWString(const std::string& s);
 
 #endif

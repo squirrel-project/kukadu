@@ -44,16 +44,19 @@
         #include <boost/random/normal_distribution.hpp>
         #include <boost/random/discrete_distribution.hpp>
         #include <boost/random/uniform_int_distribution.hpp>
+        #include <boost/random/uniform_real_distribution.hpp>
         #define KUKADU_DISCRETE_DISTRIBUTION boost::random::discrete_distribution
         typedef boost::random::mt19937 kukadu_mersenne_twister;
         typedef boost::random::normal_distribution<double> kukadu_normal_distribution;
         typedef boost::random::uniform_int_distribution<int> kukadu_uniform_distribution;
+        typedef boost::random::uniform_real_distribution<double> kukadu_uniform_real_distribution;
     #else
         #include <random>
         #define KUKADU_DISCRETE_DISTRIBUTION std::discrete_distribution
         typedef std::mt19937 kukadu_mersenne_twister;
         typedef std::uniform_int_distribution<int> kukadu_uniform_distribution;
         typedef std::normal_distribution<double> kukadu_uniform_distribution;
+        typedef std::uniform_real_distribution<double> kukadu_uniform_real_distribution;
     #endif
 
 #endif

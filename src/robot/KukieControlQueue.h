@@ -167,6 +167,7 @@ public:
     std::string getRobotDeviceType();
 
     std::vector<std::string> getJointNames();
+    std::vector<arma::vec> computeIk(geometry_msgs::Pose targetPose);
 
     mes_result getCurrentJoints();
     mes_result getCurrentJntFrcTrq();

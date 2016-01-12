@@ -1069,3 +1069,14 @@ long getFileSize(std::string filename) {
     int rc = stat(filename.c_str(), &stat_buf);
     return rc == 0 ? stat_buf.st_size : -1;
 }
+
+double roundByDigits(double number, int numDigitsBehindComma) {
+    return ceilf(number * pow(10.0, (double) numDigitsBehindComma)) / 100;
+}
+
+std::wstring stringToWString(const std::string& s) {
+
+    std::wstring wsTmp(s.begin(), s.end());
+    return wsTmp;
+
+}

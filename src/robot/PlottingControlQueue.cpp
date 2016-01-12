@@ -36,6 +36,10 @@ void PlottingControlQueue::setInitValues() {
 
 }
 
+std::vector<arma::vec> PlottingControlQueue::computeIk(geometry_msgs::Pose targetPose) {
+    throw "(PlottingControlQueue) inverse kinematics is not supported";
+}
+
 geometry_msgs::Pose PlottingControlQueue::computeFk(std::vector<double> joints) {
     throw "(PlottingControlQueue) forward kinematics is not supported";
 }

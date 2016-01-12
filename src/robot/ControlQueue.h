@@ -191,6 +191,8 @@ public:
 	 * \param axismaxdeltatrq maximum allowed applied torque
 	 */
 	virtual void setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq) = 0;
+
+    virtual std::vector<arma::vec> computeIk(geometry_msgs::Pose targetPose) = 0;
 	
     virtual geometry_msgs::Pose computeFk(arma::vec joints);
     virtual geometry_msgs::Pose computeFk(std::vector<double> joints) = 0;

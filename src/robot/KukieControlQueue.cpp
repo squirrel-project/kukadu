@@ -393,6 +393,28 @@ void KukieControlQueue::jointPtpInternal(arma::vec joints) {
 	
 }
 
+std::vector<arma::vec> KukieControlQueue::computeIk(geometry_msgs::Pose targetPose) {
+
+    vector<vec> ikSolutions;
+    if(fastIkInitializationWorked) {
+        vector<double> sol;
+        vector<double> currentJoints = armadilloToStdVec(getCurrentJoints().joints);
+        if(armPrefix.find("right") != string::npos)
+            kin->computeIK("right", targetPose, currentJoints, sol);
+        else
+            kin->computeIK("left", targetPose, currentJoints, sol);
+
+        if(sol.size())
+            ikSolutions.push_back(stdToArmadilloVec(sol));
+        else
+            ROS_ERROR("(KukieControlQueue) no ik solution found");
+
+    }
+
+    return ikSolutions;
+
+}
+
 geometry_msgs::Pose KukieControlQueue::computeFk(std::vector<double> joints) {
 
     geometry_msgs::Pose targetPose;
