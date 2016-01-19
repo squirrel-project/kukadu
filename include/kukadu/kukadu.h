@@ -35,7 +35,6 @@
 #include "../../src/robot/mounted/GenericHand.h"
 #include "../../src/robot/mounted/PlottingHand.h"
 #include "../../src/robot/PlottingControlQueue.h"
-#include "../../src/robot/robotino/RobotinoQueue.h"
 
 #include "../../src/trajectory/DMPExecutor.h"
 #include "../../src/trajectory/DMPGeneralizer.h"
