@@ -3,7 +3,7 @@
 
 #include <armadillo>
 
-#include "PCTransformator.hpp"
+#include "pcltransformator.hpp"
 
 namespace kukadu {
 

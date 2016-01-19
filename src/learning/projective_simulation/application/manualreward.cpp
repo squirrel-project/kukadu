@@ -1,4 +1,4 @@
-#include "manualreward.h"
+#include "manualreward.hpp"
 
 #include <sstream>
 

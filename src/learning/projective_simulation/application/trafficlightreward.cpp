@@ -1,4 +1,4 @@
-#include "trafficlightreward.h"
+#include "trafficlightreward.hpp"
 
 using namespace std;
 

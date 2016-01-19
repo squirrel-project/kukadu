@@ -1,5 +1,6 @@
-#include "clip.h"
-#include "../utils/Tokenizer.h"
+#include "clip.hpp"
+#include "../utils/tokenizer.hpp"
+
 #include <typeinfo>
 
 using namespace std;

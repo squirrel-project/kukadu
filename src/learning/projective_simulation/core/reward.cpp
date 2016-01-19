@@ -1,4 +1,4 @@
-#include "reward.h"
+#include "reward.hpp"
 
 using namespace std;
 

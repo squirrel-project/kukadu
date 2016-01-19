@@ -12,9 +12,9 @@
 #include <pcl/common/common.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#include "../utils/utils.h"
-#include "../types/KukaduTypes.h"
-#include "../trajectory/DMPExecutor.h"
+#include "../utils/utils.hpp"
+#include "../types/kukadutypes.hpp"
+#include "../trajectory/dmpexecutor.hpp"
 
 using namespace std;
 using namespace arma;

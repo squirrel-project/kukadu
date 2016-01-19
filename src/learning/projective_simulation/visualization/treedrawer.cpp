@@ -1,4 +1,4 @@
-#include "treedrawer.h"
+#include "treedrawer.hpp"
 
 #if VISUALIZATION == 1
     #include <allegro5/allegro_ttf.h>

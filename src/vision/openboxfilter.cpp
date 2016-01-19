@@ -3,7 +3,7 @@
 #include <iostream>
 #include <armadillo>
 
-#include "../utils/utils.h"
+#include "../utils/utils.hpp"
 #include "planarcuttransformator.hpp"
 
 using namespace std;

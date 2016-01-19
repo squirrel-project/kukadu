@@ -1,4 +1,4 @@
-#include "neverendingcolorreward.h"
+#include "neverendingcolorreward.hpp"
 
 #include <sstream>
 

@@ -10,15 +10,15 @@
 #include <stdexcept>
 #include <execinfo.h>
 
-#include "../core/clip.h"
-#include "../utils/utils.h"
-#include "../core/actionclip.h"
-#include "../utils/Tokenizer.h"
-#include "../core/perceptclip.h"
-#include "../core/psevaluator.h"
-#include "../core/projectivesimulator.h"
-#include "../visualization/treedrawer.h"
-#include "../application/neverendingcolorreward.h"
+#include "../core/clip.hpp"
+#include "../utils/utils.hpp"
+#include "../core/actionclip.hpp"
+#include "../utils/tokenizer.hpp"
+#include "../core/perceptclip.hpp"
+#include "../core/psevaluator.hpp"
+#include "../core/projectivesimulator.hpp"
+#include "../visualization/treedrawer.hpp"
+#include "../application/neverendingcolorreward.hpp"
 
 using namespace std;
 using namespace kukadu;

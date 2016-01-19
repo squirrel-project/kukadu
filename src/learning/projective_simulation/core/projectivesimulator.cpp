@@ -1,12 +1,12 @@
-#include "projectivesimulator.h"
+#include "projectivesimulator.hpp"
 
 #include <utility>
 #include <fstream>
 #include <fstream>
 #include <iostream>
 
-#include "../utils/Tokenizer.h"
-#include "../../../types/KukaduTypes.h"
+#include "../utils/tokenizer.hpp"
+#include "../../../types/kukadutypes.hpp"
 
 using namespace std;
 

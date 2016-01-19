@@ -1,4 +1,4 @@
-#include "invasiongamereward.h"
+#include "invasiongamereward.hpp"
 
 using namespace std;
 

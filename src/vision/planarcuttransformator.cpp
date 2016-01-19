@@ -3,7 +3,7 @@
 #include <iostream>
 #include <armadillo>
 
-#include "../utils/utils.h"
+#include "../utils/utils.hpp"
 
 using namespace std;
 using namespace arma;

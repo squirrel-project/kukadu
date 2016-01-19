@@ -1,4 +1,4 @@
-#include "generaldmplearner.h"
+#include "generaldmplearner.hpp"
 
 using namespace std;
 using namespace arma;
