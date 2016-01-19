@@ -13,33 +13,37 @@
 // used for experiment without ranking to get faster convergence
 #define NEVERENDINGCOLORREWARD_SUCCESSFUL_REWARD 10000
 
-class NeverendingColorReward : public Reward {
+namespace kukadu {
 
-private:
+    class NeverendingColorReward : public Reward {
 
-    int currentId;
-    int currentT;
-    int numberOfActions;
-    int numberOfCategories;
-    kukadu_uniform_distribution intDist;
-    std::vector<KUKADU_SHARED_PTR<ActionClip> >* actionClips;
-    std::vector<KUKADU_SHARED_PTR<PerceptClip> >* perceptClips;
+    private:
 
-protected:
+        int currentId;
+        int currentT;
+        int numberOfActions;
+        int numberOfCategories;
+        kukadu_uniform_distribution intDist;
+        std::vector<KUKADU_SHARED_PTR<ActionClip> >* actionClips;
+        std::vector<KUKADU_SHARED_PTR<PerceptClip> >* perceptClips;
 
-    double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction);
+    protected:
 
-public:
+        double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction);
 
-    NeverendingColorReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int numberOfActions, int numberOfCategories, bool collectPrevRewards);
-    ~NeverendingColorReward();
+    public:
 
-    int getDimensionality();
-    KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
+        NeverendingColorReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int numberOfActions, int numberOfCategories, bool collectPrevRewards);
+        ~NeverendingColorReward();
 
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();
+        int getDimensionality();
+        KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
 
-};
+        KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();
+        KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();
+
+    };
+
+}
 
 #endif

@@ -2,47 +2,51 @@
 
 using namespace std;
 
-QueryPoint::QueryPoint(std::string fileQueryPath, std::string fileDataPath, std::string fileDmpPath, KUKADU_SHARED_PTR<Dmp> dmp, arma::vec queryPoint) : internalDmp(dmp) {
-	
-	this->fileQueryPath = fileQueryPath;
-	this->fileDataPath = fileDataPath;
-	this->queryPoint = queryPoint;
-    this->fileDmpPath = fileDmpPath;
-	
-}
+namespace kukadu {
 
-QueryPoint::QueryPoint(const QueryPoint& qp) {
-	this->fileQueryPath = qp.fileQueryPath;
-	this->fileDataPath = qp.fileDataPath;
-	this->queryPoint = qp.queryPoint;
-	this->internalDmp = qp.internalDmp;
-    this->fileDmpPath = qp.fileDmpPath;
-}
+    QueryPoint::QueryPoint(std::string fileQueryPath, std::string fileDataPath, std::string fileDmpPath, KUKADU_SHARED_PTR<Dmp> dmp, arma::vec queryPoint) : internalDmp(dmp) {
 
-std::string QueryPoint::getFileQueryPath() {
-	return fileQueryPath;
-}
+        this->fileQueryPath = fileQueryPath;
+        this->fileDataPath = fileDataPath;
+        this->queryPoint = queryPoint;
+        this->fileDmpPath = fileDmpPath;
 
-std::string QueryPoint::getFileDataPath() {
-	return fileDataPath;
-}
+    }
 
-std::string QueryPoint::getFileDmpPath() {
-    return fileDmpPath;
-}
+    QueryPoint::QueryPoint(const QueryPoint& qp) {
+        this->fileQueryPath = qp.fileQueryPath;
+        this->fileDataPath = qp.fileDataPath;
+        this->queryPoint = qp.queryPoint;
+        this->internalDmp = qp.internalDmp;
+        this->fileDmpPath = qp.fileDmpPath;
+    }
 
-arma::vec QueryPoint::getQueryPoint() {
-	return queryPoint;
-}
+    std::string QueryPoint::getFileQueryPath() {
+        return fileQueryPath;
+    }
 
-KUKADU_SHARED_PTR<Dmp> QueryPoint::getDmp() {
-	return internalDmp;
-}
+    std::string QueryPoint::getFileDataPath() {
+        return fileDataPath;
+    }
 
-void QueryPoint::setQueryPoint(arma::vec queryPoint) {
-	this->queryPoint = queryPoint;
-}
+    std::string QueryPoint::getFileDmpPath() {
+        return fileDmpPath;
+    }
 
-void QueryPoint::setDmp(KUKADU_SHARED_PTR<Dmp> dmp) {
-	this->internalDmp = dmp;
+    arma::vec QueryPoint::getQueryPoint() {
+        return queryPoint;
+    }
+
+    KUKADU_SHARED_PTR<Dmp> QueryPoint::getDmp() {
+        return internalDmp;
+    }
+
+    void QueryPoint::setQueryPoint(arma::vec queryPoint) {
+        this->queryPoint = queryPoint;
+    }
+
+    void QueryPoint::setDmp(KUKADU_SHARED_PTR<Dmp> dmp) {
+        this->internalDmp = dmp;
+    }
+
 }

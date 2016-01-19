@@ -1,3 +1,7 @@
 #include "GenericKernel.h"
 
-GenericKernel::GenericKernel() { }
+namespace kukadu {
+
+    GenericKernel::GenericKernel() { }
+
+}

@@ -12,29 +12,33 @@
 #define TRAFFICLIGHTREWARD_DRIVE 0
 #define TRAFFICLIGHTREWARD_STOP 1
 
-class TrafficLightReward : public Reward {
+namespace kukadu {
 
-private:
+    class TrafficLightReward : public Reward {
 
-    int currentT;
-    kukadu_uniform_distribution intDist;
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > actionClips;
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > perceptClips;
+    private:
 
-protected:
+        int currentT;
+        kukadu_uniform_distribution intDist;
+        KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > actionClips;
+        KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > perceptClips;
 
-    double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction);
+    protected:
 
-public:
+        double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction);
 
-    TrafficLightReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, bool collectPrevRewards);
+    public:
 
-    int getDimensionality();
-    KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
+        TrafficLightReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, bool collectPrevRewards);
 
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();
+        int getDimensionality();
+        KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
 
-};
+        KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();
+        KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();
+
+    };
+
+}
 
 #endif // TRAFFICLIGHTREWARD_H

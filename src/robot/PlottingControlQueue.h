@@ -34,92 +34,94 @@
 #include "../utils/DestroyableObject.h"
 #include "robotDriver/src/kuka/friRemote.h"
 
-#define COMMAND_NOT_SET -100
+namespace kukadu {
 
-/** \brief The OrocosControlQueue provides control capabilities for the Kuka LWR 4+ robotic arm
- * 
- * This class implements the abstract ControlQueue class for the usage with the iisorocos system. It provides basic functionalities such as command mode control
- * in joint space as well as point to point movement in cartesian and joint space. To use it, the additionally provided KRL script has to be selected on the robot
- * controller side. For further information how to use it, please see the sample programs and the kuka documentation
- * \ingroup RobotFramework
- */
-class PlottingControlQueue : public ControlQueue {
+    /** \brief The OrocosControlQueue provides control capabilities for the Kuka LWR 4+ robotic arm
+     *
+     * This class implements the abstract ControlQueue class for the usage with the iisorocos system. It provides basic functionalities such as command mode control
+     * in joint space as well as point to point movement in cartesian and joint space. To use it, the additionally provided KRL script has to be selected on the robot
+     * controller side. For further information how to use it, please see the sample programs and the kuka documentation
+     * \ingroup RobotFramework
+     */
+    class PlottingControlQueue : public ControlQueue {
 
-private:
-	
-    int impMode;
-	int ptpReached;
-	int monComMode;
-	int currentMode;
+    private:
 
-    double currTime;
+        int impMode;
+        int ptpReached;
+        int monComMode;
+        int currentMode;
 
-    arma::vec currJoints;
-    arma::vec startJoints;
+        double currTime;
 
-    std::vector<std::string> jointNames;
-	
-    void construct(std::vector<std::string> jointNames, double timeStep);
+        arma::vec currJoints;
+        arma::vec startJoints;
 
-protected:
+        std::vector<std::string> jointNames;
 
-    virtual void submitNextJointMove(arma::vec joints);
-    virtual void submitNextCartMove(geometry_msgs::Pose pose);
-    virtual void setCurrentControlTypeInternal(int controlType);
+        void construct(std::vector<std::string> jointNames, double timeStep);
 
-    virtual bool stopQueueWhilePtp();
+    protected:
 
-public:
+        virtual void submitNextJointMove(arma::vec joints);
+        virtual void submitNextCartMove(geometry_msgs::Pose pose);
+        virtual void setCurrentControlTypeInternal(int controlType);
 
-	/** \brief Constructor for KukaControlQueue
-	 * \param port port to listen for incoming fri connection
-	 * \param sleepTime cycle sleep time (time between to packets sent in command mode)
-	 * \param initMode control mode (e.g. command mode, monitor mode) with which the queue should be started
-	 */
-    PlottingControlQueue(int degOfFreedom, double timeStep);
+        virtual bool stopQueueWhilePtp();
 
-    PlottingControlQueue(std::vector<std::string> jointNames, double timeStep);
-	
-    void safelyDestroy();
-    void setInitValues();
-    void stopCurrentMode();
-    void switchMode(int mode);
-    void jointPtpInternal(arma::vec joints);
-    void setJntPtpThresh(double thresh);
-    void setStartingJoints(arma::vec joints);
-    void addJointsPosToQueue(arma::vec joints);
-    void cartPtpInternal(geometry_msgs::Pose pos);
-    void addCartesianPosToQueue(geometry_msgs::Pose pose);
-    void setAdditionalLoad(float loadMass, float loadPos);
-	void synchronizeToControlQueue(int maxNumJointsInQueue);
-	void setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq);
+    public:
 
-    virtual int getCurrentControlType();
+        /** \brief Constructor for KukaControlQueue
+         * \param port port to listen for incoming fri connection
+         * \param sleepTime cycle sleep time (time between to packets sent in command mode)
+         * \param initMode control mode (e.g. command mode, monitor mode) with which the queue should be started
+         */
+        PlottingControlQueue(int degOfFreedom, double timeStep);
 
-    double getCurrentTime();
+        PlottingControlQueue(std::vector<std::string> jointNames, double timeStep);
 
-    std::string getRobotName();
-    std::string getRobotFileName();
+        void safelyDestroy();
+        void setInitValues();
+        void stopCurrentMode();
+        void switchMode(int mode);
+        void jointPtpInternal(arma::vec joints);
+        void setJntPtpThresh(double thresh);
+        void setStartingJoints(arma::vec joints);
+        void addJointsPosToQueue(arma::vec joints);
+        void cartPtpInternal(geometry_msgs::Pose pos);
+        void addCartesianPosToQueue(geometry_msgs::Pose pose);
+        void setAdditionalLoad(float loadMass, float loadPos);
+        void synchronizeToControlQueue(int maxNumJointsInQueue);
+        void setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq);
 
-    arma::vec getStartingJoints();
-    arma::vec retrieveJointsFromRobot();
+        virtual int getCurrentControlType();
 
-    std::vector<std::string> getJointNames();
-    std::vector<arma::vec> computeIk(geometry_msgs::Pose targetPose);
+        double getCurrentTime();
 
-    mes_result getCurrentJoints();
-    mes_result getCurrentJntFrcTrq();
-    mes_result getCurrentCartesianPos();
-    mes_result getCurrentCartesianFrcTrq();
+        std::string getRobotName();
+        std::string getRobotFileName();
 
-    geometry_msgs::Pose getCurrentCartesianPose();
+        arma::vec getStartingJoints();
+        arma::vec retrieveJointsFromRobot();
 
-    virtual geometry_msgs::Pose computeFk(std::vector<double> joints);
+        std::vector<std::string> getJointNames();
+        std::vector<arma::vec> computeIk(geometry_msgs::Pose targetPose);
 
-    virtual void rollBack(double time);
-    virtual void stopJointRollBackMode();
-    virtual void startJointRollBackMode(double possibleTime);
-    
-};
+        mes_result getCurrentJoints();
+        mes_result getCurrentJntFrcTrq();
+        mes_result getCurrentCartesianPos();
+        mes_result getCurrentCartesianFrcTrq();
+
+        geometry_msgs::Pose getCurrentCartesianPose();
+
+        virtual geometry_msgs::Pose computeFk(std::vector<double> joints);
+
+        virtual void rollBack(double time);
+        virtual void stopJointRollBackMode();
+        virtual void startJointRollBackMode(double possibleTime);
+
+    };
+
+}
 
 #endif

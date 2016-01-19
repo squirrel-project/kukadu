@@ -20,6 +20,7 @@
 
 using namespace std;
 using namespace arma;
+using namespace kukadu;
 namespace po = boost::program_options;
 
 int main(int argc, char** args) {
@@ -85,7 +86,7 @@ int main(int argc, char** args) {
 
     cout << "starting measurement" << endl;
     SensorStorage scaredOfSenka(queueVectors, std::vector<KUKADU_SHARED_PTR<GenericHand> >(), 1000);
-    scaredOfSenka.setExportMode(STORE_TIME | STORE_RBT_CART_POS | STORE_RBT_JNT_POS);
+    scaredOfSenka.setExportMode(SensorStorage::STORE_TIME | SensorStorage::STORE_RBT_CART_POS | SensorStorage::STORE_RBT_JNT_POS);
     scaredOfSenka.startDataStorage(storeDir);
     cout << "measuerment started" << endl;
 

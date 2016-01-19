@@ -1,5 +1,5 @@
-#ifndef SINGLESAMPLETRAJECTORY
-#define SINGLESAMPLETRAJECTORY
+#ifndef KUKADU_SINGLESAMPLETRAJECTORY
+#define KUKADU_SINGLESAMPLETRAJECTORY
 
 #include <vector>
 #include <armadillo>
@@ -8,40 +8,44 @@
 #include "../utils/types.h"
 #include "../utils/conversion_utils.h"
 
-class SingleSampleTrajectory : public Trajectory {
-	
-private:
-	
-protected:
+namespace kukadu {
 
-    std::vector<arma::vec> sampleYs;
-    arma::vec supervisedTs;
+    class SingleSampleTrajectory : public Trajectory {
 
-public:
-	
-	SingleSampleTrajectory(arma::vec supervisedTs, std::vector<arma::vec> sampleYs);
-	SingleSampleTrajectory(const SingleSampleTrajectory& copy);
-	SingleSampleTrajectory();
-	
-	int getDegreesOfFreedom() const;
-	int getDataPointsNum();
-	
-	double getT(int ptIdx);
-	double getDataPoint(int freedomIdx, int ptIdx);
+    private:
 
-    void setSupervisedTs(arma::vec supervisedTs);
-    void setSampleYs(std::vector<arma::vec> sampleYs);
-	
-	arma::vec getStartingPos();
-	arma::vec getSupervisedTs();
-	arma::vec getSampleYByIndex(int idx);
-	std::vector<arma::vec> getSampleYs();
-	
-	virtual std::vector<arma::vec> getCoefficients() = 0;
-	virtual void setCoefficients(std::vector<arma::vec> coeffs) = 0;
-	
-	int operator==(SingleSampleTrajectory const& comp) const;
-	
-};
+    protected:
+
+        std::vector<arma::vec> sampleYs;
+        arma::vec supervisedTs;
+
+    public:
+
+        SingleSampleTrajectory(arma::vec supervisedTs, std::vector<arma::vec> sampleYs);
+        SingleSampleTrajectory(const SingleSampleTrajectory& copy);
+        SingleSampleTrajectory();
+
+        int getDegreesOfFreedom() const;
+        int getDataPointsNum();
+
+        double getT(int ptIdx);
+        double getDataPoint(int freedomIdx, int ptIdx);
+
+        void setSupervisedTs(arma::vec supervisedTs);
+        void setSampleYs(std::vector<arma::vec> sampleYs);
+
+        arma::vec getStartingPos();
+        arma::vec getSupervisedTs();
+        arma::vec getSampleYByIndex(int idx);
+        std::vector<arma::vec> getSampleYs();
+
+        virtual std::vector<arma::vec> getCoefficients() = 0;
+        virtual void setCoefficients(std::vector<arma::vec> coeffs) = 0;
+
+        int operator==(SingleSampleTrajectory const& comp) const;
+
+    };
+
+}
 
 #endif

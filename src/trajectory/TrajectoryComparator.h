@@ -1,14 +1,18 @@
-#ifndef TRAJECTORYCOMPARATOR
-#define TRAJECTORYCOMPARATOR
+#ifndef KUKADU_TRAJECTORYCOMPARATOR
+#define KUKADU_TRAJECTORYCOMPARATOR
 
 #include "../types/Trajectory.h"
 
-class TrajectoryComparator {
-	
-public:
-	
-	virtual double computeDistance() = 0;
-	
-};
+namespace kukadu {
+
+    class TrajectoryComparator {
+
+    public:
+
+        virtual double computeDistance() = 0;
+
+    };
+
+}
 
 #endif

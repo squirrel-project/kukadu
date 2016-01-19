@@ -20,28 +20,32 @@
 #include "../../utils/utils.h"
 #include "../../types/KukaduTypes.h"
 
-/** \brief Provides control capabilities for the Schunk SDH robotic hand with ROS binding
- * Implements the GenericHand interface for the Schunk SDH robotic hand. Note that using this class the programm has to be executed with root rights
- * \ingroup RobotFramework
- */
-class PlottingHand : public RosSchunk {
+namespace kukadu {
 
-private:
+    /** \brief Provides control capabilities for the Schunk SDH robotic hand with ROS binding
+     * Implements the GenericHand interface for the Schunk SDH robotic hand. Note that using this class the programm has to be executed with root rights
+     * \ingroup RobotFramework
+     */
+    class PlottingHand : public RosSchunk {
 
-public:
+    private:
 
-    PlottingHand(std::string type, std::string hand);
+    public:
 
-    void connectHand();
-    void safelyDestroy();
-    void disconnectHand();
-    void setGrasp(kukadu_grasps grasp);
-    void publishSingleJoint(int idx, double pos);
-    void closeHand(double percentage, double velocity);
-    void publishSdhJoints(std::vector<double> positions);
+        PlottingHand(std::string type, std::string hand);
 
-    std::vector<arma::mat> getTactileSensing();
+        void connectHand();
+        void safelyDestroy();
+        void disconnectHand();
+        void setGrasp(kukadu_grasps grasp);
+        void publishSingleJoint(int idx, double pos);
+        void closeHand(double percentage, double velocity);
+        void publishSdhJoints(std::vector<double> positions);
 
-};
+        std::vector<arma::mat> getTactileSensing();
+
+    };
+
+}
 
 #endif

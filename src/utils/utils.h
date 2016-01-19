@@ -48,109 +48,113 @@
 #include "../trajectory/DMPTrajectoryGenerator.h"
 #include "../learning/GaussianProcessRegressor.h"
 
-int createDirectory(std::string path);
-void deleteDirectory(std::string path);
+namespace kukadu {
 
-void printDoubleVector(std::vector<double>* data);
-void printDoubleVector(double* data, int size);
-void printDoubleMatrix(double** data, int rows, int columns);
-void freeDoubleArray(double** data, int columns);
-std::string resolvePath(std::string path);
+    int createDirectory(std::string path);
+    void deleteDirectory(std::string path);
 
-int getch();
+    void printDoubleVector(std::vector<double>* data);
+    void printDoubleVector(double* data, int size);
+    void printDoubleMatrix(double** data, int rows, int columns);
+    void freeDoubleArray(double** data, int columns);
+    std::string resolvePath(std::string path);
 
-arma::mat readMovements(std::string file);
-arma::mat readMovements(std::ifstream& stream);
-std::pair<std::vector<std::string>, arma::mat> readSensorStorage(std::string file);
+    int getch();
 
-arma::vec readQuery(std::string file);
-std::vector<double>* createStdVectorFromGslVector(gsl_vector* vec);
+    arma::mat readMovements(std::string file);
+    arma::mat readMovements(std::ifstream& stream);
+    std::pair<std::vector<std::string>, arma::mat> readSensorStorage(std::string file);
 
-arma::vec computeDiscreteDerivatives(arma::vec x, arma::vec y);
-gsl_vector* createGslVectorFromStdVector(std::vector<double>* data);
-gsl_matrix* createMatrixFromQueueArray(std::queue<double>** data, int columns);
-gsl_matrix* invertSquareMatrix(gsl_matrix* mat);
+    arma::vec readQuery(std::string file);
+    std::vector<double>* createStdVectorFromGslVector(gsl_vector* vec);
 
-arma::vec createArmaVecFromDoubleArray(double* data, int n);
+    arma::vec computeDiscreteDerivatives(arma::vec x, arma::vec y);
+    gsl_vector* createGslVectorFromStdVector(std::vector<double>* data);
+    gsl_matrix* createMatrixFromQueueArray(std::queue<double>** data, int columns);
+    gsl_matrix* invertSquareMatrix(gsl_matrix* mat);
 
-double* createDoubleArrayFromStdVector(std::vector<double>* data);
-double* createDoubleArrayFromArmaVector(arma::vec data);
-float* createFloatArrayFromStdVector(std::vector<float>* data);
-double* createDoubleArrayFromVector(gsl_vector* data);
-double* polyder(double* c, int len);
-double* poly_eval_multiple(double* data, int data_len, double* c, int c_len);
-float* copyJoints(const float* arr, int arrSize);
+    arma::vec createArmaVecFromDoubleArray(double* data, int n);
 
-double roundByDigits(double number, int numDigitsBehindComma);
+    double* createDoubleArrayFromStdVector(std::vector<double>* data);
+    double* createDoubleArrayFromArmaVector(arma::vec data);
+    float* createFloatArrayFromStdVector(std::vector<float>* data);
+    double* createDoubleArrayFromVector(gsl_vector* data);
+    double* polyder(double* c, int len);
+    double* poly_eval_multiple(double* data, int data_len, double* c, int c_len);
+    float* copyJoints(const float* arr, int arrSize);
 
-double** createDoubleArrayFromMatrix(gsl_matrix* data);
+    double roundByDigits(double number, int numDigitsBehindComma);
 
-arma::vec stdToArmadilloVec(std::vector<double> stdVec);
-arma::mat fillTrajectoryMatrix(arma::mat joints, double tMax);
+    double** createDoubleArrayFromMatrix(gsl_matrix* data);
 
-std::string stringFromDouble(double d);
+    arma::vec stdToArmadilloVec(std::vector<double> stdVec);
+    arma::mat fillTrajectoryMatrix(arma::mat joints, double tMax);
 
-std::vector<double> armadilloToStdVec(arma::vec armadilloVec);
-std::vector<double> computeDMPMys(std::vector<double> mys, double ax, double tau);
+    std::string stringFromDouble(double d);
 
-// taken from http://rosettacode.org/wiki/Polynomial_regression
-double* polynomialfit(int obs, int degree, double *dx, double *dy);
+    std::vector<double> armadilloToStdVec(arma::vec armadilloVec);
+    std::vector<double> computeDMPMys(std::vector<double> mys, double ax, double tau);
 
-std::vector<std::string> getFilesInDirectory(std::string folderPath);
-std::vector<std::string> sortPrefix(std::vector<std::string> list, std::string prefix);
+    // taken from http://rosettacode.org/wiki/Polynomial_regression
+    double* polynomialfit(int obs, int degree, double *dx, double *dy);
 
-std::string buildPolynomialEquation(double* w, int paramCount);
-std::vector<double>* getDoubleVectorFromArray(double* arr, int size);
-std::vector<DMPBase> buildDMPBase(std::vector<double> tmpmys, std::vector<double> tmpsigmas, double ax, double tau);
+    std::vector<std::string> getFilesInDirectory(std::string folderPath);
+    std::vector<std::string> sortPrefix(std::vector<std::string> list, std::string prefix);
 
-arma::mat gslToArmadilloMatrix(gsl_matrix* matrix);
-std::vector<double>* testGaussianRegressor();
-std::vector<double> constructDmpMys(arma::mat joints);
+    std::string buildPolynomialEquation(double* w, int paramCount);
+    std::vector<double>* getDoubleVectorFromArray(double* arr, int size);
+    std::vector<DMPBase> buildDMPBase(std::vector<double> tmpmys, std::vector<double> tmpsigmas, double ax, double tau);
 
-arma::vec squareMatrixToColumn(arma::mat m);
-arma::mat columnToSquareMatrix(arma::vec c);
+    arma::mat gslToArmadilloMatrix(gsl_matrix* matrix);
+    std::vector<double>* testGaussianRegressor();
+    std::vector<double> constructDmpMys(arma::mat joints);
 
-arma::vec symmetricMatrixToColumn(arma::mat m);
-arma::mat columnToSymmetricMatrix(arma::vec c);
+    arma::vec squareMatrixToColumn(arma::mat m);
+    arma::mat columnToSquareMatrix(arma::vec c);
 
-void set_ctrlc_exit_handler();
-void exit_handler(int s);
+    arma::vec symmetricMatrixToColumn(arma::mat m);
+    arma::mat columnToSymmetricMatrix(arma::vec c);
 
-arma::mat armaJoinRows(arma::vec v1, arma::mat m2);
-arma::mat armaJoinRows(arma::mat m1, arma::mat m2);
+    void set_ctrlc_exit_handler();
+    void exit_handler(int s);
 
-double absolute(double val);
+    arma::mat armaJoinRows(arma::vec v1, arma::mat m2);
+    arma::mat armaJoinRows(arma::mat m1, arma::mat m2);
 
-geometry_msgs::Pose vectorarma2pose(arma::vec* vectorpose);
-arma::vec pose2vectorarma(geometry_msgs::Pose posepose);
+    double absolute(double val);
 
-arma::vec log(const tf::Quaternion quat);
-tf::Quaternion exp(arma::vec logQuat);
-double distQuat(tf::Quaternion q1, tf::Quaternion q2);
+    geometry_msgs::Pose vectorarma2pose(arma::vec* vectorpose);
+    arma::vec pose2vectorarma(geometry_msgs::Pose posepose);
 
-tf::Transform Matrix4f2Transform(Eigen::Matrix4f Tm);
-/*
- * converts roll pitch yaw to quaternions
- */
-tf::Quaternion rpyToQuat(const double roll, const double pitch, const double yaw);
-tf::Quaternion axisAngle2Quat (const double& xx, const double &yy, const double &zz, const double &a);
+    arma::vec log(const tf::Quaternion quat);
+    tf::Quaternion exp(arma::vec logQuat);
+    double distQuat(tf::Quaternion q1, tf::Quaternion q2);
 
-double distancePoint2Line(double xp,double yp,double x1,double y1,double x2,double y2);
-arma::vec pointOnLine2Point(double xp,double yp,double x1,double y1,double x2,double y2);
+    tf::Transform Matrix4f2Transform(Eigen::Matrix4f Tm);
+    /*
+     * converts roll pitch yaw to quaternions
+     */
+    tf::Quaternion rpyToQuat(const double roll, const double pitch, const double yaw);
+    tf::Quaternion axisAngle2Quat (const double& xx, const double &yy, const double &zz, const double &a);
 
-bool isDirectory(const std::string dirPath);
-bool fileExists(const std::string filePath);
-void copyFile(const std::string source, const std::string destination);
+    double distancePoint2Line(double xp,double yp,double x1,double y1,double x2,double y2);
+    arma::vec pointOnLine2Point(double xp,double yp,double x1,double y1,double x2,double y2);
 
-std::vector<double> createJointsVector(int n_args, ...);
-std::vector<double> createJointsVector(double j1, double j2, double j3, double j4, double j5, double j6, double j7);
+    bool isDirectory(const std::string dirPath);
+    bool fileExists(const std::string filePath);
+    void copyFile(const std::string source, const std::string destination);
 
-pcl::PointCloud<pcl::PointXYZ> sensorMsgsPcToPclPc(sensor_msgs::PointCloud2 pc);
-sensor_msgs::PointCloud2 pclPcToSensorMsgsPc(pcl::PointCloud<pcl::PointXYZ> pc);
-pcl::PCLPointCloud2 sensorMsgsPcToPclPc2(sensor_msgs::PointCloud2 pc);
-sensor_msgs::PointCloud2 pclPcToSensorMsgsPc(pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
+    std::vector<double> createJointsVector(int n_args, ...);
+    std::vector<double> createJointsVector(double j1, double j2, double j3, double j4, double j5, double j6, double j7);
 
-long getFileSize(std::string filename);
-std::wstring stringToWString(const std::string& s);
+    pcl::PointCloud<pcl::PointXYZ> sensorMsgsPcToPclPc(sensor_msgs::PointCloud2 pc);
+    sensor_msgs::PointCloud2 pclPcToSensorMsgsPc(pcl::PointCloud<pcl::PointXYZ> pc);
+    pcl::PCLPointCloud2 sensorMsgsPcToPclPc2(sensor_msgs::PointCloud2 pc);
+    sensor_msgs::PointCloud2 pclPcToSensorMsgsPc(pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
+
+    long getFileSize(std::string filename);
+    std::wstring stringToWString(const std::string& s);
+
+}
 
 #endif

@@ -2,18 +2,22 @@
 
 using namespace std;
 
-Reward::Reward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, bool collectPrevRewards) {
-    this->generator = generator;
-    this->collectPrevRewards = collectPrevRewards;
-}
+namespace kukadu {
 
-double Reward::computeReward(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction) {
-    double retrievedReward = computeRewardInternal(providedPercept, takenAction);
-    if(collectPrevRewards)
-        previousRewards.push_back(retrievedReward);
-    return retrievedReward;
-}
+    Reward::Reward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, bool collectPrevRewards) {
+        this->generator = generator;
+        this->collectPrevRewards = collectPrevRewards;
+    }
 
-std::vector<double> Reward::getPreviousRewards() {
-    return previousRewards;
+    double Reward::computeReward(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction) {
+        double retrievedReward = computeRewardInternal(providedPercept, takenAction);
+        if(collectPrevRewards)
+            previousRewards.push_back(retrievedReward);
+        return retrievedReward;
+    }
+
+    std::vector<double> Reward::getPreviousRewards() {
+        return previousRewards;
+    }
+
 }

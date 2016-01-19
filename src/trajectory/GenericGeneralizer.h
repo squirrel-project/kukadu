@@ -9,19 +9,23 @@
 #include "../types/jointdmp.h"
 #include "../types/KukaduTypes.h"
 
-/** \brief 
- * 
- * 
- * \ingroup ControlPolicyFramework
- */
-class GenericGeneralizer {
+namespace kukadu {
 
-private:
+    /** \brief
+     *
+     *
+     * \ingroup ControlPolicyFramework
+     */
+    class GenericGeneralizer {
 
-public:
+    private:
 
-    virtual KUKADU_SHARED_PTR<JointDmp> generalizeDmp(GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, arma::vec query, double beta) = 0;
-	
-};
+    public:
+
+        virtual KUKADU_SHARED_PTR<JointDmp> generalizeDmp(GenericKernel* trajectoryKernel, GenericKernel* parameterKernel, arma::vec query, double beta) = 0;
+
+    };
+
+}
 
 #endif

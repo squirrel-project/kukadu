@@ -3,70 +3,74 @@
 using namespace std;
 using namespace arma;
 
-SingleSampleTrajectory::SingleSampleTrajectory(arma::vec supervisedTs, std::vector<arma::vec> sampleYs) {
-	this->supervisedTs = supervisedTs;
-	this->sampleYs = sampleYs;
-}
+namespace kukadu {
 
-SingleSampleTrajectory::SingleSampleTrajectory(const SingleSampleTrajectory& copy) {
-	this->supervisedTs = copy.supervisedTs;
-	this->sampleYs = copy.sampleYs;
-}
+    SingleSampleTrajectory::SingleSampleTrajectory(arma::vec supervisedTs, std::vector<arma::vec> sampleYs) {
+        this->supervisedTs = supervisedTs;
+        this->sampleYs = sampleYs;
+    }
 
-SingleSampleTrajectory::SingleSampleTrajectory() {
-}
+    SingleSampleTrajectory::SingleSampleTrajectory(const SingleSampleTrajectory& copy) {
+        this->supervisedTs = copy.supervisedTs;
+        this->sampleYs = copy.sampleYs;
+    }
 
-int SingleSampleTrajectory::getDegreesOfFreedom() const {
-	return sampleYs.size();
-}
+    SingleSampleTrajectory::SingleSampleTrajectory() {
+    }
 
-int SingleSampleTrajectory::getDataPointsNum() {
-	return supervisedTs.n_elem;
-}
+    int SingleSampleTrajectory::getDegreesOfFreedom() const {
+        return sampleYs.size();
+    }
 
-double SingleSampleTrajectory::getDataPoint(int freedomIdx, int ptIdx) {
-	arma::vec sample =  getSampleYByIndex(freedomIdx);
-	return sample(ptIdx);
-}
+    int SingleSampleTrajectory::getDataPointsNum() {
+        return supervisedTs.n_elem;
+    }
 
-double SingleSampleTrajectory::getT(int ptIdx) {
-	return supervisedTs(ptIdx);
-}
+    double SingleSampleTrajectory::getDataPoint(int freedomIdx, int ptIdx) {
+        arma::vec sample =  getSampleYByIndex(freedomIdx);
+        return sample(ptIdx);
+    }
 
-void SingleSampleTrajectory::setSupervisedTs(arma::vec supervisedTs) {
-    this->supervisedTs = supervisedTs;
-}
+    double SingleSampleTrajectory::getT(int ptIdx) {
+        return supervisedTs(ptIdx);
+    }
 
-void SingleSampleTrajectory::setSampleYs(std::vector<arma::vec> sampleYs) {
-    this->sampleYs = sampleYs;
-}
-	
-arma::vec SingleSampleTrajectory::getSupervisedTs() {
-	return supervisedTs;
-}
+    void SingleSampleTrajectory::setSupervisedTs(arma::vec supervisedTs) {
+        this->supervisedTs = supervisedTs;
+    }
 
-arma::vec SingleSampleTrajectory::getSampleYByIndex(int idx) {
-	return sampleYs.at(idx);
-}
+    void SingleSampleTrajectory::setSampleYs(std::vector<arma::vec> sampleYs) {
+        this->sampleYs = sampleYs;
+    }
 
-int SingleSampleTrajectory::operator==(SingleSampleTrajectory const& comp) const {
-	
-	return compareArmadilloVec(supervisedTs, comp.supervisedTs) && compareVectorOfArmadillos(sampleYs, comp.sampleYs);
-	
-}
+    arma::vec SingleSampleTrajectory::getSupervisedTs() {
+        return supervisedTs;
+    }
 
-arma::vec SingleSampleTrajectory::getStartingPos() {
-	
-	vec ret(getDegreesOfFreedom());
-	
-	for(int i = 0; i < getDegreesOfFreedom(); ++i) {
-		ret(i) = getDataPoint(i, 0);
-	}
-	
-	return ret;
-	
-}
+    arma::vec SingleSampleTrajectory::getSampleYByIndex(int idx) {
+        return sampleYs.at(idx);
+    }
 
-std::vector<arma::vec> SingleSampleTrajectory::getSampleYs() {
-	return sampleYs;
+    int SingleSampleTrajectory::operator==(SingleSampleTrajectory const& comp) const {
+
+        return compareArmadilloVec(supervisedTs, comp.supervisedTs) && compareVectorOfArmadillos(sampleYs, comp.sampleYs);
+
+    }
+
+    arma::vec SingleSampleTrajectory::getStartingPos() {
+
+        vec ret(getDegreesOfFreedom());
+
+        for(int i = 0; i < getDegreesOfFreedom(); ++i) {
+            ret(i) = getDataPoint(i, 0);
+        }
+
+        return ret;
+
+    }
+
+    std::vector<arma::vec> SingleSampleTrajectory::getSampleYs() {
+        return sampleYs;
+    }
+
 }

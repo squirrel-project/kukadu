@@ -2,23 +2,27 @@
 
 using namespace std;
 
-DMPBase::DMPBase() {
-	my = 0.0;
-}
+namespace kukadu {
 
-DMPBase::DMPBase(float my, std::vector<double> sigmas) {
-	this->my = my;
-	this->sigmas = sigmas;
-}
-	
-float DMPBase::getMy() {
-	return my;
-}
+    DMPBase::DMPBase() {
+        my = 0.0;
+    }
 
-std::vector<double> DMPBase::getSigmas() {
-	return sigmas;
-}
+    DMPBase::DMPBase(float my, std::vector<double> sigmas) {
+        this->my = my;
+        this->sigmas = sigmas;
+    }
 
-int DMPBase::operator==(DMPBase const& comp) const {
-	return ( my == comp.my && compareVectorOfDoubles(sigmas, comp.sigmas) );
+    float DMPBase::getMy() {
+        return my;
+    }
+
+    std::vector<double> DMPBase::getSigmas() {
+        return sigmas;
+    }
+
+    int DMPBase::operator==(DMPBase const& comp) const {
+        return ( my == comp.my && compareVectorOfDoubles(sigmas, comp.sigmas) );
+    }
+
 }

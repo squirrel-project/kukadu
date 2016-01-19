@@ -5,23 +5,25 @@
 
 #include "PCTransformator.hpp"
 
-class PlanarCutTransformator : public PCTransformator {
+namespace kukadu {
 
-private:
+    class PlanarCutTransformator : public PCTransformator {
 
-    arma::vec normalVec;
-    arma::vec plainOriginVec;
+    private:
 
-public:
+        arma::vec normalVec;
+        arma::vec plainOriginVec;
 
-    PlanarCutTransformator(arma::vec normalVec, arma::vec plainOriginVec);
+    public:
 
-    virtual pcl::PointCloud<pcl::PointXYZ>::Ptr transformPc(pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
+        PlanarCutTransformator(arma::vec normalVec, arma::vec plainOriginVec);
 
-    void setPlane(arma::vec normalVec, arma::vec plainOriginalVec);
+        virtual pcl::PointCloud<pcl::PointXYZ>::Ptr transformPc(pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
 
-};
+        void setPlane(arma::vec normalVec, arma::vec plainOriginalVec);
 
+    };
 
+}
 
 #endif // PLANARCUTTRANSFORMATOR

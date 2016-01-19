@@ -5,25 +5,27 @@
 
 #include "PCTransformator.hpp"
 
-class OpenBoxFilter : PCTransformator {
+namespace kukadu {
 
-private:
+    class OpenBoxFilter : PCTransformator {
 
-    double xOffset;
-    double yOffset;
+    private:
 
-    arma::vec center;
+        double xOffset;
+        double yOffset;
 
-public:
+        arma::vec center;
 
-    OpenBoxFilter(arma::vec center, double xOffset, double yOffset);
+    public:
 
-    virtual pcl::PointCloud<pcl::PointXYZ>::Ptr transformPc(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
+        OpenBoxFilter(arma::vec center, double xOffset, double yOffset);
 
-    void setBox(arma::vec center, double xOffset, double yOffset);
+        virtual pcl::PointCloud<pcl::PointXYZ>::Ptr transformPc(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
 
-};
+        void setBox(arma::vec center, double xOffset, double yOffset);
 
+    };
 
+}
 
 #endif

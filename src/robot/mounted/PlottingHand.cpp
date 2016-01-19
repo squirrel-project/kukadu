@@ -3,42 +3,44 @@
 using namespace std;
 using namespace arma;
 
-PlottingHand::PlottingHand(std::string type, std::string hand) : RosSchunk(type, hand) {
+namespace kukadu {
 
-}
+    PlottingHand::PlottingHand(std::string type, std::string hand) : RosSchunk(type, hand) {
 
-void PlottingHand::connectHand() {
-    // nothing to do
-}
+    }
 
-void PlottingHand::closeHand(double percentage, double velocity) {
+    void PlottingHand::connectHand() {
+        // nothing to do
+    }
 
-}
+    void PlottingHand::closeHand(double percentage, double velocity) {
 
-void PlottingHand::disconnectHand() {
+    }
 
-    // nothing to do
+    void PlottingHand::disconnectHand() {
 
-}
+        // nothing to do
 
-void PlottingHand::setGrasp(kukadu_grasps grasp) {
+    }
 
-}
+    void PlottingHand::setGrasp(kukadu_grasps grasp) {
 
-void PlottingHand::safelyDestroy() {
+    }
 
-}
+    void PlottingHand::safelyDestroy() {
 
-void PlottingHand::publishSingleJoint(int idx, double pos) {
+    }
 
-}
+    void PlottingHand::publishSingleJoint(int idx, double pos) {
 
-void PlottingHand::publishSdhJoints(std::vector<double> positions) {
+    }
 
-}
+    void PlottingHand::publishSdhJoints(std::vector<double> positions) {
 
-std::vector<arma::mat> PlottingHand::getTactileSensing() {
+    }
 
+    std::vector<arma::mat> PlottingHand::getTactileSensing() {
 
+    }
 
 }

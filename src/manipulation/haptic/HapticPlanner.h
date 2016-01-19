@@ -14,38 +14,40 @@
 #include "../../utils/utils.h"
 #include "../SensingController.hpp"
 
-class HapticPlanner {
+namespace kukadu {
 
-private:
+    class HapticPlanner {
 
-    std::vector<std::string> sensingNames;
-    std::vector<std::string> preparationNames;
-    std::vector<std::string> complexControllerNames;
+    private:
 
-    std::vector<KUKADU_SHARED_PTR<Controller> > complexControllers;
-    std::vector<KUKADU_SHARED_PTR<Controller> > preparationControllers;
-    std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers;
+        std::vector<std::string> sensingNames;
+        std::vector<std::string> preparationNames;
+        std::vector<std::string> complexControllerNames;
 
-    void printNamedVector(std::vector<std::string> names);
+        std::vector<KUKADU_SHARED_PTR<Controller> > complexControllers;
+        std::vector<KUKADU_SHARED_PTR<Controller> > preparationControllers;
+        std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers;
 
-    int pickSensingController();
-    int pickComplexController();
-    int pickPreparationController(int sensingController);
+        void printNamedVector(std::vector<std::string> names);
 
-public:
+        int pickSensingController();
+        int pickComplexController();
+        int pickPreparationController(int sensingController);
 
-    HapticPlanner();
+    public:
 
-    void addComplexController(std::string name, KUKADU_SHARED_PTR<Controller> complexController);
-    void addPreparationController(std::string name, KUKADU_SHARED_PTR<Controller> prepController);
-    void addSensingController(std::string name, KUKADU_SHARED_PTR<SensingController> sensingController);
+        HapticPlanner();
 
-    void printSensingControllers();
-    void printComplexControllers();
-    void printPreparationControllers();
+        void addComplexController(std::string name, KUKADU_SHARED_PTR<Controller> complexController);
+        void addPreparationController(std::string name, KUKADU_SHARED_PTR<Controller> prepController);
+        void addSensingController(std::string name, KUKADU_SHARED_PTR<SensingController> sensingController);
 
-};
+        void printSensingControllers();
+        void printComplexControllers();
+        void printPreparationControllers();
 
+    };
 
+}
 
 #endif // HAPTICPLANNER_H

@@ -12,38 +12,43 @@
 
 #include "../utils/utils.h"
 
-class VisionInterface {
-private:
+namespace kukadu {
 
-    int sleepTime;
+    class VisionInterface {
 
-    bool firstSet;
-    bool arTagTracker;
+    private:
 
-    std::string arTagTopic;
-    std::string currentCameraTag;
+        int sleepTime;
 
-    ros::NodeHandle node;
-    ros::Subscriber subArTag;
+        bool firstSet;
+        bool arTagTracker;
 
-    tf::Transform tfChestKin;
+        std::string arTagTopic;
+        std::string currentCameraTag;
 
-    geometry_msgs::Pose currentArPose;
+        ros::NodeHandle node;
+        ros::Subscriber subArTag;
 
+        tf::Transform tfChestKin;
 
-public:
-
-    VisionInterface(int sleepTime, ros::NodeHandle node);
-    VisionInterface(int sleepTime, std::string cameraTag, ros::NodeHandle node);
-
-    void setArTagTracker();
-    void setCameraTag(std::string cameraTag);
-    void arTagCallback(const tf::tfMessage& msg);
-    void construct(int sleepTime, ros::NodeHandle node, std::string cameraTag, bool arTagTracker);
-
-    geometry_msgs::Pose getArPose();
+        geometry_msgs::Pose currentArPose;
 
 
-};
+    public:
+
+        VisionInterface(int sleepTime, ros::NodeHandle node);
+        VisionInterface(int sleepTime, std::string cameraTag, ros::NodeHandle node);
+
+        void setArTagTracker();
+        void setCameraTag(std::string cameraTag);
+        void arTagCallback(const tf::tfMessage& msg);
+        void construct(int sleepTime, ros::NodeHandle node, std::string cameraTag, bool arTagTracker);
+
+        geometry_msgs::Pose getArPose();
+
+
+    };
+
+}
 
 #endif // VISIONINTERFACE_H

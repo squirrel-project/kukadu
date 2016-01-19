@@ -6,211 +6,215 @@
 using namespace std;
 using namespace arma;
 
-GeneralReinforcer::GeneralReinforcer(KUKADU_SHARED_PTR<TrajectoryExecutor> trajEx, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue) {
-	
-	this->trajEx = trajEx;
-	this->cost = cost;
-    this->simulationQueue = simulationQueue;
-    this->executionQueue = executionQueue;
-	this->isFirstIteration = true;
-	this->lastCost.push_back(-1.0);
-	this->lastUpdateCost = 0.0;
-	
-}
+namespace kukadu {
 
-bool GeneralReinforcer::getIsFirstIteration() {
-	return isFirstIteration;
-}
+    GeneralReinforcer::GeneralReinforcer(KUKADU_SHARED_PTR<TrajectoryExecutor> trajEx, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue) {
 
-std::vector<double> GeneralReinforcer::getLastRolloutCost() {
-	return lastCost;
-}
+        this->trajEx = trajEx;
+        this->cost = cost;
+        this->simulationQueue = simulationQueue;
+        this->executionQueue = executionQueue;
+        this->isFirstIteration = true;
+        this->lastCost.push_back(-1.0);
+        this->lastUpdateCost = 0.0;
 
-std::vector<KUKADU_SHARED_PTR<Trajectory> > GeneralReinforcer::getLastRolloutParameters() {
-	return rollout;
-}
+    }
 
-std::vector<KUKADU_SHARED_PTR<ControllerResult> > GeneralReinforcer::getLastExecutionResults() {
-	return dmpResult;
-}
+    bool GeneralReinforcer::getIsFirstIteration() {
+        return isFirstIteration;
+    }
 
-KUKADU_SHARED_PTR<ControllerResult> GeneralReinforcer::getLastUpdateRes() {
-	return lastUpdateRes;
-}
+    std::vector<double> GeneralReinforcer::getLastRolloutCost() {
+        return lastCost;
+    }
 
-void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
-	
-    char cont = 'n';
+    std::vector<KUKADU_SHARED_PTR<Trajectory> > GeneralReinforcer::getLastRolloutParameters() {
+        return rollout;
+    }
 
-	if(isFirstIteration) {
-		
-		rollout = getInitialRollout();
-		
-	}
-	else {
-		
-		rollout = computeRolloutParamters();
+    std::vector<KUKADU_SHARED_PTR<ControllerResult> > GeneralReinforcer::getLastExecutionResults() {
+        return dmpResult;
+    }
 
-	}
+    KUKADU_SHARED_PTR<ControllerResult> GeneralReinforcer::getLastUpdateRes() {
+        return lastUpdateRes;
+    }
 
-	lastCost.clear();
-	dmpResult.clear();
+    void GeneralReinforcer::performRollout(int doSimulation, int doExecution) {
 
-    int degFreedom = rollout.at(0)->getDegreesOfFreedom();
-    arma::vec startingJoints = arma::vec(degFreedom);
+        char cont = 'n';
 
-    for(int k = 0; k < rollout.size(); ++k) {
+        if(isFirstIteration) {
 
-        vec startingPos = rollout.at(k)->getStartingPos();
-        startingJoints = startingPos;
+            rollout = getInitialRollout();
 
-        KUKADU_SHARED_PTR<ControllerResult> simRes;
-        if(doSimulation) {
+        }
+        else {
 
-            simulationQueue->jointPtp(startingJoints);
-            trajEx->setTrajectory(rollout.at(k));
+            rollout = computeRolloutParamters();
 
-            simRes = trajEx->simulateTrajectory();
+        }
 
-            if(!doExecution) {
+        lastCost.clear();
+        dmpResult.clear();
 
-                if(isFirstIteration)
+        int degFreedom = rollout.at(0)->getDegreesOfFreedom();
+        arma::vec startingJoints = arma::vec(degFreedom);
+
+        for(int k = 0; k < rollout.size(); ++k) {
+
+            vec startingPos = rollout.at(k)->getStartingPos();
+            startingJoints = startingPos;
+
+            KUKADU_SHARED_PTR<ControllerResult> simRes;
+            if(doSimulation) {
+
+                simulationQueue->jointPtp(startingJoints);
+                trajEx->setTrajectory(rollout.at(k));
+
+                simRes = trajEx->simulateTrajectory();
+
+                if(!doExecution) {
+
+                    if(isFirstIteration)
+                        lastUpdateRes = simRes;
+                }
+
+            }
+
+            bool useRollout = true;
+            if(doExecution) {
+
+                cout << "(DMPReinforcer) do you want to execute this trajectory? (y/N) ";
+                cin >> cont;
+
+                if(cont == 'y' || cont == 'Y') {
+
+                    cout << "(DMPReinforcer) executing rollout" << endl;
+
+                    simulationQueue->jointPtp(startingJoints);
+
+                    trajEx->setTrajectory(rollout.at(k));
+                    simRes = trajEx->executeTrajectory();
+                    useRollout = true;
+
+                } else {
+                    useRollout = false;
+                }
+
+            }
+
+            if(doSimulation || doExecution) {
+
+                dmpResult.push_back(simRes);
+                KUKADU_SHARED_PTR<ControllerResult> resK = simRes;
+                double delta = cost->computeCost(resK);
+                lastCost.push_back(delta);
+
+                if(isFirstIteration) {
+                    lastUpdateRes = resK;
+                    lastUpdateCost = delta;
+                }
+
+            }
+
+            if(doSimulation)
+                simulationQueue->jointPtp(startingJoints);
+            if(doExecution)
+                executionQueue->jointPtp(startingJoints);
+
+            if(doExecution) {
+                cout << "(GeneralReinforcer) press a key to perform next rollout (rollout number " << (k + 2) << ")" << endl;
+                getchar();
+                getchar();
+            }
+
+        }
+
+        double tmpCost = lastUpdateCost;
+        KUKADU_SHARED_PTR<Trajectory> tmpUpdate = lastUpdate->copy();
+        KUKADU_SHARED_PTR<ControllerResult> tmpRes = lastUpdateRes;
+        lastUpdate = updateStep();
+
+        trajEx->setTrajectory(lastUpdate);
+
+        if(!isFirstIteration) {
+
+            cout << "(GeneralReinforcer) performing newest update" << endl;
+
+            KUKADU_SHARED_PTR<ControllerResult> simRes;
+            if(doSimulation) {
+                cout << "(DMPReinforcer) simulating update" << endl;
+                simulationQueue->jointPtp(startingJoints);
+                simRes = trajEx->simulateTrajectory();
+
+                if(!doExecution) {
                     lastUpdateRes = simRes;
+                }
             }
 
-		}
+            if(doExecution) {
 
-        bool useRollout = true;
-        if(doExecution) {
-			
-			cout << "(DMPReinforcer) do you want to execute this trajectory? (y/N) ";
-			cin >> cont;
-		
-            if(cont == 'y' || cont == 'Y') {
-				
-                cout << "(DMPReinforcer) executing rollout" << endl;
-				
-                simulationQueue->jointPtp(startingJoints);
-				
-				trajEx->setTrajectory(rollout.at(k));
-                simRes = trajEx->executeTrajectory();
-                useRollout = true;
-				
-            } else {
-                useRollout = false;
-            }
-			
-		}
+                cout << "(DMPReinforcer) do you want to execute this update? (y/N) ";
+                cin >> cont;
 
-        if(doSimulation || doExecution) {
+                if(cont == 'y' || cont == 'Y') {
 
-            dmpResult.push_back(simRes);
-            KUKADU_SHARED_PTR<ControllerResult> resK = simRes;
-            double delta = cost->computeCost(resK);
-            lastCost.push_back(delta);
+                    cout << "(DMPReinforcer) executing update" << endl;
 
-            if(isFirstIteration) {
-                lastUpdateRes = resK;
-                lastUpdateCost = delta;
+                    simulationQueue->jointPtp(startingJoints);
+                    simRes = trajEx->executeTrajectory();
+
+                } else {
+                //    throw "(GeneralReinforcer) update not usable (stopping reinforcement learning)";
+                }
+
             }
 
-        }
-
-        if(doSimulation)
-            simulationQueue->jointPtp(startingJoints);
-        if(doExecution)
-            executionQueue->jointPtp(startingJoints);
-
-        if(doExecution) {
-            cout << "(GeneralReinforcer) press a key to perform next rollout (rollout number " << (k + 2) << ")" << endl;
-            getchar();
-            getchar();
-        }
-
-	}
-
-	double tmpCost = lastUpdateCost;
-    KUKADU_SHARED_PTR<Trajectory> tmpUpdate = lastUpdate->copy();
-    KUKADU_SHARED_PTR<ControllerResult> tmpRes = lastUpdateRes;
-    lastUpdate = updateStep();
-
-    trajEx->setTrajectory(lastUpdate);
-
-    if(!isFirstIteration) {
-
-        cout << "(GeneralReinforcer) performing newest update" << endl;
-
-        KUKADU_SHARED_PTR<ControllerResult> simRes;
-        if(doSimulation) {
-            cout << "(DMPReinforcer) simulating update" << endl;
-            simulationQueue->jointPtp(startingJoints);
-            simRes = trajEx->simulateTrajectory();
-
-            if(!doExecution) {
+            if(doSimulation || ( doExecution && (cont == 'y' || cont == 'Y') )) {
                 lastUpdateRes = simRes;
-            }
-        }
-
-        if(doExecution) {
-
-            cout << "(DMPReinforcer) do you want to execute this update? (y/N) ";
-            cin >> cont;
-
-            if(cont == 'y' || cont == 'Y') {
-
-                cout << "(DMPReinforcer) executing update" << endl;
-
-                simulationQueue->jointPtp(startingJoints);
-                simRes = trajEx->executeTrajectory();
-
-            } else {
-            //    throw "(GeneralReinforcer) update not usable (stopping reinforcement learning)";
+                lastUpdateCost = cost->computeCost(lastUpdateRes);
             }
 
         }
 
-        if(doSimulation || ( doExecution && (cont == 'y' || cont == 'Y') )) {
-            lastUpdateRes = simRes;
-            lastUpdateCost = cost->computeCost(lastUpdateRes);
+        // TODO: this is a hack!!!! repair it (power cannot directly be applied to metric learning) --> results can get worse instead of better
+        if(lastUpdateCost < tmpCost) {
+
+            lastUpdateCost = tmpCost;
+            lastUpdate = tmpUpdate;
+            lastUpdateRes = tmpRes;
+
+            // get best reward
+            for(int i = 0; i < lastCost.size(); ++i) {
+                if(lastCost.at(i) > tmpCost) {
+                    lastUpdateCost = lastCost.at(i);
+                    lastUpdate = rollout.at(i);
+                    lastUpdateRes = dmpResult.at(i);
+                }
+            }
+
         }
+
+
+        isFirstIteration = false;
+
+        cout << "(DMPReinforcer) last update reward/cost: " << lastUpdateCost << endl;
 
     }
 
-    // TODO: this is a hack!!!! repair it (power cannot directly be applied to metric learning) --> results can get worse instead of better
-    if(lastUpdateCost < tmpCost) {
+    double GeneralReinforcer::getLastUpdateReward() {
+        return lastUpdateCost;
+    }
 
-		lastUpdateCost = tmpCost;
-		lastUpdate = tmpUpdate;
-		lastUpdateRes = tmpRes;
-		
-		// get best reward
-		for(int i = 0; i < lastCost.size(); ++i) {
-            if(lastCost.at(i) > tmpCost) {
-				lastUpdateCost = lastCost.at(i);
-				lastUpdate = rollout.at(i);
-				lastUpdateRes = dmpResult.at(i);
-            }
-		}
+    KUKADU_SHARED_PTR<Trajectory> GeneralReinforcer::getLastUpdate() {
+
+        return lastUpdate;
 
     }
 
+    void GeneralReinforcer::setLastUpdate(KUKADU_SHARED_PTR<Trajectory> lastUpdate) {
+        this->lastUpdate = lastUpdate;
+    }
 
-    isFirstIteration = false;
-	
-    cout << "(DMPReinforcer) last update reward/cost: " << lastUpdateCost << endl;
-
-}
-
-double GeneralReinforcer::getLastUpdateReward() {
-	return lastUpdateCost;
-}
-
-KUKADU_SHARED_PTR<Trajectory> GeneralReinforcer::getLastUpdate() {
-	
-	return lastUpdate;
-	
-}
-
-void GeneralReinforcer::setLastUpdate(KUKADU_SHARED_PTR<Trajectory> lastUpdate) {
-	this->lastUpdate = lastUpdate;
 }

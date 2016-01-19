@@ -16,37 +16,41 @@
 #include "../../types/DictionaryTrajectory.h"
 #include "../../trajectory/TrajectoryExecutor.h"
 
-class GradientDescent : public GeneralReinforcer {
+namespace kukadu {
 
-private:
+    class GradientDescent : public GeneralReinforcer {
 
-    int updateNum;
-    int updatesPerRollout;
-    int importanceSamplingCount;
+    private:
 
-    double explorationSigma;
+        int updateNum;
+        int updatesPerRollout;
+        int importanceSamplingCount;
 
-    TrajectoryExecutor* trajEx;
+        double explorationSigma;
 
-    kukadu_mersenne_twister generator;
+        TrajectoryExecutor* trajEx;
 
-    std::vector<double> sigmas;
-    std::vector<kukadu_normal_distribution> normals;
-    std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp;
-    std::vector<std::pair <double, KUKADU_SHARED_PTR<Trajectory> > > sampleHistory;
+        kukadu_mersenne_twister generator;
 
-    void construct(std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp, std::vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
+        std::vector<double> sigmas;
+        std::vector<kukadu_normal_distribution> normals;
+        std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp;
+        std::vector<std::pair <double, KUKADU_SHARED_PTR<Trajectory> > > sampleHistory;
 
-public:
+        void construct(std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp, std::vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
 
-    GradientDescent(KUKADU_SHARED_PTR<TrajectoryExecutor> trajEx, std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
-    GradientDescent(KUKADU_SHARED_PTR<TrajectoryExecutor> trajEx, std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp, std::vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
+    public:
 
-    KUKADU_SHARED_PTR<Trajectory> updateStep();
+        GradientDescent(KUKADU_SHARED_PTR<TrajectoryExecutor> trajEx, std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
+        GradientDescent(KUKADU_SHARED_PTR<TrajectoryExecutor> trajEx, std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp, std::vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
 
-    std::vector<KUKADU_SHARED_PTR<Trajectory> > getInitialRollout();
-    std::vector<KUKADU_SHARED_PTR<Trajectory> > computeRolloutParamters();
+        KUKADU_SHARED_PTR<Trajectory> updateStep();
 
-};
+        std::vector<KUKADU_SHARED_PTR<Trajectory> > getInitialRollout();
+        std::vector<KUKADU_SHARED_PTR<Trajectory> > computeRolloutParamters();
+
+    };
+
+}
 
 #endif

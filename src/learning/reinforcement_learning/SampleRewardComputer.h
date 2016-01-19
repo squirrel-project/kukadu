@@ -1,5 +1,5 @@
-#ifndef SAMPLEREWARDCOMPUTER
-#define SAMPLEREWARDCOMPUTER
+#ifndef KUKADU_SAMPLEREWARDCOMPUTER
+#define KUKADU_SAMPLEREWARDCOMPUTER
 
 #include <armadillo>
 #include <vector>
@@ -8,19 +8,23 @@
 #include "TrajectoryBasedReward.h"
 #include "../../utils/types.h"
 
-class SampleRewardComputer : public TrajectoryBasedReward {
+namespace kukadu {
 
-private:
-	
-	double tmax;
-	double slope;
+    class SampleRewardComputer : public TrajectoryBasedReward {
 
-public:
+    private:
 
-    SampleRewardComputer(double slope, int degOfFreedom, double tmax, double stepSize);
-	
-    arma::vec computeFun(double t);
-	
-};
+        double tmax;
+        double slope;
+
+    public:
+
+        SampleRewardComputer(double slope, int degOfFreedom, double tmax, double stepSize);
+
+        arma::vec computeFun(double t);
+
+    };
+
+}
 
 #endif

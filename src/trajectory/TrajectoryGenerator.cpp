@@ -1,4 +1,8 @@
 #include "TrajectoryGenerator.h"
 
-TrajectoryGenerator::TrajectoryGenerator() {
+namespace kukadu {
+
+    TrajectoryGenerator::TrajectoryGenerator() {
+    }
+
 }

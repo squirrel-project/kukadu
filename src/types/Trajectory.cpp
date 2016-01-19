@@ -1,16 +1,20 @@
 #include "Trajectory.h"
 
-// TODO: write copy constructor
-Trajectory::Trajectory(const Trajectory& copy) {
-	
-}
+namespace kukadu {
 
-Trajectory::Trajectory() {
+    // TODO: write copy constructor
+    Trajectory::Trajectory(const Trajectory& copy) {
 
-}
+    }
 
-int Trajectory::operator==(Trajectory const& comp) const {
-	
-	return 1;
-	
+    Trajectory::Trajectory() {
+
+    }
+
+    int Trajectory::operator==(Trajectory const& comp) const {
+
+        return 1;
+
+    }
+
 }

@@ -19,45 +19,49 @@
 #include <string>
 #include <vector>
 
-// default delimiter string (space, tab, newline, carriage return, form feed)
-const std::string DEFAULT_DELIMITER = " \t\v\n\r\f";
+namespace kukadu {
 
-class Tokenizer {
-public:
-    // ctor/dtor
-    Tokenizer();
-    Tokenizer(const std::string& str, const std::string& delimiter=DEFAULT_DELIMITER);
-    ~Tokenizer();
+    // default delimiter string (space, tab, newline, carriage return, form feed)
+    const std::string DEFAULT_DELIMITER = " \t\v\n\r\f";
 
-    // set string and delimiter
-    void set(const std::string& str, const std::string& delimiter=DEFAULT_DELIMITER);
-    void setString(const std::string& str);             // set source string only
-    void setDelimiter(const std::string& delimiter);    // set delimiter string only
+    class Tokenizer {
+    public:
+        // ctor/dtor
+        Tokenizer();
+        Tokenizer(const std::string& str, const std::string& delimiter=DEFAULT_DELIMITER);
+        ~Tokenizer();
 
-    std::string next();                                 // return the next token, return "" if it ends
-    void putBackLast();
+        // set string and delimiter
+        void set(const std::string& str, const std::string& delimiter=DEFAULT_DELIMITER);
+        void setString(const std::string& str);             // set source string only
+        void setDelimiter(const std::string& delimiter);    // set delimiter string only
 
-    std::vector<std::string> split();                   // return array of tokens from current cursor
+        std::string next();                                 // return the next token, return "" if it ends
+        void putBackLast();
 
-    int getTokenIdx();
+        std::vector<std::string> split();                   // return array of tokens from current cursor
 
-protected:
+        int getTokenIdx();
+
+    protected:
 
 
-private:
+    private:
 
-    void skipDelimiter();                               // ignore leading delimiters
-    bool isDelimiter(char c);                           // check if the current char is delimiter
+        void skipDelimiter();                               // ignore leading delimiters
+        bool isDelimiter(char c);                           // check if the current char is delimiter
 
-    std::string buffer;                                 // input string
-    std::string token;                                  // output string
-    std::string delimiter;                              // delimiter string
-    int currPos;                                        // string iterator pointing the current position
-    std::string lastToken;
+        std::string buffer;                                 // input string
+        std::string token;                                  // output string
+        std::string delimiter;                              // delimiter string
+        int currPos;                                        // string iterator pointing the current position
+        std::string lastToken;
 
-    int tokenIdx;
-    bool useLastToken;
+        int tokenIdx;
+        bool useLastToken;
 
-};
+    };
+
+}
 
 #endif // TOKENIZER_H

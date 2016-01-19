@@ -8,23 +8,25 @@
 #include <string>
 #include <vector>
 
-class ControllerActionClip : public ActionClip {
+namespace kukadu {
 
-private:
+    class ControllerActionClip : public ActionClip {
 
-    std::string caption;
+    private:
 
-    KUKADU_SHARED_PTR<Controller> actionController;
+        std::string caption;
 
-public:
+        KUKADU_SHARED_PTR<Controller> actionController;
 
-    ControllerActionClip(int actionId, KUKADU_SHARED_PTR<Controller> actionController,
-                          KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator);
+    public:
 
-    void performAction();
+        ControllerActionClip(int actionId, KUKADU_SHARED_PTR<Controller> actionController,
+                              KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator);
 
-};
+        void performAction();
 
+    };
 
+}
 
 #endif // CONTROLLERACTIONCLIP_H

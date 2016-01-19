@@ -8,36 +8,39 @@
 #include "../types/DMP.h"
 #include "../types/KukaduTypes.h"
 
+namespace kukadu {
 
-class QueryPoint {
-	
-private:
-	
-    std::string fileDmpPath;
-    std::string fileDataPath;
-    std::string fileQueryPath;
+    class QueryPoint {
 
-    arma::vec queryPoint;
+    private:
 
-    KUKADU_SHARED_PTR<Dmp> internalDmp;
-	
-public:
-	
-    QueryPoint(const QueryPoint& qp);
-    QueryPoint(std::string fileQueryPath, std::string fileDataPath, std::string fileDmpPath, KUKADU_SHARED_PTR<Dmp> dmp, arma::vec queryPoint);
-	
-    void setDmp(KUKADU_SHARED_PTR<Dmp> dmp);
-    void setQueryPoint(arma::vec queryPoint);
+        std::string fileDmpPath;
+        std::string fileDataPath;
+        std::string fileQueryPath;
 
-    std::string getFileDmpPath();
-    std::string getFileDataPath();
-    std::string getFileQueryPath();
+        arma::vec queryPoint;
 
-	arma::vec getQueryPoint();
-	
-    KUKADU_SHARED_PTR<Dmp> getDmp();
-	
-	
-};
+        KUKADU_SHARED_PTR<Dmp> internalDmp;
+
+    public:
+
+        QueryPoint(const QueryPoint& qp);
+        QueryPoint(std::string fileQueryPath, std::string fileDataPath, std::string fileDmpPath, KUKADU_SHARED_PTR<Dmp> dmp, arma::vec queryPoint);
+
+        void setDmp(KUKADU_SHARED_PTR<Dmp> dmp);
+        void setQueryPoint(arma::vec queryPoint);
+
+        std::string getFileDmpPath();
+        std::string getFileDataPath();
+        std::string getFileQueryPath();
+
+        arma::vec getQueryPoint();
+
+        KUKADU_SHARED_PTR<Dmp> getDmp();
+
+
+    };
+
+}
 
 #endif

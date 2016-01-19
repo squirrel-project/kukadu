@@ -3,34 +3,38 @@
 using namespace std;
 using namespace arma;
 
-PolyTrajectoryGenerator::PolyTrajectoryGenerator(int basisFunctionCount) {
-	this->basisFunctionCount = basisFunctionCount;
-}
+namespace kukadu {
 
-double PolyTrajectoryGenerator::evaluateBasisFunction(double x, int fun) {
-	return pow(x, fun);
-}
+    PolyTrajectoryGenerator::PolyTrajectoryGenerator(int basisFunctionCount) {
+        this->basisFunctionCount = basisFunctionCount;
+    }
 
-double PolyTrajectoryGenerator::evaluateByCoefficientsSingle(double x, vec coeff) {
-	double ret = 0.0;
-	int coeffDegree = this->getBasisFunctionCount();
-	for(int i = 0; i < coeffDegree; ++i) ret += coeff(i) * pow(x, i + 1);
-	return ret;
-}
+    double PolyTrajectoryGenerator::evaluateBasisFunction(double x, int fun) {
+        return pow(x, fun);
+    }
 
-vec PolyTrajectoryGenerator::evaluateByCoefficientsMultiple(vec x, int sampleCount, vec coeff) {
-	int coeffDegree = this->getBasisFunctionCount();
-	vec evals(sampleCount);
-	for(int i = 0; i < sampleCount; ++i) {
-		evals(i) = evaluateByCoefficientsSingle(x(i), coeff);
-	}
-	return evals;
-}
+    double PolyTrajectoryGenerator::evaluateByCoefficientsSingle(double x, vec coeff) {
+        double ret = 0.0;
+        int coeffDegree = this->getBasisFunctionCount();
+        for(int i = 0; i < coeffDegree; ++i) ret += coeff(i) * pow(x, i + 1);
+        return ret;
+    }
 
-int PolyTrajectoryGenerator::getBasisFunctionCount() {
-	return basisFunctionCount;
-}
+    vec PolyTrajectoryGenerator::evaluateByCoefficientsMultiple(vec x, int sampleCount, vec coeff) {
+        int coeffDegree = this->getBasisFunctionCount();
+        vec evals(sampleCount);
+        for(int i = 0; i < sampleCount; ++i) {
+            evals(i) = evaluateByCoefficientsSingle(x(i), coeff);
+        }
+        return evals;
+    }
 
-string PolyTrajectoryGenerator::getTrajectoryType() {
-	return "polynomial";
+    int PolyTrajectoryGenerator::getBasisFunctionCount() {
+        return basisFunctionCount;
+    }
+
+    string PolyTrajectoryGenerator::getTrajectoryType() {
+        return "polynomial";
+    }
+
 }

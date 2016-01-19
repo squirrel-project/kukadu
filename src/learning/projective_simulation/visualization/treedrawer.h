@@ -21,36 +21,40 @@
 #define TREEDRAWER_H_WINDOW_Y_SIZE 1500
 #define TREEDRAWER_H_NODE_RADIUS 45
 
-class TreeDrawer {
+namespace kukadu {
 
-private:
+    class TreeDrawer {
 
-#if VISUALIZATION == 1
-    ALLEGRO_FONT* font;
-    ALLEGRO_DISPLAY* display;
-    ALLEGRO_EVENT_QUEUE* event_queue;
+    private:
 
-    ALLEGRO_COLOR textColor;
-    ALLEGRO_COLOR circleColor;
-#endif
+    #if VISUALIZATION == 1
+        ALLEGRO_FONT* font;
+        ALLEGRO_DISPLAY* display;
+        ALLEGRO_EVENT_QUEUE* event_queue;
 
-    int windowXSize;
-    int windowYSize;
+        ALLEGRO_COLOR textColor;
+        ALLEGRO_COLOR circleColor;
+    #endif
 
-    void construct();
-    void drawNode(int x, int y, std::string text, int level);
+        int windowXSize;
+        int windowYSize;
 
-    int compteXOffset(KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > level);
+        void construct();
+        void drawNode(int x, int y, std::string text, int level);
 
-public:
+        int compteXOffset(KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > level);
 
-    TreeDrawer();
-    TreeDrawer(int windowXSize, int windowYSize);
-    ~TreeDrawer();
+    public:
 
-    void waitForEnter();
-    void drawTree(KUKADU_SHARED_PTR<ProjectiveSimulator> projSim);
+        TreeDrawer();
+        TreeDrawer(int windowXSize, int windowYSize);
+        ~TreeDrawer();
 
-};
+        void waitForEnter();
+        void drawTree(KUKADU_SHARED_PTR<ProjectiveSimulator> projSim);
+
+    };
+
+}
 
 #endif

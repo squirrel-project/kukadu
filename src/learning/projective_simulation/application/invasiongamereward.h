@@ -12,30 +12,34 @@
 
 #define INVASIONGAMEREWARD_REW 1.0
 
-class InvasionGameReward : public Reward {
+namespace kukadu {
 
-private:
+    class InvasionGameReward : public Reward {
 
-    int currentTimeStep;
+    private:
 
-    kukadu_uniform_distribution intDist;
+        int currentTimeStep;
 
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > perceptClips;
+        kukadu_uniform_distribution intDist;
 
-protected:
+        KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > perceptClips;
 
-    double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction);
+    protected:
 
-public:
+        double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction);
 
-    InvasionGameReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, bool collectPrevRewards);
+    public:
 
-    int getDimensionality();
+        InvasionGameReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, bool collectPrevRewards);
 
-    KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();
+        int getDimensionality();
 
-};
+        KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
+        KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();
+        KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();
+
+    };
+
+}
 
 #endif // INVASIONGAMEREWARD_H

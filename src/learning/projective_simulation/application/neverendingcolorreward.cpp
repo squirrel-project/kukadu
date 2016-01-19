@@ -4,80 +4,84 @@
 
 using namespace std;
 
-NeverendingColorReward::NeverendingColorReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int numberOfActions, int numberOfCategories, bool collectPrevRewards) : Reward(generator, collectPrevRewards) {
+namespace kukadu {
 
-    if(numberOfActions > 9)
-        throw "(NeverEndingColorReward) number of actions must be smaller than 10";
+    NeverendingColorReward::NeverendingColorReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int numberOfActions, int numberOfCategories, bool collectPrevRewards) : Reward(generator, collectPrevRewards) {
 
-    currentT = 0;
-    this->numberOfActions = numberOfActions;
-    this->numberOfCategories = numberOfCategories + 1;
+        if(numberOfActions > 9)
+            throw "(NeverEndingColorReward) number of actions must be smaller than 10";
 
-    intDist = kukadu_uniform_distribution(0, numberOfActions - 1);
+        currentT = 0;
+        this->numberOfActions = numberOfActions;
+        this->numberOfCategories = numberOfCategories + 1;
 
-    actionClips = new vector<KUKADU_SHARED_PTR<ActionClip> >();
-    for(int i = 0; i < numberOfActions; ++i) {
+        intDist = kukadu_uniform_distribution(0, numberOfActions - 1);
+
+        actionClips = new vector<KUKADU_SHARED_PTR<ActionClip> >();
+        for(int i = 0; i < numberOfActions; ++i) {
+            stringstream s;
+            s << "action" << i;
+            actionClips->push_back(KUKADU_SHARED_PTR<ActionClip>(new ActionClip(i, this->numberOfCategories, s.str(), generator)));
+        }
+
+        perceptClips = new vector<KUKADU_SHARED_PTR<PerceptClip> >();
+        currentId = 0;
+
+    }
+
+    NeverendingColorReward::~NeverendingColorReward() {
+        delete actionClips;
+        delete perceptClips;
+    }
+
+    KUKADU_SHARED_PTR<PerceptClip> NeverendingColorReward::generateNextPerceptClip(int immunity) {
+
+        int currentColor = currentT;
+
         stringstream s;
-        s << "action" << i;
-        actionClips->push_back(KUKADU_SHARED_PTR<ActionClip>(new ActionClip(i, this->numberOfCategories, s.str(), generator)));
-    }
+        s << "(color" << currentColor;
 
-    perceptClips = new vector<KUKADU_SHARED_PTR<PerceptClip> >();
-    currentId = 0;
+        KUKADU_SHARED_PTR<vector<int> > idVec = KUKADU_SHARED_PTR<vector<int> >(new vector<int>());
+        idVec->push_back(currentT);
+        for(int i = 1; i < numberOfCategories - 1; ++i) {
 
-}
+            int nextVal = intDist(*generator);
+            idVec->push_back(nextVal);
+            s << ", action" << nextVal;
 
-NeverendingColorReward::~NeverendingColorReward() {
-    delete actionClips;
-    delete perceptClips;
-}
+        }
 
-KUKADU_SHARED_PTR<PerceptClip> NeverendingColorReward::generateNextPerceptClip(int immunity) {
-
-    int currentColor = currentT;
-
-    stringstream s;
-    s << "(color" << currentColor;
-
-    KUKADU_SHARED_PTR<vector<int> > idVec = KUKADU_SHARED_PTR<vector<int> >(new vector<int>());
-    idVec->push_back(currentT);
-    for(int i = 1; i < numberOfCategories - 1; ++i) {
-
-        int nextVal = intDist(*generator);
-        idVec->push_back(nextVal);
-        s << ", action" << nextVal;
+        int actionNumber = intDist(*generator);
+        s << ", " << actionNumber << ")";
+        idVec->push_back(actionNumber);
+        return KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(currentId++, s.str(), generator, idVec, immunity));
 
     }
 
-    int actionNumber = intDist(*generator);
-    s << ", " << actionNumber << ")";
-    idVec->push_back(actionNumber);
-    return KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(currentId++, s.str(), generator, idVec, immunity));
+    double NeverendingColorReward::computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction) {
 
-}
+        double returnedReward = 0.0;
+        ++currentT;
 
-double NeverendingColorReward::computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction) {
+        KUKADU_SHARED_PTR<vector<int> > perceptIds = providedPercept->getClipDimensions();
 
-    double returnedReward = 0.0;
-    ++currentT;
+        if(perceptIds->at(1) == takenAction->getActionId())
+            returnedReward = NEVERENDINGCOLORREWARD_SUCCESSFUL_REWARD;
 
-    KUKADU_SHARED_PTR<vector<int> > perceptIds = providedPercept->getClipDimensions();
+        return returnedReward;
 
-    if(perceptIds->at(1) == takenAction->getActionId())
-        returnedReward = NEVERENDINGCOLORREWARD_SUCCESSFUL_REWARD;
+    }
 
-    return returnedReward;
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > NeverendingColorReward::generateActionClips() {
+        return KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > >(new vector<KUKADU_SHARED_PTR<ActionClip> >(actionClips->begin(), actionClips->end()));
+    }
 
-}
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > NeverendingColorReward::generatePerceptClips() {
+        return KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > >(new vector<KUKADU_SHARED_PTR<PerceptClip> >(perceptClips->begin(), perceptClips->end()));
+    }
 
-KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > NeverendingColorReward::generateActionClips() {
-    return KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > >(new vector<KUKADU_SHARED_PTR<ActionClip> >(actionClips->begin(), actionClips->end()));
-}
+    int NeverendingColorReward::getDimensionality() {
+        return numberOfCategories + 1;
+    }
 
-KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > NeverendingColorReward::generatePerceptClips() {
-    return KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > >(new vector<KUKADU_SHARED_PTR<PerceptClip> >(perceptClips->begin(), perceptClips->end()));
-}
-
-int NeverendingColorReward::getDimensionality() {
-    return numberOfCategories + 1;
 }

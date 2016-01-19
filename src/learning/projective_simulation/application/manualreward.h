@@ -4,36 +4,40 @@
 #include "../core/reward.h"
 #include "../../../types/KukaduTypes.h"
 
-class ManualReward : public Reward {
+namespace kukadu {
 
-private:
+    class ManualReward : public Reward {
 
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > actionClips;
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > perceptClips;
+    private:
 
-    int nextPerceptId;
-    int numberOfActions;
-    int numberOfPercepts;
+        KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > actionClips;
+        KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > perceptClips;
 
-    double stdReward;
+        int nextPerceptId;
+        int numberOfActions;
+        int numberOfPercepts;
 
-protected:
+        double stdReward;
 
-    double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction);
+    protected:
 
-public:
+        double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction);
 
-    ManualReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int numberOfActions, int numberOfPercepts, bool collectPrevRewards, double stdReward);
-    ~ManualReward();
+    public:
 
-    void setNextPerceptId(int nextId);
+        ManualReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int numberOfActions, int numberOfPercepts, bool collectPrevRewards, double stdReward);
+        ~ManualReward();
 
-    int getDimensionality();
+        void setNextPerceptId(int nextId);
 
-    KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();
+        int getDimensionality();
 
-};
+        KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
+        KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();
+        KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();
+
+    };
+
+}
 
 #endif

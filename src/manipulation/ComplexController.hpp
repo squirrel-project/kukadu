@@ -18,76 +18,78 @@
 #include "../learning/projective_simulation/core/projectivesimulator.h"
 #include "../learning/projective_simulation/application/manualreward.h"
 
-class ComplexController : public Controller, public Reward, public KUKADU_ENABLE_SHARED_FROM_THIS<ComplexController> {
+namespace kukadu {
 
-private:
+    class ComplexController : public Controller, public Reward, public KUKADU_ENABLE_SHARED_FROM_THIS<ComplexController> {
 
-    bool storeReward;
-    bool colPrevRewards;
+    private:
 
-    int stdPrepWeight;
-    int currentIterationNum;
+        bool storeReward;
+        bool colPrevRewards;
 
-    double gamma;
-    double boredom;
-    double stdReward;
-    double punishReward;
-    double senseStretch;
+        int stdPrepWeight;
+        int currentIterationNum;
 
-    std::string corrPSPath;
-    std::string rewardHistoryPath;
+        double gamma;
+        double boredom;
+        double stdReward;
+        double punishReward;
+        double senseStretch;
 
-    KUKADU_SHARED_PTR<PerceptClip> root;
-    KUKADU_SHARED_PTR<kukadu_mersenne_twister> gen;
-    KUKADU_SHARED_PTR<ProjectiveSimulator> projSim;
-    KUKADU_SHARED_PTR<std::ofstream> rewardHistoryStream;
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > prepActions;
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > prepActionsCasted;
+        std::string corrPSPath;
+        std::string rewardHistoryPath;
 
-    std::vector<double> sensingWeights;
-    std::vector<KUKADU_SHARED_PTR<Controller> > preparationControllers;
-    std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers;
+        KUKADU_SHARED_PTR<PerceptClip> root;
+        KUKADU_SHARED_PTR<kukadu_mersenne_twister> gen;
+        KUKADU_SHARED_PTR<ProjectiveSimulator> projSim;
+        KUKADU_SHARED_PTR<std::ofstream> rewardHistoryStream;
+        KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > prepActions;
+        KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > prepActionsCasted;
 
-    double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction);
+        std::vector<double> sensingWeights;
+        std::vector<KUKADU_SHARED_PTR<Controller> > preparationControllers;
+        std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers;
 
-protected:
+        double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction);
 
-    void setSimulationModeInChain(bool simulationMode);
-    virtual double getSimulatedReward(KUKADU_SHARED_PTR<SensingController> usedSensingController, KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction, int sensingClassIdx, int prepContIdx) = 0;
+    protected:
 
-public:
+        void setSimulationModeInChain(bool simulationMode);
+        virtual double getSimulatedReward(KUKADU_SHARED_PTR<SensingController> usedSensingController, KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction, int sensingClassIdx, int prepContIdx) = 0;
 
-    ComplexController(std::string caption, std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers, std::vector<KUKADU_SHARED_PTR<Controller> > preparationControllers,
-                      std::string corrPSPath, std::string rewardHistoryPath, bool storeReward, double senseStretch, double boredom, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards);
-    ~ComplexController();
+    public:
 
-    void store();
-    void initialize();
-    void storeNextIteration();
-    void createSensingDatabase();
-    void setBoredom(double boredom);
-    void store(std::string destination);
-    void setTrainingMode(bool doTraining);
-    void createSensingDatabase(std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers);
+        ComplexController(std::string caption, std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers, std::vector<KUKADU_SHARED_PTR<Controller> > preparationControllers,
+                          std::string corrPSPath, std::string rewardHistoryPath, bool storeReward, double senseStretch, double boredom, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards);
+        ~ComplexController();
 
-    virtual void executeComplexAction() = 0;
+        void store();
+        void initialize();
+        void storeNextIteration();
+        void createSensingDatabase();
+        void setBoredom(double boredom);
+        void store(std::string destination);
+        void setTrainingMode(bool doTraining);
+        void createSensingDatabase(std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers);
 
-    int getDimensionality();
+        virtual void executeComplexAction() = 0;
 
-    // overwrite this virtual function if the next idx should be created randomly
-    virtual int getNextSimulatedGroundTruth(KUKADU_SHARED_PTR<SensingController> sensCont);
+        int getDimensionality();
 
-    double getStdReward();
-    double getPunishReward();
+        // overwrite this virtual function if the next idx should be created randomly
+        virtual int getNextSimulatedGroundTruth(KUKADU_SHARED_PTR<SensingController> sensCont);
 
-    KUKADU_SHARED_PTR<ControllerResult> performAction();
-    KUKADU_SHARED_PTR<ProjectiveSimulator> getProjectiveSimulator();
-    KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();
-    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();
+        double getStdReward();
+        double getPunishReward();
 
-};
+        KUKADU_SHARED_PTR<ControllerResult> performAction();
+        KUKADU_SHARED_PTR<ProjectiveSimulator> getProjectiveSimulator();
+        KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
+        KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();
+        KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();
 
+    };
 
+}
 
 #endif

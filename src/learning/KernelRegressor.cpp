@@ -1,4 +1,8 @@
 #include "KernelRegressor.h"
 
-KernelRegressor::KernelRegressor() {
+namespace kukadu {
+
+    KernelRegressor::KernelRegressor() {
+    }
+
 }

@@ -6,25 +6,29 @@
 #include "clip.h"
 #include "../../../types/KukaduTypes.h"
 
-class PerceptClip : public Clip {
+namespace kukadu {
 
-private:
+    class PerceptClip : public Clip {
 
-    int perceptId;
-    std::string label;
+    private:
 
-    void construct(int perceptId, std::string label);
+        int perceptId;
+        std::string label;
 
-public:
+        void construct(int perceptId, std::string label);
 
-    PerceptClip(int perceptId, std::string label, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string clipDimensionValues, int immunity);
-    PerceptClip(int perceptId, std::string label, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, KUKADU_SHARED_PTR<std::vector<int> > clipDimensionValues, int immunity);
+    public:
 
-    int getPerceptId();
+        PerceptClip(int perceptId, std::string label, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string clipDimensionValues, int immunity);
+        PerceptClip(int perceptId, std::string label, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, KUKADU_SHARED_PTR<std::vector<int> > clipDimensionValues, int immunity);
 
-    std::string getLabel();
-    std::string toString() const;
+        int getPerceptId();
 
-};
+        std::string getLabel();
+        std::string toString() const;
+
+    };
+
+}
 
 #endif

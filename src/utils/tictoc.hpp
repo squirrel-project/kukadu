@@ -4,21 +4,24 @@
 #include <vector>
 #include <string>
 
-class TicToc {
+namespace kukadu {
 
-private:
+    class TicToc {
 
-    std::vector<timeval> ticList;
-    std::vector<timeval> tocList;
+    private:
 
-    std::vector<std::string> strList;
+        std::vector<timeval> ticList;
+        std::vector<timeval> tocList;
 
-public:
+        std::vector<std::string> strList;
 
-    void tic(std::string str);
-    double toc(std::string str);
+    public:
 
-};
+        void tic(std::string str);
+        double toc(std::string str);
 
+    };
+
+}
 
 #endif

@@ -21,6 +21,7 @@
 #include "../application/neverendingcolorreward.h"
 
 using namespace std;
+using namespace kukadu;
 
 int main(int argc, char** args) {
 

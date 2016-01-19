@@ -11,36 +11,40 @@
 #include "../../utils/types.h"
 #include "../../types/KukaduTypes.h"
 
-class TrajectoryBasedReward : public CostComputer {
+namespace kukadu {
 
-private:
-	
-    int degOfFreedom;
+    class TrajectoryBasedReward : public CostComputer {
 
-    double step;
-	double tmax;
-	double slope;
+    private:
 
-    arma::vec rewardsWeights;
+        int degOfFreedom;
 
-public:
+        double step;
+        double tmax;
+        double slope;
 
-    TrajectoryBasedReward(int degOfFreedom, double tmax, double timeStep);
-    TrajectoryBasedReward(int degOfFreedom, arma::vec rewardsWeights, double tmax, double timeStep);
+        arma::vec rewardsWeights;
 
-    void writeToFile(std::string file, double tStart, double tEnd, double stepSize);
+    public:
 
-    double computeCost(KUKADU_SHARED_PTR<ControllerResult> results);
-	
-    KUKADU_SHARED_PTR<ControllerResult> getOptimalTraj();
-    KUKADU_SHARED_PTR<ControllerResult> getOptimalTraj(double tmax);
-    KUKADU_SHARED_PTR<ControllerResult> getOptimalTraj(double tmax, int freedomIdx);
-    KUKADU_SHARED_PTR<ControllerResult> getOptimalTraj(double tmin, double tmax, int freedomIdx);
+        TrajectoryBasedReward(int degOfFreedom, double tmax, double timeStep);
+        TrajectoryBasedReward(int degOfFreedom, arma::vec rewardsWeights, double tmax, double timeStep);
 
-    std::vector<arma::vec> computeFun(arma::vec t);
-	
-    virtual arma::vec computeFun(double t) = 0;
-	
-};
+        void writeToFile(std::string file, double tStart, double tEnd, double stepSize);
+
+        double computeCost(KUKADU_SHARED_PTR<ControllerResult> results);
+
+        KUKADU_SHARED_PTR<ControllerResult> getOptimalTraj();
+        KUKADU_SHARED_PTR<ControllerResult> getOptimalTraj(double tmax);
+        KUKADU_SHARED_PTR<ControllerResult> getOptimalTraj(double tmax, int freedomIdx);
+        KUKADU_SHARED_PTR<ControllerResult> getOptimalTraj(double tmin, double tmax, int freedomIdx);
+
+        std::vector<arma::vec> computeFun(arma::vec t);
+
+        virtual arma::vec computeFun(double t) = 0;
+
+    };
+
+}
 
 #endif

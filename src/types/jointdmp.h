@@ -7,22 +7,26 @@
 #include "../types/DMP.h"
 #include "../types/KukaduTypes.h"
 
-class JointDmp : public Dmp {
-public:
+namespace kukadu {
 
-    JointDmp(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<arma::vec> fitYs, std::vector<arma::vec> dmpCoeffs, std::vector<DMPBase> dmpBase, std::vector<arma::mat> designMatrices,
-             double tau, double az, double bz, double ax, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
+    class JointDmp : public Dmp {
+    public:
 
-    JointDmp(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<arma::vec> fitYs, std::vector<arma::vec> dmpCoeffs, std::vector<DMPBase> dmpBase, std::vector<arma::mat> designMatrices,
-             double tau, double az, double bz, double ax);
+        JointDmp(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<arma::vec> fitYs, std::vector<arma::vec> dmpCoeffs, std::vector<DMPBase> dmpBase, std::vector<arma::mat> designMatrices,
+                 double tau, double az, double bz, double ax, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr);
 
-    JointDmp(std::string dmpFile);
+        JointDmp(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<arma::vec> fitYs, std::vector<arma::vec> dmpCoeffs, std::vector<DMPBase> dmpBase, std::vector<arma::mat> designMatrices,
+                 double tau, double az, double bz, double ax);
 
-    JointDmp();
+        JointDmp(std::string dmpFile);
 
-    bool isCartesian();
-    virtual KUKADU_SHARED_PTR<Trajectory> copy();
+        JointDmp();
 
-};
+        bool isCartesian();
+        virtual KUKADU_SHARED_PTR<Trajectory> copy();
+
+    };
+
+}
 
 #endif

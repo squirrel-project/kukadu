@@ -18,61 +18,65 @@
 #include "PCTransformator.hpp"
 #include "../types/KukaduTypes.h"
 
-class Kinect {
+namespace kukadu {
 
-private:
+    class Kinect {
 
-    std::string stdVisPubTopic;
+    private:
 
-    bool isInit;
-    bool keepRunning;
-    bool firstCloudSet;
+        std::string stdVisPubTopic;
 
-    bool pcRequested;
+        bool isInit;
+        bool keepRunning;
+        bool firstCloudSet;
 
-    KUKADU_SHARED_PTR<kukadu_thread> thr;
+        bool pcRequested;
 
-    kukadu_mutex pcMutex;
+        KUKADU_SHARED_PTR<kukadu_thread> thr;
 
-    std::string targetFrame;
-    std::string visPubTopic;
-    std::string kinectPrefix;
+        kukadu_mutex pcMutex;
 
-    KUKADU_SHARED_PTR<tf::TransformListener> transformListener;
+        std::string targetFrame;
+        std::string visPubTopic;
+        std::string kinectPrefix;
 
-    sensor_msgs::PointCloud2 currentPc;
+        KUKADU_SHARED_PTR<tf::TransformListener> transformListener;
 
-    ros::NodeHandle node;
+        sensor_msgs::PointCloud2 currentPc;
 
-    ros::Subscriber subKinect;
-    ros::Subscriber subTransformation;
+        ros::NodeHandle node;
 
-    ros::Publisher visPublisher;
+        ros::Subscriber subKinect;
+        ros::Subscriber subTransformation;
 
-    void runThread();
-    void callbackKinectPointCloud(const sensor_msgs::PointCloud2& pc);
-    void construct(std::string kinectPrefix, std::string targetFrame, ros::NodeHandle node);
+        ros::Publisher visPublisher;
 
-public:
+        void runThread();
+        void callbackKinectPointCloud(const sensor_msgs::PointCloud2& pc);
+        void construct(std::string kinectPrefix, std::string targetFrame, ros::NodeHandle node);
 
-    Kinect(ros::NodeHandle node);
-    Kinect(std::string kinectPrefix, ros::NodeHandle node);
-    Kinect(std::string kinectPrefix, std::string targetFrame, ros::NodeHandle node);
+    public:
 
-    void stopSensing();
-    void visualizeCurrentPc();
-    void storeCurrentPc(std::string fileName);
-    void setVisPubTopic(std::string visPubTopic);
-    void visualizeCurrentTransformedPc(KUKADU_SHARED_PTR<PCTransformator> transformator);
+        Kinect(ros::NodeHandle node);
+        Kinect(std::string kinectPrefix, ros::NodeHandle node);
+        Kinect(std::string kinectPrefix, std::string targetFrame, ros::NodeHandle node);
 
-    bool isInitialized();
+        void stopSensing();
+        void visualizeCurrentPc();
+        void storeCurrentPc(std::string fileName);
+        void setVisPubTopic(std::string visPubTopic);
+        void visualizeCurrentTransformedPc(KUKADU_SHARED_PTR<PCTransformator> transformator);
 
-    std::string getVisPubTopic();
+        bool isInitialized();
 
-    sensor_msgs::PointCloud2 getCurrentPointCloud();
+        std::string getVisPubTopic();
 
-    KUKADU_SHARED_PTR<kukadu_thread> startSensing();
+        sensor_msgs::PointCloud2 getCurrentPointCloud();
 
-};
+        KUKADU_SHARED_PTR<kukadu_thread> startSensing();
+
+    };
+
+}
 
 #endif

@@ -9,28 +9,30 @@
 #include <string>
 #include <vector>
 
-class IntermediateEventClip : public Clip {
+namespace kukadu {
 
-private:
+    class IntermediateEventClip : public Clip {
 
-    int hapticMode;
+    private:
 
-    std::string caption;
+        int hapticMode;
 
-    KUKADU_SHARED_PTR<SensingController> sensingEvent;
+        std::string caption;
 
-public:
+        KUKADU_SHARED_PTR<SensingController> sensingEvent;
 
-    IntermediateEventClip(KUKADU_SHARED_PTR<SensingController> sensingEvent,
-                          int level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, KUKADU_SHARED_PTR<std::vector<int> > clipValues, int immunity);
+    public:
 
-    std::string toString() const;
-    std::pair<int, KUKADU_SHARED_PTR<Clip> > jumpNextRandom();
+        IntermediateEventClip(KUKADU_SHARED_PTR<SensingController> sensingEvent,
+                              int level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, KUKADU_SHARED_PTR<std::vector<int> > clipValues, int immunity);
 
-    KUKADU_SHARED_PTR<SensingController> getSensingController();
+        std::string toString() const;
+        std::pair<int, KUKADU_SHARED_PTR<Clip> > jumpNextRandom();
 
-};
+        KUKADU_SHARED_PTR<SensingController> getSensingController();
 
+    };
 
+}
 
 #endif // INTERMEDIATEEVENTCLIP_H

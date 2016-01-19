@@ -8,46 +8,50 @@
 
 #include "../utils/utils.h"
 
-class SensorData {
+namespace kukadu {
 
-private:
+    class SensorData {
 
-    std::vector<std::string> labels;
-    std::vector<std::string> jointPosLabels;
-    std::vector<std::string> jointFrcLabels;
-    std::vector<std::string> cartPosLabels;
-    std::vector<std::string> cartFrcTrqLabels;
-    std::vector<std::string> cartForceAbsLabel;
-    arma::mat values;
+    private:
 
-public:
+        std::vector<std::string> labels;
+        std::vector<std::string> jointPosLabels;
+        std::vector<std::string> jointFrcLabels;
+        std::vector<std::string> cartPosLabels;
+        std::vector<std::string> cartFrcTrqLabels;
+        std::vector<std::string> cartForceAbsLabel;
+        arma::mat values;
 
-    SensorData(std::string timeLabel, std::vector<std::string> jointPosLabels, std::vector<std::string> jointFrcLabels, std::vector<std::string> cartPosLabels,
-               std::vector<std::string> cartForceAbsLabel, std::vector<std::string> cartFrcTrqLabels,
-               arma::vec time, arma::mat jointPos, arma::mat jointFrc, arma::mat cartPos, arma::mat cartForceAbs, arma::mat cartFrcTrq);
+    public:
 
-    int labelExists(std::string label);
-    arma::vec getDataByIdx(int idx);
-    arma::vec getDataByLabel(std::string label);
-    arma::vec getTime();
-    arma::mat getRange(std::vector<std::string> indexes);
-    arma::mat getRange(std::vector<int> indexes);
-    arma::mat getRange(int startIdx, int endIdx);
+        SensorData(std::string timeLabel, std::vector<std::string> jointPosLabels, std::vector<std::string> jointFrcLabels, std::vector<std::string> cartPosLabels,
+                   std::vector<std::string> cartForceAbsLabel, std::vector<std::string> cartFrcTrqLabels,
+                   arma::vec time, arma::mat jointPos, arma::mat jointFrc, arma::mat cartPos, arma::mat cartForceAbs, arma::mat cartFrcTrq);
 
-    arma::vec getTimes();
-    arma::mat getJointPos();
-    arma::mat getJointForces();
-    arma::mat getCartPos();
-    arma::mat getCartFrcTrqs();
+        int labelExists(std::string label);
+        arma::vec getDataByIdx(int idx);
+        arma::vec getDataByLabel(std::string label);
+        arma::vec getTime();
+        arma::mat getRange(std::vector<std::string> indexes);
+        arma::mat getRange(std::vector<int> indexes);
+        arma::mat getRange(int startIdx, int endIdx);
 
-    double getTime(int rowIdx);
-    arma::vec getJointPosRow(int rowIdx);
-    arma::vec getJointForcesRow(int rowIdx);
-    arma::vec getCartPosRow(int rowIdx);
-    arma::vec getCartFrcTrqsRow(int rowIdx);
+        arma::vec getTimes();
+        arma::mat getJointPos();
+        arma::mat getJointForces();
+        arma::mat getCartPos();
+        arma::mat getCartFrcTrqs();
 
-    void removeDuplicateTimes();
+        double getTime(int rowIdx);
+        arma::vec getJointPosRow(int rowIdx);
+        arma::vec getJointForcesRow(int rowIdx);
+        arma::vec getCartPosRow(int rowIdx);
+        arma::vec getCartFrcTrqsRow(int rowIdx);
 
-};
+        void removeDuplicateTimes();
+
+    };
+
+}
 
 #endif

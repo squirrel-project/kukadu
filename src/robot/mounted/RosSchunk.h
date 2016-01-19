@@ -20,73 +20,77 @@
 #include "../../utils/utils.h"
 #include "../../types/KukaduTypes.h"
 
-#define SDH_IGNORE_JOINT std::numeric_limits<double>::min()
+namespace kukadu {
 
-enum kukadu_grasps {eGID_CENTRICAL, eGID_CYLINDRICAL, eGID_PARALLEL, eGID_SPHERICAL};
+    #define SDH_IGNORE_JOINT std::numeric_limits<double>::min()
 
-/** \brief Provides control capabilities for the Schunk SDH robotic hand with ROS binding
- * Implements the GenericHand interface for the Schunk SDH robotic hand. Note that using this class the programm has to be executed with root rights
- * \ingroup RobotFramework
- */
-class RosSchunk : public GenericHand {
+    enum kukadu_grasps {eGID_CENTRICAL, eGID_CYLINDRICAL, eGID_PARALLEL, eGID_SPHERICAL};
 
-private:
+    /** \brief Provides control capabilities for the Schunk SDH robotic hand with ROS binding
+     * Implements the GenericHand interface for the Schunk SDH robotic hand. Note that using this class the programm has to be executed with root rights
+     * \ingroup RobotFramework
+     */
+    class RosSchunk : public GenericHand {
 
-    kukadu_grasps currentGraspId;
+    private:
 
-    int previousCurrentPosQueueSize;
+        kukadu_grasps currentGraspId;
 
-    ros::NodeHandle node;
-    ros::Publisher trajPub;
-    ros::Subscriber stateSub;
-    ros::Subscriber tactileSub;
+        int previousCurrentPosQueueSize;
 
-    std::vector<std::string> joint_names_str;
-    std::vector<arma::mat> currentTactileReadings;
+        ros::NodeHandle node;
+        ros::Publisher trajPub;
+        ros::Subscriber stateSub;
+        ros::Subscriber tactileSub;
 
-    std::string hand;
+        std::vector<std::string> joint_names_str;
+        std::vector<arma::mat> currentTactileReadings;
 
-    std::vector<double> generateCylindricalPose(double percentage);
-    std::vector<double> generateParallelPose(double percentage);
-    std::vector<double> generateCentricalPose(double percentage);
-    std::vector<double> generateSphericalPose(double percentage);
+        std::string hand;
 
-    bool targetReached;
-    bool isFirstCallback;
-    bool movementStarted;
+        std::vector<double> generateCylindricalPose(double percentage);
+        std::vector<double> generateParallelPose(double percentage);
+        std::vector<double> generateCentricalPose(double percentage);
+        std::vector<double> generateSphericalPose(double percentage);
 
-    bool vectorsDeviate(const std::vector<double> v1, const std::vector<double> v2, double tolerance);
-    std::vector<double> currentCommandedPos;
-    std::vector<double> initCurrentPos;
-    std::vector<double> currentPos;
-    std::vector<std::vector<double> > previousCurrentPosQueue;
+        bool targetReached;
+        bool isFirstCallback;
+        bool movementStarted;
 
-    kukadu_mutex currentPosMutex;
-    kukadu_mutex tactileMutex;
+        bool vectorsDeviate(const std::vector<double> v1, const std::vector<double> v2, double tolerance);
+        std::vector<double> currentCommandedPos;
+        std::vector<double> initCurrentPos;
+        std::vector<double> currentPos;
+        std::vector<std::vector<double> > previousCurrentPosQueue;
 
-    void stateCallback(const sensor_msgs::JointState& state);
-    void tactileCallback(const iis_robot_dep::TactileSensor& state);
+        kukadu_mutex currentPosMutex;
+        kukadu_mutex tactileMutex;
 
-protected:
+        void stateCallback(const sensor_msgs::JointState& state);
+        void tactileCallback(const iis_robot_dep::TactileSensor& state);
 
-    RosSchunk(std::string type, std::string hand);
+    protected:
 
-public:
+        RosSchunk(std::string type, std::string hand);
 
-    RosSchunk(ros::NodeHandle node, std::string type, std::string hand);
+    public:
 
-    virtual void connectHand();
-    virtual void safelyDestroy();
-    virtual void disconnectHand();
-    virtual void setGrasp(kukadu_grasps grasp);
-    virtual void publishSingleJoint(int idx, double pos);
-    virtual void closeHand(double percentage, double velocity);
-    virtual void publishSdhJoints(std::vector<double> positions);
+        RosSchunk(ros::NodeHandle node, std::string type, std::string hand);
 
-    virtual std::string getHandName();
+        virtual void connectHand();
+        virtual void safelyDestroy();
+        virtual void disconnectHand();
+        virtual void setGrasp(kukadu_grasps grasp);
+        virtual void publishSingleJoint(int idx, double pos);
+        virtual void closeHand(double percentage, double velocity);
+        virtual void publishSdhJoints(std::vector<double> positions);
 
-    virtual std::vector<arma::mat> getTactileSensing();
+        virtual std::string getHandName();
 
-};
+        virtual std::vector<arma::mat> getTactileSensing();
+
+    };
+
+}
 
 #endif

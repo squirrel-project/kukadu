@@ -1,5 +1,5 @@
-#ifndef CLUSTER_H
-#define CLUSTER_H 1
+#ifndef KUKADU_CLUSTER_H
+#define KUKADU_CLUSTER_H
 
 #include <set>
 #include <vector>
@@ -8,7 +8,7 @@
 #include <boost/unordered_map.hpp>
 #include <boost/foreach.hpp>
 
-namespace Clustering{
+namespace kukadu {
 
   typedef double Coord;            // a coordinate
   typedef double Distance;         // distance

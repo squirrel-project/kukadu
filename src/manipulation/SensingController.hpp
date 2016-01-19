@@ -14,74 +14,76 @@
 #include "../robot/SensorStorage.h"
 #include "../robot/KukieControlQueue.h"
 
-class SensingController : public Controller {
+namespace kukadu {
 
-private:
+    class SensingController : public Controller {
 
-    bool classifierParamsSet;
+    private:
 
-    int hapticMode;
-    int currentIterationNum;
-    int simulationGroundTruth;
-    int simulatedClassificationPrecision;
+        bool classifierParamsSet;
 
-    KUKADU_DISCRETE_DISTRIBUTION<int> classifierDist;
+        int hapticMode;
+        int currentIterationNum;
+        int simulationGroundTruth;
+        int simulatedClassificationPrecision;
 
-    double bestParamC;
-    double bestParamD;
-    double bestParamParam1;
-    double bestParamParam2;
+        KUKADU_DISCRETE_DISTRIBUTION<int> classifierDist;
 
-    std::string tmpPath;
-    std::string databasePath;
-    std::string classifierPath;
-    std::string classifierFile;
-    std::string classifierFunction;
+        double bestParamC;
+        double bestParamD;
+        double bestParamParam1;
+        double bestParamParam2;
 
-    KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator;
+        std::string tmpPath;
+        std::string databasePath;
+        std::string classifierPath;
+        std::string classifierFile;
+        std::string classifierFunction;
 
-    std::vector<KUKADU_SHARED_PTR<GenericHand> > hands;
-    std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues;
+        KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator;
 
-    std::vector<double> callClassifier(std::string trainedPath, std::string passedFilePath, bool classify,
-                                       double bestParamC, double bestParamD, double bestParamParam1, double bestParamParam2);
+        std::vector<KUKADU_SHARED_PTR<GenericHand> > hands;
+        std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues;
 
-    void writeLabelFile(std::string baseFolderPath, std::vector<std::pair<int, std::string> > collectedSamples);
+        std::vector<double> callClassifier(std::string trainedPath, std::string passedFilePath, bool classify,
+                                           double bestParamC, double bestParamD, double bestParamParam1, double bestParamParam2);
 
-public:
+        void writeLabelFile(std::string baseFolderPath, std::vector<std::pair<int, std::string> > collectedSamples);
 
-    SensingController(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int hapticMode, std::string caption, std::string databasePath, std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, std::vector<KUKADU_SHARED_PTR<GenericHand> > hands,
-                      std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction);
+    public:
 
-    void setSimulationGroundTruth(int idx);
-    void gatherData(std::string completePath);
-    void setSimulationClassificationPrecision(int percent);
-    void gatherData(std::string dataBasePath, std::string dataName);
-    void setCLassifierParams(double bestParamC, double bestParamD, double bestParamParam1, double bestParamParam2);
+        SensingController(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int hapticMode, std::string caption, std::string databasePath, std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, std::vector<KUKADU_SHARED_PTR<GenericHand> > hands,
+                          std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction);
 
-    virtual void prepare() = 0;
-    virtual void cleanUp() = 0;
-    virtual void performCore() = 0;
+        void setSimulationGroundTruth(int idx);
+        void gatherData(std::string completePath);
+        void setSimulationClassificationPrecision(int percent);
+        void gatherData(std::string dataBasePath, std::string dataName);
+        void setCLassifierParams(double bestParamC, double bestParamD, double bestParamParam1, double bestParamParam2);
 
-    int performClassification();
-    int createRandomGroundTruthIdx();
+        virtual void prepare() = 0;
+        virtual void cleanUp() = 0;
+        virtual void performCore() = 0;
 
-    virtual int getSensingCatCount() = 0;
+        int performClassification();
+        int createRandomGroundTruthIdx();
 
-    double createDataBase();
+        virtual int getSensingCatCount() = 0;
 
-    std::string getDatabasePath();
-    std::string getFirstRobotFileName();
+        double createDataBase();
 
-    std::vector<double> callClassifier();
+        std::string getDatabasePath();
+        std::string getFirstRobotFileName();
 
-    KUKADU_SHARED_PTR<ControllerResult> performAction();
+        std::vector<double> callClassifier();
 
-    static const int HAPTIC_MODE_TERMINAL = 0;
-    static const int HAPTIC_MODE_CLASSIFIER = 1;
+        KUKADU_SHARED_PTR<ControllerResult> performAction();
 
-};
+        static const int HAPTIC_MODE_TERMINAL = 0;
+        static const int HAPTIC_MODE_CLASSIFIER = 1;
 
+    };
 
+}
 
 #endif

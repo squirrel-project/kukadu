@@ -12,26 +12,30 @@
 #include "../../types/KukaduTypes.h"
 #include "../../robot/PlottingControlQueue.h"
 
-class DmpRewardComputer : public TrajectoryBasedReward {
+namespace kukadu {
 
-private:
+    class DmpRewardComputer : public TrajectoryBasedReward {
 
-    double az;
-    double bz;
-    double timeStep;
+    private:
 
-    std::string file;
+        double az;
+        double bz;
+        double timeStep;
 
-    KUKADU_SHARED_PTR<ControllerResult> executionResult;
+        std::string file;
 
-    int binaryTimeSearch(arma::vec times, double t);
+        KUKADU_SHARED_PTR<ControllerResult> executionResult;
 
-public:
+        int binaryTimeSearch(arma::vec times, double t);
 
-    DmpRewardComputer(std::string file, double az, double bz, double timeStep, int degOfFreedom, double tmax, double step);
+    public:
 
-    arma::vec computeFun(double t);
-	
-};
+        DmpRewardComputer(std::string file, double az, double bz, double timeStep, int degOfFreedom, double tmax, double step);
+
+        arma::vec computeFun(double t);
+
+    };
+
+}
 
 #endif

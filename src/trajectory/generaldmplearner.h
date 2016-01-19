@@ -13,65 +13,69 @@
 #include "../learning/GeneralFitter.h"
 #include "../trajectory/DMPTrajectoryGenerator.h"
 
-class GeneralDmpLearner {
+namespace kukadu {
 
-private:
+    class GeneralDmpLearner {
 
-    int degFreedom;
-    arma::mat joints;
+    private:
 
-    std::vector<DMPBase> dmpBase;
+        int degFreedom;
+        arma::mat joints;
 
-    void construct(std::vector<DMPBase> dmpBase, double tau, double az, double bz, double ax, arma::mat joints, int degFreedom);
-    std::vector<trajectory_learner_internal> fitTrajectory(arma::vec time, arma::mat y, arma::mat dy, arma::mat ddy);
+        std::vector<DMPBase> dmpBase;
 
-protected:
+        void construct(std::vector<DMPBase> dmpBase, double tau, double az, double bz, double ax, arma::mat joints, int degFreedom);
+        std::vector<trajectory_learner_internal> fitTrajectory(arma::vec time, arma::mat y, arma::mat dy, arma::mat ddy);
 
-    double az;
-    double bz;
-    double ax;
-    double tau;
+    protected:
 
-    virtual KUKADU_SHARED_PTR<Dmp> createDmpInstance(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<arma::vec> fitYs, std::vector<arma::vec> dmpCoeffs, std::vector<DMPBase> dmpBase, std::vector<arma::mat> designMatrices,
-                                                   double tau, double az, double bz, double ax) = 0;
+        double az;
+        double bz;
+        double ax;
+        double tau;
 
-    virtual arma::mat computeFitY(arma::vec& time, arma::mat& y, arma::mat& dy, arma::mat& ddy, arma::vec& vec_g) = 0;
+        virtual KUKADU_SHARED_PTR<Dmp> createDmpInstance(arma::vec supervisedTs, std::vector<arma::vec> sampleYs, std::vector<arma::vec> fitYs, std::vector<arma::vec> dmpCoeffs, std::vector<DMPBase> dmpBase, std::vector<arma::mat> designMatrices,
+                                                       double tau, double az, double bz, double ax) = 0;
 
-public:
+        virtual arma::mat computeFitY(arma::vec& time, arma::mat& y, arma::mat& dy, arma::mat& ddy, arma::vec& vec_g) = 0;
 
-    /**
-     * \brief constructor
-     * \param dmpBase dmp basis function definition
-     * \param tau dmp timing constant
-     * \param az dmp az constant
-     * \param bz dmp bz constant
-     * \param ax dmp ax constant
-     * \param joints measured joints
-     * \param degFreedom robots degrees of freedom
-     */
-    GeneralDmpLearner(std::vector<DMPBase> dmpBase, double tau, double az, double bz, double ax, arma::mat joints);
+    public:
 
-    /**
-     * \brief constructor
-     * \param dmpBase dmp basis function definition
-     * \param tau dmp timing constant
-     * \param az dmp az constant
-     * \param bz dmp bz constant
-     * \param ax dmp ax constant
-     * \param file file containing the measured joints
-     * \param degFreedom robots degrees of freedom
-     */
-    GeneralDmpLearner(std::vector<double> mysDef, std::vector<double> sigmasDef, double az, double bz, std::string file);
+        /**
+         * \brief constructor
+         * \param dmpBase dmp basis function definition
+         * \param tau dmp timing constant
+         * \param az dmp az constant
+         * \param bz dmp bz constant
+         * \param ax dmp ax constant
+         * \param joints measured joints
+         * \param degFreedom robots degrees of freedom
+         */
+        GeneralDmpLearner(std::vector<DMPBase> dmpBase, double tau, double az, double bz, double ax, arma::mat joints);
 
-    GeneralDmpLearner(double az, double bz, std::string file);
+        /**
+         * \brief constructor
+         * \param dmpBase dmp basis function definition
+         * \param tau dmp timing constant
+         * \param az dmp az constant
+         * \param bz dmp bz constant
+         * \param ax dmp ax constant
+         * \param file file containing the measured joints
+         * \param degFreedom robots degrees of freedom
+         */
+        GeneralDmpLearner(std::vector<double> mysDef, std::vector<double> sigmasDef, double az, double bz, std::string file);
 
-    GeneralDmpLearner(double az, double bz, arma::mat joints);
+        GeneralDmpLearner(double az, double bz, std::string file);
 
-    /**
-     * \brief fit the specified trajectories
-     */
-    KUKADU_SHARED_PTR<Dmp> fitTrajectories();
+        GeneralDmpLearner(double az, double bz, arma::mat joints);
 
-};
+        /**
+         * \brief fit the specified trajectories
+         */
+        KUKADU_SHARED_PTR<Dmp> fitTrajectories();
+
+    };
+
+}
 
 #endif

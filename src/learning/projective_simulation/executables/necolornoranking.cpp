@@ -28,6 +28,7 @@
 #define ASY_WOR_START_NUMER_OF_CATS 2
 
 using namespace std;
+using namespace kukadu;
 
 int main(int argc, char** args) {
 

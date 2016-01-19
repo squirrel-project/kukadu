@@ -3,6 +3,7 @@
 #define PSEVAL_BUFFER_SIZE 500
 
 using namespace std;
+using namespace kukadu;
 
 PSEvaluator::PSEvaluator() {
 }

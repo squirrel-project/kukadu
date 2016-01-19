@@ -6,24 +6,28 @@
 #include "clip.h"
 #include "../../../types/KukaduTypes.h"
 
-class ActionClip : public Clip {
+namespace kukadu {
 
-private:
+    class ActionClip : public Clip {
 
-    int actionId;
-    std::string label;
+    private:
 
-public:
+        int actionId;
+        std::string label;
 
-    ActionClip(int actionId, int perceptDimensionality, std::string label, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator);
+    public:
 
-    int getActionId();
+        ActionClip(int actionId, int perceptDimensionality, std::string label, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator);
 
-    std::string getLabel();
-    std::string toString() const;
+        int getActionId();
 
-    std::pair<int, KUKADU_SHARED_PTR<Clip> > jumpNextRandom();
+        std::string getLabel();
+        std::string toString() const;
 
-};
+        std::pair<int, KUKADU_SHARED_PTR<Clip> > jumpNextRandom();
+
+    };
+
+}
 
 #endif

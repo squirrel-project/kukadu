@@ -18,119 +18,123 @@
 
 using namespace std;
 
-///////////////////////////////////////////////////////////////////////////////
-// constructor
-///////////////////////////////////////////////////////////////////////////////
-Tokenizer::Tokenizer() : buffer(""), token(""), delimiter(DEFAULT_DELIMITER) {
-    currPos = 0;
-    lastToken = "";
-    useLastToken = false;
-    tokenIdx = -1;
-}
+namespace kukadu {
 
-Tokenizer::Tokenizer(const std::string& str, const std::string& delimiter) : buffer(str), token(""), delimiter(delimiter) {
-    currPos = 0;
-    lastToken = "";
-    useLastToken = false;
-    tokenIdx = -1;
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// destructor
-///////////////////////////////////////////////////////////////////////////////
-Tokenizer::~Tokenizer() {
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// reset string buffer, delimiter and the currsor position
-///////////////////////////////////////////////////////////////////////////////
-void Tokenizer::set(const std::string& str, const std::string& delimiter) {
-    this->buffer = str;
-    this->delimiter = delimiter;
-    this->currPos = 0;
-}
-
-void Tokenizer::setString(const std::string& str) {
-    this->buffer = str;
-    this->currPos = 0;
-}
-
-void Tokenizer::setDelimiter(const std::string& delimiter) {
-    this->delimiter = delimiter;
-    this->currPos = 0;
-}
-
-int Tokenizer::getTokenIdx() {
-    return tokenIdx;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// return the next token
-// If cannot find a token anymore, return "".
-///////////////////////////////////////////////////////////////////////////////
-std::string Tokenizer::next() {
-    ++tokenIdx;
-    if(useLastToken) {
+    ///////////////////////////////////////////////////////////////////////////////
+    // constructor
+    ///////////////////////////////////////////////////////////////////////////////
+    Tokenizer::Tokenizer() : buffer(""), token(""), delimiter(DEFAULT_DELIMITER) {
+        currPos = 0;
+        lastToken = "";
         useLastToken = false;
-        return lastToken;
-    } else {
-        if(buffer.size() <= 0) return "";           // skip if buffer is empty
+        tokenIdx = -1;
+    }
 
-        token.clear();                              // reset token string
+    Tokenizer::Tokenizer(const std::string& str, const std::string& delimiter) : buffer(str), token(""), delimiter(delimiter) {
+        currPos = 0;
+        lastToken = "";
+        useLastToken = false;
+        tokenIdx = -1;
+    }
 
-        this->skipDelimiter();                      // skip leading delimiters
 
-        // append each char to token string until it meets delimiter
-        while(currPos != buffer.size() && !isDelimiter(*(buffer.begin() + currPos))) {
-            token += *(buffer.begin() + currPos);
-            ++currPos;
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // destructor
+    ///////////////////////////////////////////////////////////////////////////////
+    Tokenizer::~Tokenizer() {
+    }
+
+
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // reset string buffer, delimiter and the currsor position
+    ///////////////////////////////////////////////////////////////////////////////
+    void Tokenizer::set(const std::string& str, const std::string& delimiter) {
+        this->buffer = str;
+        this->delimiter = delimiter;
+        this->currPos = 0;
+    }
+
+    void Tokenizer::setString(const std::string& str) {
+        this->buffer = str;
+        this->currPos = 0;
+    }
+
+    void Tokenizer::setDelimiter(const std::string& delimiter) {
+        this->delimiter = delimiter;
+        this->currPos = 0;
+    }
+
+    int Tokenizer::getTokenIdx() {
+        return tokenIdx;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // return the next token
+    // If cannot find a token anymore, return "".
+    ///////////////////////////////////////////////////////////////////////////////
+    std::string Tokenizer::next() {
+        ++tokenIdx;
+        if(useLastToken) {
+            useLastToken = false;
+            return lastToken;
+        } else {
+            if(buffer.size() <= 0) return "";           // skip if buffer is empty
+
+            token.clear();                              // reset token string
+
+            this->skipDelimiter();                      // skip leading delimiters
+
+            // append each char to token string until it meets delimiter
+            while(currPos != buffer.size() && !isDelimiter(*(buffer.begin() + currPos))) {
+                token += *(buffer.begin() + currPos);
+                ++currPos;
+            }
+            return (lastToken = token);
         }
-        return (lastToken = token);
-    }
-    return "";
-}
-
-void Tokenizer::putBackLast() {
-    useLastToken = true;
-    if(tokenIdx > 0)
-        tokenIdx--;
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// skip ang leading delimiters
-///////////////////////////////////////////////////////////////////////////////
-void Tokenizer::skipDelimiter() {
-    while(currPos != buffer.size() && isDelimiter(*(buffer.begin() + currPos)))
-        ++currPos;
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// return true if the current character is delimiter
-///////////////////////////////////////////////////////////////////////////////
-bool Tokenizer::isDelimiter(char c) {
-    return (delimiter.find(c) != std::string::npos);
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// split the input string into multiple tokens
-// This function scans tokens from the current cursor position.
-///////////////////////////////////////////////////////////////////////////////
-std::vector<std::string> Tokenizer::split() {
-    std::vector<std::string> tokens;
-    std::string token;
-    while((token = this->next()) != "") {
-        tokens.push_back(token);
+        return "";
     }
 
-    return tokens;
+    void Tokenizer::putBackLast() {
+        useLastToken = true;
+        if(tokenIdx > 0)
+            tokenIdx--;
+    }
+
+
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // skip ang leading delimiters
+    ///////////////////////////////////////////////////////////////////////////////
+    void Tokenizer::skipDelimiter() {
+        while(currPos != buffer.size() && isDelimiter(*(buffer.begin() + currPos)))
+            ++currPos;
+    }
+
+
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // return true if the current character is delimiter
+    ///////////////////////////////////////////////////////////////////////////////
+    bool Tokenizer::isDelimiter(char c) {
+        return (delimiter.find(c) != std::string::npos);
+    }
+
+
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // split the input string into multiple tokens
+    // This function scans tokens from the current cursor position.
+    ///////////////////////////////////////////////////////////////////////////////
+    std::vector<std::string> Tokenizer::split() {
+        std::vector<std::string> tokens;
+        std::string token;
+        while((token = this->next()) != "") {
+            tokens.push_back(token);
+        }
+
+        return tokens;
+    }
+
 }
