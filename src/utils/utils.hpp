@@ -145,7 +145,6 @@ namespace kukadu {
     void copyFile(const std::string source, const std::string destination);
 
     std::vector<double> createJointsVector(int n_args, ...);
-    std::vector<double> createJointsVector(double j1, double j2, double j3, double j4, double j5, double j6, double j7);
 
     pcl::PointCloud<pcl::PointXYZ> sensorMsgsPcToPclPc(sensor_msgs::PointCloud2 pc);
     sensor_msgs::PointCloud2 pclPcToSensorMsgsPc(pcl::PointCloud<pcl::PointXYZ> pc);

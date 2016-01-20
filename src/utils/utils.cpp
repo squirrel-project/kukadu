@@ -1050,18 +1050,6 @@ namespace kukadu {
         return retVec;
     }
 
-    std::vector<double> createJointsVector(double j1, double j2, double j3, double j4, double j5, double j6, double j7) {
-        vector<double> ret;
-        ret.push_back(j1);
-        ret.push_back(j2);
-        ret.push_back(j3);
-        ret.push_back(j4);
-        ret.push_back(j5);
-        ret.push_back(j6);
-        ret.push_back(j7);
-        return ret;
-    }
-
     tf::Quaternion rpyToQuat(const double roll, const double pitch, const double yaw) {
         tf::Quaternion quat(yaw, pitch, roll);
         return quat;

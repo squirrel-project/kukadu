@@ -31,7 +31,7 @@ find_package(Armadillo REQUIRED)
 find_package(PythonLibs REQUIRED)
 
 catkin_package(
-    INCLUDE_DIRS include
+    INCLUDE_DIRS include external/ReflexxesTypeII/include
     LIBRARIES ${PROJECT_NAME}
     CATKIN_DEPENDS roscpp
     DEPENDS prosim gsl gslcblas ncurses stdc++ ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES}
@@ -42,6 +42,7 @@ include_directories(
     ${Boost_INCLUDE_DIRS}
     ${catkin_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
+    external/ReflexxesTypeII/include
 )
 
 set(ENABLE_VISUALIZATION 1)
@@ -71,13 +72,14 @@ AUX_SOURCE_DIRECTORY(src/learning/metric_learning/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/robot/robotDriver/src/kuka/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/learning/reinforcement_learning/ KUKADUSRC)
 
+AUX_SOURCE_DIRECTORY(external/ReflexxesTypeII/src/TypeIIRML/ REFLEXXESSRC)
+
 add_subdirectory(src/learning/projective_simulation)
 
-add_library(${PROJECT_NAME}
-    ${KUKADUSRC}
-)
+add_library(${PROJECT_NAME} ${KUKADUSRC})
+add_library(reflexxeslib ${REFLEXXESSRC})
 
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES} ncurses gsl gslcblas stdc++ pthread dl util m prosim)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES} reflexxeslib ncurses gsl gslcblas stdc++ pthread dl util m prosim)
 
 catkin_add_gtest(kukadutest test/kukadutest.cpp)
 

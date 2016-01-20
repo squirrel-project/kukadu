@@ -114,6 +114,8 @@ namespace kukadu {
 
         geometry_msgs::Pose getCurrentCartesianPose();
 
+        virtual KUKADU_SHARED_PTR<KinematicsModel> getKinematicsModel();
+
         virtual geometry_msgs::Pose computeFk(std::vector<double> joints);
 
         virtual void rollBack(double time);

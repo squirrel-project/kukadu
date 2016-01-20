@@ -38,7 +38,10 @@
 
 #include "../../src/robot/kinematics/kinematics.hpp"
 #include "../../src/robot/kinematics/pathplanner.hpp"
+#include "../../src/robot/kinematics/pathplanner.hpp"
+#include "../../src/robot/kinematics/simpleplanner.hpp"
 #include "../../src/robot/kinematics/moveitkinematics.hpp"
+
 
 #include "../../src/trajectory/dmpexecutor.hpp"
 #include "../../src/trajectory/dmpgeneralizer.hpp"

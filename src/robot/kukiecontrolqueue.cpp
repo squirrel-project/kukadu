@@ -472,4 +472,11 @@ namespace kukadu {
     void KukieControlQueue::safelyDestroy() {
     }
 
+    KUKADU_SHARED_PTR<KinematicsModel> KukieControlQueue::getKinematicsModel() {
+
+        KUKADU_SHARED_PTR<KinematicsModel> kin = KUKADU_SHARED_PTR<KinematicsModel>(new KinematicsModel(getMovementDegreesOfFreedom(), getTimeStep()));
+        return kin;
+
+    }
+
 }
