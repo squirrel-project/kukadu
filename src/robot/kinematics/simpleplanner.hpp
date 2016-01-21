@@ -12,8 +12,8 @@
 
 #include "kinematics.hpp"
 #include "pathplanner.hpp"
+#include "../controlqueue.hpp"
 #include "../../types/kukadutypes.hpp"
-#include "../../types/kinematicsmodel.hpp"
 
 namespace kukadu {
 
@@ -23,7 +23,10 @@ namespace kukadu {
 
         int degOfFreedom;
 
-        KUKADU_SHARED_PTR<KinematicsModel> model;
+        double cycleTime;
+
+        KUKADU_SHARED_PTR<Kinematics> kin;
+        KUKADU_SHARED_PTR<ControlQueue> queue;
 
         RMLPositionFlags refFlags;
         KUKADU_SHARED_PTR<ReflexxesAPI> refApi;
@@ -32,7 +35,7 @@ namespace kukadu {
 
     public:
 
-        SimplePlanner(KUKADU_SHARED_PTR<KinematicsModel> model);
+        SimplePlanner(KUKADU_SHARED_PTR<ControlQueue> queue, KUKADU_SHARED_PTR<Kinematics> kin);
         ~SimplePlanner();
 
         virtual std::vector<arma::vec> planJointTrajectory(std::vector<arma::vec> intermediateJoints);

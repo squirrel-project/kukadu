@@ -178,8 +178,6 @@ namespace kukadu {
         geometry_msgs::Pose getCurrentCartesianPoseRf();
         geometry_msgs::Pose moveCartesianRelativeWf(geometry_msgs::Pose basePoseRf, geometry_msgs::Pose offset);
 
-        virtual KUKADU_SHARED_PTR<KinematicsModel> getKinematicsModel();
-
         arma::vec getFrcTrqCart();
 
         static const int KUKA_STOP_MODE = 0;

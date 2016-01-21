@@ -227,7 +227,7 @@ namespace kukadu {
 
             }
 
-            if(!stopQueueWhilePtp() && !jointPtpRunning && !cartesianPtpRunning) {
+            if(!stopQueueWhilePtp() || !jointPtpRunning && !cartesianPtpRunning) {
 
                 if(currentControlType == CONTROLQUEUE_JNT_IMP_MODE || currentControlType == CONTROLQUEUE_JNT_POS_MODE) {
 

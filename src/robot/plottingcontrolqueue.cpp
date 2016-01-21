@@ -184,11 +184,4 @@ namespace kukadu {
     void PlottingControlQueue::safelyDestroy() {
     }
 
-    KUKADU_SHARED_PTR<KinematicsModel> PlottingControlQueue::getKinematicsModel() {
-
-        KUKADU_SHARED_PTR<KinematicsModel> kin = KUKADU_SHARED_PTR<KinematicsModel>(new KinematicsModel(getMovementDegreesOfFreedom(), getTimeStep()));
-        return kin;
-
-    }
-
 }

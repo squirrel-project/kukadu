@@ -73,7 +73,7 @@ namespace kukadu {
 
         fastIkInitializationWorked = false;
         try {
-            kin = KUKADU_SHARED_PTR<Kinematics>(new MoveItKinematics(armPrefix, armPrefix + string("_arm_7_link")));
+            kin = KUKADU_SHARED_PTR<Kinematics>(new MoveItKinematics(armPrefix, armPrefix + string("_7_link")));
             fastIkInitializationWorked = true;
         } catch(runtime_error) {
             ROS_INFO("(KukieControlQueue) fast ik not reachable - disabled");
@@ -470,13 +470,6 @@ namespace kukadu {
     }
 
     void KukieControlQueue::safelyDestroy() {
-    }
-
-    KUKADU_SHARED_PTR<KinematicsModel> KukieControlQueue::getKinematicsModel() {
-
-        KUKADU_SHARED_PTR<KinematicsModel> kin = KUKADU_SHARED_PTR<KinematicsModel>(new KinematicsModel(getMovementDegreesOfFreedom(), getTimeStep()));
-        return kin;
-
     }
 
 }

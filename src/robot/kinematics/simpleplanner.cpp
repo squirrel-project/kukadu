@@ -8,20 +8,23 @@ using namespace arma;
 
 namespace kukadu {
 
-    SimplePlanner::SimplePlanner(KUKADU_SHARED_PTR<KinematicsModel> model) {
+    SimplePlanner::SimplePlanner(KUKADU_SHARED_PTR<ControlQueue> queue, KUKADU_SHARED_PTR<Kinematics> kin) {
 
-        this->model = model;
+        this->queue = queue;
+        this->kin = kin;
 
-        degOfFreedom = model->getDegOfFreedom();
+        cycleTime = queue->getTimeStep();
+        degOfFreedom = queue->getMovementDegreesOfFreedom();
 
-        refApi = KUKADU_SHARED_PTR<ReflexxesAPI>(new ReflexxesAPI(model->getDegOfFreedom(), 1.0 / model->getCycleTime()));
-        refInputParams = KUKADU_SHARED_PTR<RMLPositionInputParameters>(new RMLPositionInputParameters(model->getDegOfFreedom()));
-        refOutputParams = KUKADU_SHARED_PTR<RMLPositionOutputParameters>(new RMLPositionOutputParameters(model->getDegOfFreedom()));
+        refApi = KUKADU_SHARED_PTR<ReflexxesAPI>(new ReflexxesAPI(degOfFreedom, 1.0 / cycleTime));
+        refInputParams = KUKADU_SHARED_PTR<RMLPositionInputParameters>(new RMLPositionInputParameters(degOfFreedom));
+        refOutputParams = KUKADU_SHARED_PTR<RMLPositionOutputParameters>(new RMLPositionOutputParameters(degOfFreedom));
 
         for(int i = 0; i < degOfFreedom; ++i) {
-            refInputParams->MaxJerkVector->VecData[i] = RAD2DEG(0.001);
-            refInputParams->MaxAccelerationVector->VecData[i] = RAD2DEG(0.001);
-            refInputParams->MaxVelocityVector->VecData[i] = RAD2DEG(0.001);
+            // this seems to be not normal velocity but velocity normalized by time step
+            refInputParams->MaxJerkVector->VecData[i] = 0.003 * cycleTime;
+            refInputParams->MaxAccelerationVector->VecData[i] = 0.004 * cycleTime;
+            refInputParams->MaxVelocityVector->VecData[i] = 0.002 * cycleTime;
             refInputParams->SelectionVector->VecData[i] = true;
         }
 
@@ -51,8 +54,8 @@ namespace kukadu {
 
                 for(int i = 0; i < degOfFreedom; ++i) {
 
-                    refInputParams->TargetPositionVector->VecData[i] = RAD2DEG(nextJointPos(i));
-                    refInputParams->CurrentPositionVector->VecData[i] = RAD2DEG(currentJointPos(i));
+                    refInputParams->TargetPositionVector->VecData[i] = nextJointPos(i);
+                    refInputParams->CurrentPositionVector->VecData[i] = currentJointPos(i);
 
                     if(firstTime) {
                         refInputParams->CurrentVelocityVector->VecData[i] = 0.0;
@@ -74,7 +77,7 @@ namespace kukadu {
 
                     vec next(degOfFreedom);
                     for(int k = 0; k < degOfFreedom; ++k)
-                        next(k) = DEG2RAD(refOutputParams->NewPositionVector->VecData[k]);
+                        next(k) = refOutputParams->NewPositionVector->VecData[k];
 
                     returnedTrajectory.push_back(next);
 
@@ -89,6 +92,25 @@ namespace kukadu {
     }
 
     std::vector<arma::vec> SimplePlanner::planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses) {
+
+        vector<vec> retJoints;
+        vec currJoints = queue->getCurrentJoints().joints;
+        retJoints.push_back(currJoints);
+
+        int posesCount = intermediatePoses.size();
+        for(int i = 0; i < posesCount; ++i) {
+            cout << i << endl;
+            vector<vec> nextIk = kin->computeIk(currJoints, intermediatePoses.at(i));
+            if(nextIk.size()) {
+                currJoints = nextIk.at(0);
+                retJoints.push_back(nextIk.at(0));
+            } else
+                return vector<vec>();
+        }
+
+        retJoints.push_back(currJoints);
+
+        return planJointTrajectory(retJoints);
 
     }
 

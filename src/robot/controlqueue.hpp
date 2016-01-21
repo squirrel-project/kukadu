@@ -4,7 +4,6 @@
 #include "../utils/types.hpp"
 #include "../utils/tictoc.hpp"
 #include "../types/kukadutypes.hpp"
-#include "../types/kinematicsmodel.hpp"
 #include "../utils/destroyableobject.hpp"
 
 #include <queue>
@@ -110,8 +109,6 @@ namespace kukadu {
         virtual double getTimeStep();
 
         virtual double getMeasuredTimeStep();
-
-        virtual KUKADU_SHARED_PTR<KinematicsModel> getKinematicsModel() = 0;
 
         /**
          * \brief Sets a flag to stop the control thread after current iteration is executed
