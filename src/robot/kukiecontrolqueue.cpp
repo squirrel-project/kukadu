@@ -290,7 +290,7 @@ namespace kukadu {
     }
 
     bool KukieControlQueue::stopQueueWhilePtp() {
-        return true;
+        return false;
     }
 
     mes_result KukieControlQueue::getCurrentJntFrcTrq() {
