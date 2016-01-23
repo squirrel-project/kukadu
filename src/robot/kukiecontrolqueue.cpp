@@ -71,6 +71,8 @@ namespace kukadu {
 
         isRealRobot = (getRobotDeviceType().compare("real")) ? false : true;
 
+        // this is required because shared_from_this can't be called in constructor (initializiation happens by lazy loading)
+        plannerInitialized = false;
         fastIkInitializationWorked = false;
         try {
             kin = KUKADU_SHARED_PTR<Kinematics>(new MoveItKinematics(armPrefix, armPrefix + string("_7_link")));
@@ -321,9 +323,23 @@ namespace kukadu {
 
         cartesianPtpReached = false;
 
-        vector<vec> ikSolutions = computeIk(pos);
-        if(ikSolutions.size() > 0) {
-            jointPtp(ikSolutions.at(0));
+        if(!plannerInitialized) {
+            planner = KUKADU_SHARED_PTR<PathPlanner>(new SimplePlanner(shared_from_this(), kin));
+            plannerInitialized = true;
+        }
+
+        vector<geometry_msgs::Pose> desiredPlan;
+        desiredPlan.push_back(getCurrentCartesianPose());
+        desiredPlan.push_back(pos);
+        vector<vec> desiredJointPlan = planner->planCartesianTrajectory(desiredPlan, false);
+
+        if(desiredJointPlan.size() > 0) {
+
+            for(int i = 0; i < desiredJointPlan.size(); ++i)
+                addJointsPosToQueue(desiredJointPlan.at(i));
+
+            synchronizeToControlQueue(1);
+
         } else {
             ROS_ERROR("(KukieControlQueue) Cartesian position not reachable");
         }
@@ -333,41 +349,26 @@ namespace kukadu {
     void KukieControlQueue::jointPtpInternal(arma::vec joints) {
 
         ptpReached = false;
-        ros::Rate sl(4);
-        if(ros::ok) {
 
-            if(!isShutUp())
-                ROS_INFO("(KukieControlQueue) moving");
+        if(!plannerInitialized) {
+            planner = KUKADU_SHARED_PTR<PathPlanner>(new SimplePlanner(shared_from_this(), kin));
+            plannerInitialized = true;
+        }
 
-            std_msgs::Float64MultiArray newJoints;
-            for(int i = 0; i < getMovementDegreesOfFreedom(); ++i) newJoints.data.push_back(joints[i]);
-            newJoints.layout.dim.push_back(std_msgs::MultiArrayDimension());
-            newJoints.layout.dim[0].size = getMovementDegreesOfFreedom();
-            newJoints.layout.dim[0].stride = 0;
-            newJoints.layout.dim[0].label = "RAD";
+        vector<arma::vec> desiredPlan;
+        desiredPlan.push_back(getCurrentJoints().joints);
+        desiredPlan.push_back(joints);
+        vector<vec> desiredJointPlan = planner->planJointTrajectory(desiredPlan);
 
-            pubPtp.publish(newJoints);
+        if(desiredJointPlan.size() > 0) {
 
-            ros::spinOnce();
+            for(int i = 0; i < desiredJointPlan.size(); ++i)
+                addJointsPosToQueue(desiredJointPlan.at(i));
 
-            // just to make sure, arm really reached target
-            ros::spinOnce();
-
-            sl.sleep();
-            ros::spinOnce();
-            loop_rate->sleep();
-            ros::spinOnce();
-
-            while(!ptpReached) {
-                sl.sleep();
-                ros::spinOnce();
-            }
-            if(!isShutUp())
-                ROS_INFO("(KukieControlQueue) ptp movement done");
+            synchronizeToControlQueue(1);
 
         } else {
-            if(!isShutUp())
-                ROS_INFO("(KukieControlQueue) ros error");
+            ROS_ERROR("(KukieControlQueue) Joint plan not found reachable");
         }
 
     }

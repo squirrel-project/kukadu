@@ -8,10 +8,9 @@ using namespace arma;
 
 namespace kukadu {
 
-    SimplePlanner::SimplePlanner(KUKADU_SHARED_PTR<ControlQueue> queue, KUKADU_SHARED_PTR<Kinematics> kin) {
+    SimplePlanner::SimplePlanner(KUKADU_SHARED_PTR<ControlQueue> queue, KUKADU_SHARED_PTR<Kinematics> kin) : PathPlanner(kin) {
 
         this->queue = queue;
-        this->kin = kin;
 
         cycleTime = queue->getTimeStep();
         degOfFreedom = queue->getMovementDegreesOfFreedom();
@@ -91,26 +90,62 @@ namespace kukadu {
 
     }
 
-    std::vector<arma::vec> SimplePlanner::planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses) {
+    std::vector<arma::vec> SimplePlanner::planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians) {
 
-        vector<vec> retJoints;
-        vec currJoints = queue->getCurrentJoints().joints;
-        retJoints.push_back(currJoints);
+        for(int i = 0; i < MAX_NUM_ATTEMPTS; ++i) {
 
-        int posesCount = intermediatePoses.size();
-        for(int i = 0; i < posesCount; ++i) {
-            cout << i << endl;
-            vector<vec> nextIk = kin->computeIk(currJoints, intermediatePoses.at(i));
-            if(nextIk.size()) {
-                currJoints = nextIk.at(0);
-                retJoints.push_back(nextIk.at(0));
-            } else
-                return vector<vec>();
+            vector<vec> retJoints;
+            vec currJoints = queue->getCurrentJoints().joints;
+            retJoints.push_back(currJoints);
+
+            int posesCount = intermediatePoses.size();
+            for(int i = 0; i < posesCount; ++i) {
+                vector<vec> nextIk = getKinematics()->computeIk(currJoints, intermediatePoses.at(i));
+                if(nextIk.size()) {
+                    currJoints = nextIk.at(0);
+                    retJoints.push_back(nextIk.at(0));
+                } else
+                    break;
+            }
+
+            if(!smoothCartesians || checkPlanSmoothness(retJoints)) {
+                vector<vec> plannedTrajectory = planJointTrajectory(retJoints);
+                if(checkRestrictions(plannedTrajectory))
+                    return plannedTrajectory;
+                else
+                    ROS_INFO("(SimplePlanner) restriction violation - replan");
+            }
+
         }
 
-        retJoints.push_back(currJoints);
+        return vector<vec>();
 
-        return planJointTrajectory(retJoints);
+    }
+
+    bool SimplePlanner::checkRestrictions(const std::vector<arma::vec>& plan) {
+
+        KUKADU_SHARED_PTR<Kinematics> kin = getKinematics();
+        for(int i = 0; i < plan.size(); ++i) {
+            vec nextPlanJoints = plan.at(i);
+            if(!kin->checkAllRestrictions(nextPlanJoints, kin->computeFk(armadilloToStdVec(nextPlanJoints))))
+                return false;
+        }
+        return true;
+
+    }
+
+    bool SimplePlanner::checkPlanSmoothness(const std::vector<arma::vec>& plan) {
+
+        for(int i = 0; i < plan.size() - 1; ++i) {
+            vec curr = plan.at(i);
+            vec next = plan.at(i + 1);
+            vec res = (curr - next).t() * (curr - next);
+            double dist = sqrt(res(0));
+            if(dist > MAX_JNT_DIST)
+                return false;
+        }
+
+        return true;
 
     }
 

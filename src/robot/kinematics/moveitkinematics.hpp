@@ -13,6 +13,7 @@
 #include <moveit/robot_model_loader/robot_model_loader.h>
 
 #include "kinematics.hpp"
+#include "restriction/restriction.hpp"
 #include "../../types/kukadutypes.hpp"
 
 namespace kukadu {
@@ -24,6 +25,7 @@ namespace kukadu {
         bool avoidCollisions;
 
         int maxAttempts;
+        int degOfFreedom;
 
         double timeOut;
 
@@ -33,6 +35,8 @@ namespace kukadu {
         robot_model::RobotModelPtr robot_model_;
         robot_model_loader::RobotModelLoaderPtr rml_;
         planning_scene::PlanningScenePtr planning_scene_;
+
+        KUKADU_SHARED_PTR<Restriction> modelRestriction;
         KUKADU_SHARED_PTR<robot_model::JointModelGroup> jnt_model_group;
 
         void construct(std::string moveGroupName, std::string tipLink, bool avoidCollisions, int maxAttempts, double timeOut);
@@ -47,6 +51,10 @@ namespace kukadu {
         virtual std::vector<arma::vec> computeIk(std::vector<double> currentJointState, const geometry_msgs::Pose& goal);
 
         virtual geometry_msgs::Pose computeFk(std::vector<double> jointState);
+
+        bool isColliding(arma::vec jointState, geometry_msgs::Pose pose);
+
+        KUKADU_SHARED_PTR<Restriction> getModelRestriction();
 
         static const int STD_MAX_ATTEMPTS = 5;
         static const double STD_TIMEOUT = 0.1;

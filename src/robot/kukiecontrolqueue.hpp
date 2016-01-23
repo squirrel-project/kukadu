@@ -14,6 +14,7 @@
 #include "../utils/utils.hpp"
 #include "../types/kukadutypes.hpp"
 #include "../robot/controlqueue.hpp"
+#include "kinematics/simpleplanner.hpp"
 #include "../utils/destroyableobject.hpp"
 #include "kinematics/moveitkinematics.hpp"
 #include "robotDriver/src/kuka/friRemote.h"
@@ -55,6 +56,7 @@ namespace kukadu {
 
         bool ptpReached;
         bool isRealRobot;
+        bool plannerInitialized;
         bool fastIkInitializationWorked;
 
         arma::vec currJoints;
@@ -115,6 +117,7 @@ namespace kukadu {
         ros::Subscriber subCartPtpReached;
 
         KUKADU_SHARED_PTR<Kinematics> kin;
+        KUKADU_SHARED_PTR<PathPlanner> planner;
 
         /* Kukie callback functions */
         void cartPosRfCallback(const geometry_msgs::Pose msg);

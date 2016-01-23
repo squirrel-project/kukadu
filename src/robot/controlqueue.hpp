@@ -24,7 +24,7 @@ namespace kukadu {
      * contains a queue and sends data to the robot at specified times.
      * \ingroup RobotFramework
      */
-    class ControlQueue : public DestroyableObject {
+    class ControlQueue : public DestroyableObject, public KUKADU_ENABLE_SHARED_FROM_THIS<ControlQueue> {
 
     private:
 

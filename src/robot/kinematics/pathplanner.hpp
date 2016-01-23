@@ -14,11 +14,21 @@ namespace kukadu {
 
     private:
 
+        bool checkCollision;
+        KUKADU_SHARED_PTR<Kinematics> kin;
 
     public:
 
+        PathPlanner(KUKADU_SHARED_PTR<Kinematics> kin);
+
+        void setCheckCollisions(bool collision);
+
+        bool getCheckCollision();
+
         virtual std::vector<arma::vec> planJointTrajectory(std::vector<arma::vec> intermediateJoints) = 0;
-        virtual std::vector<arma::vec> planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses) = 0;
+        virtual std::vector<arma::vec> planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians) = 0;
+
+        KUKADU_SHARED_PTR<Kinematics> getKinematics();
 
     };
 

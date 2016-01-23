@@ -70,6 +70,7 @@ AUX_SOURCE_DIRECTORY(src/robot/robotDriver/src/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/utils/easyloggingpp/src/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/learning/metric_learning/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/robot/robotDriver/src/kuka/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/robot/kinematics/restriction KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/learning/reinforcement_learning/ KUKADUSRC)
 
 AUX_SOURCE_DIRECTORY(external/ReflexxesTypeII/src/TypeIIRML/ REFLEXXESSRC)

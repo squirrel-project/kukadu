@@ -50,6 +50,12 @@ namespace kukadu {
             return;
         }
 
+        degOfFreedom = jnt_model_group->getJointModelNames().size();
+        modelRestriction = KUKADU_SHARED_PTR<Restriction>(new MoveItRestriction(robot_model_, planning_scene_, jnt_model_group));
+
+        if(avoidCollisions)
+            addRestriction(modelRestriction);
+
     }
 
     geometry_msgs::Pose MoveItKinematics::computeFk(std::vector<double> jointState) {
@@ -101,13 +107,25 @@ namespace kukadu {
 
         if(avoidCollisions) {
 
-            state->setJointGroupPositions(joint_group, solution);
-            state->update();
-            return !planning_scene_->isStateColliding(*state, joint_group->getName());
+            vec solVec(degOfFreedom);
+            for(int i = 0; i < degOfFreedom; ++i)
+                solVec(i) = solution[i];
+
+            geometry_msgs::Pose pose = computeFk(armadilloToStdVec(solVec));
+
+            return checkAllRestrictions(solVec, pose);
 
         } else
             return true;
 
+    }
+
+    bool MoveItKinematics::isColliding(arma::vec jointState, geometry_msgs::Pose pose) {
+        return !modelRestriction->stateOk(jointState, pose);
+    }
+
+    KUKADU_SHARED_PTR<Restriction> MoveItKinematics::getModelRestriction() {
+        return modelRestriction;
     }
 
 }

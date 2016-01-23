@@ -25,7 +25,6 @@ namespace kukadu {
 
         double cycleTime;
 
-        KUKADU_SHARED_PTR<Kinematics> kin;
         KUKADU_SHARED_PTR<ControlQueue> queue;
 
         RMLPositionFlags refFlags;
@@ -33,13 +32,19 @@ namespace kukadu {
         KUKADU_SHARED_PTR<RMLPositionInputParameters> refInputParams;
         KUKADU_SHARED_PTR<RMLPositionOutputParameters> refOutputParams;
 
+        bool checkRestrictions(const std::vector<arma::vec>& plan);
+        bool checkPlanSmoothness(const std::vector<arma::vec>& plan);
+
+        static const int MAX_NUM_ATTEMPTS = 10;
+        static const double MAX_JNT_DIST = 0.5;
+
     public:
 
         SimplePlanner(KUKADU_SHARED_PTR<ControlQueue> queue, KUKADU_SHARED_PTR<Kinematics> kin);
         ~SimplePlanner();
 
         virtual std::vector<arma::vec> planJointTrajectory(std::vector<arma::vec> intermediateJoints);
-        virtual std::vector<arma::vec> planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses);
+        virtual std::vector<arma::vec> planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians = false);
 
     };
 
