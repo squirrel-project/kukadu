@@ -5,7 +5,7 @@ using namespace arma;
 
 namespace kukadu {
 
-    PlottingControlQueue::PlottingControlQueue(int degOfFreedom, double timeStep) : ControlQueue(degOfFreedom, timeStep) {
+    PlottingControlQueue::PlottingControlQueue(int degOfFreedom, double timeStep) : ControlQueue(degOfFreedom, timeStep, KUKADU_SHARED_PTR<Kinematics>()) {
 
         vector<string> jntNames;
         for(int i = 0; i < degOfFreedom; ++i) {
@@ -17,7 +17,7 @@ namespace kukadu {
 
     }
 
-    PlottingControlQueue::PlottingControlQueue(std::vector<std::string> jointNames, double timeStep) : ControlQueue(jointNames.size(), timeStep) {
+    PlottingControlQueue::PlottingControlQueue(std::vector<std::string> jointNames, double timeStep) : ControlQueue(jointNames.size(), timeStep, KUKADU_SHARED_PTR<Kinematics>()) {
 
         construct(jointNames, timeStep);
 

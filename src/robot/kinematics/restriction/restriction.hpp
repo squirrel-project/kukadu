@@ -39,6 +39,14 @@ namespace kukadu {
 
     };
 
+    class TableRestriction : public Restriction {
+
+    public:
+
+        virtual bool stateOk(arma::vec joint, geometry_msgs::Pose cartPose);
+
+    };
+
 }
 
 #endif

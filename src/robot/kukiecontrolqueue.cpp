@@ -73,19 +73,12 @@ namespace kukadu {
 
         // this is required because shared_from_this can't be called in constructor (initializiation happens by lazy loading)
         plannerInitialized = false;
-        fastIkInitializationWorked = false;
-        try {
-            kin = KUKADU_SHARED_PTR<Kinematics>(new MoveItKinematics(armPrefix, armPrefix + string("_7_link")));
-            fastIkInitializationWorked = true;
-        } catch(runtime_error) {
-            ROS_INFO("(KukieControlQueue) fast ik not reachable - disabled");
-        }
 
         usleep(1e6);
 
     }
 
-    KukieControlQueue::KukieControlQueue(double sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node) : ControlQueue(LBR_MNJ, sleepTime) {
+    KukieControlQueue::KukieControlQueue(double sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node) : ControlQueue(LBR_MNJ, sleepTime, KUKADU_SHARED_PTR<Kinematics>(new MoveItKinematics(armPrefix, armPrefix + string("_7_link")))) {
 
         commandTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/move";
         retJointPosTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/get_state";
@@ -324,7 +317,7 @@ namespace kukadu {
         cartesianPtpReached = false;
 
         if(!plannerInitialized) {
-            planner = KUKADU_SHARED_PTR<PathPlanner>(new SimplePlanner(shared_from_this(), kin));
+            planner = KUKADU_SHARED_PTR<PathPlanner>(new SimplePlanner(shared_from_this(), getKinematics()));
             plannerInitialized = true;
         }
 
@@ -351,7 +344,7 @@ namespace kukadu {
         ptpReached = false;
 
         if(!plannerInitialized) {
-            planner = KUKADU_SHARED_PTR<PathPlanner>(new SimplePlanner(shared_from_this(), kin));
+            planner = KUKADU_SHARED_PTR<PathPlanner>(new SimplePlanner(shared_from_this(), getKinematics()));
             plannerInitialized = true;
         }
 
@@ -375,18 +368,15 @@ namespace kukadu {
 
     std::vector<arma::vec> KukieControlQueue::computeIk(geometry_msgs::Pose targetPose) {
 
-        if(fastIkInitializationWorked) {
-            vector<vec> sol;
-            vec currentJoints = getCurrentJoints().joints;
-            sol = kin->computeIk(currentJoints, targetPose);
+        vector<vec> sol;
+        vec currentJoints = getCurrentJoints().joints;
+        sol = getKinematics()->computeIk(currentJoints, targetPose);
 
-            if(sol.size())
-                return sol;
-            else {
-                ROS_ERROR("(KukieControlQueue) no ik solution found");
-                return vector<vec>();
-            }
-
+        if(sol.size())
+            return sol;
+        else {
+            ROS_ERROR("(KukieControlQueue) no ik solution found");
+            return vector<vec>();
         }
 
     }
@@ -394,9 +384,7 @@ namespace kukadu {
     geometry_msgs::Pose KukieControlQueue::computeFk(std::vector<double> joints) {
 
         geometry_msgs::Pose targetPose;
-        if(fastIkInitializationWorked)
-            targetPose = kin->computeFk(joints);
-
+        targetPose = getKinematics()->computeFk(joints);
         return targetPose;
 
     }

@@ -15,7 +15,7 @@ namespace kukadu {
         return thr;
     }
 
-    ControlQueue::ControlQueue(int degOfFreedom, double desiredCycleTime) {
+    ControlQueue::ControlQueue(int degOfFreedom, double desiredCycleTime, KUKADU_SHARED_PTR<Kinematics> kin) {
 
         jointPtpRunning = false;
         cartesianPtpRunning = false;
@@ -24,6 +24,7 @@ namespace kukadu {
         this->degOfFreedom = degOfFreedom;
         this->desiredCycleTime = desiredCycleTime;
         this->sleepTime = desiredCycleTime;
+        this->kin = kin;
 
     }
 
@@ -38,6 +39,10 @@ namespace kukadu {
         vec prod = forces.t() * forces;
         return sqrt(prod(0));
 
+    }
+
+    KUKADU_SHARED_PTR<Kinematics> ControlQueue::getKinematics() {
+        return kin;
     }
 
     double ControlQueue::getTimeStep() {
@@ -115,6 +120,10 @@ namespace kukadu {
 
     void ControlQueue::addJointsPosToQueue(arma::vec joints) {
         movementQueue.push(joints);
+    }
+
+    void ControlQueue::addKinematicRestriction(KUKADU_SHARED_PTR<Restriction> restriction) {
+        kin->addRestriction(restriction);
     }
 
     mes_result ControlQueue::getCurrentCartesianPos() {

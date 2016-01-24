@@ -26,4 +26,16 @@ namespace kukadu {
 
     }
 
+    bool TableRestriction::stateOk(arma::vec joint, geometry_msgs::Pose cartPose) {
+
+        if(cartPose.position.z < 0) {
+            if(cartPose.position.x > 0) {
+                return false;
+            }
+        }
+
+        return true;
+
+    }
+
 }

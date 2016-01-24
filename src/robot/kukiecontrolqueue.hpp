@@ -57,7 +57,6 @@ namespace kukadu {
         bool ptpReached;
         bool isRealRobot;
         bool plannerInitialized;
-        bool fastIkInitializationWorked;
 
         arma::vec currJoints;
         arma::vec currentJntFrqTrq;
@@ -116,7 +115,6 @@ namespace kukadu {
         ros::Subscriber subCartPoseRf;
         ros::Subscriber subCartPtpReached;
 
-        KUKADU_SHARED_PTR<Kinematics> kin;
         KUKADU_SHARED_PTR<PathPlanner> planner;
 
         /* Kukie callback functions */
