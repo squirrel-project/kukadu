@@ -4,7 +4,6 @@ project(kukadu)
 find_package(cmake_modules REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
-    rospy
     roscpp
     pcl_ros
     std_msgs
@@ -18,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
     actionlib_msgs
     pcl_conversions
     message_runtime
+    eigen_conversions
     message_generation
     moveit_ros_planning_interface
 )
@@ -28,12 +28,13 @@ find_package(PythonLibs 3.4 REQUIRED)
 find_package(PCL REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Armadillo REQUIRED)
-find_package(PythonLibs REQUIRED)
 
 catkin_package(
     INCLUDE_DIRS include external/ReflexxesTypeII/include
     LIBRARIES ${PROJECT_NAME}
-    CATKIN_DEPENDS roscpp
+    CATKIN_DEPENDS roscpp moveit_ros_planning_interface message_generation
+    pcl_conversions actionlib_msgs tf_conversions iis_robot_dep geometry_msgs
+    control_msgs control_msgs pcl_ros std_msgs moveit_core moveit_msgs sensor_msgs
     DEPENDS prosim gsl gslcblas ncurses stdc++ ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES}
 )
 
