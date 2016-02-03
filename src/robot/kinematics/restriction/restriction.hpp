@@ -19,6 +19,8 @@ namespace kukadu {
 
     public:
 
+        virtual std::string getRestrictionName() = 0;
+
         virtual bool stateOk(arma::vec joint, geometry_msgs::Pose cartPose) = 0;
 
     };
@@ -35,6 +37,7 @@ namespace kukadu {
 
         MoveItRestriction(robot_model::RobotModelPtr, planning_scene::PlanningScenePtr planningScene, KUKADU_SHARED_PTR<moveit::core::JointModelGroup> modelGroup);
 
+        virtual std::string getRestrictionName();
         virtual bool stateOk(arma::vec joint, geometry_msgs::Pose cartPose);
 
     };
@@ -43,6 +46,7 @@ namespace kukadu {
 
     public:
 
+        virtual std::string getRestrictionName();
         virtual bool stateOk(arma::vec joint, geometry_msgs::Pose cartPose);
 
     };

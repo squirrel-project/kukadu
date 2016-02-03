@@ -36,7 +36,7 @@ namespace kukadu {
         bool checkPlanSmoothness(const std::vector<arma::vec>& plan);
 
         static const int MAX_NUM_ATTEMPTS = 10;
-        static const double MAX_JNT_DIST = 0.5;
+        static const double MAX_JNT_DIST = 0.2;
 
     public:
 

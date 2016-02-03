@@ -35,17 +35,15 @@ namespace kukadu {
     }
 
     bool Kinematics::checkAllRestrictions(arma::vec currentState, geometry_msgs::Pose pose) {
-        /*
-cout << 1 << endl;
+
         for(int i = 0; i < getRestrictionsCount(); ++i) {
-cout << 2 << endl;
+
             KUKADU_SHARED_PTR<Restriction> currRest = getRestrictionByIdx(i);
-cout << 3 << endl;
             if(!currRest->stateOk(currentState, pose))
                 return false;
-cout << 4 << endl;
+
         }
-*/
+
         return true;
 
     }
