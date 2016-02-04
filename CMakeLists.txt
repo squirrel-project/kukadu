@@ -75,6 +75,7 @@ AUX_SOURCE_DIRECTORY(src/robot/robotDriver/src/kuka/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/robot/kinematics/restriction KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/learning/reinforcement_learning/ KUKADUSRC)
 
+add_subdirectory(external/komo)
 add_subdirectory(src/learning/projective_simulation)
 
 add_library(${PROJECT_NAME} ${KUKADUSRC})

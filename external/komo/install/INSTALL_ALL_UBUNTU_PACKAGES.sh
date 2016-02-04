@@ -1,9 +1,7 @@
-install dependencies
+#!/bin/bash
 
-sudo apt-get install libgsl0-dev gnuplot gnuplot-x11 libarmadillo-dev \
-libboost-all-dev libncurses5-dev libarmadillo-dev liballegro5-dev \
-ros-indigo-pcl-ros ros-indigo-moveit-ros-planning-interface \
-python3.4-dev liblapacke-dev gtk+2.0 \
+# install ubuntu packages
+sudo apt-get install \
 bison \
 build-essential \
 cmake \
@@ -44,3 +42,10 @@ tcl8.5-dev \
 tk-dev \
 tk8.5-dev \
 libfreenect-dev \
+libavcodec-extra-53
+
+# install google test
+cd /usr/src/gtest
+sudo cmake .
+sudo make
+sudo ln -s -f /usr/src/gtest/libgtest.a /home/lib/lib/
