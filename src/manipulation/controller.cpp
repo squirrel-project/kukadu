@@ -1,30 +1,34 @@
 #include "controller.hpp"
 
-Controller::Controller(std::string caption) {
+namespace kukadu {
 
-    isShutUp = true;
+    Controller::Controller(std::string caption) {
 
-    this->caption = caption;
-    this->simulation = false;
-}
+        isShutUp = true;
 
-std::string Controller::getCaption() {
-    return caption;
-}
+        this->caption = caption;
+        this->simulation = false;
+    }
 
-void Controller::setSimulationMode(bool simulationMode) {
-    simulation = simulationMode;
-    setSimulationModeInChain(simulationMode);
-}
+    std::string Controller::getCaption() {
+        return caption;
+    }
 
-bool Controller::getSimulationMode() {
-    return simulation;
-}
+    void Controller::setSimulationMode(bool simulationMode) {
+        simulation = simulationMode;
+        setSimulationModeInChain(simulationMode);
+    }
 
-void Controller::shutUp() {
-    isShutUp = true;
-}
+    bool Controller::getSimulationMode() {
+        return simulation;
+    }
 
-void Controller::startTalking() {
-    isShutUp = false;
+    void Controller::shutUp() {
+        isShutUp = true;
+    }
+
+    void Controller::startTalking() {
+        isShutUp = false;
+    }
+
 }

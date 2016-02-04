@@ -1,36 +1,40 @@
 #include "controllerresult.hpp"
 
-ControllerResult::ControllerResult(arma::vec t, std::vector<arma::vec> ys) {
-    construct(t, ys, true, false);
-}
+namespace kukadu {
 
-ControllerResult::ControllerResult(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored) {
-    construct(t, ys, success, bored);
-}
+    ControllerResult::ControllerResult(arma::vec t, std::vector<arma::vec> ys) {
+        construct(t, ys, true, false);
+    }
 
-arma::vec ControllerResult::getTimes() {
-    return t;
-}
+    ControllerResult::ControllerResult(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored) {
+        construct(t, ys, success, bored);
+    }
 
-std::vector<arma::vec> ControllerResult::getYs() {
-    return y;
-}
+    arma::vec ControllerResult::getTimes() {
+        return t;
+    }
 
-void ControllerResult::construct(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored) {
-    this->t = t;
-    this->y = ys;
-    this->bored = bored;
-    this->success = success;
-}
+    std::vector<arma::vec> ControllerResult::getYs() {
+        return y;
+    }
 
-void ControllerResult::setSuccess(bool success) {
-    this->success = success;
-}
+    void ControllerResult::construct(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored) {
+        this->t = t;
+        this->y = ys;
+        this->bored = bored;
+        this->success = success;
+    }
 
-bool ControllerResult::getSuccess() {
-    return success;
-}
+    void ControllerResult::setSuccess(bool success) {
+        this->success = success;
+    }
 
-bool ControllerResult::wasBored() {
-    return bored;
+    bool ControllerResult::getSuccess() {
+        return success;
+    }
+
+    bool ControllerResult::wasBored() {
+        return bored;
+    }
+
 }

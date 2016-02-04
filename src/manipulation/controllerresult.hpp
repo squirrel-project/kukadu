@@ -10,33 +10,35 @@
 #include <memory>
 #include <armadillo>
 
-class ControllerResult {
+namespace kukadu {
 
-private:
+    class ControllerResult {
 
-    bool bored;
-    bool success;
+    private:
 
-    arma::vec t;
-    std::vector<arma::vec> y;
+        bool bored;
+        bool success;
 
-    void construct(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored);
+        arma::vec t;
+        std::vector<arma::vec> y;
 
-public:
+        void construct(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored);
 
-    ControllerResult(arma::vec t, std::vector<arma::vec> ys);
-    ControllerResult(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored);
+    public:
 
-    arma::vec getTimes();
-    std::vector<arma::vec> getYs();
+        ControllerResult(arma::vec t, std::vector<arma::vec> ys);
+        ControllerResult(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored);
 
-    void setSuccess(bool success);
-    bool getSuccess();
+        arma::vec getTimes();
+        std::vector<arma::vec> getYs();
 
-    bool wasBored();
+        void setSuccess(bool success);
+        bool getSuccess();
 
-};
+        bool wasBored();
 
+    };
 
+}
 
 #endif // CONTROLLER_RESULT_H

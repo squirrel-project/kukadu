@@ -11,34 +11,38 @@
 #include "controllerresult.hpp"
 #include "../types/kukadutypes.hpp"
 
-class Controller {
+namespace kukadu {
 
-private:
+    class Controller {
 
-    bool simulation;
-    std::string caption;
+    private:
 
-protected:
+        bool simulation;
+        std::string caption;
 
-    bool isShutUp;
+    protected:
 
-    // is called by set simulation mode
-    virtual void setSimulationModeInChain(bool simulationMode) {}
+        bool isShutUp;
 
-public:
+        // is called by set simulation mode
+        virtual void setSimulationModeInChain(bool simulationMode) {}
 
-    Controller(std::string caption);
+    public:
 
-    void shutUp();
-    void startTalking();
-    void setSimulationMode(bool simulationMode);
+        Controller(std::string caption);
 
-    bool getSimulationMode();
+        void shutUp();
+        void startTalking();
+        void setSimulationMode(bool simulationMode);
 
-    std::string getCaption();
+        bool getSimulationMode();
 
-    virtual KUKADU_SHARED_PTR<ControllerResult> performAction() = 0;
+        std::string getCaption();
 
-};
+        virtual KUKADU_SHARED_PTR<ControllerResult> performAction() = 0;
+
+    };
+
+}
 
 #endif
