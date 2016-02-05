@@ -29,6 +29,10 @@ find_package(PCL REQUIRED)
 find_package(Boost 1.54 REQUIRED)
 find_package(Armadillo REQUIRED)
 find_package(PythonLibs 3.4 REQUIRED)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+find_package(PkgConfig REQUIRED)
 
 add_definitions(-fPIC)
 add_definitions(-shared)
@@ -36,8 +40,19 @@ add_definitions(-pthread)
 add_definitions(-DROS_SUPPORT)
 add_definitions(-DOSNAME_LINUX=1)
 
+pkg_check_modules(GTK2 REQUIRED gtk+-2.0)
+pkg_check_modules(GTK REQUIRED gtkglext-1.0)
+
 catkin_package(
-    INCLUDE_DIRS include external/ReflexxesTypeII/include LIBRARIES ${PROJECT_NAME} CATKIN_DEPENDS actionlib_msgs control_msgs control_msgs eigen_conversions geometry_msgs iis_robot_dep message_generation moveit_core moveit_msgs moveit_ros_planning_interface pcl_conversions pcl_ros roscpp sensor_msgs std_msgs tf tf2_msgs tf_conversions trajectory_msgs DEPENDS prosim gsl gslcblas ncurses stdc++ ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES}
+    INCLUDE_DIRS include external/ReflexxesTypeII/include
+    LIBRARIES ${PROJECT_NAME}
+    CATKIN_DEPENDS actionlib_msgs control_msgs control_msgs eigen_conversions
+        geometry_msgs iis_robot_dep message_generation moveit_core moveit_msgs
+        moveit_ros_planning_interface pcl_conversions pcl_ros roscpp sensor_msgs std_msgs
+        tf tf2_msgs tf_conversions trajectory_msgs
+    DEPENDS prosim gsl gslcblas ncurses
+        stdc++ ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES}
+        lapack blas ann glut GLU GL X11 ${GTK_LIBRARIES} ${GTK2_LIBRARIES} gthread-2.0 qhull
 )
 
 include_directories(
