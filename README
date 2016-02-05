@@ -44,3 +44,4 @@ tcl8.5-dev \
 tk-dev \
 tk8.5-dev \
 libfreenect-dev \
+qt5-default
