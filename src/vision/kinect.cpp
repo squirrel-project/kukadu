@@ -1,4 +1,4 @@
-#include "kinect.hpp"
+    #include "kinect.hpp"
 
 #include "../utils/utils.hpp"
 
@@ -41,7 +41,13 @@ namespace kukadu {
 
         transformListener = KUKADU_SHARED_PTR<tf::TransformListener>(new tf::TransformListener());
 
-        sleep(1);
+        ros::Rate r(10);
+        while(!firstCloudSet) {
+            r.sleep();
+            ros::spinOnce();
+        }
+
+        transformListener->waitForTransform(targetFrame, currentPc.header.frame_id, ros::Time::now(), ros::Duration(5.0));
 
         this->targetFrame = targetFrame;
 
@@ -77,9 +83,10 @@ namespace kukadu {
 
         pcMutex.lock();
 
-            if(pcRequested) {
+            if(pcRequested || !firstCloudSet) {
                 currentPc = pc;
             }
+
             pcRequested = false;
             firstCloudSet = true;
 
@@ -90,9 +97,6 @@ namespace kukadu {
     sensor_msgs::PointCloud2 Kinect::getCurrentPointCloud() {
 
         pcRequested = true;
-        ros::Rate r(10);
-        while(!firstCloudSet)
-            r.sleep();
 
         pcMutex.lock();
 
@@ -101,6 +105,7 @@ namespace kukadu {
 
         pcMutex.unlock();
 
+        transformListener->waitForTransform(targetFrame, retCloud.header.frame_id, retCloud.header.stamp, ros::Duration(5.0));
         pcl_ros::transformPointCloud(targetFrame, retCloud, retCloud, *transformListener);
 
         return retCloud;
@@ -121,13 +126,17 @@ namespace kukadu {
     }
 
     void Kinect::visualizeCurrentTransformedPc(KUKADU_SHARED_PTR<PCTransformator> transformator) {
+
         pcl::PointCloud<pcl::PointXYZ> currentPc = sensorMsgsPcToPclPc(getCurrentPointCloud());
         pcl::PointCloud<pcl::PointXYZ>::Ptr transformed = transformator->transformPc(currentPc.makeShared());
         visPublisher.publish(pclPcToSensorMsgsPc(transformed));
+
     }
 
     void Kinect::storeCurrentPc(std::string fileName) {
+
         pcl::io::savePCDFile(fileName, sensorMsgsPcToPclPc2(getCurrentPointCloud()), Eigen::Vector4f::Zero(), Eigen::Quaternionf::Identity(), true);
+
     }
 
 }
