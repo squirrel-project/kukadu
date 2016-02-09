@@ -35,8 +35,8 @@ namespace kukadu {
         bool checkRestrictions(const std::vector<arma::vec>& plan);
         bool checkPlanSmoothness(const std::vector<arma::vec>& plan);
 
-        static const int MAX_NUM_ATTEMPTS = 10;
-        static const double MAX_JNT_DIST = 0.2;
+        static constexpr int MAX_NUM_ATTEMPTS = 10;
+        static constexpr double MAX_JNT_DIST = 0.2;
 
     public:
 

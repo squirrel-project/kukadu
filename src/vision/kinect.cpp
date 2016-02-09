@@ -105,7 +105,6 @@ namespace kukadu {
 
         pcMutex.unlock();
 
-        transformListener->waitForTransform(targetFrame, retCloud.header.frame_id, retCloud.header.stamp, ros::Duration(5.0));
         pcl_ros::transformPointCloud(targetFrame, retCloud, retCloud, *transformListener);
 
         return retCloud;

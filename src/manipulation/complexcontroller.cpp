@@ -15,7 +15,7 @@ namespace kukadu {
 
     ComplexController::ComplexController(std::string caption, std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers,
                                          std::vector<KUKADU_SHARED_PTR<Controller> > preparationControllers,
-                                         std::string corrPSPath, std::string rewardHistoryPath, bool storeReward, double senseStretch, double boredom, boost::shared_ptr<kukadu_mersenne_twister> generator, int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards)
+                                         std::string corrPSPath, std::string rewardHistoryPath, bool storeReward, double senseStretch, double boredom, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards)
         : Controller(caption), Reward(generator, collectPrevRewards) {
 
         projSim.reset();

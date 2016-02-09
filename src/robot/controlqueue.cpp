@@ -26,6 +26,8 @@ namespace kukadu {
         this->sleepTime = desiredCycleTime;
         this->kin = kin;
 
+        continueCollecting = false;
+
     }
 
     int ControlQueue::getMovementDegreesOfFreedom() {
@@ -287,17 +289,60 @@ namespace kukadu {
 
     }
 
-    void ControlQueue::jointPtp(arma::vec joints) {
-        jointPtpRunning = true;
-        jointPtpInternal(joints);
-        jointPtpRunning = false;
+    void ControlQueue::jointsCollector() {
+
+        double lastTime = DBL_MIN;
+        collectedJoints.clear();
+        ros::Rate r((int) (1.0 / getTimeStep() + 10.0));
+        while(continueCollecting) {
+            mes_result lastResult = getCurrentJoints();
+            if(lastResult.time != lastTime)
+                collectedJoints.push_back(lastResult);
+            r.sleep();
+        }
+
     }
 
-    void ControlQueue::cartesianPtp(geometry_msgs::Pose pos) {
+    std::vector<mes_result> ControlQueue::jointPtp(arma::vec joints) {
+        jointPtpRunning = true;
+
+        if(!continueCollecting) {
+
+            continueCollecting = true;
+            jointsColletorThr = KUKADU_SHARED_PTR<kukadu_thread>(new kukadu_thread(&ControlQueue::jointsCollector, this));
+            jointPtpInternal(joints);
+            continueCollecting = false;
+
+        } else {
+
+            throw "(ControlQueue) only one ptp at a time can be executed";
+
+        }
+
+        jointPtpRunning = false;
+        return collectedJoints;
+
+    }
+
+    std::vector<mes_result> ControlQueue::cartesianPtp(geometry_msgs::Pose pos) {
 
         cartesianPtpRunning = true;
-        cartPtpInternal(pos);
+
+        if(!continueCollecting) {
+
+            continueCollecting = true;
+            jointsColletorThr = KUKADU_SHARED_PTR<kukadu_thread>(new kukadu_thread(&ControlQueue::jointsCollector, this));
+            cartPtpInternal(pos);
+            continueCollecting = false;
+
+        } else {
+
+            throw "(ControlQueue) only one ptp at a time can be executed";
+
+        }
+
         cartesianPtpRunning = false;
+        return collectedJoints;
 
     }
 

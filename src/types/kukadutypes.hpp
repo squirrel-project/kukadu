@@ -55,7 +55,7 @@
         #define KUKADU_DISCRETE_DISTRIBUTION std::discrete_distribution
         typedef std::mt19937 kukadu_mersenne_twister;
         typedef std::uniform_int_distribution<int> kukadu_uniform_distribution;
-        typedef std::normal_distribution<double> kukadu_uniform_distribution;
+        typedef std::normal_distribution<double> kukadu_normal_distribution;
         typedef std::uniform_real_distribution<double> kukadu_uniform_real_distribution;
     #endif
 

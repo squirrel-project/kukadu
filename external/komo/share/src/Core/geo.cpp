@@ -447,6 +447,7 @@ void Quaternion::normalize() {
   double n=w*w + x*x + y*y + z*z;
   n=sqrt(n);
   w/=n; x/=n; y/=n; z/=n;
+  isZero=(w==1. || w==-1.);
 }
 
 /** @brief roughly, removes all ``components'' of the rotation that are not
@@ -469,7 +470,7 @@ void Quaternion::set(double* p) { w=p[0]; x=p[1]; y=p[2]; z=p[3]; isZero=(w==1. 
 void Quaternion::set(double _w, double _x, double _y, double _z) { w=_w; x=_x; y=_y; z=_z; isZero=(w==1. || w==-1.); }
 
 /// reset the rotation to identity
-void Quaternion::setZero() { memset(this, 0, sizeof(Quaternion));  w=1; isZero=true; }
+void Quaternion::setZero() { memset(this, 0, sizeof(Quaternion));  w=1.; isZero=true; }
 
 /// samples the rotation uniformly from the whole SO(3)
 void Quaternion::setRandom() {
@@ -862,9 +863,9 @@ Transformation& Transformation::setText(const char* txt) { read(MT::String(txt)(
 /// resets the position to origin, rotation to identity, velocities to zero, scale to unit
 Transformation& Transformation::setZero() {
   memset(this, 0, sizeof(Transformation));
-  rot.w=1.;
-  pos.isZero=rot.isZero=vel.isZero=angvel.isZero=true;
-  zeroVels = true;
+  rot.w = 1.;
+  pos.isZero = rot.isZero = vel.isZero = angvel.isZero = true;
+  zero = zeroVels = true;
   return *this;
 }
 
@@ -996,11 +997,11 @@ void Transformation::appendInvTransformation(const Transformation& f) {
 /// this = f^{-1}
 void Transformation::setInverse(const Transformation& f) {
   if(f.zeroVels) {
-    rot = Quaternion_Id / f.rot;
+    rot = -f.rot;
     pos = - (rot * f.pos);
     zeroVels = true;
   } else {
-    rot = Quaternion_Id / f.rot;
+    rot = -f.rot;
     Matrix R = rot.getMatrix();
     pos = - (R * f.pos);
     vel = R * ((f.angvel^f.pos) - f.vel);

@@ -56,9 +56,9 @@ namespace kukadu {
 
         KUKADU_SHARED_PTR<Restriction> getModelRestriction();
 
-        static const int STD_MAX_ATTEMPTS = 5;
-        static const double STD_TIMEOUT = 0.1;
-        static const bool STD_AVOID_COLLISIONS = true;
+        static constexpr int STD_MAX_ATTEMPTS = 5;
+        static constexpr double STD_TIMEOUT = 0.1;
+        static constexpr bool STD_AVOID_COLLISIONS = true;
 
     };
 

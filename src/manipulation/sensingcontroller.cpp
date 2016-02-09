@@ -141,7 +141,7 @@ namespace kukadu {
             vector<double> precisionProbVec;
             precisionProbVec.push_back((double) (simulatedClassificationPrecision));
             precisionProbVec.push_back((double) (100 - simulatedClassificationPrecision));
-            KUKADU_DISCRETE_DISTRIBUTION<int> precisionProb(precisionProbVec);
+            KUKADU_DISCRETE_DISTRIBUTION<int> precisionProb(precisionProbVec.begin(), precisionProbVec.end());
 
             int correctClass = precisionProb(*generator);
             // simulate correct classification

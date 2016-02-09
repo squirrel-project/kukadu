@@ -1,6 +1,17 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(kukadu)
 
+include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+if(COMPILER_SUPPORTS_CXX11)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+elseif(COMPILER_SUPPORTS_CXX0X)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+else()
+        message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+endif()
+
 find_package(cmake_modules REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -44,7 +55,7 @@ pkg_check_modules(GTK2 REQUIRED gtk+-2.0)
 pkg_check_modules(GTK REQUIRED gtkglext-1.0)
 
 catkin_package(
-    INCLUDE_DIRS include external/ReflexxesTypeII/include
+    INCLUDE_DIRS include external/ReflexxesTypeII/include external/komo/share/src
     LIBRARIES ${PROJECT_NAME}
     CATKIN_DEPENDS actionlib_msgs control_msgs control_msgs eigen_conversions
         geometry_msgs iis_robot_dep message_generation moveit_core moveit_msgs
@@ -52,8 +63,7 @@ catkin_package(
         tf tf2_msgs tf_conversions trajectory_msgs
     DEPENDS prosim gsl gslcblas ncurses
         stdc++ ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES}
-        lapack blas ann glut GLU GL X11 ${GTK_LIBRARIES} ${GTK2_LIBRARIES} gthread-2.0 qhull
-
+        komo swift algo gui ors rt lapack blas ann glut GLU GL X11 ${GTK_LIBRARIES} ${GTK2_LIBRARIES} gthread-2.0 qhull m
 )
 
 include_directories(
@@ -61,6 +71,7 @@ include_directories(
     ${Boost_INCLUDE_DIRS}
     ${catkin_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
+    external/komo/share/src
     external/ReflexxesTypeII/include
 )
 
@@ -74,7 +85,7 @@ AUX_SOURCE_DIRECTORY(external/ReflexxesTypeII/src/TypeIIRML/ REFLEXXESSRC)
 AUX_SOURCE_DIRECTORY(src/utils/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/robot/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/types/ KUKADUSRC)
-AUX_SOURCE_DIRECTORY(src/vision/ KUKADUSRC)
+#AUX_SOURCE_DIRECTORY(src/vision/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/learning/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/trajectory/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/manipulation/ KUKADUSRC)
@@ -97,10 +108,11 @@ add_subdirectory(src/learning/projective_simulation)
 add_library(${PROJECT_NAME} ${KUKADUSRC})
 add_library(reflexxeslib ${REFLEXXESSRC})
 
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES} reflexxeslib ncurses gsl gslcblas stdc++ pthread dl util m prosim)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES}
+    reflexxeslib ncurses gsl gslcblas stdc++ pthread dl util m prosim komo swift algo ann gui ors optim motion rt lapack blas glut GLU GL X11 ${GTK_LIBRARIES} ${GTK2_LIBRARIES} gthread-2.0 qhull m)
 
 add_executable(kukadu_demo_guided src/demo/guided.cpp)
-target_link_libraries(kukadu_demo_guided kukadu ${PCL_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(kukadu_demo_guided kukadu ${PCL_LIBRARIES} ${catkin_LIBRARIES} komo swift algo ann gui ors optim motion rt lapack blas glut GLU GL X11 ${GTK_LIBRARIES} ${GTK2_LIBRARIES} gthread-2.0 qhull m)
 
 add_executable(robotino_demo src/demo/robotino_demo.cpp)
 target_link_libraries(robotino_demo kukadu ${PCL_LIBRARIES} ${catkin_LIBRARIES})

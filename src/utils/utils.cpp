@@ -1009,6 +1009,13 @@ namespace kukadu {
         }
     }
 
+    void deleteFile(std::string path) {
+        if(!isDirectory(path)) {
+            boost::filesystem::path p = path.c_str();
+            boost::filesystem::remove_all(p);
+        }
+    }
+
     pcl::PointCloud<pcl::PointXYZ> sensorMsgsPcToPclPc(sensor_msgs::PointCloud2 pc) {
         pcl::PCLPointCloud2 intermediate;
         pcl::PointCloud<pcl::PointXYZ> output;

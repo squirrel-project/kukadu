@@ -30,6 +30,10 @@ namespace kukadu {
 
         KUKADU_SHARED_PTR<Kinematics> getKinematics();
 
+        static constexpr int RESULT_FAILED = 0;
+        static constexpr int RESULT_SUCCESS = 1;
+        static constexpr int RESULT_APPROXIMATE = 2;
+
     };
 
 }

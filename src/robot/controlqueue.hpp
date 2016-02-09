@@ -35,6 +35,8 @@ namespace kukadu {
         bool isShutUpFlag;
         bool rollbackMode;
 
+        bool continueCollecting;
+
         bool jointPtpRunning;
         bool cartesianPtpRunning;
 
@@ -55,6 +57,8 @@ namespace kukadu {
         geometry_msgs::Pose currentCartPose;
         geometry_msgs::Pose internalPosePasser;
 
+        std::vector<mes_result> collectedJoints;
+
         std::queue<arma::vec> movementQueue;
         std::queue<geometry_msgs::Pose> cartesianMovementQueue;
 
@@ -66,10 +70,13 @@ namespace kukadu {
         KUKADU_SHARED_PTR<kukadu_thread> thr;
         KUKADU_SHARED_PTR<kukadu_thread> cartPtpThr;
         KUKADU_SHARED_PTR<kukadu_thread> jointPtpThr;
+        KUKADU_SHARED_PTR<kukadu_thread> jointsColletorThr;
 
         void setInitValuesInternal();
         void internalCartPtpCaller();
         void internalJointPtpCaller();
+
+        void jointsCollector();
 
     protected:
 
@@ -158,7 +165,7 @@ namespace kukadu {
          * \brief Implements simple point to point movement in joint space (blocks until target reached)
          * \param joints array of joint positions
          */
-        virtual void jointPtp(arma::vec joints);
+        virtual std::vector<mes_result> jointPtp(arma::vec joints);
 
         /**
          * \brief Implements simple point to point movement in joint space (not blocking)
@@ -170,7 +177,7 @@ namespace kukadu {
          * \brief Implements simple point to point movement in cartesian space
          * \param pose of end-effector
          */
-        virtual void cartesianPtp(geometry_msgs::Pose pos);
+        virtual std::vector<mes_result> cartesianPtp(geometry_msgs::Pose pos);
 
         /**
          * \brief Implements simple point to point movement in cartesian space (does not block until the position is reached)

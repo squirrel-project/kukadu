@@ -5,7 +5,7 @@ using namespace std;
 namespace kukadu {
 
     ControllerActionClip::ControllerActionClip(int actionId, KUKADU_SHARED_PTR<Controller> actionController,
-                          boost::shared_ptr<kukadu_mersenne_twister> generator) : ActionClip(actionId, 1, actionController->getCaption(), generator) {
+                          KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) : ActionClip(actionId, 1, actionController->getCaption(), generator) {
         this->actionController = actionController;
     }
 

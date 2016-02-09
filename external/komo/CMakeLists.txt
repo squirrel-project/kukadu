@@ -21,6 +21,7 @@ add_definitions(-DMT_GTK)
 add_definitions(-DMT_QHULL)
 add_definitions(-DMT_Algo)
 add_definitions(-DMT_Gui)
+add_definitions(-DMT_ANN)
 add_definitions(-DMT_extern_SWIFT)
 add_definitions(-DSWIFT_DECOMP)
 add_definitions(-DNO_CYCLE_DETECTION)
@@ -45,44 +46,58 @@ include_directories(
     ${GTK_INCLUDE_DIRS}
 )
 
-AUX_SOURCE_DIRECTORY(share/src/Algo ALGOSRC)
-AUX_SOURCE_DIRECTORY(share/src/Core CORESRC)
-AUX_SOURCE_DIRECTORY(share/src/extern/SWIFT SWIFTSRC)
-AUX_SOURCE_DIRECTORY(share/src/extern/SWIFT_decomposer SWIFTDECOSRC)
-AUX_SOURCE_DIRECTORY(share/src/extern/SWIFT_decomposer/RAPID RAPIDSRC)
-AUX_SOURCE_DIRECTORY(share/src/Gui GUISRC)
-AUX_SOURCE_DIRECTORY(share/src/Motion MOTIONSRC)
-AUX_SOURCE_DIRECTORY(share/src/Optim OTPIMSRC)
-AUX_SOURCE_DIRECTORY(share/src/Ors ORSSRC)
+add_library(core share/src/Core/array_lapack.cpp share/src/Core/util.cpp share/src/Core/core.cpp
+    share/src/Core/geo.cpp share/src/Core/array.cpp share/src/Core/thread.cpp share/src/Core/registry.cpp
+    share/src/Core/module.cpp share/src/Core/keyValueGraph.cpp share/src/Core/module_FloatA_Recorder.cpp
+)
 
-list(REMOVE_ITEM CORESRC "share/src/Core/array_instantiate.cxx")
+add_library(algo share/src/Algo/rrt.cpp share/src/Algo/ann.cpp share/src/Algo/spline.cpp share/src/Algo/kalman.cpp
+    share/src/Algo/gaussianProcess_plot.cpp share/src/Algo/gaussianProcess.cpp
+    share/src/Algo/MLcourse.cpp share/src/Algo/algos.cpp
+)
 
-list(REMOVE_ITEM GUISRC "share/src/Gui/opengl_void.cxx")
-list(REMOVE_ITEM GUISRC "share/src/Gui/opengl_qt.cxx")
-list(REMOVE_ITEM GUISRC "share/src/Gui/opengl_qt_moc.cxx")
-list(REMOVE_ITEM GUISRC "share/src/Gui/opengl_freeglut.cxx")
-list(REMOVE_ITEM GUISRC "share/src/Gui/opengl_gtk.cxx")
-list(REMOVE_ITEM GUISRC "share/src/Gui/opengl_fltk.cxx")
+add_library(swift share/src/extern/SWIFT/mesh.cpp share/src/extern/SWIFT/mesh_utils.cpp share/src/extern/SWIFT/scene.cpp
+    share/src/extern/SWIFT/pair.cpp share/src/extern/SWIFT/lut.cpp share/src/extern/SWIFT/fileio.cpp
+    share/src/extern/SWIFT/pqueue.cpp share/src/extern/SWIFT/object.cpp
+)
 
-list(REMOVE_ITEM SWIFTDECOSRC "share/src/extern/SWIFT_decomposer/main.cxx")
+add_library(gui share/src/Gui/mesh.cpp share/src/Gui/ors_opengl.cpp share/src/Gui/plot.cpp
+    share/src/Gui/geo_qhull.cpp share/src/Gui/gtk.cpp share/src/Gui/graphview.cpp share/src/Gui/opengl.cpp
+    share/src/Gui/mesh_lewiner.cpp
+)
 
-list(REMOVE_ITEM ORSSRC "share/src/Ors/ors_tutorial.cxx")
+add_library(ors share/src/Ors/ors_opengl.cpp share/src/Ors/ors_sceneGui.cpp share/src/Ors/ors_oldTaskVariables.cpp
+    share/src/Ors/ors.cpp share/src/Ors/roboticsCourse.cpp  share/src/Ors/ors_physx.cpp share/src/Ors/ors_actionInterface.cpp
+    share/src/Ors/ors_ode.cpp share/src/Ors/ors_swift.cpp share/src/Ors/ors_featherstone.cpp share/src/Ors/ors_blender.cpp
+)
 
-add_library(core ${CORESRC})
-add_library(algo ${ALGOSRC})
-add_library(swift ${SWIFTSRC} ${SWIFTDECOSRC} ${RAPIDSRC})
-add_library(gui ${GUISRC})
-add_library(motion ${MOTIONSRC})
-add_library(optim ${OTPIMSRC})
-add_library(ors ${ORSSRC})
+add_library(optim share/src/Optim/opt-constrained.cpp share/src/Optim/opt-newton.cpp share/src/Optim/optimization.cpp
+    share/src/Optim/search_CMA.cpp share/src/Optim/benchmarks.cpp share/src/Optim/opt-rprop.cpp share/src/Optim/opt-convert.cpp
+    share/src/Optim/cmaes.c
+)
 
-add_library(komo share/src/Komo/komo.cpp)
+add_library(motion share/src/Motion/motion.cpp share/src/Motion/adaptiveMotionExecution.cpp share/src/Motion/pr2_heuristics
+    share/src/Motion/dynamicMovementPrimitives.cpp share/src/Motion/taskMap_proxy.cpp
+    share/src/Motion/feedbackControl.cpp share/src/Motion/gamepad2tasks.cpp
+    share/src/Motion/taskMap_default.cpp share/src/Motion/rrt_planner.cpp share/src/Motion/mobject.cpp
+    share/src/Motion/komo.cpp share/src/Motion/motionHeuristics.cpp share/src/Motion/komo.cpp share/src/Motion/taskMap_transition.cpp
+    share/src/Motion/taskMap_constrained.cpp
+)
 
-target_link_libraries(core rt lapack blas)
-target_link_libraries(algo core rt lapack blas ann)
-target_link_libraries(gui rt glut GLU GL X11 ${GTK_LIBRARIES} ${GTK2_LIBRARIES} gthread-2.0 qhull)
-target_link_libraries(ors core algo gui swift rt glut GLU GL X11)
+add_library(swiftdeco share/src/extern/SWIFT_decomposer/viewer.cpp share/src/extern/SWIFT_decomposer/guidraw.cpp
+    share/src/extern/SWIFT_decomposer/cvxutils.cpp share/src/extern/SWIFT_decomposer/RAPID/collide.cpp
+    share/src/extern/SWIFT_decomposer/RAPID/overlap.cpp share/src/extern/SWIFT_decomposer/RAPID/build.cpp
+    share/src/extern/SWIFT_decomposer/convex.cpp share/src/extern/SWIFT_decomposer/io.cpp
+    share/src/extern/SWIFT_decomposer/gui.cpp
+)
+
+target_link_libraries(core swift)
+target_link_libraries(algo core swift ann qhull)
+target_link_libraries(gui core swift algo ann glut GLU GL X11 ${GTK_LIBRARIES} ${GTK2_LIBRARIES})
+target_link_libraries(ors core algo ann gui swift rt glut GLU GL X11)
 target_link_libraries(optim core rt)
 target_link_libraries(motion core ors optim algo rt)
 
-target_link_libraries(komo core algo gui ors optim motion rt lapack blas ann glut GLU GL X11 ${GTK_LIBRARIES} ${GTK2_LIBRARIES} gthread-2.0 qhull)
+add_library(komo share/src/Komo/komo.cpp)
+target_link_libraries(komo core algo swift gui ors optim motion rt lapack blas glut ann GLU GL X11 ${GTK_LIBRARIES} ${GTK2_LIBRARIES} gthread-2.0 qhull m)
+

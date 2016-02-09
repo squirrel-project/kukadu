@@ -51,6 +51,7 @@
 namespace kukadu {
 
     int createDirectory(std::string path);
+    void deleteFile(std::string path);
     void deleteDirectory(std::string path);
 
     void printDoubleVector(std::vector<double>* data);
