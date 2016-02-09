@@ -8,17 +8,27 @@ using namespace arma;
 
 namespace kukadu {
 
-    KomoPlanner::KomoPlanner(string configPath, string mtConfigPath) : PathPlanner(KUKADU_SHARED_PTR<Kinematics>()) {
+    KomoPlanner::KomoPlanner(string configPath, string mtConfigPath, string activeJointsPrefix) : PathPlanner(KUKADU_SHARED_PTR<Kinematics>()) {
 
+        this->activeJointsPrefix = activeJointsPrefix;
         copyFile(mtConfigPath, "./MT.cfg");
 
         _world = new ors::KinematicWorld(configPath.c_str());
         _world->swift().initActivations(*_world);
 
         // initialize list of activated joints
-        for(ors::Joint *j:_world->joints) {
-        if(j->agent == 0)
-            _active_joints.push_back(j);
+        for(ors::Joint* j : _world->joints) {
+            if(j->agent == 0) {
+
+                string currJointName = string((char*) j->name);
+                if(currJointName.find(activeJointsPrefix) != string::npos) {
+
+                    _active_joints.push_back(j);
+                    sJointNames.push_back(currJointName);
+
+                }
+
+            }
         }
 
         double def_pos_tolerance = MT::getParameter<double>("KOMO/moveTo/defaultPositionTolerance", 0.005);
@@ -46,7 +56,7 @@ namespace kukadu {
         if(_world) {
             delete _world;
         }
-        deleteFile("./MT.cfg");
+        //deleteFile("./MT.cfg");
     }
 
     void KomoPlanner::setJointPosition(const string &name, const double pos) {
@@ -88,9 +98,9 @@ namespace kukadu {
         std::vector<arma::vec> retTrajectory;
         PlanningResult result;
 
-        //setState(intermediateJoints.at(0));
+        setState(sJointNames, intermediateJoints.at(0));
 
-        std::vector<double> goal_state = armadilloToStdVec(*intermediateJoints.end());
+        std::vector<double> goal_state = armadilloToStdVec(intermediateJoints.at(intermediateJoints.size() - 1));
 
         CHECK(goal_state.size() == _active_joints.size(), "Unable to plan - invalid size of goal state");
         MT::timerStart();
@@ -106,11 +116,11 @@ namespace kukadu {
 
         // create the motion problem
         MotionProblem MP(*_world);
-        TaskCost *c;
+        TaskCost* c;
 
         // TaskMap for goal state
         c = MP.addTask("state", new DefaultTaskMap(qItselfTMT, *_world));
-        c->setCostSpecs(MP.T-10, MP.T, goal_config, _jointStatePrecision);
+        c->setCostSpecs(MP.T - 10, MP.T, goal_config, _jointStatePrecision);
 
         // TaskMap for zero velocity at goal
         c = MP.addTask("q_vel", new DefaultTaskMap(qItselfTMT, *_world));
@@ -129,7 +139,6 @@ namespace kukadu {
 
         // TaskMap for transition costs
         c = MP.addTask("Transitions", new TransitionTaskMap(*_world));
-    //	c->map.order = 1; // penalize velocities
         c->map.order = 2; // penalize accelerations
         c->setCostSpecs(0, MP.T, {0.}, 1e0);
 
@@ -150,7 +159,7 @@ namespace kukadu {
             // initialize as interpolation from current state to desired goal state
             sineProfile(x, state, goal_config, MP.T);
             // and then do the optimization
-            optConstrained(x, NoArr, Convert(MF), OPT(verbose=0, stopIters=100, maxStep=.5, stepInc=2., allowOverstep=false));
+            optConstrained(x, NoArr, Convert(MF), OPT(verbose = 0, stopIters = 100, maxStep = .5, stepInc = 2., allowOverstep = false));
             MP.costReport(false);
 
             // ensure that all joints are within calculated limits before do collision validation
@@ -159,13 +168,13 @@ namespace kukadu {
             if(!validateCollisions(*_world, x, result.error_msg)) {
                 result.status = RESULT_FAILED;
                 cerr << "Validation failed!" << endl;
-                return retTrajectory;
+            //    return retTrajectory;
             }
             // not necessary any more - just for test purposes...
             if(!validateJointLimits(*_world, x, result.error_msg)) {
                 result.status = RESULT_FAILED;
                 cerr << "Validation failed!" << endl;
-                return retTrajectory;
+            //    return retTrajectory;
             }
 
             traj.append(x);
@@ -176,6 +185,7 @@ namespace kukadu {
                 goal_state_reached = true;
                 break;
             }
+
         }
 
         CHECK(traj.d0 > 0, "Trajectory is empty...");
@@ -193,6 +203,9 @@ namespace kukadu {
         // so far, our path is valid but maybe the goal tolerances are violated...
         pathToTrajectory(result.path, traj);
 
+        for(auto point : result.path.points)
+            retTrajectory.push_back(stdToArmadilloVec(point.positions));
+
         cout << "Final state: " << state << endl;
         cout << "State error: " << (goal_config - state) << endl;
 
@@ -205,11 +218,196 @@ namespace kukadu {
 
     std::vector<arma::vec> KomoPlanner::planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians) {
 
+        std::vector<arma::vec> retTrajectory;
+        PlanningResult result;
+        string eef_link = activeJointsPrefix + string("_sdh_palm_link");
+        ors::Transformation goal;
+        // geometry_msgs::Pose startPose = intermediatePoses.at(0);
+        geometry_msgs::Pose endPose = intermediatePoses.at(intermediatePoses.size() - 1);
+        goal.pos.x = endPose.position.x; goal.pos.y = endPose.position.y; goal.pos.z = endPose.position.z;
+
+        setState(sJointNames, stdToArmadilloVec(createJointsVector(7, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)));
+        int axes_to_align = 0;
+
+
+
+
+        // ensure that some joints have been enabled, otherwise planning is not possible
+        CHECK(_active_joints.size() > 0, "Unable to plan - at least 1 joint has to be activated!");
+        MT::timerStart();
+
+        ors::Shape *target = _world->getShapeByName("target");
+        if(!target) {
+            result.error_msg = "Unable to find shape with name 'target' within model.";
+            cerr << result.error_msg << endl;
+            result.status = RESULT_FAILED;
+            return retTrajectory;
+        }
+
+        ors::Shape *endeff = _world->getShapeByName(eef_link.c_str());
+        if(!endeff) {
+            result.error_msg = "Unable to find link with name '" + eef_link + "' within model.";
+            cerr << result.error_msg << endl;
+            result.status = RESULT_FAILED;
+            return retTrajectory;
+        }
+
+        // set target position...
+        target->rel.pos = goal.pos;
+        // ...and orientation
+        target->rel.rot = goal.rot;
+
+        _world->calc_fwdPropagateShapeFrames();
+        // display(false, "planning...");
+
+        target->cont = false; // don't know if this is necessary...
+
+        //-- set up the MotionProblem
+        MotionProblem MP(*_world);
+        MP.loadTransitionParameters();
+        _world->swift().initActivations(*_world);
+
+        TaskCost *c;
+        // TaskMap for end effector position
+        c = MP.addTask("EEF_position", new DefaultTaskMap(posTMT, endeff->index, NoVector, target->index, NoVector));
+        c->setCostSpecs(MP.T, MP.T, {0.}, _positionPrecision);
+
+        // TaskMap for zero velocity at goal
+        c = MP.addTask("q_vel", new DefaultTaskMap(qItselfTMT, *_world));
+        c->setCostSpecs(MP.T, MP.T, {0.}, _zeroVelocityPrecision);
+        c->map.order = 1; //make this a velocity variable!
+
+        // TaskMaps for eef alignment
+        for(uint i=0;i<3;i++) if(axes_to_align & (1 << i)) {
+            ors::Vector axis;
+            axis.setZero();
+            axis(i) = 1.;
+            c = MP.addTask(STRING("allign_" << i), new DefaultTaskMap(vecAlignTMT, endeff->index, axis, target->index, axis));
+            c->setCostSpecs(MP.T, MP.T, {1.}, _alignmentPrecision); // ARR(0.) -> make axis orthogonal!
+        }
+
+        // Constraint to enforce joint limits on all time slices
+        LimitsConstraint *lc = new LimitsConstraint();
+        lc->margin = 0.005;
+        c = MP.addTask("Joint_limits", lc);
+        c->setCostSpecs(0, MP.T, {0.}, _jointLimitPrecision);
+
+        // enable collision checking
+        TaskCost* colCost = MP.addTask("Collisions", new ProxyTaskMap(allPTMT, {0}, _collisionMargin));
+        colCost->setCostSpecs(MP.T, MP.T, {0.}, _collisionPrecision);
+
+        // TaskMap for transition costs
+        c = MP.addTask("Transitions", new TransitionTaskMap(*_world));
+        c->map.order = 2; // penalize accelerations
+        c->setCostSpecs(0, MP.T, {0.}, 1e0);
+
+        //-- create the Optimization problem (of type kOrderMarkov)
+        MotionProblemFunction MF(MP);
+        //-- optimization process
+
+        ors::KinematicWorld::setJointStateCount = 0;
+        arr state, traj;
+        ors::Vector posError, angError;
+
+        _world->getJointState(state);
+
+        for(int j = 0; j < _maxIterations; ++j) {
+
+            cout << "Iteration " << j + 1 << endl;
+
+            MP.prefix.clear();
+            MP.x0 = state;
+
+            arr x = replicate(MP.x0, MP.T+1);
+            rndGauss(x, .01, true); //don't initialize at a singular config
+
+            optConstrained(x, NoArr, Convert(MF), OPT(verbose=0, stopIters=100, maxStep=.5, stepInc=2., allowOverstep=false));
+            MP.costReport(false);
+
+            // ensure that all joints are within calculated limits before doing collision validation
+            ensureJointLimits(*_world, x);
+
+            if(!validateCollisions(*_world, x, result.error_msg)) {
+                result.status = RESULT_FAILED;
+                cerr << "Validation failed!" << endl;
+            //    return retTrajectory;
+            }
+            // not necessary any more - just for test purposes...
+            if(!validateJointLimits(*_world, x, result.error_msg)) {
+                result.status = RESULT_FAILED;
+                cerr << "Validation failed!" << endl;
+            //    return retTrajectory;
+            }
+
+            traj.append(x);
+
+            // set world to final state of resulting path and calculate the transformations
+            state = x[x.d0-1];
+            _world->setJointState(state);
+
+            computePositionError(*endeff, *target, posError);
+            computeAlignmentError(*endeff, *target, angError, axes_to_align);
+
+            if(withinTolerance(posError, _pos_tolerance) &&
+               withinTolerance(angError, _ang_tolerance, axes_to_align))
+            {
+                break;
+            }
+        }
+
+        CHECK(traj.d0 > 0, "Trajectory is empty...");
+
+        result.planning_time = MT::timerRead();
+
+        cout << "Optimization process finished" << endl;
+        cout << "Optimization time:  " << result.planning_time << endl;
+        cout << "SetJointStateCount: " << ors::KinematicWorld::setJointStateCount << endl;
+
+
+        /* ---------------------- validation -------------------------*/
+
+        // consider plan to be successful unless validation shows
+        // something different...
+        result.status = RESULT_SUCCESS;
+
+        // so far, our path is valid but maybe the goal tolerances are violated...
+        pathToTrajectory(result.path, traj);
+        result.resulting_pose = endeff->X;
+        result.pos_error = posError;
+        result.ang_error = angError;
+
+        cout << "EEF final pos:   " << endeff->X.pos << endl;
+        cout << "EEF target pos:  " << target->X.pos << endl;
+        cout << "Position error:  " << result.pos_error << endl;
+        cout << "Alignment error: " << result.ang_error << endl;
+
+        // check end effector goal position
+        if(!withinTolerance(result.pos_error, _pos_tolerance)) {
+            result.error_msg.append("Goal position not within tolerance values! ");
+            result.status = RESULT_APPROXIMATE;
+        }
+
+        // check end effector goal alignment
+        if(!withinTolerance(result.ang_error, _ang_tolerance, axes_to_align)) {
+            result.error_msg.append("Goal alignment not within tolerance values! ");
+            result.status = RESULT_APPROXIMATE;
+        }
+
+        for(auto point : result.path.points)
+            retTrajectory.push_back(stdToArmadilloVec(point.positions));
+
+        // clear the proxies to clean up the UI
+        listDelete(_world->proxies);
+
+        return retTrajectory;
+
     }
 
-
-
-
+    /*
+     *
+     * helper functions
+     *
+     */
     double KomoPlanner::keyframeOptimizer(arr& x, MotionProblem& MP, bool x_is_initialized, uint verbose) {
 
         MotionProblem_EndPoseFunction MF(MP);
@@ -307,7 +505,7 @@ namespace kukadu {
     }
 
     bool KomoPlanner::withinTolerance(ors::Vector &error, ors::Vector &tolerance, int axes) {
-        for(uint i=0;i<3;i++) if(axes & (1 << i)) {
+        for(uint i = 0; i < 3; i++) if(axes & (1 << i)) {
             if(fabs(error(i)) > tolerance(i))
                 return false;
         }
@@ -418,7 +616,7 @@ namespace kukadu {
     bool KomoPlanner::validateCollisions(ors::KinematicWorld &w, const arr &x, string &error_msg) {
         CHECK(x.nd > 0, "Given value is neither a trajectory nor a waypoint!");
         if(x.nd == 2) { // x is trajectory
-            for (int i = 0; i < x.d0-1; ++i) {
+            for (int i = 0; i < x.d0 - 1; ++i) {
                 arr pt = x[i];
                 w.setJointState(pt);
                 // force swift to compute the collision proxies...
@@ -493,6 +691,10 @@ namespace kukadu {
             }
         }
 
+    }
+
+    void KomoPlanner::display(bool block, const char *msg) {
+        _world->watch(block, msg);
     }
 
 

@@ -312,6 +312,7 @@ namespace kukadu {
             jointsColletorThr = KUKADU_SHARED_PTR<kukadu_thread>(new kukadu_thread(&ControlQueue::jointsCollector, this));
             jointPtpInternal(joints);
             continueCollecting = false;
+            jointsColletorThr->join();
 
         } else {
 
@@ -334,6 +335,7 @@ namespace kukadu {
             jointsColletorThr = KUKADU_SHARED_PTR<kukadu_thread>(new kukadu_thread(&ControlQueue::jointsCollector, this));
             cartPtpInternal(pos);
             continueCollecting = false;
+            jointsColletorThr->join();
 
         } else {
 

@@ -55,15 +55,19 @@ namespace kukadu {
         double _alignmentPrecision;
         double _maxIterations;
 
+        std::string activeJointsPrefix;
+
         ors::Vector _pos_tolerance;
         ors::Vector _ang_tolerance;
 
         MT::String _world_link_name;
         MT::String _support_surface_name;
 
-        ors::KinematicWorld *_world;
-        std::vector<ors::Joint *> _active_joints;
+        ors::KinematicWorld* _world;
+        std::vector<std::string> sJointNames;
+        std::vector<ors::Joint*> _active_joints;
 
+        void display(bool block, const char* msg);
         void setState(const sensor_msgs::JointState &state);
         void ensureJointLimits(ors::KinematicWorld &w, arr &x);
         void setJointPosition(const std::string &name, const double pos);
@@ -86,7 +90,7 @@ namespace kukadu {
 
     public:
 
-        KomoPlanner(std::string configPath, std::string mtConfigPath);
+        KomoPlanner(std::string configPath, std::string mtConfigPath, std::string activeJointsPrefix);
         ~KomoPlanner();
 
         virtual std::vector<arma::vec> planJointTrajectory(std::vector<arma::vec> intermediateJoints);
