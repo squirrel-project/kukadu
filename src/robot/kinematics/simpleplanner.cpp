@@ -91,7 +91,7 @@ namespace kukadu {
 
     }
 
-    std::vector<arma::vec> SimplePlanner::planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians) {
+    std::vector<arma::vec> SimplePlanner::planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians, bool useCurrentRobotState) {
 
         for(int i = 0; i < MAX_NUM_ATTEMPTS; ++i) {
 

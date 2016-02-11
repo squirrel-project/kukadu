@@ -14,6 +14,8 @@ namespace kukadu {
         this->activeJointsPrefix = activeJointsPrefix;
         copyFile(mtConfigPath, "./MT.cfg");
 
+        simplePlanner = KUKADU_SHARED_PTR<SimplePlanner>(new SimplePlanner(queue, KUKADU_SHARED_PTR<Kinematics>()));
+
         _world = new ors::KinematicWorld(configPath.c_str());
         _world->swift().initActivations(*_world);
 
@@ -50,6 +52,10 @@ namespace kukadu {
 
         _support_surface_name = MT::getParameter<MT::String>("KOMO/scene/supportSurfaceName");
         _world_link_name = MT::getParameter<MT::String>("KOMO/scene/worldLinkName");
+
+        cout << _positionPrecision << " " << _collisionPrecision << " " << _collisionMargin << " " << _jointLimitPrecision << " " << _jointLimitMargin <<
+                _jointStatePrecision << " " << _zeroVelocityPrecision << " " << _alignmentPrecision << " " <<  _maxIterations << " " << _support_surface_name <<
+                _world_link_name << endl;
 
     }
 
@@ -169,13 +175,13 @@ namespace kukadu {
             if(!validateCollisions(*_world, x, result.error_msg)) {
                 result.status = RESULT_FAILED;
                 cerr << "Collision Validation failed!" << endl;
-            //    return retTrajectory;
+                // return retTrajectory;
             }
             // not necessary any more - just for test purposes...
             if(!validateJointLimits(*_world, x, result.error_msg)) {
                 result.status = RESULT_FAILED;
                 cerr << "Joint Limit Validation failed!" << endl;
-            //    return retTrajectory;
+                return retTrajectory;
             }
 
             traj.append(x);
@@ -213,11 +219,11 @@ namespace kukadu {
         // clear the proxies to clean up the UI
         listDelete(_world->proxies);
 
-        return retTrajectory;
+        return simplePlanner->planJointTrajectory(retTrajectory);
 
     }
 
-    std::vector<arma::vec> KomoPlanner::planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians) {
+    std::vector<arma::vec> KomoPlanner::planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians, bool useCurrentRobotState) {
 
         std::vector<arma::vec> retTrajectory;
         PlanningResult result;
@@ -311,12 +317,12 @@ namespace kukadu {
 
         for(int j = 0; j < _maxIterations; ++j) {
 
-            cout << "Iteration " << j + 1 << endl;
+            // cout << "Iteration " << j + 1 << endl;
 
             MP.prefix.clear();
             MP.x0 = state;
 
-            arr x = replicate(MP.x0, MP.T+1);
+            arr x = replicate(MP.x0, MP.T + 1);
             rndGauss(x, .01, true); //don't initialize at a singular config
 
             optConstrained(x, NoArr, Convert(MF), OPT(verbose = 0, stopIters = 100, maxStep = .5, stepInc = 2., allowOverstep = false));
@@ -328,19 +334,19 @@ namespace kukadu {
             if(!validateCollisions(*_world, x, result.error_msg)) {
                 result.status = RESULT_FAILED;
                 cerr << "Collision Validation failed!" << endl;
-            //    return retTrajectory;
+                //return retTrajectory;
             }
             // not necessary any more - just for test purposes...
             if(!validateJointLimits(*_world, x, result.error_msg)) {
                 result.status = RESULT_FAILED;
                 cerr << "Joint Limit Validation failed!" << endl;
-            //    return retTrajectory;
+                //return retTrajectory;
             }
 
             traj.append(x);
 
             // set world to final state of resulting path and calculate the transformations
-            state = x[x.d0-1];
+            state = x[x.d0 - 1];
             _world->setJointState(state);
 
             computePositionError(*endeff, *target, posError);
@@ -357,9 +363,9 @@ namespace kukadu {
 
         result.planning_time = MT::timerRead();
 
-        cout << "Optimization process finished" << endl;
-        cout << "Optimization time:  " << result.planning_time << endl;
-        cout << "SetJointStateCount: " << ors::KinematicWorld::setJointStateCount << endl;
+        //cout << "Optimization process finished" << endl;
+        //cout << "Optimization time:  " << result.planning_time << endl;
+        //cout << "SetJointStateCount: " << ors::KinematicWorld::setJointStateCount << endl;
 
 
         /* ---------------------- validation -------------------------*/
@@ -397,7 +403,7 @@ namespace kukadu {
         // clear the proxies to clean up the UI
         listDelete(_world->proxies);
 
-        return retTrajectory;
+        return simplePlanner->planJointTrajectory(retTrajectory);
 
     }
 

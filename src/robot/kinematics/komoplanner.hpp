@@ -20,6 +20,7 @@
 
 #include "kinematics.hpp"
 #include "pathplanner.hpp"
+#include "simpleplanner.hpp"
 #include "../controlqueue.hpp"
 #include "../../types/kukadutypes.hpp"
 
@@ -68,6 +69,7 @@ namespace kukadu {
         std::vector<ors::Joint*> _active_joints;
 
         KUKADU_SHARED_PTR<ControlQueue> queue;
+        KUKADU_SHARED_PTR<SimplePlanner> simplePlanner;
 
         void display(bool block, const char* msg);
         void setState(const sensor_msgs::JointState &state);
@@ -96,7 +98,7 @@ namespace kukadu {
         ~KomoPlanner();
 
         virtual std::vector<arma::vec> planJointTrajectory(std::vector<arma::vec> intermediateJoints);
-        virtual std::vector<arma::vec> planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians);
+        virtual std::vector<arma::vec> planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians = false, bool useCurrentRobotState = true);
 
     };
 

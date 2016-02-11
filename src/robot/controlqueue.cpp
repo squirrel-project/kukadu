@@ -202,6 +202,8 @@ namespace kukadu {
         double toleratedMaxDuration = 1.1 * desiredCycleTime;
         double toleratedMinDuration = 0.9 * desiredCycleTime;
 
+        movement = getCurrentJoints().joints;
+
         t.tic("r");
 
         while(!finish && ros::ok) {
@@ -241,7 +243,8 @@ namespace kukadu {
 
                     } else {
 
-                        movement = currentJoints;
+                        if(stopQueueWhilePtp())
+                            movement = getCurrentJoints().joints;
 
                     }
 
@@ -257,7 +260,7 @@ namespace kukadu {
 
                     } else {
 
-                        movementPose = currentCartPose;
+                        movementPose = getCurrentCartesianPose();
 
                     }
 

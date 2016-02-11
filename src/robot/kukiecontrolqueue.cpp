@@ -114,7 +114,6 @@ namespace kukadu {
         std_msgs::Float64MultiArray nextCommand;
         for(int i = 0; i < getMovementDegreesOfFreedom(); ++i)
             nextCommand.data.push_back(joints[i]);
-
         pubCommand.publish(nextCommand);
 
     }
@@ -222,6 +221,7 @@ namespace kukadu {
     void KukieControlQueue::robotJointPosCallback(const sensor_msgs::JointState& msg) {
 
         currentJointsMutex.lock();
+
             currJoints = arma::vec(msg.position.size());
             for(int i = 0; i < msg.position.size(); ++i) currJoints(i) = msg.position.at(i);
 
@@ -325,7 +325,7 @@ namespace kukadu {
         vector<geometry_msgs::Pose> desiredPlan;
         desiredPlan.push_back(getCurrentCartesianPose());
         desiredPlan.push_back(pos);
-        vector<vec> desiredJointPlan = planner->planCartesianTrajectory(desiredPlan, false);
+        vector<vec> desiredJointPlan = planner->planCartesianTrajectory(desiredPlan, false, true);
 
         if(desiredJointPlan.size() > 0) {
 

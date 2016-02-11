@@ -24,7 +24,7 @@ namespace kukadu {
         bool getCheckCollision();
 
         virtual std::vector<arma::vec> planJointTrajectory(std::vector<arma::vec> intermediateJoints) = 0;
-        virtual std::vector<arma::vec> planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians) = 0;
+        virtual std::vector<arma::vec> planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians, bool useCurrentRobotState) = 0;
 
         static constexpr int RESULT_FAILED = 0;
         static constexpr int RESULT_SUCCESS = 1;
