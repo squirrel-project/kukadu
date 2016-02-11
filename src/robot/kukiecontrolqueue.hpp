@@ -14,9 +14,8 @@
 #include "../utils/utils.hpp"
 #include "../types/kukadutypes.hpp"
 #include "../robot/controlqueue.hpp"
-#include "kinematics/simpleplanner.hpp"
+#include "kinematics/pathplanner.hpp"
 #include "../utils/destroyableobject.hpp"
-#include "kinematics/moveitkinematics.hpp"
 #include "robotDriver/src/kuka/friRemote.h"
 
 #include <ros/ros.h>
@@ -154,8 +153,6 @@ namespace kukadu {
 
         void safelyDestroy();
 
-        geometry_msgs::Pose computeFk(std::vector<double> joints);
-
         void setJntPtpThresh(double thresh);
 
         void setAdditionalLoad(float loadMass, float loadPos);
@@ -169,7 +166,6 @@ namespace kukadu {
         std::string getRobotDeviceType();
 
         std::vector<std::string> getJointNames();
-        std::vector<arma::vec> computeIk(geometry_msgs::Pose targetPose);
 
         mes_result getCurrentJoints();
         mes_result getCurrentJntFrcTrq();

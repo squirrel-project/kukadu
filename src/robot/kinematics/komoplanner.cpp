@@ -8,8 +8,9 @@ using namespace arma;
 
 namespace kukadu {
 
-    KomoPlanner::KomoPlanner(string configPath, string mtConfigPath, string activeJointsPrefix) : PathPlanner(KUKADU_SHARED_PTR<Kinematics>()) {
+    KomoPlanner::KomoPlanner(KUKADU_SHARED_PTR<ControlQueue> queue, string configPath, string mtConfigPath, string activeJointsPrefix) {
 
+        this->queue = queue;
         this->activeJointsPrefix = activeJointsPrefix;
         copyFile(mtConfigPath, "./MT.cfg");
 
@@ -98,7 +99,7 @@ namespace kukadu {
         std::vector<arma::vec> retTrajectory;
         PlanningResult result;
 
-        setState(sJointNames, intermediateJoints.at(0));
+        setState(sJointNames, queue->getCurrentJoints().joints);
 
         std::vector<double> goal_state = armadilloToStdVec(intermediateJoints.at(intermediateJoints.size() - 1));
 
@@ -167,13 +168,13 @@ namespace kukadu {
 
             if(!validateCollisions(*_world, x, result.error_msg)) {
                 result.status = RESULT_FAILED;
-                cerr << "Validation failed!" << endl;
+                cerr << "Collision Validation failed!" << endl;
             //    return retTrajectory;
             }
             // not necessary any more - just for test purposes...
             if(!validateJointLimits(*_world, x, result.error_msg)) {
                 result.status = RESULT_FAILED;
-                cerr << "Validation failed!" << endl;
+                cerr << "Joint Limit Validation failed!" << endl;
             //    return retTrajectory;
             }
 
@@ -226,11 +227,8 @@ namespace kukadu {
         geometry_msgs::Pose endPose = intermediatePoses.at(intermediatePoses.size() - 1);
         goal.pos.x = endPose.position.x; goal.pos.y = endPose.position.y; goal.pos.z = endPose.position.z;
 
-        setState(sJointNames, stdToArmadilloVec(createJointsVector(7, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)));
+        setState(sJointNames, queue->getCurrentJoints().joints);
         int axes_to_align = 0;
-
-
-
 
         // ensure that some joints have been enabled, otherwise planning is not possible
         CHECK(_active_joints.size() > 0, "Unable to plan - at least 1 joint has to be activated!");
@@ -278,7 +276,7 @@ namespace kukadu {
         c->map.order = 1; //make this a velocity variable!
 
         // TaskMaps for eef alignment
-        for(uint i=0;i<3;i++) if(axes_to_align & (1 << i)) {
+        for(uint i=0; i < 3; i++) if(axes_to_align & (1 << i)) {
             ors::Vector axis;
             axis.setZero();
             axis(i) = 1.;
@@ -321,7 +319,7 @@ namespace kukadu {
             arr x = replicate(MP.x0, MP.T+1);
             rndGauss(x, .01, true); //don't initialize at a singular config
 
-            optConstrained(x, NoArr, Convert(MF), OPT(verbose=0, stopIters=100, maxStep=.5, stepInc=2., allowOverstep=false));
+            optConstrained(x, NoArr, Convert(MF), OPT(verbose = 0, stopIters = 100, maxStep = .5, stepInc = 2., allowOverstep = false));
             MP.costReport(false);
 
             // ensure that all joints are within calculated limits before doing collision validation
@@ -329,13 +327,13 @@ namespace kukadu {
 
             if(!validateCollisions(*_world, x, result.error_msg)) {
                 result.status = RESULT_FAILED;
-                cerr << "Validation failed!" << endl;
+                cerr << "Collision Validation failed!" << endl;
             //    return retTrajectory;
             }
             // not necessary any more - just for test purposes...
             if(!validateJointLimits(*_world, x, result.error_msg)) {
                 result.status = RESULT_FAILED;
-                cerr << "Validation failed!" << endl;
+                cerr << "Joint Limit Validation failed!" << endl;
             //    return retTrajectory;
             }
 

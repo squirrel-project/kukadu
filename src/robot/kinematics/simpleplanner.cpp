@@ -8,9 +8,10 @@ using namespace arma;
 
 namespace kukadu {
 
-    SimplePlanner::SimplePlanner(KUKADU_SHARED_PTR<ControlQueue> queue, KUKADU_SHARED_PTR<Kinematics> kin) : PathPlanner(kin) {
+    SimplePlanner::SimplePlanner(KUKADU_SHARED_PTR<ControlQueue> queue, KUKADU_SHARED_PTR<Kinematics> kin) {
 
         this->queue = queue;
+        this->kin = kin;
 
         cycleTime = queue->getTimeStep();
         degOfFreedom = queue->getMovementDegreesOfFreedom();
@@ -100,7 +101,7 @@ namespace kukadu {
 
             int posesCount = intermediatePoses.size();
             for(int i = 0; i < posesCount; ++i) {
-                vector<vec> nextIk = getKinematics()->computeIk(currJoints, intermediatePoses.at(i));
+                vector<vec> nextIk = kin->computeIk(currJoints, intermediatePoses.at(i));
                 if(nextIk.size()) {
                     currJoints = nextIk.at(0);
                     retJoints.push_back(nextIk.at(0));
@@ -124,7 +125,6 @@ namespace kukadu {
 
     bool SimplePlanner::checkRestrictions(const std::vector<arma::vec>& plan) {
 
-        KUKADU_SHARED_PTR<Kinematics> kin = getKinematics();
         for(int i = 0; i < plan.size(); ++i) {
             vec nextPlanJoints = plan.at(i);
             if(!kin->checkAllRestrictions(nextPlanJoints, kin->computeFk(armadilloToStdVec(nextPlanJoints))))

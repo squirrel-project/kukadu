@@ -10,11 +10,13 @@
     #ifdef USEBOOST
         #include <boost/shared_ptr.hpp>
         #define KUKADU_SHARED_PTR boost::shared_ptr
+        #define KUKADU_STATIC_POINTER_CAST boost::static_pointer_cast
         #define KUKADU_DYNAMIC_POINTER_CAST boost::dynamic_pointer_cast
         #define KUKADU_ENABLE_SHARED_FROM_THIS boost::enable_shared_from_this
     #else
         #include <memory>
         #define KUKADU_SHARED_PTR std::shared_ptr
+        #define KUKADU_STATIC_POINTER_CAST std::static_pointer_cast
         #define KUKADU_DYNAMIC_POINTER_CAST std::dynamic_pointer_cast
         #define KUKADU_ENABLE_SHARED_FROM_THIS std::enable_shared_from_this
     #endif

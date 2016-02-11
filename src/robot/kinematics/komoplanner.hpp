@@ -67,6 +67,8 @@ namespace kukadu {
         std::vector<std::string> sJointNames;
         std::vector<ors::Joint*> _active_joints;
 
+        KUKADU_SHARED_PTR<ControlQueue> queue;
+
         void display(bool block, const char* msg);
         void setState(const sensor_msgs::JointState &state);
         void ensureJointLimits(ors::KinematicWorld &w, arr &x);
@@ -90,7 +92,7 @@ namespace kukadu {
 
     public:
 
-        KomoPlanner(std::string configPath, std::string mtConfigPath, std::string activeJointsPrefix);
+        KomoPlanner(KUKADU_SHARED_PTR<ControlQueue> queue, std::string configPath, std::string mtConfigPath, std::string activeJointsPrefix);
         ~KomoPlanner();
 
         virtual std::vector<arma::vec> planJointTrajectory(std::vector<arma::vec> intermediateJoints);

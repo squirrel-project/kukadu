@@ -105,7 +105,6 @@ namespace kukadu {
         arma::vec retrieveJointsFromRobot();
 
         std::vector<std::string> getJointNames();
-        std::vector<arma::vec> computeIk(geometry_msgs::Pose targetPose);
 
         mes_result getCurrentJoints();
         mes_result getCurrentJntFrcTrq();
@@ -113,8 +112,6 @@ namespace kukadu {
         mes_result getCurrentCartesianFrcTrq();
 
         geometry_msgs::Pose getCurrentCartesianPose();
-
-        virtual geometry_msgs::Pose computeFk(std::vector<double> joints);
 
         virtual void rollBack(double time);
         virtual void stopJointRollBackMode();

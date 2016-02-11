@@ -25,6 +25,7 @@ namespace kukadu {
 
         double cycleTime;
 
+        KUKADU_SHARED_PTR<Kinematics> kin;
         KUKADU_SHARED_PTR<ControlQueue> queue;
 
         RMLPositionFlags refFlags;

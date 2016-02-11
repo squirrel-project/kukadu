@@ -4,7 +4,6 @@
 #include "../utils/types.hpp"
 #include "../utils/tictoc.hpp"
 #include "../types/kukadutypes.hpp"
-#include "kinematics/kinematics.hpp"
 #include "../utils/destroyableobject.hpp"
 #include "kinematics/restriction/restriction.hpp"
 
@@ -66,7 +65,6 @@ namespace kukadu {
 
         TicToc t;
 
-        KUKADU_SHARED_PTR<Kinematics> kin;
         KUKADU_SHARED_PTR<kukadu_thread> thr;
         KUKADU_SHARED_PTR<kukadu_thread> cartPtpThr;
         KUKADU_SHARED_PTR<kukadu_thread> jointPtpThr;
@@ -100,7 +98,7 @@ namespace kukadu {
         /** \brief Constructor taking the robot dependent degrees of freedom
          * \param degOfFreedom number of robots degrees of freedom
          */
-        ControlQueue(int degOfFreedom, double desiredCycleTime, KUKADU_SHARED_PTR<Kinematics> kin);
+        ControlQueue(int degOfFreedom, double desiredCycleTime);
 
         /**
          * \brief Returns number of robots degrees of freedom
@@ -203,11 +201,6 @@ namespace kukadu {
          */
         virtual void setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq) = 0;
 
-        virtual std::vector<arma::vec> computeIk(geometry_msgs::Pose targetPose) = 0;
-
-        virtual geometry_msgs::Pose computeFk(arma::vec joints);
-        virtual geometry_msgs::Pose computeFk(std::vector<double> joints) = 0;
-
         /**
          * \brief Returns current robot position in cartesian space
          */
@@ -245,8 +238,6 @@ namespace kukadu {
 
         virtual double getAbsoluteCartForce();
 
-        KUKADU_SHARED_PTR<Kinematics> getKinematics();
-
         // kills command line output of queue
         virtual void shutUp();
         virtual void startTalking();
@@ -254,8 +245,6 @@ namespace kukadu {
         virtual void rollBack(double time);
         virtual void stopJointRollBackMode();
         virtual void startJointRollBackMode(double possibleTimeReach);
-
-        virtual void addKinematicRestriction(KUKADU_SHARED_PTR<Restriction> restriction);
 
         virtual double getCurrentTime();
 

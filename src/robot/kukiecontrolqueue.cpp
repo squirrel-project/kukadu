@@ -1,4 +1,5 @@
 #include "kukiecontrolqueue.hpp"
+#include "kinematics/simpleplanner.hpp"
 #include "../utils/kukadutokenizer.hpp"
 #include "kinematics/moveitkinematics.hpp"
 
@@ -78,7 +79,7 @@ namespace kukadu {
 
     }
 
-    KukieControlQueue::KukieControlQueue(double sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node) : ControlQueue(LBR_MNJ, sleepTime, KUKADU_SHARED_PTR<Kinematics>(new MoveItKinematics(armPrefix, armPrefix + string("_7_link")))) {
+    KukieControlQueue::KukieControlQueue(double sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node) : ControlQueue(LBR_MNJ, sleepTime) {
 
         commandTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/move";
         retJointPosTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/get_state";
@@ -317,7 +318,7 @@ namespace kukadu {
         cartesianPtpReached = false;
 
         if(!plannerInitialized) {
-            planner = KUKADU_SHARED_PTR<PathPlanner>(new SimplePlanner(shared_from_this(), getKinematics()));
+            planner = KUKADU_SHARED_PTR<PathPlanner>(new SimplePlanner(shared_from_this(), KUKADU_SHARED_PTR<Kinematics>(new MoveItKinematics(armPrefix, armPrefix + string("_7_link")))));
             plannerInitialized = true;
         }
 
@@ -344,7 +345,7 @@ namespace kukadu {
         ptpReached = false;
 
         if(!plannerInitialized) {
-            planner = KUKADU_SHARED_PTR<PathPlanner>(new SimplePlanner(shared_from_this(), getKinematics()));
+            planner = KUKADU_SHARED_PTR<PathPlanner>(new SimplePlanner(shared_from_this(), KUKADU_SHARED_PTR<Kinematics>(new MoveItKinematics(armPrefix, armPrefix + string("_7_link")))));
             plannerInitialized = true;
         }
 
@@ -363,29 +364,6 @@ namespace kukadu {
         } else {
             ROS_ERROR("(KukieControlQueue) Joint plan not found reachable");
         }
-
-    }
-
-    std::vector<arma::vec> KukieControlQueue::computeIk(geometry_msgs::Pose targetPose) {
-
-        vector<vec> sol;
-        vec currentJoints = getCurrentJoints().joints;
-        sol = getKinematics()->computeIk(currentJoints, targetPose);
-
-        if(sol.size())
-            return sol;
-        else {
-            ROS_ERROR("(KukieControlQueue) no ik solution found");
-            return vector<vec>();
-        }
-
-    }
-
-    geometry_msgs::Pose KukieControlQueue::computeFk(std::vector<double> joints) {
-
-        geometry_msgs::Pose targetPose;
-        targetPose = getKinematics()->computeFk(joints);
-        return targetPose;
 
     }
 

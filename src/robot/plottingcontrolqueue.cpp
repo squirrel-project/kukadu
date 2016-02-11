@@ -5,7 +5,7 @@ using namespace arma;
 
 namespace kukadu {
 
-    PlottingControlQueue::PlottingControlQueue(int degOfFreedom, double timeStep) : ControlQueue(degOfFreedom, timeStep, KUKADU_SHARED_PTR<Kinematics>()) {
+    PlottingControlQueue::PlottingControlQueue(int degOfFreedom, double timeStep) : ControlQueue(degOfFreedom, timeStep) {
 
         vector<string> jntNames;
         for(int i = 0; i < degOfFreedom; ++i) {
@@ -17,7 +17,7 @@ namespace kukadu {
 
     }
 
-    PlottingControlQueue::PlottingControlQueue(std::vector<std::string> jointNames, double timeStep) : ControlQueue(jointNames.size(), timeStep, KUKADU_SHARED_PTR<Kinematics>()) {
+    PlottingControlQueue::PlottingControlQueue(std::vector<std::string> jointNames, double timeStep) : ControlQueue(jointNames.size(), timeStep) {
 
         construct(jointNames, timeStep);
 
@@ -36,14 +36,6 @@ namespace kukadu {
         currTime = getCurrentTime();
         currJoints = arma::vec(1);
 
-    }
-
-    std::vector<arma::vec> PlottingControlQueue::computeIk(geometry_msgs::Pose targetPose) {
-        throw "(PlottingControlQueue) inverse kinematics is not supported";
-    }
-
-    geometry_msgs::Pose PlottingControlQueue::computeFk(std::vector<double> joints) {
-        throw "(PlottingControlQueue) forward kinematics is not supported";
     }
 
     std::string PlottingControlQueue::getRobotFileName() {

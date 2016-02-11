@@ -2,12 +2,7 @@
 
 namespace kukadu {
 
-    PathPlanner::PathPlanner(KUKADU_SHARED_PTR<Kinematics> kin) {
-        this->kin = kin;
-    }
-
-    KUKADU_SHARED_PTR<Kinematics> PathPlanner::getKinematics() {
-        return kin;
+    PathPlanner::PathPlanner() {
     }
 
     void PathPlanner::setCheckCollisions(bool collision) {
