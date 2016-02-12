@@ -56,6 +56,7 @@ namespace kukadu {
         double _alignmentPrecision;
         double _maxIterations;
 
+        std::string eef_link;
         std::string activeJointsPrefix;
 
         ors::Vector _pos_tolerance;
@@ -91,6 +92,8 @@ namespace kukadu {
 
         double keyframeOptimizer(arr& x, MotionProblem& MP, bool x_is_initialized, uint verbose);
         double optimizeEndpose(arr &xT, ors::KinematicWorld &w, const char *link, const char *target, bool allowCollision = true);
+
+        void allowContact(const char* link, bool allow);
 
     public:
 

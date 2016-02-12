@@ -53,17 +53,18 @@ namespace kukadu {
         _support_surface_name = MT::getParameter<MT::String>("KOMO/scene/supportSurfaceName");
         _world_link_name = MT::getParameter<MT::String>("KOMO/scene/worldLinkName");
 
-        cout << _positionPrecision << " " << _collisionPrecision << " " << _collisionMargin << " " << _jointLimitPrecision << " " << _jointLimitMargin <<
-                _jointStatePrecision << " " << _zeroVelocityPrecision << " " << _alignmentPrecision << " " <<  _maxIterations << " " << _support_surface_name <<
-                _world_link_name << endl;
+        eef_link = activeJointsPrefix + string("_sdh_tip_link");
+        allowContact(eef_link.c_str(), false);
 
     }
 
     KomoPlanner::~KomoPlanner() {
+
         if(_world) {
             delete _world;
         }
         //deleteFile("./MT.cfg");
+
     }
 
     void KomoPlanner::setJointPosition(const string &name, const double pos) {
@@ -175,7 +176,7 @@ namespace kukadu {
             if(!validateCollisions(*_world, x, result.error_msg)) {
                 result.status = RESULT_FAILED;
                 cerr << "Collision Validation failed!" << endl;
-                // return retTrajectory;
+                return retTrajectory;
             }
             // not necessary any more - just for test purposes...
             if(!validateJointLimits(*_world, x, result.error_msg)) {
@@ -199,10 +200,6 @@ namespace kukadu {
 
         result.planning_time = MT::timerRead();
 
-        cout << "Optimization process finished" << endl;
-        cout << "Optimization time:  " << result.planning_time << endl;
-        cout << "SetJointStateCount: " << ors::KinematicWorld::setJointStateCount << endl;
-
         // consider plan to be successful unless validation shows
         // something different...
         result.status = RESULT_SUCCESS;
@@ -212,9 +209,6 @@ namespace kukadu {
 
         for(auto point : result.path.points)
             retTrajectory.push_back(stdToArmadilloVec(point.positions));
-
-        cout << "Final state: " << state << endl;
-        cout << "State error: " << (goal_config - state) << endl;
 
         // clear the proxies to clean up the UI
         listDelete(_world->proxies);
@@ -227,7 +221,7 @@ namespace kukadu {
 
         std::vector<arma::vec> retTrajectory;
         PlanningResult result;
-        string eef_link = activeJointsPrefix + string("_sdh_palm_link");
+
         ors::Transformation goal;
         // geometry_msgs::Pose startPose = intermediatePoses.at(0);
         geometry_msgs::Pose endPose = intermediatePoses.at(intermediatePoses.size() - 1);
@@ -248,7 +242,7 @@ namespace kukadu {
             return retTrajectory;
         }
 
-        ors::Shape *endeff = _world->getShapeByName(eef_link.c_str());
+        ors::Shape* endeff = _world->getShapeByName(eef_link.c_str());
         if(!endeff) {
             result.error_msg = "Unable to find link with name '" + eef_link + "' within model.";
             cerr << result.error_msg << endl;
@@ -317,8 +311,6 @@ namespace kukadu {
 
         for(int j = 0; j < _maxIterations; ++j) {
 
-            // cout << "Iteration " << j + 1 << endl;
-
             MP.prefix.clear();
             MP.x0 = state;
 
@@ -333,14 +325,14 @@ namespace kukadu {
 
             if(!validateCollisions(*_world, x, result.error_msg)) {
                 result.status = RESULT_FAILED;
-                cerr << "Collision Validation failed!" << endl;
-                //return retTrajectory;
+                cerr << "(KomoPlanner) Collision Validation failed!" << endl;
+                return retTrajectory;
             }
             // not necessary any more - just for test purposes...
             if(!validateJointLimits(*_world, x, result.error_msg)) {
                 result.status = RESULT_FAILED;
-                cerr << "Joint Limit Validation failed!" << endl;
-                //return retTrajectory;
+                cerr << "(KomoPlanner) Joint Limit Validation failed!" << endl;
+                return retTrajectory;
             }
 
             traj.append(x);
@@ -363,11 +355,6 @@ namespace kukadu {
 
         result.planning_time = MT::timerRead();
 
-        //cout << "Optimization process finished" << endl;
-        //cout << "Optimization time:  " << result.planning_time << endl;
-        //cout << "SetJointStateCount: " << ors::KinematicWorld::setJointStateCount << endl;
-
-
         /* ---------------------- validation -------------------------*/
 
         // consider plan to be successful unless validation shows
@@ -379,11 +366,6 @@ namespace kukadu {
         result.resulting_pose = endeff->X;
         result.pos_error = posError;
         result.ang_error = angError;
-
-        cout << "EEF final pos:   " << endeff->X.pos << endl;
-        cout << "EEF target pos:  " << target->X.pos << endl;
-        cout << "Position error:  " << result.pos_error << endl;
-        cout << "Alignment error: " << result.ang_error << endl;
 
         // check end effector goal position
         if(!withinTolerance(result.pos_error, _pos_tolerance)) {
@@ -701,5 +683,13 @@ namespace kukadu {
         _world->watch(block, msg);
     }
 
+    void KomoPlanner::allowContact(const char* link, bool allow) {
+        ors::Shape *shape = _world->getShapeByName(link);
+        if(shape) {
+            shape->cont = !allow;
+        } else {
+            cerr << "Unable to find shape with name '" << string(link) << "' within model." << endl;
+        }
+    }
 
 }
