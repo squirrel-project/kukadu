@@ -226,9 +226,11 @@ namespace kukadu {
         // geometry_msgs::Pose startPose = intermediatePoses.at(0);
         geometry_msgs::Pose endPose = intermediatePoses.at(intermediatePoses.size() - 1);
         goal.pos.x = endPose.position.x; goal.pos.y = endPose.position.y; goal.pos.z = endPose.position.z;
+        goal.rot.set(endPose.orientation.w, endPose.orientation.x, endPose.orientation.y, endPose.orientation.z);
+        goal.rot.normalize();
 
         setState(sJointNames, queue->getCurrentJoints().joints);
-        int axes_to_align = 0;
+        int axis_to_align = 7;
 
         // ensure that some joints have been enabled, otherwise planning is not possible
         CHECK(_active_joints.size() > 0, "Unable to plan - at least 1 joint has to be activated!");
@@ -276,7 +278,7 @@ namespace kukadu {
         c->map.order = 1; //make this a velocity variable!
 
         // TaskMaps for eef alignment
-        for(uint i=0; i < 3; i++) if(axes_to_align & (1 << i)) {
+        for(uint i=0; i < 3; i++) if(axis_to_align & (1 << i)) {
             ors::Vector axis;
             axis.setZero();
             axis(i) = 1.;
@@ -342,10 +344,10 @@ namespace kukadu {
             _world->setJointState(state);
 
             computePositionError(*endeff, *target, posError);
-            computeAlignmentError(*endeff, *target, angError, axes_to_align);
+            computeAlignmentError(*endeff, *target, angError, axis_to_align);
 
             if(withinTolerance(posError, _pos_tolerance) &&
-               withinTolerance(angError, _ang_tolerance, axes_to_align))
+               withinTolerance(angError, _ang_tolerance, axis_to_align))
             {
                 break;
             }
@@ -374,7 +376,7 @@ namespace kukadu {
         }
 
         // check end effector goal alignment
-        if(!withinTolerance(result.ang_error, _ang_tolerance, axes_to_align)) {
+        if(!withinTolerance(result.ang_error, _ang_tolerance, axis_to_align)) {
             result.error_msg.append("Goal alignment not within tolerance values! ");
             result.status = RESULT_APPROXIMATE;
         }
