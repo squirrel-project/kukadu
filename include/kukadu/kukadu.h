@@ -39,7 +39,6 @@
 #include "../../src/robot/kinematics/kinematics.hpp"
 #include "../../src/robot/kinematics/pathplanner.hpp"
 #include "../../src/robot/kinematics/pathplanner.hpp"
-#include "../../src/robot/kinematics/komoplanner.hpp"
 #include "../../src/robot/kinematics/simpleplanner.hpp"
 #include "../../src/robot/kinematics/moveitkinematics.hpp"
 
@@ -77,10 +76,15 @@
 #include "../../src/utils/conversion_utils.hpp"
 #include "../../src/utils/destroyableobject.hpp"
 
-#include "../../src/vision/kinect.hpp"
-#include "../../src/vision/pcltools.hpp"
-#include "../../src/vision/openboxfilter.hpp"
-#include "../../src/vision/visioninterface.hpp"
-#include "../../src/vision/planarcuttransformator.hpp"
+#ifdef CPP11SUPPORTED
+	#include "../../src/robot/kinematics/komoplanner.hpp"
+#else
+	#include "../../src/vision/kinect.hpp"
+	#include "../../src/vision/pcltools.hpp"
+	#include "../../src/vision/openboxfilter.hpp"
+	#include "../../src/vision/visioninterface.hpp"
+	#include "../../src/vision/planarcuttransformator.hpp"
+#endif
+
 
 #endif

@@ -21,42 +21,46 @@
 
 #include "../types/kukadutypes.hpp"
 
-struct FitCube {
-    Eigen::Vector3f translation;
-    Eigen::Quaternionf rotation;
-    double width, height, depth;
-};
+namespace kukadu {
 
-class PCLTools {
+    struct FitCube {
+        Eigen::Vector3f translation;
+        Eigen::Quaternionf rotation;
+        double width, height, depth;
+    };
 
-private:
+    class PCLTools {
 
-    bool isVisInit;
-    bool keepShowingVis;
+    private:
 
-    KUKADU_SHARED_PTR<boost::thread> visThread;
-    KUKADU_SHARED_PTR<pcl::visualization::PCLVisualizer> viewer;
+        bool isVisInit;
+        bool keepShowingVis;
 
-    std::vector<std::pair<std::string, pcl::PointCloud<pcl::PointXYZ>::Ptr> > visPointClouds;
+        KUKADU_SHARED_PTR<boost::thread> visThread;
+        KUKADU_SHARED_PTR<pcl::visualization::PCLVisualizer> viewer;
 
-    void runVisThread();
+        std::vector<std::pair<std::string, pcl::PointCloud<pcl::PointXYZ>::Ptr> > visPointClouds;
 
-public:
+        void runVisThread();
 
-    PCLTools();
+    public:
 
-    static FitCube fitBox(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
-    static pcl::PointCloud<pcl::PointXYZ>::Ptr segmentPlanar(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, bool negative);
+        PCLTools();
 
-    void stopVisualizationWindow();
-    void visDrawBox(std::string id, struct FitCube dim);
-    void visDrawPlaneWithNormal(std::string id, arma::vec r0, arma::vec n);
-    void visualizePointCloud(std::string id, pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
-    void updateVisualizedPointCloud(std::string id, pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
+        static FitCube fitBox(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
+        static pcl::PointCloud<pcl::PointXYZ>::Ptr segmentPlanar(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, bool negative);
 
-    KUKADU_SHARED_PTR<boost::thread> initializeVisualizationWindow();
-    KUKADU_SHARED_PTR<pcl::visualization::PCLVisualizer> getVisualizer();
+        void stopVisualizationWindow();
+        void visDrawBox(std::string id, struct FitCube dim);
+        void visDrawPlaneWithNormal(std::string id, arma::vec r0, arma::vec n);
+        void visualizePointCloud(std::string id, pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
+        void updateVisualizedPointCloud(std::string id, pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
 
-};
+        KUKADU_SHARED_PTR<boost::thread> initializeVisualizationWindow();
+        KUKADU_SHARED_PTR<pcl::visualization::PCLVisualizer> getVisualizer();
+
+    };
+
+}
 
 #endif // PCLTOOLS_H
