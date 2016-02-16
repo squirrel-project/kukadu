@@ -147,7 +147,7 @@ namespace kukadu {
 
     std::vector<double> createJointsVector(int n_args, ...);
 
-    pcl::PointCloud<pcl::PointXYZ> sensorMsgsPcToPclPc(sensor_msgs::PointCloud2 pc);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr sensorMsgsPcToPclPc(sensor_msgs::PointCloud2::Ptr pc);
     sensor_msgs::PointCloud2 pclPcToSensorMsgsPc(pcl::PointCloud<pcl::PointXYZ> pc);
     pcl::PCLPointCloud2 sensorMsgsPcToPclPc2(sensor_msgs::PointCloud2 pc);
     sensor_msgs::PointCloud2 pclPcToSensorMsgsPc(pcl::PointCloud<pcl::PointXYZ>::Ptr pc);
