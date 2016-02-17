@@ -89,7 +89,7 @@ namespace kukadu {
             for(int i = 0; i < currentCommandedPos.size(); ++i)
                 doubleCommandedPos.push_back(currentCommandedPos.at(i));
 
-            targetReached = !vectorsDeviate(state.position, doubleCommandedPos, 0.01);
+            targetReached = !vectorsDeviate(state.position, doubleCommandedPos, 0.03);
 
             if(!targetReached) {
 

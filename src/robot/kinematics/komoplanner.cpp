@@ -53,7 +53,7 @@ namespace kukadu {
         _support_surface_name = MT::getParameter<MT::String>("KOMO/scene/supportSurfaceName");
         _world_link_name = MT::getParameter<MT::String>("KOMO/scene/worldLinkName");
 
-        eef_link = activeJointsPrefix + string("_sdh_tip_link");
+        eef_link = activeJointsPrefix + string("_sdh_palm_link");
         allowContact(eef_link.c_str(), false);
 
     }
@@ -168,7 +168,7 @@ namespace kukadu {
             sineProfile(x, state, goal_config, MP.T);
             // and then do the optimization
             optConstrained(x, NoArr, Convert(MF), OPT(verbose = 0, stopIters = 100, maxStep = .5, stepInc = 2., allowOverstep = false));
-            MP.costReport(false);
+            //MP.costReport(false);
 
             // ensure that all joints are within calculated limits before do collision validation
             ensureJointLimits(*_world, x);
@@ -217,7 +217,7 @@ namespace kukadu {
 
     }
 
-    std::vector<arma::vec> KomoPlanner::planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians, bool useCurrentRobotState) {
+    std::vector<arma::vec> KomoPlanner::planCartesianTrajectory(arma::vec startJoints, std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians, bool useCurrentRobotState) {
 
         std::vector<arma::vec> retTrajectory;
         PlanningResult result;
@@ -229,7 +229,7 @@ namespace kukadu {
         goal.rot.set(endPose.orientation.w, endPose.orientation.x, endPose.orientation.y, endPose.orientation.z);
         goal.rot.normalize();
 
-        setState(sJointNames, queue->getCurrentJoints().joints);
+        setState(sJointNames, startJoints);
         int axis_to_align = 7;
 
         // ensure that some joints have been enabled, otherwise planning is not possible
@@ -320,7 +320,7 @@ namespace kukadu {
             rndGauss(x, .01, true); //don't initialize at a singular config
 
             optConstrained(x, NoArr, Convert(MF), OPT(verbose = 0, stopIters = 100, maxStep = .5, stepInc = 2., allowOverstep = false));
-            MP.costReport(false);
+            // MP.costReport(false);
 
             // ensure that all joints are within calculated limits before doing collision validation
             ensureJointLimits(*_world, x);
@@ -388,6 +388,12 @@ namespace kukadu {
         listDelete(_world->proxies);
 
         return simplePlanner->planJointTrajectory(retTrajectory);
+
+    }
+
+    std::vector<arma::vec> KomoPlanner::planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians, bool useCurrentRobotState) {
+
+        return planCartesianTrajectory(queue->getCurrentJoints().joints, intermediatePoses, smoothCartesians, useCurrentRobotState);
 
     }
 
