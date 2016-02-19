@@ -16,3 +16,5 @@ logs
 *.orig
 *.pyc
 *REMOTE*
+MT.cfg
+z.AugmentedLagrangian
