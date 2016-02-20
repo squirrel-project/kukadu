@@ -310,7 +310,7 @@ namespace kukadu {
 
         } else {
 
-            throw "(ControlQueue) only one ptp at a time can be executed";
+            throw KukaduException("(ControlQueue) only one ptp at a time can be executed");
 
         }
 
@@ -333,7 +333,7 @@ namespace kukadu {
 
         } else {
 
-            throw "(ControlQueue) only one ptp at a time can be executed";
+            throw KukaduException("(ControlQueue) only one ptp at a time can be executed");
 
         }
 

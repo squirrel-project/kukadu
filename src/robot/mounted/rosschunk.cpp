@@ -228,7 +228,7 @@ namespace kukadu {
             default:
                 string msg = "(RosSchunk) grasp type not supported";
                 cerr << msg << endl;
-                throw msg;
+                throw KukaduException(msg.c_str());
 
             }
 
@@ -237,7 +237,7 @@ namespace kukadu {
         } else {
             string msg = "(RosSchunk) grasp percentage out of range";
             cerr << msg << endl;
-            throw msg;
+            throw KukaduException(msg.c_str());
         }
 
     }

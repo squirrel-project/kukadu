@@ -1,5 +1,5 @@
 #include "kukiecontrolqueue.hpp"
-#include "kinematics/simpleplanner.hpp"
+#include "kinematics/komoplanner.hpp"
 #include "../utils/kukadutokenizer.hpp"
 #include "kinematics/moveitkinematics.hpp"
 
@@ -47,7 +47,7 @@ namespace kukadu {
 
         if(sleepTime == 0.0) {
             ROS_ERROR("(KukieControlQueue) the sleep time you provided is 0. note that it is required in seconds");
-            throw "(KukieControlQueue) the sleep time you provided is 0. note that it is required in seconds";
+            throw KukaduException("(KukieControlQueue) the sleep time you provided is 0. note that it is required in seconds");
         }
 
         subJntPos = node.subscribe(retPosTopic, 2, &KukieControlQueue::robotJointPosCallback, this);
@@ -318,7 +318,10 @@ namespace kukadu {
         cartesianPtpReached = false;
 
         if(!plannerInitialized) {
-            planner = KUKADU_SHARED_PTR<PathPlanner>(new SimplePlanner(shared_from_this(), KUKADU_SHARED_PTR<Kinematics>(new MoveItKinematics(armPrefix, armPrefix + string("_7_link")))));
+            planner = KUKADU_SHARED_PTR<PathPlanner>(new KomoPlanner(shared_from_this(),
+                                                                     resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/data/iis_robot.kvg"),
+                                                                     resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/config/MT.cfg"),
+                                                                     getRobotSidePrefix()));
             plannerInitialized = true;
         }
 
@@ -345,7 +348,10 @@ namespace kukadu {
         ptpReached = false;
 
         if(!plannerInitialized) {
-            planner = KUKADU_SHARED_PTR<PathPlanner>(new SimplePlanner(shared_from_this(), KUKADU_SHARED_PTR<Kinematics>(new MoveItKinematics(armPrefix, armPrefix + string("_7_link")))));
+            planner = KUKADU_SHARED_PTR<PathPlanner>(new KomoPlanner(shared_from_this(),
+                                                                     resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/data/iis_robot.kvg"),
+                                                                     resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/config/MT.cfg"),
+                                                                     getRobotSidePrefix()));
             plannerInitialized = true;
         }
 

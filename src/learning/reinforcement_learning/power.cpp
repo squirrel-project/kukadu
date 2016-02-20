@@ -31,7 +31,7 @@ namespace kukadu {
 
         if(explorationSigmas.size() < initDmp.at(0)->getCoefficients().at(0).n_elem) {
             cerr << "you defined too less exploration sigmas" << endl;
-            throw "you defined too less exploration sigmas";
+            throw KukaduException("you defined too less exploration sigmas");
         }
 
         for(int i = 0; i < initDmp.at(0)->getCoefficients().at(0).n_elem; ++i) {

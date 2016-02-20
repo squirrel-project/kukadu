@@ -34,7 +34,7 @@ namespace kukadu {
 
         string errStr = "(DMPGeneralizer) not adapted to new implementation yet";
         cerr << errStr << endl;
-        throw errStr;
+        throw KukaduException(errStr.c_str());
 
         vector<vec> dmpCoeffs;
 

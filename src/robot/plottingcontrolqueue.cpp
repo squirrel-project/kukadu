@@ -51,15 +51,15 @@ namespace kukadu {
     }
 
     void PlottingControlQueue::rollBack(double time) {
-        throw "(PlottingControlQueue) roll back mode not supported";
+        throw KukaduException("(PlottingControlQueue) roll back mode not supported");
     }
 
     void PlottingControlQueue::stopJointRollBackMode() {
-        throw "(PlottingControlQueue) roll back mode not supported";
+        throw KukaduException("(PlottingControlQueue) roll back mode not supported");
     }
 
     void PlottingControlQueue::startJointRollBackMode(double possibleTime) {
-        throw "(PlottingControlQueue) roll back mode not supported";
+        throw KukaduException("(PlottingControlQueue) roll back mode not supported");
     }
 
     void PlottingControlQueue::setJntPtpThresh(double thresh) {
@@ -106,7 +106,7 @@ namespace kukadu {
     }
 
     void PlottingControlQueue::addCartesianPosToQueue(geometry_msgs::Pose pose) {
-        throw "not supported yet";
+        throw KukaduException("not supported yet");
     }
 
     void PlottingControlQueue::switchMode(int mode) {
@@ -141,7 +141,7 @@ namespace kukadu {
     }
 
     void PlottingControlQueue::cartPtpInternal(geometry_msgs::Pose pos) {
-        throw "not supported yet";
+        throw KukaduException("not supported yet");
     }
 
     void PlottingControlQueue::jointPtpInternal(arma::vec joints) {
@@ -159,11 +159,11 @@ namespace kukadu {
     }
 
     mes_result PlottingControlQueue::getCurrentCartesianPos() {
-        throw "not supported yet";
+        throw KukaduException("not supported yet");
     }
 
     geometry_msgs::Pose PlottingControlQueue::getCurrentCartesianPose() {
-        throw "not supported yet";
+        throw KukaduException("not supported yet");
     }
 
     mes_result PlottingControlQueue::getCurrentJoints() {

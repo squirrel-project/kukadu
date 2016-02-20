@@ -166,7 +166,6 @@ namespace kukadu {
                     simRes = trajEx->executeTrajectory();
 
                 } else {
-                //    throw "(GeneralReinforcer) update not usable (stopping reinforcement learning)";
                 }
 
             }

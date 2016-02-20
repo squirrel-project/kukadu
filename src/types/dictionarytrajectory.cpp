@@ -105,7 +105,7 @@ namespace kukadu {
 
         string errStr = "(DictionaryTrajectory) == operator not implemted yet";
         cerr << errStr << endl;
-        throw errStr;
+        throw KukaduException(errStr.c_str());
 
     }
 

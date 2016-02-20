@@ -6,6 +6,8 @@
         #define USEBOOST
     #endif
 
+    #include <exception>
+
     // shared_ptr
     #ifdef USEBOOST
         #include <boost/shared_ptr.hpp>
@@ -60,5 +62,20 @@
         typedef std::normal_distribution<double> kukadu_normal_distribution;
         typedef std::uniform_real_distribution<double> kukadu_uniform_real_distribution;
     #endif
+
+    class KukaduException : public std::exception {
+
+    private:
+
+        const char* message;
+
+    public:
+
+        KukaduException(const char* message) { this->message = message; }
+
+        virtual const char* what() const throw() {
+            return message;
+        }
+    };
 
 #endif

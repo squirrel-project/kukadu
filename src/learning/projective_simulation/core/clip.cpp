@@ -222,7 +222,7 @@ namespace kukadu {
                     return false;
             return true;
         }
-        throw "(Clip==) clip dimensions do not match";
+        throw KukaduException("(Clip==) clip dimensions do not match");
 
     }
 
@@ -245,7 +245,7 @@ namespace kukadu {
                 else return o1.clipDimensionValues->at(i) < o2.clipDimensionValues->at(i);
         }
         return false;
-        throw "(Clip==) clip dimensions do not match";
+        throw KukaduException("(Clip==) clip dimensions do not match");
 
     }
 
@@ -266,7 +266,7 @@ namespace kukadu {
             }
             return true;
         }
-        throw "(Clip checkCompatible) clip dimensions do not match";
+        throw KukaduException("(Clip checkCompatible) clip dimensions do not match");
 
     }
 

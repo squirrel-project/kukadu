@@ -1,5 +1,7 @@
 #include "mahalanobicslearner.hpp"
 
+#include "../../types/kukadutypes.hpp"
+
 using namespace arma;
 using namespace std;
 
@@ -12,7 +14,7 @@ namespace kukadu {
         if(x1s.size() != x2s.size() || distances.size() != vecSize) {
             string error = "(MahalanobisLearner) sizes of x vector collections do not match";
             cerr << error << endl;
-            throw error;
+            throw KukaduException(error.c_str());
         }
 
         int xDimension = x1s.at(0).n_elem;
@@ -20,7 +22,7 @@ namespace kukadu {
             if(x1s.at(i).n_elem != xDimension || x2s.at(i).n_elem != xDimension) {
                 string error = "(MahalanobisLearner) sizes of x vectors do not match";
                 cerr << error << endl;
-                throw error;
+                throw KukaduException(error.c_str());
             }
         }
 
@@ -35,7 +37,7 @@ namespace kukadu {
         if(x1s.size() > 0 && x1s.at(0).n_elem == x1.n_elem && x2s.at(0).n_elem == x2.n_elem) {
             string error = "(MahalanobisLearner) size of x vector does not match";
             cerr << error << endl;
-            throw error;
+            throw KukaduException(error.c_str());
         }
 
         distances.push_back(distance);

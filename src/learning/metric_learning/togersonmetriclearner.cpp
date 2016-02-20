@@ -121,7 +121,7 @@ namespace kukadu {
 
                 string msg = "(TogersonMetricLearner) provided distances not complete";
                 cerr << msg << endl;
-                throw msg;
+                throw KukaduException(msg.c_str());
 
             }
 

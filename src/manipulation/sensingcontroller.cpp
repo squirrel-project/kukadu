@@ -91,7 +91,7 @@ namespace kukadu {
                 if(!classifierParamsSet) {
                     string errorMsg = "(SensingController) classifier parameters not yet set" ;
                     cerr << errorMsg << endl;
-                    throw errorMsg;
+                    throw KukaduException(errorMsg.c_str());
                 }
 
                 pf::remove_all(tmpPath + "hapticTest");
@@ -125,7 +125,7 @@ namespace kukadu {
                 }
                 classifierRes = maxIdx;
             } else {
-                throw "haptic mode not known";
+                throw KukaduException("haptic mode not known");
             }
 
             if(!isShutUp)

@@ -7,7 +7,7 @@ namespace kukadu {
 
     GradientDescent::GradientDescent(KUKADU_SHARED_PTR<TrajectoryExecutor> trajEx, std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp, double explorationSigma, int updatesPerRollout, int importanceSamplingCount, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
 
-        throw "(GradientDescent) currently broken";
+        throw KukaduException("(GradientDescent) currently broken");
 
         vector<double> intSigmas;
 
@@ -25,7 +25,7 @@ namespace kukadu {
 
     GradientDescent::GradientDescent(KUKADU_SHARED_PTR<TrajectoryExecutor> trajEx, std::vector<KUKADU_SHARED_PTR<Trajectory> > initDmp, vector<double> explorationSigmas, int updatesPerRollout, int importanceSamplingCount, KUKADU_SHARED_PTR<CostComputer> cost, KUKADU_SHARED_PTR<ControlQueue> simulationQueue, KUKADU_SHARED_PTR<ControlQueue> executionQueue, double ac, double dmpStepSize, double tolAbsErr, double tolRelErr) : GeneralReinforcer(trajEx, cost, simulationQueue, executionQueue) {
 
-        throw "(GradientDescent) currently broken";
+        throw KukaduException("(GradientDescent) currently broken");
 
         // init sampler
         for(int i = 0; i < initDmp.at(0)->getCoefficients().at(0).n_elem; ++i) {

@@ -37,7 +37,7 @@ namespace kukadu {
         if(!robot_model_) {
             string error = "(MoveItKinematics) Unable to load robot model - make sure, that the robot_description is uploaded to the server";
             ROS_ERROR("(MoveItKinematics) Unable to load robot model - make sure, that the robot_description is uploaded to the server");
-            throw runtime_error(error);
+            throw KukaduException(error.c_str());
         }
 
         // create instance of planning scene

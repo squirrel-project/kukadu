@@ -189,7 +189,7 @@ namespace kukadu {
             }
 
         } else {
-            throw "PS file version cannot be handled";
+            throw KukaduException("PS file version cannot be handled");
         }
 
     }
@@ -470,7 +470,7 @@ namespace kukadu {
         if(operationMode == PS_USE_GEN) {
             if(!lastGeneralizedPercept) {
                 cerr << "(ProjectiveSimulator) you have to generalize before you walk" << endl;
-                throw "(ProjectiveSimulator) you have to generalize before you walk";
+                throw KukaduException("(ProjectiveSimulator) you have to generalize before you walk");
             } else {
                 currentClip = lastGeneralizedPercept;
             }

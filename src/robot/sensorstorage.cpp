@@ -449,7 +449,7 @@ namespace kukadu {
 
                         } else {
 
-                            throw "(SensorStorage) joint names order not ok";
+                            throw KukaduException("(SensorStorage) joint names order not ok");
 
                         }
 
@@ -470,7 +470,7 @@ namespace kukadu {
 
                     if(tok.next().compare("cart_pos_y") || tok.next().compare("cart_pos_z") ||
                             tok.next().compare("cart_quat_x") || tok.next().compare("cart_quat_y") || tok.next().compare("cart_quat_z") || tok.next().compare("cart_quat_w")) {
-                        throw "(SensorStorage) cartesian pos order not ok";
+                        throw KukaduException("(SensorStorage) cartesian pos order not ok");
                     }
 
                     tok.putBackLast();
@@ -488,7 +488,7 @@ namespace kukadu {
 
                     if(tok.next().compare("cart_force_y") || tok.next().compare("cart_force_z") ||
                             tok.next().compare("cart_trq_x") || tok.next().compare("cart_trq_y") || tok.next().compare("cart_trq_z")) {
-                        throw "(SensorStorage) cartesian force order not ok";
+                        throw KukaduException("(SensorStorage) cartesian force order not ok");
                     }
 
                     tok.putBackLast();
@@ -513,7 +513,7 @@ namespace kukadu {
 
                         } else {
 
-                            throw "(SensorStorage) joint force names order not ok";
+                            throw KukaduException("(SensorStorage) joint force names order not ok");
 
                         }
                     }

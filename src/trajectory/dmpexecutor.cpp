@@ -345,7 +345,7 @@ namespace kukadu {
     void DMPExecutor::initializeIntegrationQuat() {
 
         if(t > 0.0) {
-            throw "(DMPExecutor) t > 0 is not considered yet with cartesian dmp";
+            throw KukaduException("(DMPExecutor) t > 0 is not considered yet with cartesian dmp");
         }
 
         if(isCartesian) {
@@ -388,7 +388,7 @@ namespace kukadu {
 
             if (s != GSL_SUCCESS) {
                 cout << "(DMPExecutor) error: driver returned " << s << endl;
-                throw "(DMPExecutor) error: driver returned " + s;
+                throw KukaduException(string("(DMPExecutor) error: driver returned " + s).c_str());
             }
 
         }
