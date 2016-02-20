@@ -106,7 +106,7 @@ namespace kukadu {
     }
 
     void PlottingControlQueue::addCartesianPosToQueue(geometry_msgs::Pose pose) {
-        throw KukaduException("not supported yet");
+        fakeCurrentPose = pose;
     }
 
     void PlottingControlQueue::switchMode(int mode) {
@@ -141,7 +141,7 @@ namespace kukadu {
     }
 
     void PlottingControlQueue::cartPtpInternal(geometry_msgs::Pose pos) {
-        throw KukaduException("not supported yet");
+        fakeCurrentPose = pos;
     }
 
     void PlottingControlQueue::jointPtpInternal(arma::vec joints) {
@@ -159,11 +159,15 @@ namespace kukadu {
     }
 
     mes_result PlottingControlQueue::getCurrentCartesianPos() {
-        throw KukaduException("not supported yet");
+        mes_result res;
+        res.time = 0.0;
+        res.joints = stdToArmadilloVec(createJointsVector(7, fakeCurrentPose.position.x, fakeCurrentPose.position.y, fakeCurrentPose.position.z,
+                                                          fakeCurrentPose.orientation.x, fakeCurrentPose.orientation.y, fakeCurrentPose.orientation.z, fakeCurrentPose.orientation.w));
+        return res;
     }
 
     geometry_msgs::Pose PlottingControlQueue::getCurrentCartesianPose() {
-        throw KukaduException("not supported yet");
+        return fakeCurrentPose;
     }
 
     mes_result PlottingControlQueue::getCurrentJoints() {

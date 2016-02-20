@@ -57,6 +57,8 @@ namespace kukadu {
         arma::vec currJoints;
         arma::vec startJoints;
 
+        geometry_msgs::Pose fakeCurrentPose;
+
         std::vector<std::string> jointNames;
 
         void construct(std::vector<std::string> jointNames, double timeStep);
