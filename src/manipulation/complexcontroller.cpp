@@ -250,11 +250,10 @@ namespace kukadu {
 
     double ComplexController::getSimulatedRewardInternal(KUKADU_SHARED_PTR<SensingController> usedSensingController, KUKADU_SHARED_PTR<kukadu::PerceptClip> providedPercept, KUKADU_SHARED_PTR<kukadu::Controller> takenAction, int sensingClassIdx, int prepContIdx) {
 
-        /*
+        // simulates non-perfect complex controller
         int failed = simSuccDist(*generator);
-        if(!failed)
+        if(failed)
             return getPunishReward();
-            */
 
         double simReward = getSimulatedReward(usedSensingController, providedPercept, takenAction, sensingClassIdx, prepContIdx);
 
