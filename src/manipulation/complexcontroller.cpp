@@ -15,8 +15,10 @@ namespace kukadu {
 
     ComplexController::ComplexController(std::string caption, std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers,
                                          std::vector<KUKADU_SHARED_PTR<Controller> > preparationControllers,
-                                         std::string corrPSPath, std::string rewardHistoryPath, bool storeReward, double senseStretch, double boredom, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards)
-        : Controller(caption), Reward(generator, collectPrevRewards) {
+                                         std::string corrPSPath, std::string rewardHistoryPath, bool storeReward, double senseStretch, double boredom, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator,
+                                         int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards,
+                                         int simulationFailingProbability)
+        : Controller(caption, simulationFailingProbability), Reward(generator, collectPrevRewards) {
 
         projSim.reset();
         rewardHistoryStream.reset();
@@ -36,6 +38,9 @@ namespace kukadu {
         this->stdPrepWeight = stdPrepWeight;
         this->sensingControllers = sensingControllers;
         this->preparationControllers = preparationControllers;
+
+        vector<int> distributionWeights; distributionWeights.push_back(100 - simulationFailingProbability); distributionWeights.push_back(simulationFailingProbability);
+        simSuccDist = KUKADU_DISCRETE_DISTRIBUTION<int>(distributionWeights.begin(), distributionWeights.end());
 
     }
 
@@ -200,6 +205,8 @@ namespace kukadu {
         KUKADU_SHARED_PTR<IntermediateEventClip> sensClip = KUKADU_DYNAMIC_POINTER_CAST<IntermediateEventClip>(providedPercept->getSubClipByIdx(intermed->at(1)));
         KUKADU_SHARED_PTR<SensingController> sensCont = sensClip->getSensingController();
 
+        KUKADU_SHARED_PTR<ControllerActionClip> castedAction = KUKADU_DYNAMIC_POINTER_CAST<ControllerActionClip>(takenAction);
+
         int predictedClassIdx = intermed->at(2);
         int takenActionIdx = intermed->at(3);
 
@@ -207,7 +214,6 @@ namespace kukadu {
 
             cout << "selected sensing action \"" << *sensClip << "\" resulted in predicted class " << intermed->at(2) << " and preparation action \"" << *takenAction << "\"" << endl;
 
-            KUKADU_SHARED_PTR<ControllerActionClip> castedAction = KUKADU_DYNAMIC_POINTER_CAST<ControllerActionClip>(takenAction);
             castedAction->performAction();
 
             cout << "(ComplexController) do you want to execute complex action now? (0 = no / 1 = yes)" << endl;
@@ -231,14 +237,28 @@ namespace kukadu {
         } else {
 
             sensCont->setSimulationGroundTruth(getNextSimulatedGroundTruth(sensCont));
-            retReward = getSimulatedReward(sensCont, providedPercept, takenAction, predictedClassIdx, takenActionIdx);
+            retReward = getSimulatedRewardInternal(sensCont, providedPercept, castedAction->getActionController(), predictedClassIdx, takenActionIdx);
 
         }
 
         if(storeReward)
-            *rewardHistoryStream << retReward << "\t" << *sensClip << "\t\t" << *takenAction << endl;
+            *rewardHistoryStream << retReward << "\t" << *sensClip << "\t" << predictedClassIdx << "\t\t" << *takenAction << endl;
 
         return retReward;
+
+    }
+
+    double ComplexController::getSimulatedRewardInternal(KUKADU_SHARED_PTR<SensingController> usedSensingController, KUKADU_SHARED_PTR<kukadu::PerceptClip> providedPercept, KUKADU_SHARED_PTR<kukadu::Controller> takenAction, int sensingClassIdx, int prepContIdx) {
+
+        /*
+        int failed = simSuccDist(*generator);
+        if(!failed)
+            return getPunishReward();
+            */
+
+        double simReward = getSimulatedReward(usedSensingController, providedPercept, takenAction, sensingClassIdx, prepContIdx);
+
+        return simReward;
 
     }
 
@@ -254,7 +274,7 @@ namespace kukadu {
         bool wasBored = actionRes.first;
         double reward = actionRes.second;
 
-        if(wasBored)
+        if(wasBored && !isShutUp)
             cout << "(ComplexController) got bored" << endl;
 
         KUKADU_SHARED_PTR<ControllerResult> ret = KUKADU_SHARED_PTR<ControllerResult>(new ControllerResult(vec(), vector<vec>(), (reward > 0) ? true : false, wasBored));

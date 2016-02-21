@@ -46,6 +46,8 @@ namespace kukadu {
         KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > prepActions;
         KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > prepActionsCasted;
 
+        KUKADU_DISCRETE_DISTRIBUTION<int> simSuccDist;
+
         std::vector<double> sensingWeights;
         std::vector<KUKADU_SHARED_PTR<Controller> > preparationControllers;
         std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers;
@@ -55,12 +57,14 @@ namespace kukadu {
     protected:
 
         void setSimulationModeInChain(bool simulationMode);
-        virtual double getSimulatedReward(KUKADU_SHARED_PTR<SensingController> usedSensingController, KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction, int sensingClassIdx, int prepContIdx) = 0;
+        virtual double getSimulatedReward(KUKADU_SHARED_PTR<SensingController> usedSensingController, KUKADU_SHARED_PTR<kukadu::PerceptClip> providedPercept, KUKADU_SHARED_PTR<kukadu::Controller> takenAction, int sensingClassIdx, int prepContIdx) = 0;
+
+        virtual double getSimulatedRewardInternal(KUKADU_SHARED_PTR<SensingController> usedSensingController, KUKADU_SHARED_PTR<kukadu::PerceptClip> providedPercept, KUKADU_SHARED_PTR<kukadu::Controller> takenAction, int sensingClassIdx, int prepContIdx);
 
     public:
 
         ComplexController(std::string caption, std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers, std::vector<KUKADU_SHARED_PTR<Controller> > preparationControllers,
-                          std::string corrPSPath, std::string rewardHistoryPath, bool storeReward, double senseStretch, double boredom, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards);
+                          std::string corrPSPath, std::string rewardHistoryPath, bool storeReward, double senseStretch, double boredom, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards, int simulationFailingProbability);
         ~ComplexController();
 
         void store();

@@ -2,7 +2,7 @@
 
 namespace kukadu {
 
-    TrajectoryExecutor::TrajectoryExecutor() : Controller("simple trajectory executor") {
+    TrajectoryExecutor::TrajectoryExecutor() : Controller("simple trajectory executor", 0.0) {
 
     }
 

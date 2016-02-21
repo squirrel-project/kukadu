@@ -2,12 +2,15 @@
 
 namespace kukadu {
 
-    Controller::Controller(std::string caption) {
+    Controller::Controller(std::string caption, int simulationFailingProbability) {
 
         isShutUp = true;
 
         this->caption = caption;
         this->simulation = false;
+
+        this->simulationFailingProbability = simulationFailingProbability;
+
     }
 
     std::string Controller::getCaption() {
@@ -29,6 +32,10 @@ namespace kukadu {
 
     void Controller::startTalking() {
         isShutUp = false;
+    }
+
+    double Controller::getSimFailingProb() {
+        return simulationFailingProbability;
     }
 
 }

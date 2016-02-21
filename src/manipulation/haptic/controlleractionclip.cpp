@@ -22,4 +22,8 @@ namespace kukadu {
         }
     }
 
+    KUKADU_SHARED_PTR<Controller> ControllerActionClip::getActionController() {
+        return actionController;
+    }
+
 }

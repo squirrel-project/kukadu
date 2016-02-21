@@ -25,6 +25,8 @@ namespace kukadu {
 
         void performAction();
 
+        KUKADU_SHARED_PTR<Controller> getActionController();
+
     };
 
 }

@@ -196,6 +196,7 @@ namespace kukadu {
     #if VISUALIZATION == 1
 
         while(true) {
+
             ALLEGRO_EVENT ev;
             al_wait_for_event(event_queue, &ev);
 
@@ -204,6 +205,7 @@ namespace kukadu {
                 if(ev.keyboard.keycode == ALLEGRO_KEY_ENTER)
                     return;
             }
+
         }
 
     #endif

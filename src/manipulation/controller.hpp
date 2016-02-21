@@ -18,6 +18,9 @@ namespace kukadu {
     private:
 
         bool simulation;
+
+        int simulationFailingProbability;
+
         std::string caption;
 
     protected:
@@ -29,13 +32,15 @@ namespace kukadu {
 
     public:
 
-        Controller(std::string caption);
+        Controller(std::string caption, int simulationFailingProbability);
 
         void shutUp();
         void startTalking();
         void setSimulationMode(bool simulationMode);
 
         bool getSimulationMode();
+
+        double getSimFailingProb();
 
         std::string getCaption();
 

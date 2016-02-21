@@ -8,12 +8,12 @@ namespace pf = boost::filesystem;
 
 namespace kukadu {
 
-    SensingController::SensingController(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int hapticMode, string caption, std::string databasePath, std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, vector<KUKADU_SHARED_PTR<GenericHand> > hands, std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction) : Controller(caption) {
+    SensingController::SensingController(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int hapticMode, string caption, std::string databasePath, std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, vector<KUKADU_SHARED_PTR<GenericHand> > hands, std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction, int simClassificationPrecision) : Controller(caption, 1) {
 
         currentIterationNum = 0;
         classifierParamsSet = false;
         simulationGroundTruth = 0;
-        simulatedClassificationPrecision = 100;
+        simulatedClassificationPrecision = simClassificationPrecision;
 
         this->generator = generator;
 
@@ -139,11 +139,12 @@ namespace kukadu {
         } else {
 
             vector<double> precisionProbVec;
-            precisionProbVec.push_back((double) (simulatedClassificationPrecision));
+            precisionProbVec.push_back((double) simulatedClassificationPrecision);
             precisionProbVec.push_back((double) (100 - simulatedClassificationPrecision));
             KUKADU_DISCRETE_DISTRIBUTION<int> precisionProb(precisionProbVec.begin(), precisionProbVec.end());
 
             int correctClass = precisionProb(*generator);
+
             // simulate correct classification
             if(!correctClass)
                 classifierRes = simulationGroundTruth;
