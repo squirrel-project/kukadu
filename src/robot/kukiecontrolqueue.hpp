@@ -50,11 +50,15 @@ namespace kukadu {
 
     private:
 
+        bool firstModeReceived;
+        bool firstJointsReceived;
+
         int impMode;
         int cartesianPtpReached;
 
         bool ptpReached;
         bool isRealRobot;
+        bool acceptCollisions;
         bool plannerInitialized;
 
         arma::vec currJoints;
@@ -134,7 +138,7 @@ namespace kukadu {
         virtual void setInitValues();
         void jointPtpInternal(arma::vec joints);
         virtual void submitNextJointMove(arma::vec joints);
-        virtual void cartPtpInternal(geometry_msgs::Pose pos);
+        virtual void cartPtpInternal(geometry_msgs::Pose pos, double maxForce);
         virtual void submitNextCartMove(geometry_msgs::Pose pose);
         virtual void setCurrentControlTypeInternal(int controlType);
 
@@ -142,13 +146,13 @@ namespace kukadu {
 
     public:
 
-        KukieControlQueue(double sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node);
+        KukieControlQueue(double sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node, bool acceptCollisions = false);
 
         void constructQueue(double sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
                             std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
                             std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic,
                             std::string cartPtpTopic, std::string cartPtpReachedTopic, std::string cartMoveRfQueueTopic, std::string cartMoveWfQueueTopic, std::string cartPoseRfTopic,
-                            std::string setPtpThresh, ros::NodeHandle node
+                            std::string setPtpThresh, bool acceptCollisions, ros::NodeHandle node
                         );
 
         void safelyDestroy();

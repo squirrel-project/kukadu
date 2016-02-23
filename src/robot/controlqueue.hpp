@@ -41,7 +41,6 @@ namespace kukadu {
 
         int degOfFreedom;
         int rollBackQueueSize;
-        int currentControlType;
 
         double sleepTime;
         double currentTime;
@@ -78,12 +77,14 @@ namespace kukadu {
 
     protected:
 
+        int currentControlType;
+
         virtual void setInitValues() = 0;
         virtual void jointPtpInternal(arma::vec joints) = 0;
         virtual void submitNextJointMove(arma::vec joints) = 0;
-        virtual void cartPtpInternal(geometry_msgs::Pose pose) = 0;
         virtual void submitNextCartMove(geometry_msgs::Pose pose) = 0;
         virtual void setCurrentControlTypeInternal(int controlType) = 0;
+        virtual void cartPtpInternal(geometry_msgs::Pose pose, double maxForce) = 0;
 
         /**
          * @brief this method determines, if the queue execetion should be stopped while ptp commands are executed
@@ -176,6 +177,8 @@ namespace kukadu {
          * \param pose of end-effector
          */
         virtual std::vector<mes_result> cartesianPtp(geometry_msgs::Pose pos);
+
+        virtual std::vector<mes_result> cartesianPtp(geometry_msgs::Pose pos, double maxForce);
 
         /**
          * \brief Implements simple point to point movement in cartesian space (does not block until the position is reached)

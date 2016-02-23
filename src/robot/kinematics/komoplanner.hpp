@@ -46,6 +46,8 @@ namespace kukadu {
 
     private:
 
+        bool acceptCollision;
+
         double _positionPrecision;
         double _zeroVelocityPrecision;
         double _jointLimitPrecision;
@@ -97,7 +99,7 @@ namespace kukadu {
 
     public:
 
-        KomoPlanner(KUKADU_SHARED_PTR<ControlQueue> queue, std::string configPath, std::string mtConfigPath, std::string activeJointsPrefix);
+        KomoPlanner(KUKADU_SHARED_PTR<ControlQueue> queue, std::string configPath, std::string mtConfigPath, std::string activeJointsPrefix, bool acceptCollision = false);
         ~KomoPlanner();
 
         virtual std::vector<arma::vec> planJointTrajectory(std::vector<arma::vec> intermediateJoints);

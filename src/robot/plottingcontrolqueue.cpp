@@ -140,7 +140,7 @@ namespace kukadu {
         startJoints = joints;
     }
 
-    void PlottingControlQueue::cartPtpInternal(geometry_msgs::Pose pos) {
+    void PlottingControlQueue::cartPtpInternal(geometry_msgs::Pose pos, double maxForce) {
         fakeCurrentPose = pos;
     }
 

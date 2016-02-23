@@ -14,10 +14,12 @@ namespace kukadu {
     void KukieControlQueue::constructQueue(double sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
                         std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
                         std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic,
-                        std::string cartPtpTopic, std::string cartPtpReachedTopic, std::string cartMoveRfQueueTopic, std::string cartMoveWfQueueTopic, std::string cartPoseRfTopic, std::string jntSetPtpThreshTopic, ros::NodeHandle node
+                        std::string cartPtpTopic, std::string cartPtpReachedTopic, std::string cartMoveRfQueueTopic, std::string cartMoveWfQueueTopic, std::string cartPoseRfTopic, std::string jntSetPtpThreshTopic, bool acceptCollisions, ros::NodeHandle node
                     ) {
 
         set_ctrlc_exit_handler();
+
+        this->acceptCollisions = acceptCollisions;
 
         this->ptpTopic = ptpTopic;
         this->addLoadTopic = addLoadTopic;
@@ -75,11 +77,17 @@ namespace kukadu {
         // this is required because shared_from_this can't be called in constructor (initializiation happens by lazy loading)
         plannerInitialized = false;
 
+        ros::Rate r(10);
+        while(!firstJointsReceived || !firstModeReceived)
+            r.sleep();
+
+        currentControlType = impMode;
+
         usleep(1e6);
 
     }
 
-    KukieControlQueue::KukieControlQueue(double sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node) : ControlQueue(LBR_MNJ, sleepTime) {
+    KukieControlQueue::KukieControlQueue(double sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node, bool acceptCollisions) : ControlQueue(LBR_MNJ, sleepTime) {
 
         commandTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/move";
         retJointPosTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/get_state";
@@ -105,7 +113,7 @@ namespace kukadu {
 
         constructQueue(sleepTime, commandTopic, retJointPosTopic, switchModeTopic, retCartPosTopic, stiffnessTopic,
                        jntStiffnessTopic, ptpTopic, commandStateTopic, ptpReachedTopic, addLoadTopic, jntFrcTrqTopic, cartFrcTrqTopic,
-                       cartPtpTopic, cartPtpReachedTopic, cartMoveRfQueueTopic, cartMoveWfQueueTopic, cartPoseRfTopic, jntSetPtpThreshTopic, node);
+                       cartPtpTopic, cartPtpReachedTopic, cartMoveRfQueueTopic, cartMoveWfQueueTopic, cartPoseRfTopic, jntSetPtpThreshTopic, acceptCollisions, node);
 
     }
 
@@ -225,6 +233,8 @@ namespace kukadu {
             currJoints = arma::vec(msg.position.size());
             for(int i = 0; i < msg.position.size(); ++i) currJoints(i) = msg.position.at(i);
 
+            firstJointsReceived = true;
+
         currentJointsMutex.unlock();
 
     }
@@ -250,6 +260,7 @@ namespace kukadu {
 
     void KukieControlQueue::commandStateCallback(const std_msgs::Float32MultiArray& msg) {
         impMode = msg.data[1];
+        firstModeReceived = true;
     }
 
     void KukieControlQueue::ptpReachedCallback(const std_msgs::Int32MultiArray& msg) {
@@ -263,6 +274,8 @@ namespace kukadu {
     void KukieControlQueue::setInitValues() {
         impMode = -1;
         ptpReached = false;
+        firstJointsReceived = false;
+        firstModeReceived = false;
     }
 
     int KukieControlQueue::getCurrentControlType() {
@@ -313,7 +326,7 @@ namespace kukadu {
 
     }
 
-    void KukieControlQueue::cartPtpInternal(geometry_msgs::Pose pos) {
+    void KukieControlQueue::cartPtpInternal(geometry_msgs::Pose pos, double maxForce) {
 
         cartesianPtpReached = false;
 
@@ -321,7 +334,7 @@ namespace kukadu {
             planner = KUKADU_SHARED_PTR<PathPlanner>(new KomoPlanner(shared_from_this(),
                                                                      resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/data/iis_robot.kvg"),
                                                                      resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/config/MT.cfg"),
-                                                                     getRobotSidePrefix()));
+                                                                     getRobotSidePrefix(), acceptCollisions));
             plannerInitialized = true;
         }
 
@@ -330,12 +343,18 @@ namespace kukadu {
         desiredPlan.push_back(pos);
         vector<vec> desiredJointPlan = planner->planCartesianTrajectory(desiredPlan, false, true);
 
+        bool maxForceExceeded = false;
         if(desiredJointPlan.size() > 0) {
 
-            for(int i = 0; i < desiredJointPlan.size(); ++i)
-                addJointsPosToQueue(desiredJointPlan.at(i));
+            for(int i = 0; i < desiredJointPlan.size() && !maxForceExceeded; ++i) {
 
-            synchronizeToControlQueue(1);
+                if(getAbsoluteCartForce() > maxForce)
+                    maxForceExceeded = true;
+                else
+                    addJointsPosToQueue(desiredJointPlan.at(i));
+                synchronizeToControlQueue(1);
+
+            }
 
         } else {
             ROS_ERROR("(KukieControlQueue) Cartesian position not reachable");
@@ -351,7 +370,7 @@ namespace kukadu {
             planner = KUKADU_SHARED_PTR<PathPlanner>(new KomoPlanner(shared_from_this(),
                                                                      resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/data/iis_robot.kvg"),
                                                                      resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/config/MT.cfg"),
-                                                                     getRobotSidePrefix()));
+                                                                     getRobotSidePrefix(), acceptCollisions));
             plannerInitialized = true;
         }
 
@@ -368,7 +387,7 @@ namespace kukadu {
             synchronizeToControlQueue(1);
 
         } else {
-            ROS_ERROR("(KukieControlQueue) Joint plan not found reachable");
+            ROS_ERROR("(KukieControlQueue) Joint plan not reachable");
         }
 
     }

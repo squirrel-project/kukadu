@@ -319,7 +319,7 @@ namespace kukadu {
 
     }
 
-    std::vector<mes_result> ControlQueue::cartesianPtp(geometry_msgs::Pose pos) {
+    std::vector<mes_result> ControlQueue::cartesianPtp(geometry_msgs::Pose pos, double maxForce) {
 
         cartesianPtpRunning = true;
 
@@ -327,7 +327,7 @@ namespace kukadu {
 
             continueCollecting = true;
             jointsColletorThr = KUKADU_SHARED_PTR<kukadu_thread>(new kukadu_thread(&ControlQueue::jointsCollector, this));
-            cartPtpInternal(pos);
+            cartPtpInternal(pos, maxForce);
             continueCollecting = false;
             jointsColletorThr->join();
 
@@ -339,6 +339,12 @@ namespace kukadu {
 
         cartesianPtpRunning = false;
         return collectedJoints;
+
+    }
+
+    std::vector<mes_result> ControlQueue::cartesianPtp(geometry_msgs::Pose pos) {
+
+        return cartesianPtp(pos, DBL_MAX);
 
     }
 

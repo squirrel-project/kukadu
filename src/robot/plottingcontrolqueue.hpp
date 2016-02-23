@@ -90,7 +90,7 @@ namespace kukadu {
         void setJntPtpThresh(double thresh);
         void setStartingJoints(arma::vec joints);
         void addJointsPosToQueue(arma::vec joints);
-        void cartPtpInternal(geometry_msgs::Pose pos);
+        void cartPtpInternal(geometry_msgs::Pose pos, double maxForce);
         void addCartesianPosToQueue(geometry_msgs::Pose pose);
         void setAdditionalLoad(float loadMass, float loadPos);
         void synchronizeToControlQueue(int maxNumJointsInQueue);

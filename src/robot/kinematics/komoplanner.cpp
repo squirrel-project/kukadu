@@ -8,7 +8,7 @@ using namespace arma;
 
 namespace kukadu {
 
-    KomoPlanner::KomoPlanner(KUKADU_SHARED_PTR<ControlQueue> queue, string configPath, string mtConfigPath, string activeJointsPrefix) {
+    KomoPlanner::KomoPlanner(KUKADU_SHARED_PTR<ControlQueue> queue, string configPath, string mtConfigPath, string activeJointsPrefix, bool acceptCollision) {
 
         this->queue = queue;
         this->activeJointsPrefix = activeJointsPrefix;
@@ -21,6 +21,7 @@ namespace kukadu {
 
         // initialize list of activated joints
         for(ors::Joint* j : _world->joints) {
+
             if(j->agent == 0) {
 
                 string currJointName = string((char*) j->name);
@@ -32,6 +33,7 @@ namespace kukadu {
                 }
 
             }
+
         }
 
         double def_pos_tolerance = MT::getParameter<double>("KOMO/moveTo/defaultPositionTolerance", 0.005);
@@ -55,6 +57,8 @@ namespace kukadu {
 
         eef_link = activeJointsPrefix + string("_sdh_palm_link");
         allowContact(eef_link.c_str(), false);
+
+        this->acceptCollision = acceptCollision;
 
     }
 
@@ -175,13 +179,14 @@ namespace kukadu {
 
             if(!validateCollisions(*_world, x, result.error_msg)) {
                 result.status = RESULT_FAILED;
-                cerr << "Collision Validation failed!" << endl;
-                return retTrajectory;
+                cerr << "(KomoPlanner) Collision Validation failed!" << endl;
+                if(!acceptCollision)
+                    return retTrajectory;
             }
             // not necessary any more - just for test purposes...
             if(!validateJointLimits(*_world, x, result.error_msg)) {
                 result.status = RESULT_FAILED;
-                cerr << "Joint Limit Validation failed!" << endl;
+                cerr << "(KomoPlanner) Joint Limit Validation failed!" << endl;
                 return retTrajectory;
             }
 
@@ -328,7 +333,8 @@ namespace kukadu {
             if(!validateCollisions(*_world, x, result.error_msg)) {
                 result.status = RESULT_FAILED;
                 cerr << "(KomoPlanner) Collision Validation failed!" << endl;
-                return retTrajectory;
+                if(!acceptCollision)
+                    return retTrajectory;
             }
             // not necessary any more - just for test purposes...
             if(!validateJointLimits(*_world, x, result.error_msg)) {
