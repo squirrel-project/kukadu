@@ -43,4 +43,8 @@ namespace kukadu {
 
     }
 
+    void PlottingHand::moveJoints(arma::vec joints) {
+
+    }
+
 }

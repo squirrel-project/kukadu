@@ -30,7 +30,7 @@ namespace kukadu {
 
         currentCommandedPos = currentPos;
         currentGraspId = eGID_PARALLEL;
-        publishSdhJoints(currentPos);
+        moveJoints(stdToArmadilloVec(currentPos));
 
     }
 
@@ -232,7 +232,7 @@ namespace kukadu {
 
             }
 
-            publishSdhJoints(hand_pose);
+            moveJoints(stdToArmadilloVec(hand_pose));
 
         } else {
             string msg = "(RosSchunk) grasp percentage out of range";
@@ -267,16 +267,17 @@ namespace kukadu {
             else
                 command.push_back(SDH_IGNORE_JOINT);
 
-        publishSdhJoints(command);
+        moveJoints(stdToArmadilloVec(command));
 
     }
 
-    void RosSchunk::publishSdhJoints(std::vector<double> positions) {
+    void RosSchunk::moveJoints(arma::vec positions) {
 
+        std::vector<double> stdPos = armadilloToStdVec(positions);
         std_msgs::Float64MultiArray newJoints;
-        for(int i = 0; i < positions.size(); ++i) {
-            if(positions.at(i) != SDH_IGNORE_JOINT)
-                newJoints.data.push_back(positions.at(i));
+        for(int i = 0; i < stdPos.size(); ++i) {
+            if(stdPos.at(i) != SDH_IGNORE_JOINT)
+                newJoints.data.push_back(stdPos.at(i));
             else
                 newJoints.data.push_back(currentCommandedPos.at(i));
         }

@@ -31,6 +31,8 @@ namespace kukadu {
          */
         virtual void closeHand(double percentage, double velocity) = 0;
 
+        virtual void moveJoints(arma::vec joints) = 0;
+
         /** \brief Closes connection between host computer and hand
          *
          */

@@ -83,7 +83,8 @@ namespace kukadu {
         virtual void setGrasp(kukadu_grasps grasp);
         virtual void publishSingleJoint(int idx, double pos);
         virtual void closeHand(double percentage, double velocity);
-        virtual void publishSdhJoints(std::vector<double> positions);
+
+        void moveJoints(arma::vec joints);
 
         virtual std::string getHandName();
 

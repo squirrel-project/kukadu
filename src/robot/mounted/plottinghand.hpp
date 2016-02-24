@@ -41,6 +41,7 @@ namespace kukadu {
         void publishSingleJoint(int idx, double pos);
         void closeHand(double percentage, double velocity);
         void publishSdhJoints(std::vector<double> positions);
+        void moveJoints(arma::vec joints);
 
         std::vector<arma::mat> getTactileSensing();
 
