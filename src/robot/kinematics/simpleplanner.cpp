@@ -13,12 +13,12 @@ namespace kukadu {
         this->queue = queue;
         this->kin = kin;
 
+        refApi = new ReflexxesAPI(queue->getMovementDegreesOfFreedom(), 1.0 / queue->getTimeStep());
+        refInputParams = new RMLPositionInputParameters(queue->getMovementDegreesOfFreedom());
+        refOutputParams = new RMLPositionOutputParameters(queue->getMovementDegreesOfFreedom());
+
         cycleTime = queue->getTimeStep();
         degOfFreedom = queue->getMovementDegreesOfFreedom();
-
-        refApi = KUKADU_SHARED_PTR<ReflexxesAPI>(new ReflexxesAPI(degOfFreedom, 1.0 / cycleTime));
-        refInputParams = KUKADU_SHARED_PTR<RMLPositionInputParameters>(new RMLPositionInputParameters(degOfFreedom));
-        refOutputParams = KUKADU_SHARED_PTR<RMLPositionOutputParameters>(new RMLPositionOutputParameters(degOfFreedom));
 
         for(int i = 0; i < degOfFreedom; ++i) {
             // this seems to be not normal velocity but velocity normalized by time step
@@ -31,9 +31,7 @@ namespace kukadu {
     }
 
     SimplePlanner::~SimplePlanner() {
-        refOutputParams.reset();
-        refInputParams.reset();
-        refApi.reset();
+        cout << "(SimplePlanner) memory leak here" << endl;
     }
 
     std::vector<arma::vec> SimplePlanner::planJointTrajectory(std::vector<arma::vec> intermediateJoints) {
@@ -70,7 +68,7 @@ namespace kukadu {
                 int result = ReflexxesAPI::RML_ERROR;
                 while(result != ReflexxesAPI::RML_FINAL_STATE_REACHED) {
 
-                    result = refApi->RMLPosition(*refInputParams, refOutputParams.get(), refFlags);
+                    result = refApi->RMLPosition(*refInputParams, refOutputParams, refFlags);
                     refInputParams->CurrentPositionVector = refOutputParams->NewPositionVector;
                     refInputParams->CurrentVelocityVector = refOutputParams->NewVelocityVector;
                     refInputParams->CurrentAccelerationVector = refOutputParams->NewAccelerationVector;

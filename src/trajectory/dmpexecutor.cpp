@@ -441,19 +441,21 @@ namespace kukadu {
             controlQueue->startJointRollBackMode(3.0);
         }
 
-        int stepCount = (tEnd - tStart) / controlQueue->getMeasuredTimeStep();
         double currentTime = 0.0;
 
         vector<vec> retY;
-        for(int i = 0; i < degofFreedom; ++i)
-            retY.push_back(arma::vec(stepCount));
 
         vector<double> retT;
         geometry_msgs::Pose start;
 
         if(!isCartesian) {
 
-            controlQueue->jointPtp(y0s);
+            vec currentState = controlQueue->getCurrentJoints().joints;
+            for(int i = 0; i < y0s.n_elem; ++i)
+                if(abs(currentState(i) - y0s(i)) > 0.01) {
+                    controlQueue->jointPtp(y0s);
+                    break;
+                }
 
         } else {
 
@@ -479,8 +481,7 @@ namespace kukadu {
                 break;
             }
 
-            for(int i = 0; i < degofFreedom; ++i)
-                retY.at(i)(j) = nextJoints(i);
+            retY.push_back(nextJoints);
 
             if(simulate == EXECUTE_ROBOT) {
                 controlQueue->synchronizeToControlQueue(1);

@@ -113,7 +113,6 @@ namespace kukadu {
                 cout << "(SensingController) what was the haptic result? [0, " << (getSensingCatCount() - 1) << "]" << endl;
                 cin >> classifierRes;
             } else if(temporaryHapticMode == SensingController::HAPTIC_MODE_CLASSIFIER) {
-                cout << 1 << endl;
                 vector<double> res = callClassifier(databasePath, tmpPath + "hapticTest/" + queues.at(0)->getRobotFileName() + "_0", true, bestParamC, bestParamD, bestParamParam1, bestParamParam2);
                 int maxIdx = 0;
                 double maxElement = res.at(0);

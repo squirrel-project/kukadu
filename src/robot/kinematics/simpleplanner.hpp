@@ -29,9 +29,9 @@ namespace kukadu {
         KUKADU_SHARED_PTR<ControlQueue> queue;
 
         RMLPositionFlags refFlags;
-        KUKADU_SHARED_PTR<ReflexxesAPI> refApi;
-        KUKADU_SHARED_PTR<RMLPositionInputParameters> refInputParams;
-        KUKADU_SHARED_PTR<RMLPositionOutputParameters> refOutputParams;
+        ReflexxesAPI* refApi;
+        RMLPositionInputParameters* refInputParams;
+        RMLPositionOutputParameters* refOutputParams;
 
         bool checkRestrictions(const std::vector<arma::vec>& plan);
         bool checkPlanSmoothness(const std::vector<arma::vec>& plan);
