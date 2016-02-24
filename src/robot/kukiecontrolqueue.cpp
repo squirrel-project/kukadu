@@ -374,20 +374,32 @@ namespace kukadu {
             plannerInitialized = true;
         }
 
-        vector<arma::vec> desiredPlan;
-        desiredPlan.push_back(getCurrentJoints().joints);
-        desiredPlan.push_back(joints);
-        vector<vec> desiredJointPlan = planner->planJointTrajectory(desiredPlan);
+        bool performPtp = false;
+        vec currentState = getCurrentJoints().joints;
+        for(int i = 0; i < joints.n_elem; ++i)
+            if(abs(currentState(i) - joints(i)) > 0.01) {
+                performPtp = true;
+                break;
+            }
 
-        if(desiredJointPlan.size() > 0) {
+        if(performPtp) {
 
-            for(int i = 0; i < desiredJointPlan.size(); ++i)
-                addJointsPosToQueue(desiredJointPlan.at(i));
+            vector<arma::vec> desiredPlan;
+            desiredPlan.push_back(getCurrentJoints().joints);
+            desiredPlan.push_back(joints);
+            vector<vec> desiredJointPlan = planner->planJointTrajectory(desiredPlan);
 
-            synchronizeToControlQueue(1);
+            if(desiredJointPlan.size() > 0) {
 
-        } else {
-            ROS_ERROR("(KukieControlQueue) Joint plan not reachable");
+                for(int i = 0; i < desiredJointPlan.size(); ++i)
+                    addJointsPosToQueue(desiredJointPlan.at(i));
+
+                synchronizeToControlQueue(1);
+
+            } else {
+                ROS_ERROR("(KukieControlQueue) Joint plan not reachable");
+            }
+
         }
 
     }
