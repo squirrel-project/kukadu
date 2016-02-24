@@ -44,7 +44,6 @@ namespace kukadu {
         cartesianPtpReached = 0;
 
         setInitValues();
-        currentJntFrqTrq = arma::vec(1);
         this->node = node;
 
         if(sleepTime == 0.0) {
@@ -82,6 +81,12 @@ namespace kukadu {
             r.sleep();
 
         currentControlType = impMode;
+
+        currentCartFrqTrq = vec(6);
+        currentCartFrqTrq.fill(0.0);
+
+        currentJntFrqTrq = vec(getMovementDegreesOfFreedom());
+        currentJntFrqTrq.fill(0.0);
 
         usleep(1e6);
 
@@ -221,7 +226,7 @@ namespace kukadu {
             currentJntFrqTrq = stdToArmadilloVec(msg.data);
         else {
             currentJntFrqTrq = vec(getMovementDegreesOfFreedom());
-            currentCartFrqTrq.fill(0);
+            currentJntFrqTrq.fill(0.0);
         }
 
     }

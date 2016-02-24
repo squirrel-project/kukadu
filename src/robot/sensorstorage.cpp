@@ -237,8 +237,11 @@ namespace kukadu {
                     if(storeJntFrc)
                         jntFrcTrq = currentQueue->getCurrentJntFrcTrq();
 
-                    if(storeCartAbsFrc)
+                    if(storeCartFrcTrq)
                         cartFrcTrq = currentQueue->getCurrentCartesianFrcTrq();
+
+                    if(storeCartAbsFrc)
+                        absCartFrc = currentQueue->getAbsoluteCartForce();
 
                     time = joints.time;
 
