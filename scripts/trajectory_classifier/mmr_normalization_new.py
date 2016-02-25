@@ -86,10 +86,6 @@ def mmr_normalization(ilocal,iscale,XTrain,XTest,ipar):
     mtest=0
     XTest=array([])
     
-  print('mmr_normalization_new')
-  print(ilocal)
-  print(iscale)
-
   if ilocal==-1:
     pass
   elif ilocal==0:   ##  mean
@@ -105,9 +101,6 @@ def mmr_normalization(ilocal,iscale,XTrain,XTest,ipar):
     xcenter=dot(XTrain.T,xalpha)
   elif ilocal==5:   ## row mean row wise
     xcenter=mean(XTrain,axis=1)
-
-  print(XTrain)
-  print(xcenter)
 
   if ilocal in (0,1,2,3,4):
     XTrain=XTrain-tile(xcenter,(mtrain,1))

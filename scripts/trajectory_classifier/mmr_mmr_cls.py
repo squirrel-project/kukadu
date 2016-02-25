@@ -95,12 +95,7 @@ class cls_mmr(base.cls_data):
   def mmr_train(self,params):
 	  
     ## added by simon as standard value to make it compile
-    print('a')
     YTrain=self.YKernel.get_train_norm(self.itrain)
-    print('b')
-    print(self.itrain)
-    print('c')
-    input()
 
     if self.iperceptron==0:
       mtra=self.mtrain

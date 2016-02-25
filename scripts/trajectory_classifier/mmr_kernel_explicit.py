@@ -109,7 +109,6 @@ class cls_feature:
 
 ## --------------------------------------------------------------
   def get_train_norm(self,itrain):
-    print('mmr_kernel_explicit')
     if self.XTrainNorm is None:
       (self.XTrainNorm,self.XTestNorm,opar)= \
               mmr_normalization(self.norm.ilocal,self.norm.iscale, \

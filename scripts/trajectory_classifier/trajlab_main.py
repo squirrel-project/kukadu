@@ -219,8 +219,6 @@ def mmr_main(iworkmode, trainingBase, evalFile):
 
 def runClassifier(trainingBase, evalFile, pcl, bestParamC, bestParamD, bestParamParam1, bestParamParam2):
   iworkmode = 0
-  print(trainingBase)
-  print(evalFile)
   return mmr_main(iworkmode, trainingBase, evalFile)
 
 if __name__ == "__main__":
@@ -229,5 +227,5 @@ if __name__ == "__main__":
   elif len(sys.argv)>=2:
     iworkmode=eval(sys.argv[1])
   trainingBase='/home/c7031109/data/studium/informatik/phd/projects/squirrel/books/data/2015-05-11_sliding_data_with_labels/'
-  evalFile='/home/c7031109/data/studium/informatik/phd/projects/squirrel/books/data/2015-05-11_sliding_data_with_labels/N5309222_top_1'
+  evalFile='/home/c7031109/data/studium/informatik/phd/projects/squirrel/books/data/2015-05-11_sliding_data_with_labels/N5309222_cside_5'
   mmr_main(iworkmode, trainingBase, evalFile)

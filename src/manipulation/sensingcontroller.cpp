@@ -117,7 +117,7 @@ namespace kukadu {
                 int maxIdx = 0;
                 double maxElement = res.at(0);
                 for(int i = 1; i < getSensingCatCount(); ++i) {
-                    if(res.at(i) > maxIdx) {
+                    if(res.at(i) > maxElement) {
                         maxElement = res.at(i);
                         maxIdx = i;
                     }

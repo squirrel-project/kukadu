@@ -124,8 +124,6 @@ def mvm_validation(xdatacls,params):
 ##  vpredtr=np.zeros(vnfold) # valid
   vpred=np.zeros(vnfold) # train
 
-  print('C,D,par1,par2,traning accuracy,validation test accuracy')    
-
   # scanning the parameter space
   
   if xdatacls_val.ieval_type in (0,10):

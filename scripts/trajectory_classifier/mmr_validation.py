@@ -92,9 +92,8 @@ def mmr_validation(cMMR,params):
    
   vpredtr=np.zeros(vnfold)     ## valid
   vpred=np.zeros(vnfold)     ## train
-  print('C,D,par1,par2,traning accuracy,validation test accuracy')    
-
-  ## scanning the parameter space
+  
+## scanning the parameter space
   if cMMR.ieval_type in (0,10):
     xxmax=-np.inf
   else:
@@ -168,8 +167,6 @@ def mmr_validation(cMMR,params):
           
 ## ##############################################
           np.set_printoptions(precision=4)
-          print('%9.5g'%iC,'%9.5g'%iD,'%9.5g'%dpar1,'%9.5g'%dpar2, \
-                '%9.5g'%(np.mean(vpredtr)),'%9.5g'%(np.mean(vpred)))
 ##          print(array((iC,iD,dpar1,dpar2,mean(vpredtr),mean(vpred))))
 ##          print(iC,iD,dpar1,dpar2,mean(vpredtr),mean(vpred))
 ## searching for the best configuration in validation
@@ -182,7 +179,6 @@ def mmr_validation(cMMR,params):
               xparam.d=iD
               xparam.par1=dpar1
               xparam.par2=dpar2
-              print('The best:',xxmax)
           else:
             if mvpred<xxmax:
               xxmax=mvpred
@@ -190,7 +186,6 @@ def mmr_validation(cMMR,params):
               xparam.d=iD
               xparam.par1=dpar1
               xparam.par2=dpar2
-              print('The best:',xxmax)
               
           sys.stdout.flush()  
   best_param=xparam

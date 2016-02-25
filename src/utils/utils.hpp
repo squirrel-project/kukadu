@@ -36,6 +36,7 @@
 #include <tf/transform_datatypes.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <geometry_msgs/Quaternion.h>
+#include <Python.h>
 
 #include "types.hpp"
 #include "kukadutokenizer.hpp"
