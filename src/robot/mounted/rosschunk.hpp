@@ -36,6 +36,7 @@ namespace kukadu {
 
         kukadu_grasps currentGraspId;
 
+        bool waitForReached;
         int previousCurrentPosQueueSize;
 
         ros::NodeHandle node;
@@ -85,6 +86,7 @@ namespace kukadu {
         virtual void closeHand(double percentage, double velocity);
 
         void moveJoints(arma::vec joints);
+        void setWaitForReached(bool waitForReached);
 
         virtual std::string getHandName();
 

@@ -13,6 +13,7 @@ namespace kukadu {
     RosSchunk::RosSchunk(ros::NodeHandle node, std::string type, std::string hand) {
 
         this->node = node;
+        waitForReached = true;
         trajPub = node.advertise<std_msgs::Float64MultiArray>(string("/") + type + string("/") + hand + "_sdh/joint_control/move", 1);
 
         this->hand = hand;
@@ -36,6 +37,10 @@ namespace kukadu {
 
     std::string RosSchunk::getHandName() {
         return string("schunk_") + hand;
+    }
+
+    void RosSchunk::setWaitForReached(bool waitForReached) {
+        this->waitForReached = waitForReached;
     }
 
     void RosSchunk::tactileCallback(const iis_robot_dep::TactileSensor& state) {
@@ -293,8 +298,12 @@ namespace kukadu {
         initCurrentPos = currentPos;
         trajPub.publish(newJoints);
 
-        while(!targetReached)
-            ros::spinOnce();
+        if(waitForReached) {
+
+            while(!targetReached)
+                ros::spinOnce();
+
+        }
 
     }
 
