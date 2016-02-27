@@ -52,7 +52,6 @@ namespace kukadu {
         }
 
         subJntPos = node.subscribe(retPosTopic, 2, &KukieControlQueue::robotJointPosCallback, this);
-        subCartPos = node.subscribe(retCartPosTopic, 2, &KukieControlQueue::robotCartPosCallback, this);
         subComState = node.subscribe(commandStateTopic, 2, &KukieControlQueue::commandStateCallback, this);
         subPtpReached = node.subscribe(ptpReachedTopic, 2, &KukieControlQueue::ptpReachedCallback, this);
         subjntFrcTrq = node.subscribe(jntFrcTrqTopic, 2, &KukieControlQueue::jntFrcTrqCallback, this);
@@ -75,6 +74,7 @@ namespace kukadu {
 
         // this is required because shared_from_this can't be called in constructor (initializiation happens by lazy loading)
         plannerInitialized = false;
+        kinematicsInitialized = false;
 
         ros::Rate r(10);
         while(!firstJointsReceived || !firstModeReceived)
@@ -90,6 +90,10 @@ namespace kukadu {
 
         usleep(1e6);
 
+    }
+
+    void KukieControlQueue::startQueueThreadHook() {
+        cartPoseThr = kukadu_thread(&KukieControlQueue::computeCurrentCartPose, this);
     }
 
     KukieControlQueue::KukieControlQueue(double sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node, bool acceptCollisions) : ControlQueue(LBR_MNJ, sleepTime) {
@@ -248,19 +252,32 @@ namespace kukadu {
         return currentCartFrqTrq;
     }
 
+    void KukieControlQueue::computeCurrentCartPose() {
 
-    void KukieControlQueue::robotCartPosCallback(const geometry_msgs::Pose& msg) {
+        if(!kinematicsInitialized) {
 
-        currentCartsMutex.lock();
+            kin = KUKADU_SHARED_PTR<Kinematics>(new KomoPlanner(shared_from_this(),
+                                                                     resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/data/iis_robot.kvg"),
+                                                                     resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/config/MT.cfg"),
+                                                                     getRobotSidePrefix(), acceptCollisions));
+            kinematicsInitialized = true;
 
-            currCarts = msg;
+        }
 
-        currentCartsMutex.unlock();
+        while(getQueueRunning()) {
+
+            forwadKinMutex.lock();
+                currCarts = kin->computeFk(armadilloToStdVec(getCurrentJoints().joints));
+            forwadKinMutex.unlock();
+
+        }
 
     }
 
     geometry_msgs::Pose KukieControlQueue::getCurrentCartesianPose() {
+
         return currCarts;
+
     }
 
     void KukieControlQueue::commandStateCallback(const std_msgs::Float32MultiArray& msg) {
@@ -335,18 +352,22 @@ namespace kukadu {
 
         cartesianPtpReached = false;
 
-        if(!plannerInitialized) {
-            planner = KUKADU_SHARED_PTR<PathPlanner>(new KomoPlanner(shared_from_this(),
-                                                                     resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/data/iis_robot.kvg"),
-                                                                     resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/config/MT.cfg"),
-                                                                     getRobotSidePrefix(), acceptCollisions));
-            plannerInitialized = true;
-        }
+        komoMutex.lock();
+            if(!plannerInitialized) {
+                cout << "robot name: " << getRobotSidePrefix() << endl;
+                planner = KUKADU_SHARED_PTR<PathPlanner>(new KomoPlanner(shared_from_this(),
+                                                                         resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/data/iis_robot.kvg"),
+                                                                         resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/config/MT.cfg"),
+                                                                         getRobotSidePrefix(), acceptCollisions));
+                plannerInitialized = true;
+            }
 
-        vector<geometry_msgs::Pose> desiredPlan;
-        desiredPlan.push_back(getCurrentCartesianPose());
-        desiredPlan.push_back(pos);
-        vector<vec> desiredJointPlan = planner->planCartesianTrajectory(desiredPlan, false, true);
+            vector<geometry_msgs::Pose> desiredPlan;
+            desiredPlan.push_back(getCurrentCartesianPose());
+            desiredPlan.push_back(pos);
+            vector<vec> desiredJointPlan = planner->planCartesianTrajectory(desiredPlan, false, true);
+
+        komoMutex.unlock();
 
         bool maxForceExceeded = false;
         if(desiredJointPlan.size() > 0) {
@@ -371,7 +392,9 @@ namespace kukadu {
 
         ptpReached = false;
 
+        komoMutex.lock();
         if(!plannerInitialized) {
+            cout << "robot name: " << getRobotSidePrefix() << endl;
             planner = KUKADU_SHARED_PTR<PathPlanner>(new KomoPlanner(shared_from_this(),
                                                                      resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/data/iis_robot.kvg"),
                                                                      resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/config/MT.cfg"),
@@ -387,13 +410,19 @@ namespace kukadu {
                 break;
             }
 
+
+        vector<vec> desiredJointPlan;
         if(performPtp) {
 
             vector<arma::vec> desiredPlan;
             desiredPlan.push_back(getCurrentJoints().joints);
             desiredPlan.push_back(joints);
-            vector<vec> desiredJointPlan = planner->planJointTrajectory(desiredPlan);
+            desiredJointPlan = planner->planJointTrajectory(desiredPlan);
 
+        }
+        komoMutex.unlock();
+
+        if(performPtp) {
             if(desiredJointPlan.size() > 0) {
 
                 for(int i = 0; i < desiredJointPlan.size(); ++i)
@@ -404,7 +433,6 @@ namespace kukadu {
             } else {
                 ROS_ERROR("(KukieControlQueue) Joint plan not reachable");
             }
-
         }
 
     }

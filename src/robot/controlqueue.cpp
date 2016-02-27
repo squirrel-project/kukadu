@@ -12,6 +12,7 @@ namespace kukadu {
         setInitValues();
         thr = KUKADU_SHARED_PTR<kukadu_thread>(new kukadu_thread(&ControlQueue::run, this));
         while(!this->isInitialized());
+        startQueueThreadHook();
         return thr;
     }
 
@@ -133,6 +134,10 @@ namespace kukadu {
         ret.time = getCurrentTime();
         return ret;
 
+    }
+
+    bool ControlQueue::getQueueRunning() {
+        return !finish;
     }
 
     void ControlQueue::synchronizeToControlQueue(int maxNumJointsInQueue) {

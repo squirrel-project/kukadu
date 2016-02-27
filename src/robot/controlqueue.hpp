@@ -86,6 +86,8 @@ namespace kukadu {
         virtual void setCurrentControlTypeInternal(int controlType) = 0;
         virtual void cartPtpInternal(geometry_msgs::Pose pose, double maxForce) = 0;
 
+        virtual void startQueueThreadHook() = 0;
+
         /**
          * @brief this method determines, if the queue execetion should be stopped while ptp commands are executed
          * (this is typically the case when ptp is done outside of the control queue implementation). if two different
@@ -119,6 +121,8 @@ namespace kukadu {
         virtual double getTimeStep();
 
         virtual double getMeasuredTimeStep();
+
+        virtual bool getQueueRunning();
 
         /**
          * \brief Sets a flag to stop the control thread after current iteration is executed

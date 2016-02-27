@@ -42,7 +42,7 @@ namespace kukadu {
 
     };
 
-    class KomoPlanner : public PathPlanner {
+    class KomoPlanner : public PathPlanner, public Kinematics {
 
     private:
 
@@ -57,6 +57,9 @@ namespace kukadu {
         double _collisionMargin;
         double _alignmentPrecision;
         double _maxIterations;
+
+        // required to ensure that only one instance of the class at the same time (this seems to be a problem for komo)
+        static kukadu_mutex oneAtATimeMutex;
 
         std::string eef_link;
         std::string activeJointsPrefix;
@@ -105,6 +108,11 @@ namespace kukadu {
         virtual std::vector<arma::vec> planJointTrajectory(std::vector<arma::vec> intermediateJoints);
         virtual std::vector<arma::vec> planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians = false, bool useCurrentRobotState = true);
         virtual std::vector<arma::vec> planCartesianTrajectory(arma::vec startJoints, std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians = false, bool useCurrentRobotState = true);
+
+        geometry_msgs::Pose computeFk(arma::vec joints);
+
+        virtual geometry_msgs::Pose computeFk(std::vector<double> jointState);
+        virtual std::vector<arma::vec> computeIk(std::vector<double> currentJointState, const geometry_msgs::Pose& goal);
 
     };
 

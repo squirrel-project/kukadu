@@ -65,6 +65,7 @@ namespace kukadu {
 
     protected:
 
+        virtual void startQueueThreadHook();
         virtual void submitNextJointMove(arma::vec joints);
         virtual void submitNextCartMove(geometry_msgs::Pose pose);
         virtual void setCurrentControlTypeInternal(int controlType);

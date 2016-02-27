@@ -14,6 +14,7 @@
 #include "../utils/utils.hpp"
 #include "../types/kukadutypes.hpp"
 #include "../robot/controlqueue.hpp"
+#include "kinematics/kinematics.hpp"
 #include "kinematics/pathplanner.hpp"
 #include "../utils/destroyableobject.hpp"
 #include "robotDriver/src/kuka/friRemote.h"
@@ -60,13 +61,15 @@ namespace kukadu {
         bool isRealRobot;
         bool acceptCollisions;
         bool plannerInitialized;
+        bool kinematicsInitialized;
 
         arma::vec currJoints;
         arma::vec currentJntFrqTrq;
         arma::vec currentCartFrqTrq;
 
+        kukadu_mutex komoMutex;
+        kukadu_mutex forwadKinMutex;
         kukadu_mutex cartFrcTrqMutex;
-        kukadu_mutex currentCartsMutex;
         kukadu_mutex currentJointsMutex;
 
         geometry_msgs::Pose currCarts;
@@ -110,7 +113,6 @@ namespace kukadu {
         ros::Publisher pub_set_joint_stiffness;
 
         ros::Subscriber subJntPos;
-        ros::Subscriber subCartPos;
         ros::Subscriber subComState;
         ros::Subscriber subjntFrcTrq;
         ros::Subscriber subPtpReached;
@@ -118,11 +120,13 @@ namespace kukadu {
         ros::Subscriber subCartPoseRf;
         ros::Subscriber subCartPtpReached;
 
+        kukadu_thread cartPoseThr;
+
+        KUKADU_SHARED_PTR<Kinematics> kin;
         KUKADU_SHARED_PTR<PathPlanner> planner;
 
         /* Kukie callback functions */
         void cartPosRfCallback(const geometry_msgs::Pose msg);
-        void robotCartPosCallback(const geometry_msgs::Pose& msg);
         void cartFrcTrqCallback(const geometry_msgs::Wrench& msg);
         void jntMoveCallback(const std_msgs::Float64MultiArray& msg);
         void ptpReachedCallback(const std_msgs::Int32MultiArray& msg);
@@ -131,12 +135,15 @@ namespace kukadu {
         void commandStateCallback(const std_msgs::Float32MultiArray& msg);
         void cartPtpReachedCallback(const std_msgs::Int32MultiArray& msg);
 
+        void computeCurrentCartPose();
+
         double computeDistance(float* a1, float* a2, int size);
 
     protected:
 
         virtual void setInitValues();
-        void jointPtpInternal(arma::vec joints);
+        virtual void startQueueThreadHook();
+        virtual void jointPtpInternal(arma::vec joints);
         virtual void submitNextJointMove(arma::vec joints);
         virtual void cartPtpInternal(geometry_msgs::Pose pos, double maxForce);
         virtual void submitNextCartMove(geometry_msgs::Pose pose);

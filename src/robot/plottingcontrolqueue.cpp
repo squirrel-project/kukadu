@@ -30,6 +30,10 @@ namespace kukadu {
 
     }
 
+    void PlottingControlQueue::startQueueThreadHook() {
+
+    }
+
     void PlottingControlQueue::setInitValues() {
 
         set_ctrlc_exit_handler();

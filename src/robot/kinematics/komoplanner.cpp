@@ -8,57 +8,64 @@ using namespace arma;
 
 namespace kukadu {
 
+    kukadu_mutex KomoPlanner::oneAtATimeMutex;
+
     KomoPlanner::KomoPlanner(KUKADU_SHARED_PTR<ControlQueue> queue, string configPath, string mtConfigPath, string activeJointsPrefix, bool acceptCollision) {
 
-        this->queue = queue;
-        this->activeJointsPrefix = activeJointsPrefix;
-        copyFile(mtConfigPath, "./MT.cfg");
+        oneAtATimeMutex.lock();
 
-        simplePlanner = KUKADU_SHARED_PTR<SimplePlanner>(new SimplePlanner(queue, KUKADU_SHARED_PTR<Kinematics>()));
+            this->queue = queue;
+            this->activeJointsPrefix = activeJointsPrefix;
+            if(!fileExists("./MT.cfg"))
+                copyFile(mtConfigPath, "./MT.cfg");
 
-        _world = new ors::KinematicWorld(configPath.c_str());
-        _world->swift().initActivations(*_world);
+            simplePlanner = KUKADU_SHARED_PTR<SimplePlanner>(new SimplePlanner(queue, KUKADU_SHARED_PTR<Kinematics>()));
 
-        // initialize list of activated joints
-        for(ors::Joint* j : _world->joints) {
+            _world = new ors::KinematicWorld(configPath.c_str());
+            _world->swift().initActivations(*_world);
 
-            if(j->agent == 0) {
+            // initialize list of activated joints
+            for(ors::Joint* j : _world->joints) {
 
-                string currJointName = string((char*) j->name);
-                if(currJointName.find(activeJointsPrefix) != string::npos) {
+                if(j->agent == 0) {
 
-                    _active_joints.push_back(j);
-                    sJointNames.push_back(currJointName);
+                    string currJointName = string((char*) j->name);
+                    if(currJointName.find(activeJointsPrefix) != string::npos) {
+
+                        _active_joints.push_back(j);
+                        sJointNames.push_back(currJointName);
+
+                    }
 
                 }
 
             }
 
-        }
+            double def_pos_tolerance = MT::getParameter<double>("KOMO/moveTo/defaultPositionTolerance", 0.005);
+            double def_ang_tolerance = MT::getParameter<double>("KOMO/moveTo/defaultAngularTolerance", 0.1);
 
-        double def_pos_tolerance = MT::getParameter<double>("KOMO/moveTo/defaultPositionTolerance", 0.005);
-        double def_ang_tolerance = MT::getParameter<double>("KOMO/moveTo/defaultAngularTolerance", 0.1);
+            _pos_tolerance = {def_pos_tolerance, def_pos_tolerance, def_pos_tolerance};
+            _ang_tolerance = {def_ang_tolerance, def_ang_tolerance, def_ang_tolerance};
 
-        _pos_tolerance = {def_pos_tolerance, def_pos_tolerance, def_pos_tolerance};
-        _ang_tolerance = {def_ang_tolerance, def_ang_tolerance, def_ang_tolerance};
+            _positionPrecision = MT::getParameter<double>("KOMO/moveTo/positionPrecision", 1e4); // original 1e3
+            _collisionPrecision = MT::getParameter<double>("KOMO/moveTo/collisionPrecision", -1e0);
+            _collisionMargin = MT::getParameter<double>("KOMO/moveTo/collisionMargin", .1);
+            _jointLimitPrecision = MT::getParameter<double>("KOMO/moveTo/jointLimitPrecision", 0.1);
+            _jointLimitMargin = MT::getParameter<double>("KOMO/moveTo/jointLimitMargin", 1e5);
+            _jointStatePrecision = MT::getParameter<double>("KOMO/moveTo/jointStatePrecision", 1e5);
+            _zeroVelocityPrecision = MT::getParameter<double>("KOMO/moveTo/zeroVelocityPrecision", 1e1);
+            _alignmentPrecision = MT::getParameter<double>("KOMO/moveTo/alignmentPrecision", 1e4); // original 1e3
+            _maxIterations = MT::getParameter<double>("KOMO/moveTo/maxIterations", 1);
 
-        _positionPrecision = MT::getParameter<double>("KOMO/moveTo/positionPrecision", 1e4); // original 1e3
-        _collisionPrecision = MT::getParameter<double>("KOMO/moveTo/collisionPrecision", -1e0);
-        _collisionMargin = MT::getParameter<double>("KOMO/moveTo/collisionMargin", .1);
-        _jointLimitPrecision = MT::getParameter<double>("KOMO/moveTo/jointLimitPrecision", 0.1);
-        _jointLimitMargin = MT::getParameter<double>("KOMO/moveTo/jointLimitMargin", 1e5);
-        _jointStatePrecision = MT::getParameter<double>("KOMO/moveTo/jointStatePrecision", 1e5);
-        _zeroVelocityPrecision = MT::getParameter<double>("KOMO/moveTo/zeroVelocityPrecision", 1e1);
-        _alignmentPrecision = MT::getParameter<double>("KOMO/moveTo/alignmentPrecision", 1e4); // original 1e3
-        _maxIterations = MT::getParameter<double>("KOMO/moveTo/maxIterations", 1);
+            _support_surface_name = MT::getParameter<MT::String>("KOMO/scene/supportSurfaceName");
+            _world_link_name = MT::getParameter<MT::String>("KOMO/scene/worldLinkName");
 
-        _support_surface_name = MT::getParameter<MT::String>("KOMO/scene/supportSurfaceName");
-        _world_link_name = MT::getParameter<MT::String>("KOMO/scene/worldLinkName");
+            eef_link = activeJointsPrefix + string("_sdh_palm_link");
+            allowContact(eef_link.c_str(), false);
 
-        eef_link = activeJointsPrefix + string("_sdh_palm_link");
-        allowContact(eef_link.c_str(), false);
+            this->acceptCollision = acceptCollision;
 
-        this->acceptCollision = acceptCollision;
+        oneAtATimeMutex.unlock();
 
     }
 
@@ -219,6 +226,34 @@ namespace kukadu {
         listDelete(_world->proxies);
 
         return simplePlanner->planJointTrajectory(retTrajectory);
+
+    }
+
+    geometry_msgs::Pose KomoPlanner::computeFk(arma::vec joints) {
+
+        geometry_msgs::Pose retPose;
+        ors::Shape* endeff = _world->getShapeByName(eef_link.c_str());
+        setState(sJointNames, joints);
+        ors::Transformation trans = endeff->X;
+        retPose.position.x = trans.pos(0); retPose.position.y = trans.pos(1); retPose.position.z = trans.pos(2);
+        retPose.orientation.x = trans.rot.x;
+        retPose.orientation.y = trans.rot.y;
+        retPose.orientation.z = trans.rot.z;
+        retPose.orientation.w = trans.rot.w;
+
+        return retPose;
+
+    }
+
+    geometry_msgs::Pose KomoPlanner::computeFk(std::vector<double> jointState) {
+
+        return computeFk(stdToArmadilloVec(jointState));
+
+    }
+
+    std::vector<arma::vec> KomoPlanner::computeIk(std::vector<double> currentJointState, const geometry_msgs::Pose& goal) {
+
+        throw KukaduException("(Komo) ik solver not supported yet");
 
     }
 
