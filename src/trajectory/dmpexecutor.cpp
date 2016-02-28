@@ -95,7 +95,7 @@ namespace kukadu {
         if(rollBack && doRollback) {
 
             cout << "(DMPExecutor) max force threshold exceeded - rolling back a bit and stopping execution" << endl;
-            controlQueue->rollBack(2.0);
+            controlQueue->rollBack(1.0);
             cout << "(DMPExecutor) rollback done" << endl;
 
         }

@@ -215,12 +215,15 @@ namespace kukadu {
 
             t.tic("d");
 
+            /*
+            // switched off adaptive cycle time behaviour for now - probably requires a PID controller for that
             if(toleratedMinDuration < lastDuration || lastDuration > toleratedMaxDuration) {
 
                 sleepTime = max(0.000000001, sleepTime + 0.3 * (desiredCycleTime -  lastDuration));
                 sleepRate = ros::Rate(1.0 / sleepTime);
 
             }
+            */
 
             currentTime = t.toc("r");
 
