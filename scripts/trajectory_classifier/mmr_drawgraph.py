@@ -15,7 +15,7 @@ import pylab as lab
 ## #######################################################
 def hist_tra_tes(Ytra,Ytes,sdata):
 
-  (m,n)=Ytra.shape
+  n=Ytra.shape[1]
   ytra_pdf=np.sum(Ytra,axis=0)
   ytra_pdf=ytra_pdf/np.sum(ytra_pdf)
   ytes_pdf=np.sum(Ytes,axis=0)
@@ -58,8 +58,8 @@ def hist_tra_tes(Ytra,Ytes,sdata):
 ## #######################################################
 def corr_matrix(Ytra,Ytes,sdata):
 
-  (m,n)=Ytra.shape
-  (mt,n)=Ytes.shape
+  m=Ytra.shape[0]
+  mt=Ytes.shape[0]
   
   xmean=np.mean(Ytra,axis=0)
   ytra0=Ytra-np.outer(np.ones(m),xmean)
@@ -105,8 +105,8 @@ def corr_matrix(Ytra,Ytes,sdata):
 ## #######################################################
 def singular(Ytra,Ytes,sdata):
 
-  (m,n)=Ytra.shape
-  (mt,n)=Ytes.shape
+  m=Ytra.shape[0]
+  mt=Ytes.shape[0]
   
   xmean=np.mean(Ytra,axis=0)
   ytra0=Ytra-np.outer(np.ones(m),xmean)
@@ -122,8 +122,8 @@ def singular(Ytra,Ytes,sdata):
   xnorm=xnorm+(xnorm==0)
   Ctes=Ctes/np.outer(xnorm,xnorm)
 
-  (u,stra,v)=np_lin.svd(Ctra)
-  (u,stes,v)=np_lin.svd(Ctes)
+  stra=np_lin.svd(Ctra)[1]
+  stes=np_lin.svd(Ctes)[1]
 
   xlinewidth=3
   

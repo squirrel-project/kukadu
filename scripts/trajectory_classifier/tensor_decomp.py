@@ -1,5 +1,26 @@
 ######################
 ## Version 0.1 #######
+## /**********************************************************************
+##   Copyright 2015, Sandor Szedmak  
+##   email: sandor.szedmak@uibk.ac.at
+##          szedmak777@gmail.com
+##
+##   This file is part of Maximum Margin Multi-valued Regression code(MMMVR).
+##
+##   MMMVR is free software: you can redistribute it and/or modify
+##   it under the terms of the GNU General Public License as published by
+##   the Free Software Foundation, either version 3 of the License, or
+##   (at your option) any later version. 
+##
+##   MMMVR is distributed in the hope that it will be useful,
+##   but WITHOUT ANY WARRANTY; without even the implied warranty of
+##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##   GNU General Public License for more details.
+##
+##   You should have received a copy of the GNU General Public License
+##   along with MMMVR.  If not, see <http://www.gnu.org/licenses/>.
+##
+## ***********************************************************************/
 ######################
 
 import numpy as np
@@ -25,7 +46,7 @@ class cls_tensor_decomp:
   def reorder_in(self,xmat):
 
     xfactors=self.xfactors
-    (m,n)=self.xmatrix.shape
+    ## (m,n)=self.xmatrix.shape
     xmatre=np.zeros((xfactors[0,0]*xfactors[0,1],xfactors[1,0]*xfactors[1,1]))
     k=0
     for i1 in range(xfactors[0,0]):
@@ -42,7 +63,7 @@ class cls_tensor_decomp:
     xfactors=self.xfactors
     tdim=self.xmatrix.shape
     ndim=len(tdim)
-    (mf,nf)=xfactors.shape
+    mf=xfactors.shape[0]
     xmatredim=np.zeros(mf,dtype=int)
     for i in range(mf):
       xmatredim[i]=np.prod(xfactors[i,:])
@@ -68,8 +89,8 @@ class cls_tensor_decomp:
   def invert_reorder_in_x(self,xmatre,xfactors):
 
     (mf,nf)=xfactors.shape
-    tdim2=xmatre.shape
-    ndim2=len(tdim2)
+    ## tdim2=xmatre.shape
+    ## ndim2=len(tdim2)
 
     ndim=nf
     tdim=np.zeros(nf,dtype=int)
@@ -198,11 +219,11 @@ class cls_tensor_decomp:
   def decompose(self,niter):
 
     xmat0=np.copy(self.xmatrix)
-    (m,n)=xmat0.shape
-    k=min(m,n)
+    ## (m,n)=xmat0.shape
+    ## k=min(m,n)
     xmat1=self.reorder_in(xmat0)
     (m,n)=xmat1.shape
-    k=min(m,n)
+    ## k=min(m,n)
     (u,s,v)=np_lin.svd(xmat1,full_matrices=0)
     sq=np.sqrt(s)
     u=u*np.outer(np.ones(m),sq)
@@ -224,7 +245,7 @@ class cls_tensor_decomp:
     
     tdim=xmat1.shape
     ndim=len(tdim)
-    for i in range(niter):
+    for iiter in range(niter):
       (xlambda,xsingv)=self.tensor_decomp(xmat1)
       v=xsingv[0]
       for j in range(1,ndim):

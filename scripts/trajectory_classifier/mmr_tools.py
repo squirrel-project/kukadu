@@ -1,5 +1,26 @@
 ######################
 ## Version 0.1 #######
+## /**********************************************************************
+##   Copyright 2015, Sandor Szedmak  
+##   email: sandor.szedmak@uibk.ac.at
+##          szedmak777@gmail.com
+##
+##   This file is part of Maximum Margin Multi-valued Regression code(MMMVR).
+##
+##   MMMVR is free software: you can redistribute it and/or modify
+##   it under the terms of the GNU General Public License as published by
+##   the Free Software Foundation, either version 3 of the License, or
+##   (at your option) any later version. 
+##
+##   MMMVR is distributed in the hope that it will be useful,
+##   but WITHOUT ANY WARRANTY; without even the implied warranty of
+##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##   GNU General Public License for more details.
+##
+##   You should have received a copy of the GNU General Public License
+##   along with MMMVR.  If not, see <http://www.gnu.org/licenses/>.
+##
+## ***********************************************************************/
 ######################
 import sys
 import numpy as np
@@ -11,7 +32,7 @@ def mmr_01_toprobability(X):
   X \in \mathbb{B}^{mn}
   """
   
-  (m,n)=X.shape
+  n=X.shape[1]
   
   xcolsum=np.sum(X,axis=0)  
   xcovX=np.dot(X.T,X)   ## column intersections
@@ -83,10 +104,10 @@ def mmr_perceptron_dual(X,Y,ipar1,ipar2,ikernel=0,margin=1,s=0.1,nrepeat=1):
   Output:   xalpha  optimal dual variables
   """
 
-  (m,nx)=X.shape
-  ny=Y.shape[1]
+  m=X.shape[0]
+  ## ny=Y.shape[1]
 
-  t=0
+  ## t=0
 
   diagX=np.sum(X**2,axis=1)
   e1=np.ones(m)

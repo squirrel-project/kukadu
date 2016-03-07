@@ -236,6 +236,8 @@ namespace kukadu {
 
             // determine confidence value on database
             vector<double> classRes = callClassifier(path, "", false, 0.0, 0.0, 0.0, 0.0);
+            for(double res : classRes)
+                cout << res << endl;
 
             cerr << "(SensingController) this part currently wont work (switched back to old classifier (repair later))" << endl;
             double confidence = classRes.at(classRes.size() - 5);
@@ -311,7 +313,8 @@ namespace kukadu {
 
             if (pFunc && PyCallable_Check(pFunc)) {
 
-                pArgs = PyTuple_New(7);
+                //pArgs = PyTuple_New(7);
+                pArgs = PyTuple_New(3);
                 pValue = PyUnicode_FromString(argumentVal.c_str());
 
                 if (!pValue) {
@@ -358,7 +361,7 @@ namespace kukadu {
                     fprintf(stderr, "Cannot convert argument\n");
 
                 }
-
+/*
                 PyTuple_SetItem(pArgs, 3, pValue);
 
                 pValue = PyFloat_FromDouble(bestParamD);
@@ -396,7 +399,7 @@ namespace kukadu {
                 }
 
                 PyTuple_SetItem(pArgs, 6, pValue);
-
+*/
                 pValue = PyObject_CallObject(pFunc, pArgs);
                 Py_DECREF(pArgs);
 

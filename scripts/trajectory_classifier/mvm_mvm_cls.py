@@ -1,22 +1,39 @@
 ######################
 ## Version 0.1 #######
+## /**********************************************************************
+##   Copyright 2015, Sandor Szedmak  
+##   email: sandor.szedmak@uibk.ac.at
+##          szedmak777@gmail.com
+##
+##   This file is part of Maximum Margin Multi-valued Regression code(MMMVR).
+##
+##   MMMVR is free software: you can redistribute it and/or modify
+##   it under the terms of the GNU General Public License as published by
+##   the Free Software Foundation, either version 3 of the License, or
+##   (at your option) any later version. 
+##
+##   MMMVR is distributed in the hope that it will be useful,
+##   but WITHOUT ANY WARRANTY; without even the implied warranty of
+##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##   GNU General Public License for more details.
+##
+##   You should have received a copy of the GNU General Public License
+##   along with MMMVR.  If not, see <http://www.gnu.org/licenses/>.
+##
+## ***********************************************************************/
 ######################
-
 import time
 import numpy as np
 ## ###########################################################
 ## from mmr_normalization_new import mmr_normalization
 import mmr_base_classes as base
 from mmr_kernel import mmr_kernel 
-## from mmr_kernel_eval import kernel_operator_valued
-from mmr_solver import mmr_solver
-from mmr_tools import mmr_perceptron_primal, mmr_perceptron_dual
-import mmr_kernel_explicit
 import mmr_kernel_mvm_y 
 import mmr_kernel_mvm_x 
 import mvm_test_orig
-import mvm_solver
+import mvm_solver_cls
 import mvm_prepare
+## import mvm_prepare
 from mmr_initial_params import cls_initial_params
 
 ## class definitions
@@ -26,74 +43,99 @@ class cls_mvm(base.cls_data):
   def __init__(self,ninputview=1):
     base.cls_data.__init__(self,ninputview)
 
-    self.XKernel=[ None ]*ninputview
-    self.YKernel=None
-    self.KX=None
-    self.KXCross=None
-    self.KY=None
-    self.d1x=None
-    self.d2x=None
-    self.d1x=None
-    self.d2xcross=None
-    self.d1ycross=None
-    self.d2y=None
+    self.XKernel=[ None ]*ninputview  ## list of input kernel objects
+    self.YKernel=None                 ## ouput kernel object
+    self.KX=None                      ## compound input kernel
+    self.KY=None                      ## output kernel
     ## mvm specific
 
-    self.xdata_rel=None
-    self.rel_dim=None
-    self.xdata_tra=None
-    self.xdata_tes=None
-    self.xranges_rel=None
-    self.xranges_rel_test=None
-    self.nrow=None
-    self.ncol=None
-    self.KXvar=None
-    self.glm_model=None
-    self.largest_class=None
+    self.xdata_rel=None   ## all data tuples (irow,icol,value)
+    self.xdata_tra=None   ## training tuples
+    self.xdata_tes=None   ## test tuples
+    self.xranges_rel=None     ## training ranges, start position, and length 
+                              ## of the known items in each row in
+                              ## the sparse representation
+    self.xranges_rel_test=None    ## ranges for the test
+    self.KXvar=None             
+    self.glm_model=None       ## the parameters, means of the GLM model:
+                              ## total mean, row means, column means
+    self.largest_class=None   ## row wise largest classes if values are class
+                              ## indexes
 
     self.penalty=base.cls_penalty() ## setting C,D penelty term paramters
-    ## perceptron
-    self.iperceptron=0
-    self.perceptron=base.cls_perceptron_param()
     ## other classes
-    self.dual=None
-    self.predict=None
-    self.evaluation=None
+    self.dual=None    ## the vector of the dual variables computed
+                      ## by the solver
 
-    self.xbias=0.3
-    self.iybias=0
-
+    self.xbias=0  ## penalty term for projective bias, it can be =0
     self.kmode=0    ## =0 additive (feature concatenation)
                     ## =1 multiplicative (fetaure tensor product)
 
-    self.ifixtrain=None
-    self.ifixtest=None
+    self.ifixtrain=None   ## xdata_rel relative indexes of the fix training
+    self.ifixtest=None    ## xdata_rel relative indexes of the fix test  
 
     self.crossval_mode=0  ## =0 random cross folds =1 fixtraining
-    self.itestmode=1      ## 0 active learning 1,2 random subsets
-    self.ibootstrap=2    ## !!!!! =0 random =1 worst =2 best =3 worst+random  
-    self.nrepeat=1
-    self.nfold=2
-    self.ieval_type=1  ## 
-    self.testknn=10
-    self.iperceptron=0
-    self.ibinary=0        ## =1 Y0=[-1,+1], =0 [0,1,...,categorymax-1]
+    self.itestmode=3      ## 0 active learning 1,2 random subsets,
+                          ## 3 fix training test
+    self.ibootstrap=2     ## =0 random =1 worst case =2 best case
+                          ## =3 alternate between worst case and random  
+
+    self.nrepeat=1    ## number of repetation of the folding
+    self.nfold=2      ## number of folds
+    self.nrepeat0=1   ## number of effective repetation of the folding
+    self.nfold0=2     ## number of effective folds
+    
+    self.ieval_type=0     ## =0 category, =1 RMSE , =2 MAE 
+    self.ibinary=1        ## =1 Y0=[-1,+1], =0 [0,1,...,categorymax-1]
 
     ## mvm specific
     self.category=0     ## =0 rank cells =1 category cells =2 {-1,0,+1}^n
+                        ## =3 joint table on all categories
+
     self.categorymax=0
-    self.ndata=0
-    self.ncol=0
-    self.nrow=0
+    self.ndata=0        ## all non-missing example in the relation table  
+    self.ncol=0         ## number of rows in the relation table
+    self.nrow=0         ## number of column in the relation table
 
     ## test
     self.verbose=0
 
     ## row-column exchange
     self.rowcol=0       ## =0 row-col order =1 col-row order
-    
-## ---------------------------------------------------------
+
+    ## for n-fold cross validation
+    self.xselector=None   ## a 1d array randomly loaded with
+                          ## the indexes of the folds to select the training
+                          ## and test in the cross-validation
+
+    ## active learning pointers
+    self.icandidate_w=-1    ## the test relative index of
+                            ## the worst case in prediction by confidence
+    self.icandidate_b=-1    ## the test relative index of
+                            ## the best case in prediction by confidence
+
+    self.testontrain=0      ## =0 test on test, =1 test on train
+    self.knowntest=1        ## =0 test items are unknown, =1 known
+    self.confidence_scale=2   ## scale paramter, e.g. standard deviation,
+                              ## of the distribution
+                              ## used in the confidence estimation
+    self.confidence_local=0   ## localization paramter, e.g. mean,
+                              ## of the distribution
+                              ## used in the confidence estimation
+
+  ## ---------------------------------------------------------
   def load_data(self,xdata,ncategory,nrow,ncol,Y0):
+    """
+    load the sparse row,column,value format into the mvm object
+
+    Input:
+              xdata     list of arrays of row indexes, column indexes, values
+              ncategory number of categories of the values,
+                        otherwise =0, or None
+              nrow      number of rows
+              ncol      number of columns
+              Y0        array of possible values, or None              
+    """
 
     nldata=len(xdata)
     self.xdata_rel=[None]*nldata
@@ -126,8 +168,11 @@ class cls_mvm(base.cls_data):
     
     self.penalty.set_crossval()
     
-## ---------------------------------------------------------
+  ## ---------------------------------------------------------
   def set_validation(self):
+    """
+    Collects the kernel identifiers for choosing kernel to crossvalidate
+    """
 
     self.dkernels={}
     self.dkernels[self.YKernel.title]=self.YKernel
@@ -135,8 +180,14 @@ class cls_mvm(base.cls_data):
     for ikernel in range(nkernel):
       self.dkernels[self.XKernel[ikernel].title]=self.XKernel[ikernel]  
 
-## ---------------------------------------------------------
+  ## ---------------------------------------------------------
   def split_train_test(self,xselector,ifold):
+    """
+    Selects the training and text indexes to xdata
+    Inputs:
+            xselector   vector of fold indexes
+            ifold       the index of current fold to process 
+    """
 
     if self.itestmode==0:   # active learning
       itest=np.where(xselector==ifold)[0]
@@ -147,60 +198,40 @@ class cls_mvm(base.cls_data):
     elif self.itestmode==2:   # random subset of rank data
       itest=np.where(xselector==0)[0]
       itrain=np.where(xselector!=0)[0]
+    elif self.itestmode==3:   # fix training and test
+      itest=np.where(xselector==0)[0]
+      itrain=np.where(xselector!=0)[0]
 
     self.itrain=itrain
     self.itest=itest
     self.mtrain=len(itrain)
     self.mtest=len(itest)
 
-## ---------------------------------------------------------
-## ########################################################
+  ## ---------------------------------------------------------
   def mvm_datasplit(self):
     """
     splitting the full data into training and test
     xdata_rel -> xdata_train, xdata_test
 
-    Input:
-    xdatacls        data class
-    itrain       indexs of training items in xdata_rel 
-    itest        indexs of test items in xdata_rel 
+    Used:
+          xdatacls        data class
+          itrain       indexs of training items in xdata_rel 
+          itest        indexs of test items in xdata_rel 
     """
     xdata_rel=self.xdata_rel
     nitem=len(xdata_rel)
-    self.xdata_tra=[ None for i in range(nitem) ]
-    self.xdata_tes=[ None for i in range(nitem) ]
+    self.xdata_tra=[None]*nitem
+    self.xdata_tes=[None]*nitem
     for i in range(nitem):
       self.xdata_tra[i]=xdata_rel[i][self.itrain]
       self.xdata_tes[i]=xdata_rel[i][self.itest]
 
     return
-# ## ###########################################################
-#   def mvm_ranges(self,nitem):
-#     """
-#     Creates the ranges of the data to each column index
-# 
-#     Input:
-#     xdata       data, for example xdatacls.xdata_tra
-#     nitem       number of rows, for example  xdatacls.nrow
-#     Output:
-#     xranges     the range matrix with two coluns (starting point, length)
-#     """
-# 
-#     xranges=np.zeros((nitem+1,2),dtype=int)
-# 
-#     mdata=self[0].shape[0]
-#     for idata in range(mdata):
-#       iitem=self.xdata[0][idata]
-#       xranges[iitem,1]+=1       ## counts the row items to one column
-#                                 ## to get the length
-# 
-#     xranges[:,0]=np.cumsum(xranges[:,1])-xranges[:,1] ## compute starting points
-# 
-#     return(xranges)
-## ###########################################################
-  
+  ## ---------------------------------------------------
   def compute_kernels(self):
-
+    """
+    Compute output and all input kernels
+    """
     ## print('Kernel computation')
     if self.category==2:
       self.YKernel.compute_prekernel(self)
@@ -209,8 +240,12 @@ class cls_mvm(base.cls_data):
     for ikernel in range(nkernel):
       self.XKernel[ikernel].compute_kernel(self)
 
-## ---------------------------------------------------------
-  def mvm_train(self,params):
+  ## ---------------------------------------------------------
+  def mvm_train(self):
+    """
+    execute the trianing procedure
+    Inputs:
+    """
 
     ## print('Generate kernels')
     time0=time.time()
@@ -230,38 +265,45 @@ class cls_mvm(base.cls_data):
     cOptDual=base.cls_dual(None,None)
     self.dual=cOptDual
     time0=time.time()
-    self.dual.alpha=mvm_solver.mvm_solver(self,params)
+
+    cmvm_solver=mvm_solver_cls.cls_mvm_solver()
+    self.dual.alpha=cmvm_solver.mvm_solver(self)
     self.solvertime=time.time()-time0
-    ## print('Solver computation:',time.time()-time0)
-    ## if self.verbose==1:
-    ##   print('Solver computation:',time.time()-time0)
-    ## print('Solver time: ',time.clock()-t0)
 
     return(cOptDual)
 
-## ------------------------------------------------------------------
-  def mvm_test(self,cOptDual,params,itraintest=1):
-    #####################################################
-    # select the potential test method
-    #####################################################
-    # wrapper around the possible test evaluations of different losses
-    # inputs:
-    #       xdatacls        data class
-    #       xalpha          optimal dual variables of optimization
-    #       params          global parameters
-    # outputs:
-    #       Zrow       row wise prediction for the test relations between
-    #                         rows and cols      
-    #####################################################
+  ## ------------------------------------------------------------------
+  def mvm_test(self):
+    """
+    select the potential test method
+
+    wrapper around the possible test evaluations of different losses
+    inputs:
+          cOptDual      object containing the optimal values of the
+                        dual variables    
+    outputs:
+          cPredict      object containing the prediction results      
+    """
     cPredict=base.cls_predict()
     itest_method=0   # =0 orig 
     if itest_method==0:
       # matrix completition test
-      cPredict.Zrow=mvm_test_orig.mvm_test_orig(self,self.dual.alpha,params)
+      cPredict.Zrow=mvm_test_orig.mvm_test_orig(self,self.dual.alpha)
     
     return(cPredict)
-## ------------------------------------------------------------------
+  ## ------------------------------------------------------------------
   def glm_norm_in(self,X):
+    """
+    Compute the residue values of table elements:
+    Xres_{ij}=X_ij-row_mean_i-col_mean_j+total_mean
+    Input:
+            X     array of raw data with 2 dimension
+    Output:
+            Xres  array of residues with the same shape as X
+
+    Store:
+            colmeans. rowmeans and totalmean locally in the object
+    """
 
     (m,n)=X.shape
     self.colmean=np.mean(X,axis=0)
@@ -272,7 +314,7 @@ class cls_mvm(base.cls_data):
           -np.outer(self.rowmean,np.ones(n))+self.totalmean
 
     return(Xres)
-## ------------------------------------------------------------------
+  ## ------------------------------------------------------------------
   def glm_norm_out(self,Xres):
 
     (m,n)=Xres.shape
@@ -280,7 +322,105 @@ class cls_mvm(base.cls_data):
           +np.outer(self.rowmean,np.ones(n))-self.totalmean
 
     return(X)
-## ------------------------------------------------------------------
+  ## ------------------------------------------------------------------
+  def prepare_repetition_folding(self,init_train_size=100):
+
+    if self.itestmode==0:
+      self.nrepeat0=self.ndata-1   ## active learning
+    elif self.itestmode==1:
+      self.nrepeat0=self.nrepeat
+    elif self.itestmode==3:
+      self.nrepeat0=self.nrepeat
+
+    if self.itestmode==0:
+      ## initialize the active learning seeds
+      self.xselector=np.zeros(self.ndata)
+      nprime=4999
+      ip=0
+      for i in range(init_train_size):
+        ip+=nprime
+        if ip>self.ndata:
+          ip=ip%self.ndata
+        self.xselector[ip]=1  
+
+      ndatainit=int(np.sum(self.xselector))
+      mtest=self.ndata-ndatainit
+      self.itest=np.where(self.xselector==0)[0]
+      self.icandidate_w=-1
+      self.icandidate_b=-1
+      self.nrepeat0=min(100000,self.ndata-ndatainit-1000)  ## !!!!!! test size
+    elif self.itestmode==0:   ## n-fold cross validation
+      self.nrepeat0=self.nrepeat
+    elif self.itestmode==3:
+      self.nrepeat0=self.nrepeat
+      self.nfold0=1
+
+  ## ------------------------------------------------------------------
+  def prepare_repetition_training(self):
+
+    if self.itestmode==0:
+      if self.ibootstrap==0:
+        if self.icandidate_w>=0:
+          self.icandidate_w=np.random.randint(self.mtest,size=1)
+          self.icandidate_w=self.itest[self.icandidate_w]
+          self.xselector[self.icandidate_w]=1
+          ## xselector[self.icandidate_b]=0     ## delete the best 
+      elif self.ibootstrap==1:  ## worst confidence
+        if self.icandidate_w>=0:
+          self.xselector[self.icandidate_w]=1
+          ## xselector[self.icandidate_b]=0     ## delete the best 
+      elif self.ibootstrap==2:  ## best confidence
+        if self.icandidate_b>=0:
+          self.xselector[self.icandidate_b]=1
+      elif self.ibootstrap==3:  ## worst+random
+        if self.icandidate_w>=0:
+          pselect=np.random.rand()
+          if pselect<0.5:
+            self.icandidate_w=np.random.randint(self.mtest)
+            self.icandidate_w=self.itest[self.icandidate_w]
+          self.xselector[self.icandidate_w]=1
+          ## xselector[self.icandidate_b]=0     ## delete the best
+    elif self.itestmode==1:   ## n-fold cross-validation
+      self.xselector=np.floor(np.random.random(self.ndata)*self.nfold0)
+      self.xselector=self.xselector-(self.xselector==self.nfold0)
+    elif self.itestmode==3:   ## fixtraining and fixtest
+      self.xselector=np.zeros(self.ndata,dtype=int)
+      if self.ifixtrain is not None:
+        self.xselector[self.ifixtrain]=1
+
+    ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ## for test only
+    elif self.itestmode==-1:
+      for i in range(self.ndata):
+        self.xselector[i]=i%self.nfold0
+    ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!          
+    
+    
+  ## ------------------------------------------------------------------
+  def prepare_fold_training(self,ifold):
+
+    self.split_train_test(self.xselector,ifold)
+    mtest=len(self.itest)
+    ## if mtest<=0:
+    ##   print('!!!!!!!')
+    ##   break
+
+    print('mtest:',mtest,'mtrain:',len(self.itrain))
+
+    self.mvm_datasplit()        
+
+    # sparse matrices of ranks-row_avarage-col_average+total_avarege  
+    self.xranges_rel=mvm_prepare.mvm_ranges(self.xdata_tra,self.nrow)
+    self.xranges_rel_test=mvm_prepare.mvm_ranges(self.xdata_tes,self.nrow)
+    if self.category==0 or self.category==3:
+      mvm_prepare.mvm_glm(self)
+      mvm_prepare.mvm_ygrid(self)
+    elif self.category==1:
+      mvm_prepare.mvm_largest_category(self)
+    elif self.category==2:
+      mvm_prepare.mvm_largest_category(self)
+
+  ## ------------------------------------------------------------------
   def copy(self,new_obj):
 
     nkernel=len(self.XKernel)
@@ -306,7 +446,9 @@ class cls_mvm(base.cls_data):
     new_obj.ncol=self.ncol
     new_obj.itestmode=self.itestmode
     new_obj.kmode=self.kmode
+    new_obj.xbias=self.xbias
     new_obj.ieval_type=self.ieval_type
+    new_obj.ibinary=self.ibinary
     new_obj.categorymax=self.categorymax
     new_obj.Y0=self.Y0
     new_obj.rowcol=self.rowcol
