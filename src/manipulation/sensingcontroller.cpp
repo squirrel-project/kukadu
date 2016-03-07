@@ -37,6 +37,9 @@ namespace kukadu {
 
     void SensingController::gatherData(std::string dataBasePath, std::string dataName) {
 
+        if(!fileExists(dataBasePath))
+            createDirectory(dataBasePath);
+
         gatherData(dataBasePath + dataName);
 
     }
@@ -196,6 +199,9 @@ namespace kukadu {
 
             for(int currClass = 0; currClass < numClasses; ++currClass) {
 
+                if(currClass != 0)
+                    this->prepareNextState();
+
                 int cont = 1;
                 for(int sampleNum = 0; cont == 1; ++sampleNum) {
 
@@ -231,7 +237,7 @@ namespace kukadu {
             // determine confidence value on database
             vector<double> classRes = callClassifier(path, "", false, 0.0, 0.0, 0.0, 0.0);
 
-            cerr << "(SensingController) this part currently wont work (switched back to old classifier (repair later)" << endl;
+            cerr << "(SensingController) this part currently wont work (switched back to old classifier (repair later))" << endl;
             double confidence = classRes.at(classRes.size() - 5);
             double bestParamC = classRes.at(classRes.size() - 4);
             double bestParamD = classRes.at(classRes.size() - 3);

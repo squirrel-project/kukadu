@@ -29,6 +29,7 @@ int main(int argc, char** args) {
 
     string storeDir = resolvePath("/tmp/kukadu_demo_guided");
     string prefix = "real";
+    string arm = "left";
 
     // Declare the supported options.
     po::options_description desc("Allowed options");
@@ -68,8 +69,8 @@ int main(int argc, char** args) {
     ros::AsyncSpinner spinner(10);
     spinner.start();
 
-    KUKADU_SHARED_PTR<ControlQueue> leftQueue = KUKADU_SHARED_PTR<ControlQueue>(new KukieControlQueue(dmpStepSize, "real", "right_arm", *node));
-    KUKADU_SHARED_PTR<ControlQueue> simLeftQueue = KUKADU_SHARED_PTR<ControlQueue>(new KukieControlQueue(dmpStepSize, "simulation", "right_arm", *node));
+    KUKADU_SHARED_PTR<ControlQueue> leftQueue = KUKADU_SHARED_PTR<ControlQueue>(new KukieControlQueue(dmpStepSize, "real", arm + string("_arm"), *node));
+    KUKADU_SHARED_PTR<ControlQueue> simLeftQueue = KUKADU_SHARED_PTR<ControlQueue>(new KukieControlQueue(dmpStepSize, "simulation", arm + string("_arm"), *node));
     vector<KUKADU_SHARED_PTR<ControlQueue> > queueVectors;
     queueVectors.push_back(leftQueue);
 
@@ -99,7 +100,7 @@ int main(int argc, char** args) {
         cout << "movement done" << endl;
     } else {
         ros::Rate r(1);
-        for(int i = 0; i < 7; ++i) {
+        for(int i = 0; i < 12; ++i) {
             r.sleep();
             cout << i << endl;
         }

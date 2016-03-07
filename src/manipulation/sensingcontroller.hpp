@@ -65,6 +65,7 @@ namespace kukadu {
         virtual void prepare() = 0;
         virtual void cleanUp() = 0;
         virtual void performCore() = 0;
+        virtual void prepareNextState() = 0;
 
         int performClassification();
         int createRandomGroundTruthIdx();

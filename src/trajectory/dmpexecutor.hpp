@@ -69,6 +69,10 @@ namespace kukadu {
         double externalError;
         double maxAllowedForce;
 
+        double maxXForce;
+        double maxYForce;
+        double maxZForce;
+
         arma::vec gs;
         arma::vec y0s;
         arma::vec dy0s;
@@ -138,7 +142,7 @@ namespace kukadu {
         void useExternalError(int external);
         void setExternalError(double error);
         // for now, only works in joint mode
-        void enableMaxForceMode(double maxAbsForce);
+        void enableMaxForceMode(double maxAbsForce, double maxXForce, double maxYForce, double maxZForce);
         void doRollBackOnMaxForceEvent(bool doRollback);
         void setTrajectory(KUKADU_SHARED_PTR<Trajectory> traj);
         void initializeIntegration(double tStart, double tolAbsErr, double tolRelErr);
@@ -158,6 +162,8 @@ namespace kukadu {
 
         static const int KUKADU_EXEC_JOINT = 1;
         static const int KUKADU_EXEC_CART = 2;
+
+        static const int IGNORE_FORCE = -1;
 
     };
 

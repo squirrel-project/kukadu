@@ -33,6 +33,9 @@ namespace kukadu {
         // max force safety is switched of
         doRollback = true;
         maxAllowedForce = DBL_MAX;
+        maxXForce = DBL_MAX;
+        maxYForce = DBL_MAX;
+        maxZForce = DBL_MAX;
         executionRunning = false;
 
         this->isCartesian = traj->isCartesian();
@@ -78,7 +81,11 @@ namespace kukadu {
         while(executionRunning) {
 
             double currentForce = controlQueue->getAbsoluteCartForce();
-            if(currentForce > maxAllowedForce) {
+            mes_result currentFrcTrq = controlQueue->getCurrentCartesianFrcTrq();
+            if((currentForce > maxAllowedForce && maxAllowedForce != IGNORE_FORCE)
+                    || (abs(currentFrcTrq.joints(0)) > maxXForce && maxXForce != IGNORE_FORCE)
+                    || (abs(currentFrcTrq.joints(1)) > maxYForce && maxYForce != IGNORE_FORCE)
+                    || (abs(currentFrcTrq.joints(2)) > maxZForce && maxZForce != IGNORE_FORCE)) {
                 executionRunning = false;
                 rollBack = true;
             }
@@ -287,8 +294,27 @@ namespace kukadu {
         cout << "(DMPExecutor) doRollback was set to " << this->doRollback << endl;
     }
 
-    void DMPExecutor::enableMaxForceMode(double maxAbsForce) {
-        maxAllowedForce = maxAbsForce;
+    void DMPExecutor::enableMaxForceMode(double maxAbsForce, double maxXForce, double maxYForce, double maxZForce) {
+        if(maxAbsForce == IGNORE_FORCE)
+            maxAllowedForce = DBL_MAX;
+        else
+            maxAllowedForce = maxAbsForce;
+
+        if(maxXForce == IGNORE_FORCE)
+            maxXForce = DBL_MAX;
+        else
+            this->maxXForce = maxXForce;
+
+        if(maxYForce == IGNORE_FORCE)
+            maxYForce = DBL_MAX;
+        else
+            this->maxYForce = maxYForce;
+
+        if(maxZForce == IGNORE_FORCE)
+            maxZForce = DBL_MAX;
+        else
+            this->maxZForce = maxZForce;
+
     }
 
     KUKADU_SHARED_PTR<ControllerResult> DMPExecutor::simulateTrajectory() {
