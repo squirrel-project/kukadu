@@ -1,7 +1,6 @@
-#include "sensingcontroller.hpp"
-
 #include <Python.h>
 #include <boost/filesystem.hpp>
+#include <kukadu/manipulation/sensingcontroller.hpp>
 
 using namespace std;
 namespace pf = boost::filesystem;
@@ -240,11 +239,18 @@ namespace kukadu {
                 cout << res << endl;
 
             cerr << "(SensingController) this part currently wont work (switched back to old classifier (repair later))" << endl;
-            double confidence = classRes.at(classRes.size() - 5);
+            double confidence = classRes.at(classRes.size() - 1);
+            /*
             double bestParamC = classRes.at(classRes.size() - 4);
             double bestParamD = classRes.at(classRes.size() - 3);
             double bestParamPar1 = classRes.at(classRes.size() - 2);
             double bestParamPar2 = classRes.at(classRes.size() - 1);
+            */
+
+            double bestParamC = 0.0;
+            double bestParamD = 0.0;
+            double bestParamPar1 = 0.0;
+            double bestParamPar2 = 0.0;
 
             ofstream ofile;
             ofile.open((path + "classRes").c_str());

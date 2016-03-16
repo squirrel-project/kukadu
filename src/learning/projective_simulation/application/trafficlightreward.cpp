@@ -1,4 +1,4 @@
-#include "trafficlightreward.hpp"
+#include <kukadu/learning/projective_simulation/application/trafficlightreward.hpp>
 
 using namespace std;
 

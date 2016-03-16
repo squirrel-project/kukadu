@@ -1,4 +1,4 @@
-#include "treedrawer.hpp"
+#include <kukadu/learning/projective_simulation/visualization/treedrawer.hpp>
 
 #if VISUALIZATION == 1
     #include <allegro5/allegro_ttf.h>

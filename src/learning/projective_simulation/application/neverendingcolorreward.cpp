@@ -1,5 +1,4 @@
-#include "neverendingcolorreward.hpp"
-
+#include <kukadu/learning/projective_simulation/application/neverendingcolorreward.hpp>
 #include <sstream>
 
 using namespace std;

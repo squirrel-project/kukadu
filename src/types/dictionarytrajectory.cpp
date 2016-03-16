@@ -1,4 +1,4 @@
-#include "dictionarytrajectory.hpp"
+#include <kukadu/types/dictionarytrajectory.hpp>
 
 using namespace std;
 using namespace arma;

@@ -1,12 +1,10 @@
-#include "complexcontroller.hpp"
-
-#include "haptic/controlleractionclip.hpp"
-#include "haptic/intermediateeventclip.hpp"
-
-#include "../learning/projective_simulation/core/clip.hpp"
-#include "../learning/projective_simulation/core/perceptclip.hpp"
-
 #include <armadillo>
+#include <kukadu/manipulation/controller.hpp>
+#include <kukadu/manipulation/complexcontroller.hpp>
+#include <kukadu/manipulation/haptic/controlleractionclip.hpp>
+#include <kukadu/manipulation/haptic/intermediateeventclip.hpp>
+#include <kukadu/learning/projective_simulation/core/clip.hpp>
+#include <kukadu/learning/projective_simulation/core/perceptclip.hpp>
 
 using namespace std;
 using namespace arma;

@@ -1,4 +1,4 @@
-#include "invasiongamereward.hpp"
+#include <kukadu/learning/projective_simulation/application/invasiongamereward.hpp>
 
 using namespace std;
 

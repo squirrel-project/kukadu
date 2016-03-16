@@ -1,4 +1,4 @@
-#include "controlleractionclip.hpp"
+#include <kukadu/manipulation/haptic/controlleractionclip.hpp>
 
 using namespace std;
 

@@ -1,4 +1,4 @@
-#include "terminalcostcomputer.hpp"
+#include <kukadu/learning/rl/terminalcostcomputer.hpp>
 
 using namespace std;
 

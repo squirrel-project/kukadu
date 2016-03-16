@@ -1,6 +1,5 @@
-#include "mahalanobicslearner.hpp"
-
-#include "../../types/kukadutypes.hpp"
+#include <kukadu/learning/metric_learning/mahalanobicslearner.hpp>
+#include <kukadu/types/kukadutypes.hpp>
 
 using namespace arma;
 using namespace std;

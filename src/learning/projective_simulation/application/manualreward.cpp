@@ -1,4 +1,4 @@
-#include "manualreward.hpp"
+#include <kukadu/learning/projective_simulation/application/manualreward.hpp>
 
 #include <sstream>
 

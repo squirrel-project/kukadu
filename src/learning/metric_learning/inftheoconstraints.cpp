@@ -1,4 +1,4 @@
-#include "inftheoconstraints.hpp"
+#include <kukadu/learning/metric_learning/inftheoconstraints.hpp>
 
 namespace kukadu {
 

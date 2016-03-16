@@ -1,4 +1,4 @@
-#include "conversion_utils.hpp"
+#include <kukadu/utils/conversion_utils.hpp>
 
 using namespace std;
 using namespace arma;

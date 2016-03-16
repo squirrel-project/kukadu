@@ -14,6 +14,12 @@ else()
         message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
+if(${ENABLE_VISUALIZATION})
+    add_definitions(-DVISUALIZATION=1)
+else()
+    add_definitions(-DVISUALIZATION=0)
+endif()
+
 find_package(cmake_modules REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -63,12 +69,13 @@ catkin_package(
         geometry_msgs iis_robot_dep message_generation moveit_core moveit_msgs
         moveit_ros_planning_interface pcl_conversions pcl_ros roscpp sensor_msgs std_msgs
         tf tf2_msgs tf_conversions trajectory_msgs
-    DEPENDS prosim gsl gslcblas ncurses
+    DEPENDS gsl gslcblas ncurses
         stdc++ ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES} ${PythonLibs_LIBRARIES} python3.4m
         komo swift algo gui ors rt lapack blas ann glut GLU GL X11 ${GTK_LIBRARIES} ${GTK2_LIBRARIES} gthread-2.0 qhull m
 )
 
 include_directories(
+    include
     ${PCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
     ${catkin_INCLUDE_DIRS}
@@ -89,32 +96,38 @@ AUX_SOURCE_DIRECTORY(src/utils/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/robot/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/types/ KUKADUSRC)
 #AUX_SOURCE_DIRECTORY(src/vision/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/control/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/learning/ KUKADUSRC)
-AUX_SOURCE_DIRECTORY(src/trajectory/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/kinematics/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/kinematics/constraints/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/manipulation/ KUKADUSRC)
-AUX_SOURCE_DIRECTORY(src/robot/mounted/ KUKADUSRC)
-AUX_SOURCE_DIRECTORY(src/robot/kinematics/ KUKADUSRC)
-AUX_SOURCE_DIRECTORY(src/utils/gnuplot-cpp/ KUKADUSRC)
+
+AUX_SOURCE_DIRECTORY(src/robot/arm/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/robot/gripper/ KUKADUSRC)
+
 AUX_SOURCE_DIRECTORY(src/learning/clustering/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/manipulation/haptic/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/manipulation/pushing/ KUKADUSRC)
-AUX_SOURCE_DIRECTORY(src/robot/robotDriver/src/ KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/robot/kuka_driver/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/utils/easyloggingpp/src/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/learning/metric_learning/ KUKADUSRC)
-AUX_SOURCE_DIRECTORY(src/robot/robotDriver/src/kuka/ KUKADUSRC)
-AUX_SOURCE_DIRECTORY(src/robot/kinematics/restriction KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/robot/kinematics/constraints KUKADUSRC)
+
+AUX_SOURCE_DIRECTORY(src/learning/regression/ KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/learning/reinforcement_learning/ KUKADUSRC)
-AUX_SOURCE_DIRECTORY(src/learning/reinforcement_learning/base KUKADUSRC)
-AUX_SOURCE_DIRECTORY(src/learning/reinforcement_learning/blackjack KUKADUSRC)
+
+AUX_SOURCE_DIRECTORY(src/learning/projective_simulation/core KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/learning/projective_simulation/application KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/learning/projective_simulation/visualization KUKADUSRC)
+AUX_SOURCE_DIRECTORY(src/learning/projective_simulation/application/reward KUKADUSRC)
 
 add_subdirectory(external/komo)
-add_subdirectory(src/learning/projective_simulation)
 
 add_library(${PROJECT_NAME} ${KUKADUSRC})
 add_library(reflexxeslib ${REFLEXXESSRC})
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES} ${PCL_LIBRARIES}
-    reflexxeslib ncurses gsl gslcblas stdc++ pthread dl util m prosim komo swift algo ann gui ors optim motion rt lapack blas glut GLU GL X11 ${GTK_LIBRARIES} ${GTK2_LIBRARIES} gthread-2.0 qhull python3.4m m)
+    reflexxeslib ncurses gsl gslcblas stdc++ pthread dl util m komo swift algo ann gui ors optim motion rt lapack blas glut GLU GL X11 ${GTK_LIBRARIES} ${GTK2_LIBRARIES} gthread-2.0 qhull python3.4m m)
 
 add_executable(kukadu_demo_guided src/demo/guided.cpp)
 target_link_libraries(kukadu_demo_guided kukadu ${PCL_LIBRARIES} ${catkin_LIBRARIES} komo swift algo ann gui ors optim motion rt lapack blas glut GLU GL X11 ${GTK_LIBRARIES} ${GTK2_LIBRARIES} gthread-2.0 qhull m)

@@ -1,4 +1,5 @@
-#include "trajectorybasedreward.hpp"
+#include <kukadu/learning/rl/trajectorybasedreward.hpp>
+#include <math.h>
 
 using namespace std;
 using namespace arma;

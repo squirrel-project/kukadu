@@ -1,4 +1,4 @@
-#include "intermediateeventclip.hpp"
+#include <kukadu/manipulation/haptic/intermediateeventclip.hpp>
 
 #include <cstdio>
 #include <iostream>

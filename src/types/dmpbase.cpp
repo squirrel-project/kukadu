@@ -1,4 +1,4 @@
-#include "dmpbase.hpp"
+#include <kukadu/types/dmpbase.hpp>
 
 using namespace std;
 

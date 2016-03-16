@@ -13,7 +13,7 @@
 // UPDATED: 2011-03-08
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "kukadutokenizer.hpp"
+#include <kukadu/utils/kukadutokenizer.hpp>
 
 namespace kukadu {
 

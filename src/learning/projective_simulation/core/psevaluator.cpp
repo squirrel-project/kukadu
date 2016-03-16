@@ -1,4 +1,4 @@
-#include "psevaluator.hpp"
+#include <kukadu/learning/projective_simulation/core/psevaluator.hpp>
 
 #define PSEVAL_BUFFER_SIZE 500
 

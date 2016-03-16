@@ -1,7 +1,5 @@
 #include <vector>
 #include <iostream>
-//#include <kukadu/kukadu.h>
-
 #include <ros/ros.h>
 #include <moveit/move_group_interface/move_group.h>
 #include <moveit/kinematic_constraints/utils.h>

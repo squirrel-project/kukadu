@@ -1,4 +1,4 @@
-#include "tricubekernel.hpp"
+#include <kukadu/learning/regression/tricubekernel.hpp>
 
 using namespace std;
 using namespace arma;

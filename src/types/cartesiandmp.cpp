@@ -1,5 +1,5 @@
-#include "cartesiandmp.hpp"
-#include "../utils/utils.hpp"
+#include <kukadu/types/cartesiandmp.hpp>
+#include <kukadu/utils/utils.hpp>
 
 #include <iostream>
 

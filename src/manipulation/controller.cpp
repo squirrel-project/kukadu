@@ -1,4 +1,4 @@
-#include "controller.hpp"
+#include <kukadu/manipulation/controller.hpp>
 
 namespace kukadu {
 

@@ -1,4 +1,4 @@
-#include "lwrregressor.hpp"
+#include <kukadu/learning/regression/lwrregressor.hpp>
 
 using namespace std;
 using namespace arma;

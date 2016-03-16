@@ -13,8 +13,7 @@
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
 #include <boost/program_options.hpp>
-
-#include "../../include/kukadu/kukadu.h"
+#include <kukadu/kukadu.hpp>
 
 #define DOSIMULATION 1
 

@@ -12,9 +12,9 @@
 #include <pcl/common/common.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#include "../utils/utils.hpp"
-#include "../types/kukadutypes.hpp"
-#include "../trajectory/dmpexecutor.hpp"
+#include <kukadu/utils/utils.hpp>
+#include <kukadu/types/kukadutypes.hpp>
+#include <kukadu/control/dmpexecutor.hpp>
 
 using namespace std;
 using namespace arma;
@@ -874,7 +874,7 @@ namespace kukadu {
 
     }
 
-    tf::Quaternion exp(arma::vec logQuat) {
+    tf::Quaternion vecExp(arma::vec logQuat) {
 
         double x, y, z, w;
         double modR = sqrt(logQuat(0) * logQuat(0) + logQuat(1) * logQuat(1) + logQuat(2) * logQuat(2));

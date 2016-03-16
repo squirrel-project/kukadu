@@ -1,4 +1,4 @@
-#include "power.hpp"
+#include <kukadu/learning/rl/power.hpp>
 
 using namespace arma;
 using namespace std;

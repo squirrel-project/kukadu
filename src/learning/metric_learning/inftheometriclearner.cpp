@@ -1,4 +1,4 @@
-#include "inftheometriclearner.hpp"
+#include <kukadu/learning/metric_learning/inftheometriclearner.hpp>
 
 using namespace arma;
 using namespace std;

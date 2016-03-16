@@ -1,7 +1,6 @@
-#include "generalreinforcer.hpp"
-
-#include "dmpreinforcer.hpp"
-#include "../../utils/gnuplot-cpp/gnuplot_i.hpp"
+#include <kukadu/learning/rl/generalreinforcer.hpp>
+#include <kukadu/learning/rl/dmpreinforcer.hpp>
+#include <kukadu/utils/gnuplot.hpp>
 
 using namespace std;
 using namespace arma;

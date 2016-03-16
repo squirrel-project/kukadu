@@ -1,4 +1,4 @@
-#include "gradientdescent.hpp"
+#include <kukadu/learning/rl/gradientdescent.hpp>
 
 using namespace arma;
 using namespace std;

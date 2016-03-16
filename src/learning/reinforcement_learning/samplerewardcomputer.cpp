@@ -1,4 +1,4 @@
-#include "samplerewardcomputer.hpp"
+#include <kukadu/learning/rl/samplerewardcomputer.hpp>
 
 using namespace std;
 using namespace arma;

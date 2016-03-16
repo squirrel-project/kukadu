@@ -1,4 +1,4 @@
-#include "togersonmetriclearner.hpp"
+#include <kukadu/learning/metric_learning/togersonmetriclearner.hpp>
 
 using namespace std;
 using namespace arma;

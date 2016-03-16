@@ -1,4 +1,4 @@
-#include "hapticplanner.hpp"
+#include <kukadu/manipulation/haptic/hapticplanner.hpp>
 
 using namespace std;
 

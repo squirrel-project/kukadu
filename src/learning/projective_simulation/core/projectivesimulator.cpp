@@ -1,12 +1,10 @@
-#include "projectivesimulator.hpp"
-
+#include <kukadu/learning/projective_simulation/core/projectivesimulator.hpp>
 #include <utility>
 #include <fstream>
 #include <fstream>
 #include <iostream>
-
-#include "../utils/tokenizer.hpp"
-#include "../../../types/kukadutypes.hpp"
+#include <kukadu/utils/kukadutokenizer.hpp>
+#include <kukadu/types/kukadutypes.hpp>
 
 using namespace std;
 
@@ -39,32 +37,32 @@ namespace kukadu {
 
             // operation mode
             getline(inputFile, line);
-            Tokenizer tok(line, "=");
+            KukaduTokenizer tok(line, "=");
             tok.next(); operationMode = atoi(tok.next().c_str());
 
             // use ranking?
             getline(inputFile, line);
-            tok = Tokenizer(line, "=");
+            tok = KukaduTokenizer(line, "=");
             tok.next(); useRanking = (atoi(tok.next().c_str()))?true:false;
 
             // gamma
             getline(inputFile, line);
-            tok = Tokenizer(line, "=");
+            tok = KukaduTokenizer(line, "=");
             tok.next(); gamma = atof(tok.next().c_str());
 
             // max number of clips (ignored without ranking)
             getline(inputFile, line);
-            tok = Tokenizer(line, "=");
+            tok = KukaduTokenizer(line, "=");
             tok.next(); maxNumberOfClips = atoi(tok.next().c_str());
 
             // immunity threshhold (ignored without ranking)
             getline(inputFile, line);
-            tok = Tokenizer(line, "=");
+            tok = KukaduTokenizer(line, "=");
             tok.next(); immunityThresh = atoi(tok.next().c_str());
 
             // levels
             getline(inputFile, line);
-            tok = Tokenizer(line, "=");
+            tok = KukaduTokenizer(line, "=");
             tok.next(); levels = atoi(tok.next().c_str());
 
             for(int i = 0; i < levels; ++i)
@@ -80,7 +78,7 @@ namespace kukadu {
             while(getline(inputFile, line) && line.compare("")) {
 
                 // check if its a layer line
-                tok = Tokenizer(line, "=");
+                tok = KukaduTokenizer(line, "=");
                 string nextToken = tok.next();
                 if(!nextToken.compare("layer")) {
 
@@ -90,7 +88,7 @@ namespace kukadu {
                 } else {
 
                     // it is no t a layer line (must be a clip line
-                    tok = Tokenizer(line, ";");
+                    tok = KukaduTokenizer(line, ";");
                     KUKADU_SHARED_PTR<Clip> nextClip;
 
                     // first line is the id vector
@@ -149,7 +147,7 @@ namespace kukadu {
             while(getline(inputFile, line)) {
 
                 // check if its a layer line
-                tok = Tokenizer(line, "=");
+                tok = KukaduTokenizer(line, "=");
                 string nextToken = tok.next();
                 if(!nextToken.compare("layer")) {
 
@@ -175,7 +173,7 @@ namespace kukadu {
                     } else if(line.find(';') != string::npos) {
 
                         // it must be a new child clip
-                        tok = Tokenizer(line, ";");
+                        tok = KukaduTokenizer(line, ";");
                         string idVecString = tok.next();
                         double connectionWeight = atof(tok.next().c_str());
                         KUKADU_SHARED_PTR<Clip> currentChild = findClipByIdVec(Clip::getIdVectorFromString(idVecString));

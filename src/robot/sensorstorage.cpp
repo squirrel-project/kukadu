@@ -1,5 +1,5 @@
-#include "sensorstorage.hpp"
-#include "../types/sensordata.hpp"
+#include <kukadu/robot/sensorstorage.hpp>
+#include <kukadu/types/sensordata.hpp>
 
 using namespace std;
 using namespace arma;

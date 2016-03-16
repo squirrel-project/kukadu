@@ -1,6 +1,5 @@
-#include "clip.hpp"
-#include "../utils/tokenizer.hpp"
-
+#include <kukadu/learning/projective_simulation/core/clip.hpp>
+#include <kukadu/utils/kukadutokenizer.hpp>
 #include <typeinfo>
 
 using namespace std;
@@ -37,7 +36,7 @@ namespace kukadu {
     KUKADU_SHARED_PTR<std::vector<int> > Clip::getIdVectorFromString(std::string str) {
 
         KUKADU_SHARED_PTR<std::vector<int> > retVec = KUKADU_SHARED_PTR<std::vector<int> >(new std::vector<int>());
-        Tokenizer tok(str, "(),");
+        KukaduTokenizer tok(str, "(),");
 
         string t = "";
 
