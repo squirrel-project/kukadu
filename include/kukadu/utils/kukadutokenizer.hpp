@@ -53,9 +53,9 @@ namespace kukadu {
         std::string buffer;                                 // input string
         std::string token;                                  // output string
         std::string delimiter;                              // delimiter string
-        std::string::const_iterator currPos;                // string iterator pointing the current position
         std::string lastToken;
 
+        int currPos;
         int tokenIdx;
         bool useLastToken;
 

@@ -9,10 +9,9 @@
 #include <wordexp.h>
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
-
-#include "../controller.hpp"
-#include "../../utils/utils.hpp"
-#include "../sensingcontroller.hpp"
+#include <kukadu/manipulation/controller.hpp>
+#include <kukadu/utils/utils.hpp>
+#include <kukadu/manipulation/sensingcontroller.hpp>
 
 namespace kukadu {
 
@@ -20,31 +19,24 @@ namespace kukadu {
 
     private:
 
-        std::vector<std::string> sensingNames;
-        std::vector<std::string> preparationNames;
-        std::vector<std::string> complexControllerNames;
+        std::string skillDatabase;
 
-        std::vector<KUKADU_SHARED_PTR<Controller> > complexControllers;
-        std::vector<KUKADU_SHARED_PTR<Controller> > preparationControllers;
-        std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers;
+        std::map<std::string, KUKADU_SHARED_PTR<kukadu::SensingController> > registeredSensingControllers;
+        std::map<std::string, KUKADU_SHARED_PTR<kukadu::Controller> > registeredPrepControllers;
+        std::map<std::string, KUKADU_SHARED_PTR<kukadu::Controller> > registeredComplexControllers;
 
         void printNamedVector(std::vector<std::string> names);
 
-        int pickSensingController();
-        int pickComplexController();
-        int pickPreparationController(int sensingController);
+        std::string pickComplexController();
 
     public:
 
-        HapticPlanner();
+        HapticPlanner(std::string skillDatabase,
+                      std::vector<KUKADU_SHARED_PTR<kukadu::SensingController> > sensingControllers,
+                      std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > preparatoryControllers,
+                      std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > complexControllers);
 
-        void addComplexController(std::string name, KUKADU_SHARED_PTR<Controller> complexController);
-        void addPreparationController(std::string name, KUKADU_SHARED_PTR<Controller> prepController);
-        void addSensingController(std::string name, KUKADU_SHARED_PTR<SensingController> sensingController);
-
-        void printSensingControllers();
-        void printComplexControllers();
-        void printPreparationControllers();
+        void performSkill(std::string skillIdx);
 
     };
 

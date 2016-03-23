@@ -37,6 +37,8 @@ namespace kukadu {
         void startTalking();
         void setSimulationMode(bool simulationMode);
 
+        virtual void initialize();
+
         bool getSimulationMode();
 
         double getSimFailingProb();

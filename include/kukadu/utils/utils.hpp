@@ -156,6 +156,8 @@ namespace kukadu {
     long getFileSize(std::string filename);
     std::wstring stringToWString(const std::string& s);
 
+    void preparePathString(std::string& s);
+
 }
 
 #endif

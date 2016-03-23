@@ -13,6 +13,10 @@ namespace kukadu {
 
     }
 
+    void Controller::initialize() {
+
+    }
+
     std::string Controller::getCaption() {
         return caption;
     }

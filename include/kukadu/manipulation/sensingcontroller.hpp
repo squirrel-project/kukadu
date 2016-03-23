@@ -73,6 +73,8 @@ namespace kukadu {
 
         double createDataBase();
 
+        void setDatabasePath(std::string databasePath);
+
         std::string getDatabasePath();
         std::string getFirstRobotFileName();
 

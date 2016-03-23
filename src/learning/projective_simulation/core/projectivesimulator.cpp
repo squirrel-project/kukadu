@@ -80,6 +80,7 @@ namespace kukadu {
                 // check if its a layer line
                 tok = KukaduTokenizer(line, "=");
                 string nextToken = tok.next();
+
                 if(!nextToken.compare("layer")) {
 
                     string layerString = tok.next();
@@ -87,7 +88,7 @@ namespace kukadu {
 
                 } else {
 
-                    // it is no t a layer line (must be a clip line
+                    // it is no t a layer line (must be a clip line)
                     tok = KukaduTokenizer(line, ";");
                     KUKADU_SHARED_PTR<Clip> nextClip;
 
@@ -128,6 +129,7 @@ namespace kukadu {
                     }
 
                     int clipLevel = currentLayer;
+
                     if(clipLevel != CLIP_H_LEVEL_FINAL)
                         clipLayers->at(clipLevel)->insert(nextClip);
                     else
@@ -207,15 +209,20 @@ namespace kukadu {
     }
 
     KUKADU_SHARED_PTR<Clip> ProjectiveSimulator::findClipInLevelByIdVec(KUKADU_SHARED_PTR<std::vector<int> > idVec, int level) {
+
         KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > currentLayer = clipLayers->at(level);
 
         std::set<KUKADU_SHARED_PTR<Clip>, clip_compare>::iterator it;
         for(it = currentLayer->begin(); it != currentLayer->end(); ++it) {
             KUKADU_SHARED_PTR<Clip> c = *it;
+
+            for(auto id : *c->getClipDimensions())
+                cout << id << endl;
+
             KUKADU_SHARED_PTR<vector<int> > clipDim = c->getClipDimensions();
-            if(Clip::compareIdVecs(clipDim, idVec)) {
+            if(Clip::compareIdVecs(clipDim, idVec))
                 return c;
-            }
+
         }
 
         return KUKADU_SHARED_PTR<Clip>();
@@ -226,9 +233,11 @@ namespace kukadu {
         if(operationMode == PS_USE_ORIGINAL) {
 
             for(int level = 0; level < clipLayers->size() - 1; ++level) {
+
                 KUKADU_SHARED_PTR<Clip> retVal = findClipInLevelByIdVec(idVec, level);
-                if(!retVal)
+                if(retVal)
                     return retVal;
+
             }
 
         } else if(operationMode == PS_USE_GEN) {
@@ -503,8 +512,8 @@ namespace kukadu {
 
         // cout << "entropy: " << entropy << "; log2: " << log2(numberOfSubclips) << "; " << "; boredomConst: " << boredom << "; ";
 
-        // b * (1 - H / H_max) = b * (1 - H / log2(N))
-        double clipBoredom = boredom * (1.0 - entropy / log2(numberOfSubclips));
+        // b * (1 - H / H_max) = 1 - b * H / log2(N)
+        double clipBoredom = 1.0 - boredom * entropy / log2(numberOfSubclips);
 
         return clipBoredom;
 

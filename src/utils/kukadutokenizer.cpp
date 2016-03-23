@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Tokenizer.cpp
+// KukaduTokenizer.cpp
 // =============
-// General purpose string tokenizer (C++ string version)
+// General purpose string KukaduTokenizer (C++ string version)
 //
 // The default delimiters are space(" "), tab(\t, \v), newline(\n),
 // carriage return(\r), and form feed(\f).
@@ -14,6 +14,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <kukadu/utils/kukadutokenizer.hpp>
+#include <iostream>
+
+using namespace std;
 
 namespace kukadu {
 
@@ -21,14 +24,14 @@ namespace kukadu {
     // constructor
     ///////////////////////////////////////////////////////////////////////////////
     KukaduTokenizer::KukaduTokenizer() : buffer(""), token(""), delimiter(DEFAULT_DELIMITER) {
-        currPos = buffer.begin();
+        currPos = 0;
         lastToken = "";
         useLastToken = false;
         tokenIdx = -1;
     }
 
     KukaduTokenizer::KukaduTokenizer(const std::string& str, const std::string& delimiter) : buffer(str), token(""), delimiter(delimiter) {
-        currPos = buffer.begin();
+        currPos = 0;
         lastToken = "";
         useLastToken = false;
         tokenIdx = -1;
@@ -50,17 +53,17 @@ namespace kukadu {
     void KukaduTokenizer::set(const std::string& str, const std::string& delimiter) {
         this->buffer = str;
         this->delimiter = delimiter;
-        this->currPos = buffer.begin();
+        this->currPos = 0;
     }
 
     void KukaduTokenizer::setString(const std::string& str) {
         this->buffer = str;
-        this->currPos = buffer.begin();
+        this->currPos = 0;
     }
 
     void KukaduTokenizer::setDelimiter(const std::string& delimiter) {
         this->delimiter = delimiter;
-        this->currPos = buffer.begin();
+        this->currPos = 0;
     }
 
     int KukaduTokenizer::getTokenIdx() {
@@ -84,8 +87,8 @@ namespace kukadu {
             this->skipDelimiter();                      // skip leading delimiters
 
             // append each char to token string until it meets delimiter
-            while(currPos != buffer.end() && !isDelimiter(*currPos)) {
-                token += *currPos;
+            while(currPos != buffer.size() && !isDelimiter(*(buffer.begin() + currPos))) {
+                token += *(buffer.begin() + currPos);
                 ++currPos;
             }
             return (lastToken = token);
@@ -105,7 +108,7 @@ namespace kukadu {
     // skip ang leading delimiters
     ///////////////////////////////////////////////////////////////////////////////
     void KukaduTokenizer::skipDelimiter() {
-        while(currPos != buffer.end() && isDelimiter(*currPos))
+        while(currPos != buffer.size() && isDelimiter(*(buffer.begin() + currPos)))
             ++currPos;
     }
 

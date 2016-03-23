@@ -35,7 +35,7 @@ namespace kukadu {
         double punishReward;
         double senseStretch;
 
-        std::string corrPSPath;
+        std::string storePath;
         std::string rewardHistoryPath;
 
         KUKADU_SHARED_PTR<PerceptClip> root;
@@ -62,18 +62,24 @@ namespace kukadu {
 
     public:
 
-        ComplexController(std::string caption, std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers, std::vector<KUKADU_SHARED_PTR<Controller> > preparationControllers,
-                          std::string corrPSPath, std::string rewardHistoryPath, bool storeReward, double senseStretch, double boredom, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards, int simulationFailingProbability);
+        ComplexController(std::string caption, std::string storePath,
+                          bool storeReward, double senseStretch, double boredom, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator,
+                          int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards, int simulationFailingProbability);
         ~ComplexController();
 
         void store();
-        void initialize();
+        void load(std::string path, std::map<std::string, KUKADU_SHARED_PTR<kukadu::SensingController> > availableSensingControllers, std::map<std::string, KUKADU_SHARED_PTR<kukadu::Controller> > availablePreparatoryControllers);
+
+        virtual void initialize();
         void storeNextIteration();
         void createSensingDatabase();
         void setBoredom(double boredom);
         void store(std::string destination);
         void setTrainingMode(bool doTraining);
         void createSensingDatabase(std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers);
+
+        void setSensingControllers(std::vector<KUKADU_SHARED_PTR<kukadu::SensingController> > sensingControllers);
+        void setPreparatoryControllers(std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > preparatoryControllers);
 
         virtual void executeComplexAction() = 0;
 
@@ -90,6 +96,16 @@ namespace kukadu {
         KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
         KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();
         KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();
+
+#ifdef USEBOOST
+        static const std::string FILE_SENSING_PREFIX;
+        static const std::string FILE_PREP_PREFIX;
+        static const std::string FILE_END_PREFIX;
+#else
+        static constexpr auto FILE_SENSING_PREFIX = "***sensing controllers:";
+        static constexpr auto FILE_PREP_PREFIX = "***preparatory controllers:";
+        static constexpr auto FILE_END_PREFIX = "***end";
+#endif
 
     };
 

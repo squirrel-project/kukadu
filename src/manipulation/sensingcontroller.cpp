@@ -47,6 +47,10 @@ namespace kukadu {
         return databasePath;
     }
 
+    void SensingController::setDatabasePath(std::string databasePath) {
+        createDataBase();
+    }
+
     void SensingController::gatherData(std::string completePath) {
 
         vector<KUKADU_SHARED_PTR<ControlQueue> > castedQueues;
@@ -185,6 +189,7 @@ namespace kukadu {
         vector<pair<int, string> > collectedSamples;
         if(!isShutUp)
             cout << "(SensingController) data is stored to " << path << endl;
+
         if(!fileExists(path)) {
 
             if(!isShutUp)
@@ -238,8 +243,8 @@ namespace kukadu {
             for(double res : classRes)
                 cout << res << endl;
 
-            cerr << "(SensingController) this part currently wont work (switched back to old classifier (repair later))" << endl;
             double confidence = classRes.at(classRes.size() - 1);
+
             /*
             double bestParamC = classRes.at(classRes.size() - 4);
             double bestParamD = classRes.at(classRes.size() - 3);

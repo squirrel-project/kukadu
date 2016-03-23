@@ -21,6 +21,11 @@ using namespace arma;
 
 namespace kukadu {
 
+    void preparePathString(std::string& s) {
+        if(*(s.end()) != '/')
+            s.append("/");
+    }
+
     int createDirectory(std::string path) {
 
         struct stat st = {0};

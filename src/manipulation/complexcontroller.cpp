@@ -11,15 +11,22 @@ using namespace arma;
 
 namespace kukadu {
 
-    ComplexController::ComplexController(std::string caption, std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers,
-                                         std::vector<KUKADU_SHARED_PTR<Controller> > preparationControllers,
-                                         std::string corrPSPath, std::string rewardHistoryPath, bool storeReward, double senseStretch, double boredom, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator,
+#ifdef USEBOOST
+    const std::string ComplexController::FILE_SENSING_PREFIX = "***sensing controllers:";
+    const std::string ComplexController::FILE_PREP_PREFIX = "***preparatory controllers:";
+    const std::string ComplexController::FILE_END_PREFIX = "***end";
+#endif
+
+    ComplexController::ComplexController(std::string caption, std::string storePath,
+                                         bool storeReward, double senseStretch, double boredom, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator,
                                          int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards,
                                          int simulationFailingProbability)
         : Controller(caption, simulationFailingProbability), Reward(generator, collectPrevRewards) {
 
         projSim.reset();
         rewardHistoryStream.reset();
+
+        preparePathString(storePath);
 
         this->gamma = gamma;
         this->gen = generator;
@@ -28,14 +35,15 @@ namespace kukadu {
         this->storeReward = storeReward;
         this->senseStretch = senseStretch;
         this->colPrevRewards = collectPrevRewards;
-        this->rewardHistoryPath = rewardHistoryPath;
+        this->rewardHistoryPath = storePath + "rewards/";
+
+        if(!fileExists(rewardHistoryPath))
+            createDirectory(rewardHistoryPath);
 
         this->stdReward = stdReward;
-        this->corrPSPath = corrPSPath;
+        this->storePath = storePath;
         this->punishReward = punishReward;
         this->stdPrepWeight = stdPrepWeight;
-        this->sensingControllers = sensingControllers;
-        this->preparationControllers = preparationControllers;
 
         vector<int> distributionWeights; distributionWeights.push_back(100 - simulationFailingProbability); distributionWeights.push_back(simulationFailingProbability);
         simSuccDist = KUKADU_DISCRETE_DISTRIBUTION<int>(distributionWeights.begin(), distributionWeights.end());
@@ -47,9 +55,17 @@ namespace kukadu {
             rewardHistoryStream->close();
     }
 
+    void ComplexController::setSensingControllers(std::vector<KUKADU_SHARED_PTR<kukadu::SensingController> > sensingControllers) {
+        this->sensingControllers = sensingControllers;
+    }
+
+    void ComplexController::setPreparatoryControllers(std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > preparatoryControllers) {
+        this->preparationControllers = preparatoryControllers;
+    }
+
     void ComplexController::initialize() {
 
-        bool existsPs = fileExists(corrPSPath);
+        bool existsPs = fileExists(storePath + "ps");
         createSensingDatabase();
 
         int currentId = 0;
@@ -103,7 +119,8 @@ namespace kukadu {
             if(!isShutUp)
                 cout << "(ComplexController) loading existing PS" << endl;
 
-            projSim = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, corrPSPath));
+            projSim = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, storePath + "ps"));
+
         } else {
 
             KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<PerceptClip> > > rootVec = KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<PerceptClip> > >(new vector<KUKADU_SHARED_PTR<PerceptClip> >());
@@ -119,7 +136,7 @@ namespace kukadu {
         if(storeReward) {
             rewardHistoryStream = KUKADU_SHARED_PTR<std::ofstream>(new std::ofstream());
             int overWrite = 0;
-            if(fileExists(rewardHistoryPath)) {
+            if(fileExists(rewardHistoryPath + "history")) {
                 cout << "(ComplexController) should reward history file be overwritten? (0 = no / 1 = yes)" << endl;
                 cin >> overWrite;
                 if(overWrite != 1) {
@@ -157,17 +174,76 @@ namespace kukadu {
         return projSim;
     }
 
+    void ComplexController::load(std::string path, std::map<std::string, KUKADU_SHARED_PTR<kukadu::SensingController> > availableSensingControllers, std::map<std::string, KUKADU_SHARED_PTR<kukadu::Controller> > availablePreparatoryControllers) {
+
+        sensingControllers.clear();
+        if(prepActions)
+            prepActions->clear();
+        if(prepActionsCasted)
+            prepActionsCasted->clear();
+        preparationControllers.clear();
+
+        preparePathString(path);
+        string compositionDestination = path + "composition";
+
+        ifstream compositionFile;
+        compositionFile.open(compositionDestination);
+
+        int controllerMode = -1;
+        string line = "";
+        while(getline(compositionFile, line)) {
+
+            if(!line.compare(FILE_SENSING_PREFIX))
+                controllerMode = 1;
+            else if(!line.compare(FILE_PREP_PREFIX))
+                controllerMode = 2;
+            else if(!line.compare(FILE_END_PREFIX))
+                controllerMode = 10;
+            else if(line.compare("")) {
+                // we are reading sensing controllers
+                if(controllerMode == 1) {
+                    sensingControllers.push_back(availableSensingControllers[line]);
+                } else if(controllerMode == 2) {
+                    preparationControllers.push_back(availablePreparatoryControllers[line]);
+                } else if(controllerMode == 10) {
+                    throw KukaduException("(ComplexController) malformed composition file");
+                }
+            }
+
+        }
+
+        storePath = path;
+        initialize();
+
+    }
+
     void ComplexController::store() {
-        projSim->storePS(corrPSPath);
+        store(storePath);
     }
 
     void ComplexController::store(std::string destination) {
-        projSim->storePS(destination);
+
+        preparePathString(destination);
+        string psDestination = destination + "ps";
+        string compositionDestination = destination + "composition";
+        projSim->storePS(psDestination);
+        ofstream compositionFile;
+        compositionFile.open(compositionDestination);
+        compositionFile << FILE_SENSING_PREFIX << endl;
+        for(auto sensCont : sensingControllers)
+            compositionFile << sensCont->getCaption() << endl;
+
+        compositionFile << FILE_PREP_PREFIX << endl;
+        for(auto prepCont : preparationControllers)
+            compositionFile << prepCont->getCaption() << endl;
+
+        compositionFile.close();
+
     }
 
     void ComplexController::storeNextIteration() {
         stringstream s;
-        s << corrPSPath << currentIterationNum;
+        s << storePath + "ps" << currentIterationNum;
         projSim->storePS(s.str());
     }
 
