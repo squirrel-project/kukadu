@@ -119,7 +119,22 @@ namespace kukadu {
             if(!isShutUp)
                 cout << "(ComplexController) loading existing PS" << endl;
 
-            projSim = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, storePath + "ps"));
+            auto loadLambda = [this] (const std::string& line, const int& level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) -> KUKADU_SHARED_PTR<Clip> {
+
+                    KukaduTokenizer tok(line, ";");
+                    string idVec = tok.next();
+                    string label = tok.next();
+                    int immunity = atoi(tok.next().c_str());
+
+                    if(level == 1)
+                        return KUKADU_SHARED_PTR<Clip>(new IntermediateEventClip((this->availableSensingControllers)[label],
+                                                                                        level, generator, idVec, immunity));
+
+                    return KUKADU_SHARED_PTR<Clip>(new Clip(level, generator, idVec, immunity));
+
+                };
+
+            projSim = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, storePath + "ps", loadLambda));
 
         } else {
 
@@ -213,6 +228,8 @@ namespace kukadu {
         }
 
         storePath = path;
+        this->availableSensingControllers = availableSensingControllers;
+        this->availablePreparatoryControllers = availablePreparatoryControllers;
         initialize();
 
     }

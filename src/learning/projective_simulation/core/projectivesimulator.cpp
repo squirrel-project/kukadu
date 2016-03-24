@@ -10,7 +10,8 @@ using namespace std;
 
 namespace kukadu {
 
-    ProjectiveSimulator::ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file) {
+    void ProjectiveSimulator::loadPsConstructor(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file,
+                       std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) > createClipFunc) {
 
         this->reward = reward;
         this->generator = generator;
@@ -88,7 +89,7 @@ namespace kukadu {
 
                 } else {
 
-                    // it is no t a layer line (must be a clip line)
+                    // it is not a layer line (must be a clip line)
                     tok = KukaduTokenizer(line, ";");
                     KUKADU_SHARED_PTR<Clip> nextClip;
 
@@ -112,19 +113,23 @@ namespace kukadu {
 
                     } else if(currentLayer == CLIP_H_LEVEL_FINAL) {
 
-                        // id vec is not useful
-                        tok.next();
-                        string label = tok.next();
-                        int immunity = atoi(tok.next().c_str());
-                        KUKADU_SHARED_PTR<ActionClip> ac = KUKADU_SHARED_PTR<ActionClip>(new ActionClip(atoi(tok.next().c_str()), perceptDimensionality, label, generator));
-                        nextClip = ac;
-                        actionClips->push_back(ac);
+                        if(line != "") {
+                            // id vec is not useful
+                            tok.next();
+                            string label = tok.next();
+                            int immunity = atoi(tok.next().c_str());
+                            KUKADU_SHARED_PTR<ActionClip> ac = KUKADU_SHARED_PTR<ActionClip>(new ActionClip(atoi(tok.next().c_str()), perceptDimensionality, label, generator));
+                            nextClip = ac;
+                            actionClips->push_back(ac);
+                        } else
+                            continue;
 
                     } else {
 
-                        string idVec = tok.next();
-                        int immunity = atoi(tok.next().c_str());
-                        KUKADU_SHARED_PTR<Clip> c = nextClip = KUKADU_SHARED_PTR<Clip>(new Clip(currentLayer, generator, idVec, immunity));
+                        if(line != "")
+                            nextClip = createClipFunc(line, currentLayer, generator);
+                        else
+                            continue;
 
                     }
 
@@ -194,6 +199,26 @@ namespace kukadu {
 
     }
 
+
+    ProjectiveSimulator::ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file,
+                    std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) > createClipFunc) {
+
+        loadPsConstructor(reward, generator, file, createClipFunc);
+
+    }
+
+    ProjectiveSimulator::ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file) {
+
+        loadPsConstructor(reward, generator, file, [] (const std::string& line, const int& level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) -> KUKADU_SHARED_PTR<Clip> {
+            KukaduTokenizer tok(line, ";");
+            string idVec = tok.next();
+            string label = tok.next();
+            int immunity = atoi(tok.next().c_str());
+            return KUKADU_SHARED_PTR<Clip>(new Clip(level, generator, idVec, immunity));
+        });
+
+    }
+
     int ProjectiveSimulator::getIdVecLevel(KUKADU_SHARED_PTR<std::vector<int> > idVec) {
 
         int retCount = 0;
@@ -215,9 +240,6 @@ namespace kukadu {
         std::set<KUKADU_SHARED_PTR<Clip>, clip_compare>::iterator it;
         for(it = currentLayer->begin(); it != currentLayer->end(); ++it) {
             KUKADU_SHARED_PTR<Clip> c = *it;
-
-            for(auto id : *c->getClipDimensions())
-                cout << id << endl;
 
             KUKADU_SHARED_PTR<vector<int> > clipDim = c->getClipDimensions();
             if(Clip::compareIdVecs(clipDim, idVec))

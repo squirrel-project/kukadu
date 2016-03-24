@@ -5,7 +5,7 @@
 #include <armadillo>
 #include <kukadu/utils/types.hpp>
 #include <kukadu/types/kukadutypes.hpp>
-#include <kukadu/manipulation/complexcontroller.hpp>
+#include <kukadu/types/controllerresult.hpp>
 
 namespace kukadu {
 

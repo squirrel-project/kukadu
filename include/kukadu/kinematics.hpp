@@ -3,6 +3,6 @@
 #include <kukadu/kinematics/pathplanner.hpp>
 #include <kukadu/kinematics/simpleplanner.hpp>
 #include <kukadu/kinematics/constraints/constraints.hpp>
-#ifdef CPP11SUPPORTED
+#ifndef USEBOOST
 #include <kukadu/kinematics/komoplanner.hpp>
 #endif

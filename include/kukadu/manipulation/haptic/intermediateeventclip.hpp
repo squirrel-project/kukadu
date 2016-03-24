@@ -24,6 +24,9 @@ namespace kukadu {
     public:
 
         IntermediateEventClip(KUKADU_SHARED_PTR<SensingController> sensingEvent,
+                              int level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string clipValues, int immunity);
+
+        IntermediateEventClip(KUKADU_SHARED_PTR<SensingController> sensingEvent,
                               int level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, KUKADU_SHARED_PTR<std::vector<int> > clipValues, int immunity);
 
         std::string toString() const;

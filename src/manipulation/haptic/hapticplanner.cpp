@@ -38,6 +38,7 @@ namespace kukadu {
             } else {
 
                 castCompCont->load(complexPath, registeredSensingControllers, registeredPrepControllers);
+                castCompCont->store(complexPath + "test/");
 
             }
 

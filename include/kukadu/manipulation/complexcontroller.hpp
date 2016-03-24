@@ -51,6 +51,9 @@ namespace kukadu {
         std::vector<KUKADU_SHARED_PTR<Controller> > preparationControllers;
         std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers;
 
+        std::map<std::string, KUKADU_SHARED_PTR<kukadu::SensingController> > availableSensingControllers;
+        std::map<std::string, KUKADU_SHARED_PTR<kukadu::Controller> > availablePreparatoryControllers;
+
         double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction);
 
     protected:

@@ -4,12 +4,14 @@
 #include <kukadu/learning/metric_learning/mahalanobicslearner.hpp>
 #include <kukadu/learning/metric_learning/mahalanobis.hpp>
 #include <kukadu/learning/metric_learning/togersonmetriclearner.hpp>
+#ifndef USEBOOST
 #include <kukadu/learning/projective_simulation/core/actionclip.hpp>
 #include <kukadu/learning/projective_simulation/core/clip.hpp>
 #include <kukadu/learning/projective_simulation/core/perceptclip.hpp>
 #include <kukadu/learning/projective_simulation/core/projectivesimulator.hpp>
 #include <kukadu/learning/projective_simulation/core/psevaluator.hpp>
 #include <kukadu/learning/projective_simulation/core/reward.hpp>
+#endif
 #include <kukadu/learning/regression/gaussiankernel.hpp>
 #include <kukadu/learning/regression/gaussianprocessregressor.hpp>
 #include <kukadu/learning/regression/generalfitter.hpp>

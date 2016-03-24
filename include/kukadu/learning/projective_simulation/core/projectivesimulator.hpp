@@ -7,6 +7,7 @@
 #include <vector>
 #include <utility>
 #include <algorithm>
+#include <functional>
 #include <kukadu/learning/projective_simulation/core/clip.hpp>
 #include <kukadu/learning/projective_simulation/core/reward.hpp>
 #include <kukadu/learning/projective_simulation/core/actionclip.hpp>
@@ -94,9 +95,14 @@ namespace kukadu {
         KUKADU_SHARED_PTR<Clip> findClipByIdVec(KUKADU_SHARED_PTR<std::vector<int> > idVec);
         KUKADU_SHARED_PTR<Clip> findClipInLevelByIdVec(KUKADU_SHARED_PTR<std::vector<int> > idVec, int level);
 
+        void loadPsConstructor(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file,
+                               std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister>) > createClipFunc);
+
     public:
 
         ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file);
+        ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file,
+                            std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) > createClipFunc);
         ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, double gamma, int operationMode, bool useRanking);
         ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator,
                             KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > network,
