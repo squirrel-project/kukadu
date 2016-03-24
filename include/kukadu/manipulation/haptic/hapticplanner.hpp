@@ -38,6 +38,10 @@ namespace kukadu {
         KUKADU_SHARED_PTR<kukadu::ProjectiveSimulator> createEnvironmentModelForSensingAction(KUKADU_SHARED_PTR<kukadu::SensingController> sensingAction,
                                                     std::vector<KUKADU_SHARED_PTR<kukadu::Controller> >& preparatoryActions);
 
+    protected:
+
+        virtual double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction);
+
     public:
 
         HapticPlanner(std::string skillDatabase,

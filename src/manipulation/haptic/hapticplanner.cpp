@@ -120,4 +120,8 @@ namespace kukadu {
 
     }
 
+    double HapticPlanner::computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction) {
+
+    }
+
 }
