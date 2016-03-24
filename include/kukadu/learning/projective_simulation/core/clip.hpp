@@ -103,6 +103,8 @@ namespace kukadu {
 
         virtual std::string toString() const;
 
+        KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > getSubClips();
+
         KUKADU_SHARED_PTR<Clip> getSubClipByIdx(int idx);
         KUKADU_SHARED_PTR<std::vector<int> > getClipDimensions() const;
         KUKADU_SHARED_PTR<Clip> compareClip(KUKADU_SHARED_PTR<Clip> c);

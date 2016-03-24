@@ -11,7 +11,7 @@ using namespace std;
 namespace kukadu {
 
     void ProjectiveSimulator::loadPsConstructor(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file,
-                       std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) > createClipFunc) {
+                       std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) > createClipFunc) {
 
         this->reward = reward;
         this->generator = generator;
@@ -96,11 +96,8 @@ namespace kukadu {
                     // first line is the id vector
                     if(currentLayer == 0) {
 
-                        string idVec = tok.next();
-                        string label = tok.next();
-                        int immunity = atoi(tok.next().c_str());
-                        KUKADU_SHARED_PTR<PerceptClip> pc = KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(atoi(tok.next().c_str()), label, generator, idVec, immunity));
-                        nextClip = pc;
+                        nextClip = createClipFunc(line, currentLayer, 0, generator);
+                        auto pc = KUKADU_DYNAMIC_POINTER_CAST<PerceptClip>(nextClip);
 
                         if(isFirstPercept) {
 
@@ -114,20 +111,15 @@ namespace kukadu {
                     } else if(currentLayer == CLIP_H_LEVEL_FINAL) {
 
                         if(line != "") {
-                            // id vec is not useful
-                            tok.next();
-                            string label = tok.next();
-                            int immunity = atoi(tok.next().c_str());
-                            KUKADU_SHARED_PTR<ActionClip> ac = KUKADU_SHARED_PTR<ActionClip>(new ActionClip(atoi(tok.next().c_str()), perceptDimensionality, label, generator));
-                            nextClip = ac;
-                            actionClips->push_back(ac);
+                            nextClip = createClipFunc(line, currentLayer, perceptDimensionality, generator);
+                            actionClips->push_back(KUKADU_DYNAMIC_POINTER_CAST<ActionClip>(nextClip));
                         } else
                             continue;
 
                     } else {
 
                         if(line != "")
-                            nextClip = createClipFunc(line, currentLayer, generator);
+                            nextClip = createClipFunc(line, currentLayer, perceptDimensionality, generator);
                         else
                             continue;
 
@@ -201,7 +193,7 @@ namespace kukadu {
 
 
     ProjectiveSimulator::ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file,
-                    std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) > createClipFunc) {
+                    std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) > createClipFunc) {
 
         loadPsConstructor(reward, generator, file, createClipFunc);
 
@@ -209,12 +201,29 @@ namespace kukadu {
 
     ProjectiveSimulator::ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file) {
 
-        loadPsConstructor(reward, generator, file, [] (const std::string& line, const int& level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) -> KUKADU_SHARED_PTR<Clip> {
+        loadPsConstructor(reward, generator, file, [] (const std::string& line, const int& level, const int& perceptDimensionality, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) -> KUKADU_SHARED_PTR<Clip> {
+
             KukaduTokenizer tok(line, ";");
             string idVec = tok.next();
             string label = tok.next();
             int immunity = atoi(tok.next().c_str());
-            return KUKADU_SHARED_PTR<Clip>(new Clip(level, generator, idVec, immunity));
+            if(level == 0) {
+
+                auto pc = KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(atoi(tok.next().c_str()), label, generator, idVec, immunity));
+                return pc;
+
+            } else if(level == CLIP_H_LEVEL_FINAL) {
+
+                auto ac = KUKADU_SHARED_PTR<ActionClip>(new ActionClip(atoi(tok.next().c_str()), perceptDimensionality, label, generator));
+                return ac;
+
+            } else {
+
+
+                return KUKADU_SHARED_PTR<Clip>(new Clip(level, generator, idVec, immunity));
+
+            }
+
         });
 
     }

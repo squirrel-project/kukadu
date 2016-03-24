@@ -14,13 +14,6 @@
 #include <kukadu/learning/projective_simulation/core/perceptclip.hpp>
 #include <kukadu/types/kukadutypes.hpp>
 
-#define PS_PRINT_DEBUG_INFO 0
-#define PS_PRINT_RANKING_DEBUG_INFO 0
-#define PS_USE_ORIGINAL 1
-#define PS_USE_GEN 2
-
-#define PS_MAX_NUMBER_OF_CLIPS 1000
-
 namespace kukadu {
 
     struct clip_compare {
@@ -96,13 +89,13 @@ namespace kukadu {
         KUKADU_SHARED_PTR<Clip> findClipInLevelByIdVec(KUKADU_SHARED_PTR<std::vector<int> > idVec, int level);
 
         void loadPsConstructor(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file,
-                               std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister>) > createClipFunc);
+                               std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister>) > createClipFunc);
 
     public:
 
         ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file);
         ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file,
-                            std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) > createClipFunc);
+                            std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) > createClipFunc);
         ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, double gamma, int operationMode, bool useRanking);
         ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator,
                             KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > network,
@@ -135,6 +128,14 @@ namespace kukadu {
         KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > > > getClipLayers();
 
         void storePS(std::string targetFile);
+
+        static constexpr auto PS_USE_ORIGINAL = 1;
+        static constexpr auto PS_USE_GEN = 2;
+
+        static constexpr auto PS_PRINT_DEBUG_INFO = 0;
+        static constexpr auto PS_PRINT_RANKING_DEBUG_INFO = 1;
+
+        static constexpr auto PS_MAX_NUMBER_OF_CLIPS = 1000;
 
     };
 

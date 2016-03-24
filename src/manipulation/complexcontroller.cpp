@@ -66,52 +66,6 @@ namespace kukadu {
     void ComplexController::initialize() {
 
         bool existsPs = fileExists(storePath + "ps");
-        createSensingDatabase();
-
-        int currentId = 0;
-        KUKADU_SHARED_PTR<vector<int> > clipDimVal = KUKADU_SHARED_PTR<vector<int> >(new vector<int>());
-        clipDimVal->push_back(currentId);
-        root = KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(0, "root", generator, clipDimVal, INT_MAX));
-
-        vector<double> prepWeights;
-        prepActions = KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<Clip> > >(new vector<KUKADU_SHARED_PTR<Clip> >());
-        prepActionsCasted = KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<ActionClip> > >(new vector<KUKADU_SHARED_PTR<ActionClip> >());
-        for(int i = 0; i < preparationControllers.size(); ++i) {
-
-            KUKADU_SHARED_PTR<ActionClip> prepActionClip = KUKADU_SHARED_PTR<ActionClip>(new ControllerActionClip(i, preparationControllers.at(i), generator));
-            prepActions->push_back(prepActionClip);
-            prepActionsCasted->push_back(prepActionClip);
-            prepWeights.push_back(stdPrepWeight);
-
-        }
-        ++currentId;
-
-        for(int i = 0; i < sensingControllers.size(); ++i) {
-
-            KUKADU_SHARED_PTR<SensingController> sensCont = sensingControllers.at(i);
-
-            clipDimVal = KUKADU_SHARED_PTR<vector<int> >(new vector<int>());
-            clipDimVal->push_back(currentId);
-
-            KUKADU_SHARED_PTR<Clip> nextSensClip = KUKADU_SHARED_PTR<Clip>(new IntermediateEventClip(sensCont, 1, generator, clipDimVal, INT_MAX));
-            ++currentId;
-            for(int j = 0; j < sensCont->getSensingCatCount(); ++j, ++currentId) {
-
-                clipDimVal = KUKADU_SHARED_PTR<vector<int> >(new vector<int>());
-                clipDimVal->push_back(currentId);
-                KUKADU_SHARED_PTR<Clip> nextSubSensClip = KUKADU_SHARED_PTR<Clip>(new Clip(2, generator, clipDimVal, INT_MAX));
-                nextSubSensClip->setChildren(prepActions, prepWeights);
-                nextSensClip->addSubClip(nextSubSensClip, stdPrepWeight);
-
-            }
-
-            double nextWeight = std::exp(senseStretch * max(0.0, sensingWeights.at(i) - 1.0 / sensCont->getSensingCatCount()));
-            sensCont->setSimulationClassificationPrecision(min(sensingWeights.at(i) * 100.0, 100.0));
-            if(!isShutUp)
-                cout << "(ComplexController) relative weight of sensing action \"" << sensCont->getCaption() << "\" is " << nextWeight << endl;
-            root->addSubClip(nextSensClip, nextWeight);
-
-        }
 
         if(existsPs) {
 
@@ -119,12 +73,23 @@ namespace kukadu {
             if(!isShutUp)
                 cout << "(ComplexController) loading existing PS" << endl;
 
-            auto loadLambda = [this] (const std::string& line, const int& level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) -> KUKADU_SHARED_PTR<Clip> {
+            auto loadLambda = [this] (const std::string& line, const int& level, const int& perceptDimensionality, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) -> KUKADU_SHARED_PTR<Clip> {
 
-                    KukaduTokenizer tok(line, ";");
-                    string idVec = tok.next();
-                    string label = tok.next();
-                    int immunity = atoi(tok.next().c_str());
+                KukaduTokenizer tok(line, ";");
+                string idVec = tok.next();
+                string label = tok.next();
+                int immunity = atoi(tok.next().c_str());
+                if(level == 0) {
+
+                    auto pc = KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(atoi(tok.next().c_str()), label, generator, idVec, immunity));
+                    return pc;
+
+                } else if(level == CLIP_H_LEVEL_FINAL) {
+
+                    auto ac = KUKADU_SHARED_PTR<ActionClip>(new ControllerActionClip(atoi(tok.next().c_str()), (this->availablePreparatoryControllers)[label], generator));
+                    return ac;
+
+                } else {
 
                     if(level == 1)
                         return KUKADU_SHARED_PTR<Clip>(new IntermediateEventClip((this->availableSensingControllers)[label],
@@ -132,17 +97,71 @@ namespace kukadu {
 
                     return KUKADU_SHARED_PTR<Clip>(new Clip(level, generator, idVec, immunity));
 
+                }
+
                 };
 
             projSim = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, storePath + "ps", loadLambda));
+            // ugly syntax - i have to kill these shared pointers some day
+            prepActions = (*((*(projSim->getClipLayers()->end() - 1))->begin()))->getSubClips();
+            prepActionsCasted = projSim->getActionClips();
+            root = *(projSim->getPerceptClips()->begin());
 
         } else {
+
+            // create ecm
+            createSensingDatabase();
+
+            int currentId = 0;
+            KUKADU_SHARED_PTR<vector<int> > clipDimVal = KUKADU_SHARED_PTR<vector<int> >(new vector<int>());
+            clipDimVal->push_back(currentId);
+            root = KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(0, "root", generator, clipDimVal, INT_MAX));
+
+            vector<double> prepWeights;
+            prepActions = KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<Clip> > >(new vector<KUKADU_SHARED_PTR<Clip> >());
+            prepActionsCasted = KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<ActionClip> > >(new vector<KUKADU_SHARED_PTR<ActionClip> >());
+            for(int i = 0; i < preparationControllers.size(); ++i) {
+
+                auto prepActionClip = KUKADU_SHARED_PTR<ActionClip>(new ControllerActionClip(i, preparationControllers.at(i), generator));
+                prepActions->push_back(prepActionClip);
+                prepActionsCasted->push_back(prepActionClip);
+                prepWeights.push_back(stdPrepWeight);
+
+            }
+            ++currentId;
+
+            for(int i = 0; i < sensingControllers.size(); ++i) {
+
+                KUKADU_SHARED_PTR<SensingController> sensCont = sensingControllers.at(i);
+
+                clipDimVal = KUKADU_SHARED_PTR<vector<int> >(new vector<int>());
+                clipDimVal->push_back(currentId);
+
+                KUKADU_SHARED_PTR<Clip> nextSensClip = KUKADU_SHARED_PTR<Clip>(new IntermediateEventClip(sensCont, 1, generator, clipDimVal, INT_MAX));
+                ++currentId;
+                for(int j = 0; j < sensCont->getSensingCatCount(); ++j, ++currentId) {
+
+                    clipDimVal = KUKADU_SHARED_PTR<vector<int> >(new vector<int>());
+                    clipDimVal->push_back(currentId);
+                    KUKADU_SHARED_PTR<Clip> nextSubSensClip = KUKADU_SHARED_PTR<Clip>(new Clip(2, generator, clipDimVal, INT_MAX));
+                    nextSubSensClip->setChildren(prepActions, prepWeights);
+                    nextSensClip->addSubClip(nextSubSensClip, stdPrepWeight);
+
+                }
+
+                double nextWeight = std::exp(senseStretch * max(0.0, sensingWeights.at(i) - 1.0 / sensCont->getSensingCatCount()));
+                sensCont->setSimulationClassificationPrecision(min(sensingWeights.at(i) * 100.0, 100.0));
+                if(!isShutUp)
+                    cout << "(ComplexController) relative weight of sensing action \"" << sensCont->getCaption() << "\" is " << nextWeight << endl;
+                root->addSubClip(nextSensClip, nextWeight);
+
+            }
 
             KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<PerceptClip> > > rootVec = KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<PerceptClip> > >(new vector<KUKADU_SHARED_PTR<PerceptClip> >());
             rootVec->push_back(root);
 
             // skill is used the first time; do initialization
-            projSim = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, rootVec, gamma, PS_USE_ORIGINAL, false));
+            projSim = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, rootVec, gamma, ProjectiveSimulator::PS_USE_ORIGINAL, false));
 
         }
 
