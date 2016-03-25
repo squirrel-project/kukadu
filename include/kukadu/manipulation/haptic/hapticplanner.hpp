@@ -52,6 +52,8 @@ namespace kukadu {
 
         void performSkill(std::string skillIdx);
 
+        virtual int getDimensionality();
+
         virtual KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
         virtual KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();
         virtual KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();

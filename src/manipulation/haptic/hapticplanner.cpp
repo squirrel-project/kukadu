@@ -27,8 +27,12 @@ namespace kukadu {
 
             KUKADU_SHARED_PTR<kukadu::ComplexController> castCompCont = KUKADU_DYNAMIC_POINTER_CAST<kukadu::ComplexController>(compCont);
             string contName = compCont->getCaption();
+
             string complexPath = skillDatabase + contName;
             preparePathString(complexPath);
+
+            string envModelPath = complexPath + "envmodels";
+            preparePathString(envModelPath);
 
             if(!fileExists(complexPath)) {
 
@@ -39,10 +43,13 @@ namespace kukadu {
                 castCompCont->initialize();
                 castCompCont->store(complexPath);
 
+                createDirectory(envModelPath);
+
                 // load environment model
                 for(auto sens : sensingControllers) {
                     auto envModel = createEnvironmentModelForSensingAction(sens, preparatoryControllers);
                     environmentModels.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::ProjectiveSimulator> >(sens->getCaption(), envModel));
+                    envModel->storePS(envModelPath + sens->getCaption());
                 }
 
             } else {
@@ -89,7 +96,8 @@ namespace kukadu {
 
                 stringstream s;
                 s << "(E" << stateId << ",P" << actId << ")";
-                auto newPercept = KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(overallId, s.str(), generator, idVec, INT_MAX));
+                auto vecCopy = KUKADU_SHARED_PTR<vector<int> >(new vector<int>(idVec->begin(), idVec->end()));
+                auto newPercept = KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(overallId, s.str(), generator, vecCopy, INT_MAX));
                 newPercept->setChildren(resultingStatePercepts);
                 environmentPercepts->push_back(newPercept);
 
@@ -97,7 +105,7 @@ namespace kukadu {
 
         }
 
-        auto retProjSim = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, environmentPercepts, 0.0, ProjectiveSimulator::PS_USE_ORIGINAL, false));
+        auto retProjSim = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(nullptr, generator, environmentPercepts, 0.0, ProjectiveSimulator::PS_USE_ORIGINAL, false));
         return retProjSim;
 
     }
@@ -109,19 +117,23 @@ namespace kukadu {
     }
 
     KUKADU_SHARED_PTR<PerceptClip> HapticPlanner::generateNextPerceptClip(int immunity) {
-
+        throw KukaduException("generateNextPerceptClip not implemented yet");
     }
 
     KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > HapticPlanner::generateActionClips() {
-
+        throw KukaduException("generateActionClips not implemented yet");
     }
 
     KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > HapticPlanner::generatePerceptClips() {
-
+        throw KukaduException("generatePerceptClips not implemented yet");
     }
 
     double HapticPlanner::computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction) {
+        throw KukaduException("compouteRewardInternal not implemented yet");
+    }
 
+    int HapticPlanner::getDimensionality() {
+        throw KukaduException("getDimensionlity not implemented yet");
     }
 
 }

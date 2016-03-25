@@ -398,9 +398,8 @@ namespace kukadu {
     void ProjectiveSimulator::fillClipLayersFromNetwork(KUKADU_SHARED_PTR<Clip> cl) {
 
         int level = cl->getLevel();
-
         if(level != CLIP_H_LEVEL_FINAL) {
-            clipLayers->at(level)->insert(cl);
+
             for(int i = 0; i < cl->getSubClipCount(); ++i)
                 fillClipLayersFromNetwork(cl->getSubClipByIdx(i));
         } else {
