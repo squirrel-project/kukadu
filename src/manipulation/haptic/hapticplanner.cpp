@@ -34,11 +34,16 @@ namespace kukadu {
             string envModelPath = complexPath + "envmodels";
             preparePathString(envModelPath);
 
+            string hapticPath = complexPath + "haptics";
+            preparePathString(hapticPath);
+
+            auto sensingCopy = copySensingControllers(sensingControllers, hapticPath);
+
             if(!fileExists(complexPath)) {
 
                 // initialize haptic planner in general (load controllers and create ps)
                 createDirectory(complexPath);
-                castCompCont->setSensingControllers(sensingControllers);
+                castCompCont->setSensingControllers(sensingCopy);
                 castCompCont->setPreparatoryControllers(preparatoryControllers);
                 castCompCont->initialize();
                 castCompCont->store(complexPath);
@@ -56,6 +61,12 @@ namespace kukadu {
 
                 castCompCont->load(complexPath, registeredSensingControllers, registeredPrepControllers);
 
+                // load environment model
+                for(auto sens : sensingCopy) {
+                    auto envModel = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(nullptr, generator, envModelPath + sens->getCaption()));
+                    environmentModels.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::ProjectiveSimulator> >(sens->getCaption(), envModel));
+                }
+
             }
 
             registeredComplexControllers.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::Controller> >(contName, compCont));
@@ -64,9 +75,33 @@ namespace kukadu {
 
     }
 
-    std::string HapticPlanner::pickComplexController() {
+    void HapticPlanner::pickAndPerformComplexSkill() {
 
+        auto selectedId = pickComplexSkill();
+        performComplexSkill(selectedId);
 
+    }
+
+    void HapticPlanner::performComplexSkill(std::string skillId) {
+
+        auto complSkill = registeredComplexControllers[skillId];
+        complSkill->performAction();
+
+    }
+
+    std::string HapticPlanner::pickComplexSkill() {
+
+        int selection = 0;
+        map<int, string> keyMap;
+        cout << "select a complex skill:" << endl << "======================================" << endl;
+        int i = 0;
+        for(auto comp : registeredComplexControllers) {
+            cout << "(" << i << ") " << comp.second->getCaption() << endl;
+            keyMap.insert(pair<int, string>(i, comp.second->getCaption()));
+        }
+        cout << endl << "selection: ";
+        cin >> selection;
+        return keyMap[i];
 
     }
 
@@ -134,6 +169,20 @@ namespace kukadu {
 
     int HapticPlanner::getDimensionality() {
         throw KukaduException("getDimensionlity not implemented yet");
+    }
+
+    std::vector<KUKADU_SHARED_PTR<kukadu::SensingController> > HapticPlanner::copySensingControllers(std::vector<KUKADU_SHARED_PTR<kukadu::SensingController> > controllers,
+                                                                                      std::string newBasePath) {
+
+        vector<KUKADU_SHARED_PTR<kukadu::SensingController> > retVec;
+        for(auto sens : controllers) {
+            auto copiedSens = sens->clone();
+            copiedSens->setDatabasePath(newBasePath + sens->getCaption() + "/");
+            copiedSens->createDataBase();
+            retVec.push_back(copiedSens);
+        }
+        return retVec;
+
     }
 
 }

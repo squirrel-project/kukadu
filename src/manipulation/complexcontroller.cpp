@@ -65,6 +65,9 @@ namespace kukadu {
 
     void ComplexController::initialize() {
 
+        // create / load sensing database
+        createSensingDatabase();
+
         bool existsPs = fileExists(storePath + "ps");
 
         if(existsPs) {
@@ -99,7 +102,7 @@ namespace kukadu {
 
                 }
 
-                };
+            };
 
             projSim = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, storePath + "ps", loadLambda));
             // ugly syntax - i have to kill these shared pointers some day
@@ -108,9 +111,6 @@ namespace kukadu {
             root = *(projSim->getPerceptClips()->begin());
 
         } else {
-
-            // create ecm
-            createSensingDatabase();
 
             int currentId = 0;
             KUKADU_SHARED_PTR<vector<int> > clipDimVal = KUKADU_SHARED_PTR<vector<int> >(new vector<int>());

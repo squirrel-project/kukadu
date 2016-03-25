@@ -49,6 +49,18 @@ namespace kukadu {
 
         void writeLabelFile(std::string baseFolderPath, std::vector<std::pair<int, std::string> > collectedSamples);
 
+    protected:
+
+        KUKADU_SHARED_PTR<kukadu_mersenne_twister> getGenerator();
+        std::vector<KUKADU_SHARED_PTR<ControlQueue> > getQueues();
+        std::vector<KUKADU_SHARED_PTR<GenericHand> > getHands();
+        std::string getTmpPath();
+        std::string getClassifierPath();
+        std::string getClassifierFile();
+        std::string getClassifierFunction();
+        int getHapticMode();
+        int getSimClassificationPrecision();
+
     public:
 
         SensingController(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int hapticMode, std::string caption, std::string databasePath, std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, std::vector<KUKADU_SHARED_PTR<GenericHand> > hands,
@@ -65,6 +77,8 @@ namespace kukadu {
         virtual void cleanUp() = 0;
         virtual void performCore() = 0;
         virtual void prepareNextState() = 0;
+
+        virtual KUKADU_SHARED_PTR<kukadu::SensingController> clone() = 0;
 
         int performClassification();
         int createRandomGroundTruthIdx();

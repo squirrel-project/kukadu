@@ -33,10 +33,11 @@ namespace kukadu {
 
         void printNamedVector(std::vector<std::string> names);
 
-        std::string pickComplexController();
-
         KUKADU_SHARED_PTR<kukadu::ProjectiveSimulator> createEnvironmentModelForSensingAction(KUKADU_SHARED_PTR<kukadu::SensingController> sensingAction,
                                                     std::vector<KUKADU_SHARED_PTR<kukadu::Controller> >& preparatoryActions);
+
+        std::vector<KUKADU_SHARED_PTR<kukadu::SensingController> > copySensingControllers(std::vector<KUKADU_SHARED_PTR<kukadu::SensingController> > controllers,
+                                                                                          std::string newBasePath);
 
     protected:
 
@@ -57,6 +58,11 @@ namespace kukadu {
         virtual KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
         virtual KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();
         virtual KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();
+
+        void pickAndPerformComplexSkill();
+        void performComplexSkill(std::string skillId);
+
+        std::string pickComplexSkill();
 
     };
 

@@ -34,6 +34,42 @@ namespace kukadu {
 
     }
 
+    KUKADU_SHARED_PTR<kukadu_mersenne_twister> SensingController::getGenerator() {
+        return generator;
+    }
+
+    std::vector<KUKADU_SHARED_PTR<ControlQueue> > SensingController::getQueues() {
+        return queues;
+    }
+
+    std::vector<KUKADU_SHARED_PTR<GenericHand> > SensingController::getHands() {
+        return hands;
+    }
+
+    std::string SensingController::getTmpPath() {
+        return tmpPath;
+    }
+
+    std::string SensingController::getClassifierPath() {
+        return classifierPath;
+    }
+
+    std::string SensingController::getClassifierFile() {
+        return classifierFile;
+    }
+
+    std::string SensingController::getClassifierFunction() {
+        return classifierFunction;
+    }
+
+    int SensingController::getHapticMode() {
+        return hapticMode;
+    }
+
+    int SensingController::getSimClassificationPrecision() {
+        return simulatedClassificationPrecision;
+    }
+
     void SensingController::gatherData(std::string dataBasePath, std::string dataName) {
 
         if(!fileExists(dataBasePath))
@@ -48,6 +84,7 @@ namespace kukadu {
     }
 
     void SensingController::setDatabasePath(std::string databasePath) {
+        this->databasePath = databasePath;
         createDataBase();
     }
 

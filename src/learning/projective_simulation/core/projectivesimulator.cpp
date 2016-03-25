@@ -399,13 +399,13 @@ namespace kukadu {
 
         int level = cl->getLevel();
         if(level != CLIP_H_LEVEL_FINAL) {
-
+            clipLayers->at(level)->insert(cl);
             for(int i = 0; i < cl->getSubClipCount(); ++i)
                 fillClipLayersFromNetwork(cl->getSubClipByIdx(i));
+
         } else {
             clipLayers->at(clipLayers->size() - 1)->insert(cl);
         }
-
 
     }
 
@@ -520,10 +520,12 @@ namespace kukadu {
         lastPerceptClip = KUKADU_DYNAMIC_POINTER_CAST<PerceptClip>(currentClip);
 
         while(previousClip != currentClip) {
+
             intermediateHops->push_back(previousIdx);
             pair<int, KUKADU_SHARED_PTR<Clip> > nextHop;
             lastClipBeforeAction = previousClip;
             previousClip = currentClip;
+            cout << *currentClip << endl;
             nextHop = currentClip->jumpNextRandom();
             previousIdx = nextHop.first;
             currentClip = nextHop.second;
