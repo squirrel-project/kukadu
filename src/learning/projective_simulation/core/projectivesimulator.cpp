@@ -525,7 +525,6 @@ namespace kukadu {
             pair<int, KUKADU_SHARED_PTR<Clip> > nextHop;
             lastClipBeforeAction = previousClip;
             previousClip = currentClip;
-            cout << *currentClip << endl;
             nextHop = currentClip->jumpNextRandom();
             previousIdx = nextHop.first;
             currentClip = nextHop.second;
@@ -551,9 +550,9 @@ namespace kukadu {
 
     }
 
-    pair<bool, double> ProjectiveSimulator::performRewarding() {
+    std::tuple<bool, double, vector<int> > ProjectiveSimulator::performRewarding() {
 
-        int beingBored = 0;
+        bool beingBored = false;
         if(useBoredom) {
 
             double boredomScore = computeBoredem(lastClipBeforeAction);
@@ -561,7 +560,7 @@ namespace kukadu {
             boredomDistWeights.push_back(boredomScore);
             boredomDistWeights.push_back(1 - boredomScore);
             KUKADU_DISCRETE_DISTRIBUTION<int> boredomDist = KUKADU_DISCRETE_DISTRIBUTION<int>(boredomDistWeights.begin(), boredomDistWeights.end());
-            beingBored =  1 - boredomDist(*generator);
+            beingBored =  (1 - boredomDist(*generator)) ? true : false;
 
         }
 
@@ -577,7 +576,6 @@ namespace kukadu {
 
                     currLevel = clipLayers->at(i);
 
-                    KUKADU_SHARED_PTR<Clip> currClip;
                     set<KUKADU_SHARED_PTR<Clip> >::iterator currIt;
                     for(currIt = currLevel->begin(); currIt != currLevel->end(); ++currIt) {
                         KUKADU_SHARED_PTR<Clip> currClip = *currIt;
@@ -600,7 +598,7 @@ namespace kukadu {
 
         }
 
-        return make_pair(beingBored, computedReward);
+        return make_tuple(beingBored, computedReward, *getIntermediateHopIdx());
 
     }
 

@@ -156,9 +156,11 @@ void PSEvaluator::produceStatistics(KUKADU_SHARED_PTR<ProjectiveSimulator> ps, K
         ps->generalize(nextClip);
         ps->performRandomWalk();
 
-        pair<bool, double> rewRes = ps->performRewarding();
-        int lastResult = rewRes.second / rewardValue;
-        if(!rewRes.first) {
+        auto rewRes = ps->performRewarding();
+        auto reward = std::get<1>(rewRes);
+        auto bored = std::get<0>(rewRes);
+        int lastResult = reward / rewardValue;
+        if(!bored) {
             if(fieldsInCurrentOutput < 8) {
                 currentOutput = currentOutput << 1;
             } else {

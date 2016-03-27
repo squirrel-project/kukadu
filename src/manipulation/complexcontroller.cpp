@@ -1,3 +1,4 @@
+#include <tuple>
 #include <armadillo>
 #include <kukadu/manipulation/controller.hpp>
 #include <kukadu/manipulation/complexcontroller.hpp>
@@ -69,6 +70,8 @@ namespace kukadu {
         createSensingDatabase();
 
         bool existsPs = fileExists(storePath + "ps");
+        string envModelPath = storePath + "envmodels";
+        preparePathString(envModelPath);
 
         if(existsPs) {
 
@@ -165,6 +168,28 @@ namespace kukadu {
 
         }
 
+        if(fileExists(envModelPath)) {
+
+            // load environment model
+            for(auto sens : sensingControllers) {
+                auto envModel = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(nullptr, generator, envModelPath + sens->getCaption()));
+                environmentModels.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::ProjectiveSimulator> >(sens->getCaption(), envModel));
+            }
+
+        } else {
+
+            // create environment model
+            createDirectory(envModelPath);
+
+            // load environment model
+            for(auto sens : sensingControllers) {
+                auto envModel = createEnvironmentModelForSensingAction(sens, projSim);
+                environmentModels.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::ProjectiveSimulator> >(sens->getCaption(), envModel));
+                envModel->storePS(envModelPath + sens->getCaption());
+            }
+
+        }
+
         projSim->setBoredom(boredom);
 
         if(storeReward) {
@@ -201,6 +226,62 @@ namespace kukadu {
             KUKADU_SHARED_PTR<SensingController> sensCont = sensingControllers.at(i);
             sensCont->setSimulationMode(simulationMode);
         }
+
+    }
+
+    KUKADU_SHARED_PTR<kukadu::ProjectiveSimulator> ComplexController::createEnvironmentModelForSensingAction(KUKADU_SHARED_PTR<kukadu::SensingController> sensingAction,
+                                                                                          KUKADU_SHARED_PTR<ProjectiveSimulator> projSim) {
+
+        KUKADU_SHARED_PTR<IntermediateEventClip> sensingClip = nullptr;
+        auto sensingLayer = projSim->getClipLayers()->at(1);
+        for(auto sensingAct : *sensingLayer) {
+            if(KUKADU_DYNAMIC_POINTER_CAST<IntermediateEventClip>(sensingAct)->toString() == sensingAction->getCaption()) {
+                sensingClip = KUKADU_DYNAMIC_POINTER_CAST<IntermediateEventClip>(sensingAct);
+                break;
+            }
+        }
+
+        if(!sensingClip)
+            throw KukaduException("(createEnvironmentModel) sensing action not available");
+
+        int sensingCatCount = sensingClip->getSubClipCount();
+        int prepActionsCount = sensingClip->getSubClipByIdx(0)->getSubClipCount();
+
+        auto stateClips = sensingClip->getSubClips();
+
+        auto environmentPercepts = KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<PerceptClip> > >(new vector<KUKADU_SHARED_PTR<PerceptClip> >());
+        auto resultingStatePercepts = KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<Clip> > >(new vector<KUKADU_SHARED_PTR<Clip> >());
+
+        auto idVec = KUKADU_SHARED_PTR< vector<int> >(new vector<int>{0, 0});
+        for(auto stateClip : *stateClips) {
+            auto stateId = stateClip->getClipDimensions()->at(0);
+            stringstream s;
+            s << "E" << stateId;
+            resultingStatePercepts->push_back(KUKADU_SHARED_PTR<ActionClip>(new ActionClip(stateId, idVec->size(), s.str(), generator)));
+        }
+
+        for(int stateIdx = 0, overallId = sensingCatCount; stateIdx < sensingCatCount; ++stateIdx) {
+
+            int stateId = stateClips->at(stateIdx)->getClipDimensions()->at(0);
+            idVec->at(0) = stateId;
+
+            for(int actId = 0; actId < prepActionsCount; ++actId, ++overallId) {
+
+                idVec->at(1) = actId;
+
+                stringstream s;
+                s << "(E" << stateId << ",P" << actId << ")";
+                auto vecCopy = KUKADU_SHARED_PTR<vector<int> >(new vector<int>(idVec->begin(), idVec->end()));
+                auto newPercept = KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(overallId, s.str(), generator, vecCopy, INT_MAX));
+                newPercept->setChildren(resultingStatePercepts);
+                environmentPercepts->push_back(newPercept);
+
+            }
+
+        }
+
+        auto retProjSim = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(nullptr, generator, environmentPercepts, 0.0, ProjectiveSimulator::PS_USE_ORIGINAL, false));
+        return retProjSim;
 
     }
 
@@ -329,9 +410,8 @@ namespace kukadu {
             cout << "(ComplexController) do you want to execute complex action now? (0 = no / 1 = yes)" << endl;
             cin >> executeIt;
 
-            if(executeIt) {
+            if(executeIt)
                 executeComplexAction();
-            }
 
             cout << "did the complex action succeed? (0 = no / 1 = yes)" << endl;
             cin >> worked;
@@ -379,14 +459,30 @@ namespace kukadu {
 
         ++currentIterationNum;
         projSim->performRandomWalk();
-        pair<bool, double> actionRes = projSim->performRewarding();
-        bool wasBored = actionRes.first;
-        double reward = actionRes.second;
+        tuple<bool, double, vector<int> > actionRes = projSim->performRewarding();
+        auto wasBored = std::get<0>(actionRes);
+        auto reward = std::get<1>(actionRes);
+        auto hopPath = std::get<2>(actionRes);
+
+        auto firstPercept = projSim->getPerceptClips()->at(hopPath.at(hopPath.at(0)));
+        auto currentClip = KUKADU_DYNAMIC_POINTER_CAST<Clip>(firstPercept);
+        vector<KUKADU_SHARED_PTR<Clip> > clipPath = {currentClip};
+        for(int i = 1; i < hopPath.size(); ++i) {
+            int nextHop = hopPath.at(i);
+            currentClip = currentClip->getSubClipByIdx(nextHop);
+            clipPath.push_back(currentClip);
+        }
+
+        auto stateClip = *(clipPath.end() - 2);
+        cout << *stateClip << " " << hopPath.size() << " " << clipPath.size() << endl;
+        getchar();
 
         if(wasBored && !isShutUp)
             cout << "(ComplexController) got bored" << endl;
 
-        KUKADU_SHARED_PTR<ControllerResult> ret = KUKADU_SHARED_PTR<ControllerResult>(new ControllerResult(vec(), vector<vec>(), (reward > 0) ? true : false, wasBored));
+        KUKADU_SHARED_PTR<ControllerResult> ret = KUKADU_SHARED_PTR<ControllerResult>(new ControllerResult(vec(), vector<vec>(),
+                                                                                                           (reward > 0) ? true : false, wasBored,
+                                                                                                           *(projSim->getIntermediateHopIdx())));
         return ret;
 
     }

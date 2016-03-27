@@ -1,5 +1,6 @@
 #include <kukadu/manipulation/haptic/hapticplanner.hpp>
 #include <kukadu/manipulation/complexcontroller.hpp>
+#include <kukadu/types/kukadutypes.hpp>
 
 using namespace std;
 
@@ -31,9 +32,6 @@ namespace kukadu {
             string complexPath = skillDatabase + contName;
             preparePathString(complexPath);
 
-            string envModelPath = complexPath + "envmodels";
-            preparePathString(envModelPath);
-
             string hapticPath = complexPath + "haptics";
             preparePathString(hapticPath);
 
@@ -48,24 +46,9 @@ namespace kukadu {
                 castCompCont->initialize();
                 castCompCont->store(complexPath);
 
-                createDirectory(envModelPath);
-
-                // load environment model
-                for(auto sens : sensingControllers) {
-                    auto envModel = createEnvironmentModelForSensingAction(sens, preparatoryControllers);
-                    environmentModels.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::ProjectiveSimulator> >(sens->getCaption(), envModel));
-                    envModel->storePS(envModelPath + sens->getCaption());
-                }
-
             } else {
 
                 castCompCont->load(complexPath, registeredSensingControllers, registeredPrepControllers);
-
-                // load environment model
-                for(auto sens : sensingCopy) {
-                    auto envModel = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(nullptr, generator, envModelPath + sens->getCaption()));
-                    environmentModels.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::ProjectiveSimulator> >(sens->getCaption(), envModel));
-                }
 
             }
 
@@ -85,7 +68,15 @@ namespace kukadu {
     void HapticPlanner::performComplexSkill(std::string skillId) {
 
         auto complSkill = registeredComplexControllers[skillId];
-        complSkill->performAction();
+        auto skillResult = complSkill->performAction();
+
+        if(skillResult->wasBored()) {
+            // if it was bored, use the environment model to switch the state
+
+        } else {
+            // else train the model
+            throw KukaduException("model training not implemented yet");
+        }
 
     }
 
@@ -102,52 +93,6 @@ namespace kukadu {
         cout << endl << "selection: ";
         cin >> selection;
         return keyMap[i];
-
-    }
-
-    KUKADU_SHARED_PTR<kukadu::ProjectiveSimulator> HapticPlanner::createEnvironmentModelForSensingAction(KUKADU_SHARED_PTR<kukadu::SensingController> sensingAction,
-                                                std::vector<KUKADU_SHARED_PTR<kukadu::Controller> >& preparatoryActions) {
-
-        int sensingCatCount = sensingAction->getSensingCatCount();
-        int prepActionsCount = preparatoryActions.size();
-
-        auto environmentPercepts = KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<PerceptClip> > >(new vector<KUKADU_SHARED_PTR<PerceptClip> >());
-        auto resultingStatePercepts = KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<Clip> > >(new vector<KUKADU_SHARED_PTR<Clip> >());
-
-        auto idVec = KUKADU_SHARED_PTR< vector<int> >(new vector<int>{0, 0});
-        for(int i = 0; i < sensingCatCount; ++i) {
-            stringstream s;
-            s << "E" << i;
-            resultingStatePercepts->push_back(KUKADU_SHARED_PTR<ActionClip>(new ActionClip(i, idVec->size(), s.str(), generator)));
-        }
-
-        for(int stateId = 0, overallId = sensingCatCount; stateId < sensingCatCount; ++stateId) {
-
-            idVec->at(0) = stateId;
-
-            for(int actId = 0; actId < prepActionsCount; ++actId, ++overallId) {
-
-                idVec->at(1) = actId;
-
-                stringstream s;
-                s << "(E" << stateId << ",P" << actId << ")";
-                auto vecCopy = KUKADU_SHARED_PTR<vector<int> >(new vector<int>(idVec->begin(), idVec->end()));
-                auto newPercept = KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(overallId, s.str(), generator, vecCopy, INT_MAX));
-                newPercept->setChildren(resultingStatePercepts);
-                environmentPercepts->push_back(newPercept);
-
-            }
-
-        }
-
-        auto retProjSim = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(nullptr, generator, environmentPercepts, 0.0, ProjectiveSimulator::PS_USE_ORIGINAL, false));
-        return retProjSim;
-
-    }
-
-    void HapticPlanner::performSkill(std::string skillIdx) {
-
-        KUKADU_SHARED_PTR<kukadu::Controller> complCont = registeredComplexControllers[skillIdx];
 
     }
 

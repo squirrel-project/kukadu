@@ -1,13 +1,15 @@
 #include <kukadu/types/controllerresult.hpp>
 
+using namespace std;
+
 namespace kukadu {
 
     ControllerResult::ControllerResult(arma::vec t, std::vector<arma::vec> ys) {
-        construct(t, ys, true, false);
+        construct(t, ys, true, false, vector<int>());
     }
 
-    ControllerResult::ControllerResult(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored) {
-        construct(t, ys, success, bored);
+    ControllerResult::ControllerResult(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored, std::vector<int> walkedPath) {
+        construct(t, ys, success, bored, walkedPath);
     }
 
     arma::vec ControllerResult::getTimes() {
@@ -18,11 +20,12 @@ namespace kukadu {
         return y;
     }
 
-    void ControllerResult::construct(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored) {
+    void ControllerResult::construct(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored, std::vector<int> walkedPath) {
         this->t = t;
         this->y = ys;
         this->bored = bored;
         this->success = success;
+        this->walkedPath = walkedPath;
     }
 
     void ControllerResult::setSuccess(bool success) {
@@ -35,6 +38,10 @@ namespace kukadu {
 
     bool ControllerResult::wasBored() {
         return bored;
+    }
+
+    std::vector<int> ControllerResult::getWalkedPath() {
+        return walkedPath;
     }
 
 }

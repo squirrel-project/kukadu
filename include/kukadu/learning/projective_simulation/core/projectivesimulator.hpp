@@ -3,6 +3,7 @@
 
 #include <set>
 #include <map>
+#include <tuple>
 #include <limits>
 #include <vector>
 #include <utility>
@@ -115,7 +116,7 @@ namespace kukadu {
         int getClipCount();
         int getStandardImmunity();
 
-        std::pair<bool, double> performRewarding();
+        std::tuple<bool, double, std::vector<int> > performRewarding();
 
         KUKADU_SHARED_PTR<std::vector<int> > getIntermediateHopIdx();
 

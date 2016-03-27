@@ -28,13 +28,7 @@ namespace kukadu {
 
         KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator;
 
-        // novelty in icdl paper
-        std::map<std::string, KUKADU_SHARED_PTR<kukadu::ProjectiveSimulator> > environmentModels;
-
         void printNamedVector(std::vector<std::string> names);
-
-        KUKADU_SHARED_PTR<kukadu::ProjectiveSimulator> createEnvironmentModelForSensingAction(KUKADU_SHARED_PTR<kukadu::SensingController> sensingAction,
-                                                    std::vector<KUKADU_SHARED_PTR<kukadu::Controller> >& preparatoryActions);
 
         std::vector<KUKADU_SHARED_PTR<kukadu::SensingController> > copySensingControllers(std::vector<KUKADU_SHARED_PTR<kukadu::SensingController> > controllers,
                                                                                           std::string newBasePath);
@@ -50,8 +44,6 @@ namespace kukadu {
                       std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > preparatoryControllers,
                       std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > complexControllers,
                       KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator);
-
-        void performSkill(std::string skillIdx);
 
         virtual int getDimensionality();
 
