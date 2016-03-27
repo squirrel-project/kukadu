@@ -191,7 +191,6 @@ namespace kukadu {
 
     }
 
-
     ProjectiveSimulator::ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file,
                     std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) > createClipFunc) {
 
@@ -359,6 +358,36 @@ namespace kukadu {
         }
 
         construct(reward, generator, gamma, operationMode, useRanking);
+
+    }
+
+    bool ProjectiveSimulator::compareIdVectors(std::vector<int>& idVec1, std::vector<int>& idVec2) {
+
+        if(idVec1.size() == idVec2.size()) {
+
+            for(int i = 0; i < idVec1.size(); ++i) {
+                if(idVec1.at(i) != IGNORE_ID && idVec2.at(i) != IGNORE_ID && idVec1.at(i) != idVec2.at(i))
+                    return false;
+            }
+
+        } else {
+            throw KukaduException("(retrieveClipsOnLayer) id vector dimension is not correct");
+        }
+
+        return true;
+
+    }
+
+    std::vector<KUKADU_SHARED_PTR<Clip> > ProjectiveSimulator::retrieveClipsOnLayer(std::vector<int> queryId, int layer) {
+
+        std::vector<KUKADU_SHARED_PTR<Clip> > queriedClips;
+        auto requestedLayer = clipLayers->at(layer);
+        for(auto clip : *requestedLayer) {
+            auto clipDims = clip->getClipDimensions();
+            if(compareIdVectors(queryId, *clipDims))
+                queriedClips.push_back(clip);
+        }
+        return queriedClips;
 
     }
 

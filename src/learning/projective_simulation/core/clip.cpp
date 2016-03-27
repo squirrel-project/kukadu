@@ -349,6 +349,12 @@ namespace kukadu {
         return initialImmunity;
     }
 
+    KUKADU_SHARED_PTR<Clip> Clip::getLikeliestChild() {
+        auto maxIt = std::max_element(subH.begin(), subH.end());
+        int maxIdx = maxIt - subH.begin();
+        return subClips->at(maxIdx);
+    }
+
     KUKADU_SHARED_PTR<Clip> Clip::compareClip(KUKADU_SHARED_PTR<Clip> c) {
 
         KUKADU_SHARED_PTR<vector<int> > cVec = c->clipDimensionValues;

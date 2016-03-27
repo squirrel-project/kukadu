@@ -244,8 +244,10 @@ namespace kukadu {
         if(!sensingClip)
             throw KukaduException("(createEnvironmentModel) sensing action not available");
 
+        auto prepClips = sensingClip->getSubClipByIdx(0)->getSubClips();
+
         int sensingCatCount = sensingClip->getSubClipCount();
-        int prepActionsCount = sensingClip->getSubClipByIdx(0)->getSubClipCount();
+        int prepActionsCount = prepClips->size();
 
         auto stateClips = sensingClip->getSubClips();
 
@@ -267,7 +269,7 @@ namespace kukadu {
 
             for(int actId = 0; actId < prepActionsCount; ++actId, ++overallId) {
 
-                idVec->at(1) = actId;
+                idVec->at(1) = prepClips->at(actId)->getClipDimensions()->at(0);
 
                 stringstream s;
                 s << "(E" << stateId << ",P" << actId << ")";
@@ -474,7 +476,9 @@ namespace kukadu {
         }
 
         auto stateClip = *(clipPath.end() - 2);
-        cout << *stateClip << " " << hopPath.size() << " " << clipPath.size() << endl;
+        auto sensingClip = *(clipPath.begin() + 1);
+        auto possiblePaths = computeEnvironmentPaths(sensingClip, stateClip, 4);
+
         getchar();
 
         if(wasBored && !isShutUp)
@@ -484,6 +488,78 @@ namespace kukadu {
                                                                                                            (reward > 0) ? true : false, wasBored,
                                                                                                            *(projSim->getIntermediateHopIdx())));
         return ret;
+
+    }
+
+    std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > > ComplexController::computeEnvironmentPaths(
+            KUKADU_SHARED_PTR<Clip> sensingClip, KUKADU_SHARED_PTR<Clip> stateClip, int maxPathLength) {
+
+        auto sensingId = sensingClip->toString();
+        auto stateId = stateClip->getClipDimensions()->at(0);
+
+        std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > > allPaths;
+        std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > > lastIterationPaths;
+        std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > > lastIterationPathsOld;
+
+        // initialize with paths of length 0
+        std::vector<KUKADU_SHARED_PTR<Clip> > path = {stateClip};
+        allPaths.push_back(std::make_tuple(1.0, stateClip, path));
+        lastIterationPaths.push_back(std::make_tuple(1.0, stateClip, path));
+
+        for(int i = 0; i < maxPathLength; ++i) {
+
+            lastIterationPathsOld = lastIterationPaths;
+            lastIterationPaths.clear();
+            // check every path and see how it can be made longer
+            for(auto path : lastIterationPathsOld) {
+
+                double currentConfidence = std::get<0>(path);
+                auto currentState = std::get<1>(path);
+                stateId = currentState->getClipDimensions()->at(0);
+
+                // for every possible transition, analyse how confidently another state can be reached
+                auto stateClips =  environmentModels[sensingId]->retrieveClipsOnLayer({stateId, ProjectiveSimulator::IGNORE_ID}, 0);
+                for(auto state : stateClips) {
+
+                    // copy old path again
+                    auto currentPath = std::get<2>(path);
+                    auto stateTransition = computeEnvironmentTransitionConfidence(state);
+                    double transitionConfidence = stateTransition.first;
+                    auto resultingStateId = stateTransition.second;
+                    auto resultingStateClip = projSim->retrieveClipsOnLayer({resultingStateId}, 2).at(0);
+                    int actionId = state->getClipDimensions()->at(1);
+                    auto usedActionClip = projSim->retrieveClipsOnLayer({actionId}, 3).at(0);
+                    currentPath.push_back(usedActionClip);
+                    currentPath.push_back(resultingStateClip);
+
+                    allPaths.push_back(std::make_tuple(currentConfidence * transitionConfidence, resultingStateClip, currentPath));
+                    lastIterationPaths.push_back(std::make_tuple(currentConfidence * transitionConfidence, resultingStateClip, currentPath));
+
+                }
+
+            }
+
+        }
+
+        for(auto path : allPaths) {
+            for(auto clipOnPath : std::get<2>(path)) {
+                cout << *clipOnPath << " --> ";
+            }
+            cout << *std::get<1>(path) << ": " << std::get<0>(path) << endl;
+            getchar();
+        }
+
+        return allPaths;
+
+    }
+
+    pair<double, int> ComplexController::computeEnvironmentTransitionConfidence(KUKADU_SHARED_PTR<Clip> stateClip) {
+
+        double stateEntropy = stateClip->computeSubEntropy();
+        double confidenceProb = 1.0 - stateEntropy / log2(stateClip->getSubClipCount());
+        auto likeliestResult = stateClip->getLikeliestChild();
+        int envId = atoi(likeliestResult->toString().substr(1).c_str());
+        return std::make_pair(confidenceProb, envId);
 
     }
 

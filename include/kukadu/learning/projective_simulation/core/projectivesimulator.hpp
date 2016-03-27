@@ -113,6 +113,8 @@ namespace kukadu {
         void generalize(KUKADU_SHARED_PTR<PerceptClip> nextClip);
         void fillClipLayersFromNetwork(KUKADU_SHARED_PTR<Clip> cl);
 
+        bool compareIdVectors(std::vector<int>& idVec1, std::vector<int>& idVec2);
+
         int getClipCount();
         int getStandardImmunity();
 
@@ -122,6 +124,8 @@ namespace kukadu {
 
         KUKADU_SHARED_PTR<ActionClip> performRandomWalk();
 
+        std::vector<KUKADU_SHARED_PTR<Clip> > retrieveClipsOnLayer(std::vector<int> queryId, int layer);
+
         // returns list of clips that have to be created
         KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > createNewClips(KUKADU_SHARED_PTR<PerceptClip> nextClip);
         KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > getPerceptClips();
@@ -129,6 +133,8 @@ namespace kukadu {
         KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > > > getClipLayers();
 
         void storePS(std::string targetFile);
+
+        static constexpr auto IGNORE_ID = INT_MIN;
 
         static constexpr auto PS_USE_ORIGINAL = 1;
         static constexpr auto PS_USE_GEN = 2;
