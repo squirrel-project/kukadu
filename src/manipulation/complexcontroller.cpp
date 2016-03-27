@@ -532,8 +532,12 @@ namespace kukadu {
                     currentPath.push_back(usedActionClip);
                     currentPath.push_back(resultingStateClip);
 
-                    allPaths.push_back(std::make_tuple(currentConfidence * transitionConfidence, resultingStateClip, currentPath));
-                    lastIterationPaths.push_back(std::make_tuple(currentConfidence * transitionConfidence, resultingStateClip, currentPath));
+                    double nextConfidence = currentConfidence * transitionConfidence;
+
+                    if(nextConfidence > 0) {
+                        allPaths.push_back(std::make_tuple(nextConfidence, resultingStateClip, currentPath));
+                        lastIterationPaths.push_back(std::make_tuple(nextConfidence, resultingStateClip, currentPath));
+                    }
 
                 }
 
@@ -541,13 +545,9 @@ namespace kukadu {
 
         }
 
-        for(auto path : allPaths) {
-            for(auto clipOnPath : std::get<2>(path)) {
-                cout << *clipOnPath << " --> ";
-            }
-            cout << *std::get<1>(path) << ": " << std::get<0>(path) << endl;
-            getchar();
-        }
+        std::sort(allPaths.begin(), allPaths.end(), [] (std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > p1, std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > p2) {
+                      return std::get<0>(p1) > std::get<0>(p2);
+                  });
 
         return allPaths;
 
