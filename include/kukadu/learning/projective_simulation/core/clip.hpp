@@ -94,6 +94,8 @@ namespace kukadu {
         int getInitialImmunity();
         int getCurrentImmunity();
 
+        int getSubClipIdx(KUKADU_SHARED_PTR<Clip> subClip);
+
         double getWeightByIdx(int idx);
         double computeSubEntropy() const;
 

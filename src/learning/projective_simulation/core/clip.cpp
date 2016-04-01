@@ -37,6 +37,10 @@ namespace kukadu {
         return subClips;
     }
 
+    int Clip::getSubClipIdx(KUKADU_SHARED_PTR<Clip> subClip) {
+        return (std::find(subClips->begin(), subClips->end(), subClip) - subClips->begin());
+    }
+
     KUKADU_SHARED_PTR<std::vector<int> > Clip::getIdVectorFromString(std::string str) {
 
         KUKADU_SHARED_PTR<std::vector<int> > retVec = KUKADU_SHARED_PTR<std::vector<int> >(new std::vector<int>());

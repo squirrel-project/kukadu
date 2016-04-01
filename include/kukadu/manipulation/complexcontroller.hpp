@@ -27,6 +27,7 @@ namespace kukadu {
         bool colPrevRewards;
 
         int stdPrepWeight;
+        int maxEnvPathLength;
         int currentIterationNum;
 
         double gamma;
@@ -34,6 +35,7 @@ namespace kukadu {
         double stdReward;
         double punishReward;
         double senseStretch;
+        double pathLengthCost;
 
         std::string storePath;
         std::string rewardHistoryPath;
@@ -61,8 +63,11 @@ namespace kukadu {
 
         KUKADU_SHARED_PTR<kukadu::ProjectiveSimulator> createEnvironmentModelForSensingAction(KUKADU_SHARED_PTR<kukadu::SensingController> sensingAction, KUKADU_SHARED_PTR<ProjectiveSimulator> projSim);
         std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > > computeEnvironmentPaths(KUKADU_SHARED_PTR<Clip> sensingClip, KUKADU_SHARED_PTR<Clip> stateClip, int maxPathLength);
+        void computeTotalPathCost(std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > >& paths);
 
         std::pair<double, int> computeEnvironmentTransitionConfidence(KUKADU_SHARED_PTR<Clip> stateClip);
+
+        void printPaths(std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > >& paths);
 
     protected:
 
@@ -75,7 +80,8 @@ namespace kukadu {
 
         ComplexController(std::string caption, std::string storePath,
                           bool storeReward, double senseStretch, double boredom, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator,
-                          int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards, int simulationFailingProbability);
+                          int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards, int simulationFailingProbability,
+                          int maxEnvPathLength = 4, double pathLengthCost = 0.01);
         ~ComplexController();
 
         void store();
@@ -99,8 +105,12 @@ namespace kukadu {
         // overwrite this virtual function if the next idx should be created randomly
         virtual int getNextSimulatedGroundTruth(KUKADU_SHARED_PTR<SensingController> sensCont);
 
+        virtual KUKADU_SHARED_PTR<Clip> computeGroundTruthTransition(KUKADU_SHARED_PTR<Clip> sensingClip, KUKADU_SHARED_PTR<Clip> stateClip, KUKADU_SHARED_PTR<Clip> actionClip) = 0;
+
         double getStdReward();
         double getPunishReward();
+
+        KUKADU_SHARED_PTR<kukadu_mersenne_twister> getGenerator();
 
         KUKADU_SHARED_PTR<ControllerResult> performAction();
         KUKADU_SHARED_PTR<ProjectiveSimulator> getProjectiveSimulator();
