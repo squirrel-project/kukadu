@@ -37,10 +37,12 @@ namespace kukadu {
 
             auto sensingCopy = copySensingControllers(sensingControllers, hapticPath);
 
-            if(!fileExists(complexPath)) {
-
+            if(!fileExists(complexPath))
                 // initialize haptic planner in general (load controllers and create ps)
                 createDirectory(complexPath);
+
+            if(!fileExists(complexPath + "composition")) {
+                cout << complexPath << "composition";
                 castCompCont->setSensingControllers(sensingCopy);
                 castCompCont->setPreparatoryControllers(preparatoryControllers);
                 castCompCont->initialize();
