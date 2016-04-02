@@ -10,26 +10,25 @@
 #include <memory>
 #include <armadillo>
 
+#ifndef USEBOOST
+#include <tuple>
+#include <kukadu/learning/projective_simulation/core/clip.hpp>
+#endif
+
 namespace kukadu {
 
     class ControllerResult {
 
     private:
 
-        bool bored;
         bool success;
-
-        std::vector<int> walkedPath;
 
         arma::vec t;
         std::vector<arma::vec> y;
 
-        void construct(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored, std::vector<int> walkedPath);
-
     public:
 
-        ControllerResult(arma::vec t, std::vector<arma::vec> ys);
-        ControllerResult(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored, std::vector<int> walkedPath);
+        ControllerResult(arma::vec t, std::vector<arma::vec> ys, bool success);
 
         arma::vec getTimes();
         std::vector<arma::vec> getYs();
@@ -37,11 +36,35 @@ namespace kukadu {
         void setSuccess(bool success);
 
         bool getSuccess();
+
+        // needs one virtual method in order to make ControllerResult polymorphic (required for dynamic pointer cast)
+        virtual ~ControllerResult() { }
+
+    };
+
+#ifndef USEBOOST
+
+    class HapticControllerResult : public ControllerResult {
+
+    private:
+
+        bool bored;
+
+        std::vector<int> walkedPath;
+
+        KUKADU_SHARED_PTR<std::tuple<double, KUKADU_SHARED_PTR<kukadu::Clip>, std::vector<KUKADU_SHARED_PTR<kukadu::Clip> > > > environmentTransition;
+
+    public:
+
+        HapticControllerResult(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored, std::vector<int> walkedPath, KUKADU_SHARED_PTR<std::tuple<double, KUKADU_SHARED_PTR<kukadu::Clip>, std::vector<KUKADU_SHARED_PTR<kukadu::Clip> > > > environmentTransition);
+
         bool wasBored();
 
         std::vector<int> getWalkedPath();
 
     };
+
+#endif
 
 }
 

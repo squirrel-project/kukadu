@@ -16,8 +16,47 @@
 #include <kukadu/learning/projective_simulation/core/reward.hpp>
 #include <kukadu/learning/projective_simulation/core/projectivesimulator.hpp>
 #include <kukadu/learning/projective_simulation/application/manualreward.hpp>
+#include <kukadu/manipulation/haptic/intermediateeventclip.hpp>
+#include <kukadu/manipulation/haptic/controlleractionclip.hpp>
 
 namespace kukadu {
+
+    class EnvironmentReward : public Reward {
+
+    private:
+
+        double reward;
+
+    protected:
+
+        virtual double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction) {
+            // all paths are rewarded, because only observed paths are performed
+            return reward;
+        }
+
+    public:
+
+        EnvironmentReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, double stdReward) : Reward(generator, false) {
+            reward = stdReward;
+        }
+
+        virtual int getDimensionality() {
+            return 2;
+        }
+
+        virtual KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity) {
+            return nullptr;
+        }
+
+        virtual KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips() {
+            return KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > >(new std::vector<KUKADU_SHARED_PTR<ActionClip> >());
+        }
+
+        virtual KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips() {
+            return KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > >(new std::vector<KUKADU_SHARED_PTR<PerceptClip> >());
+        }
+
+    };
 
     class ComplexController : public Controller, public Reward, public KUKADU_ENABLE_SHARED_FROM_THIS<ComplexController> {
 
@@ -36,6 +75,8 @@ namespace kukadu {
         double punishReward;
         double senseStretch;
         double pathLengthCost;
+
+        KUKADU_SHARED_PTR<EnvironmentReward> envReward;
 
         std::string storePath;
         std::string rewardHistoryPath;
@@ -69,6 +110,8 @@ namespace kukadu {
 
         void printPaths(std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > >& paths);
 
+        std::tuple<KUKADU_SHARED_PTR<IntermediateEventClip>, KUKADU_SHARED_PTR<Clip>, KUKADU_SHARED_PTR<ControllerActionClip> > extractClipsFromPath(std::vector<int>& hops);
+
     protected:
 
         void setSimulationModeInChain(bool simulationMode);
@@ -81,7 +124,7 @@ namespace kukadu {
         ComplexController(std::string caption, std::string storePath,
                           bool storeReward, double senseStretch, double boredom, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator,
                           int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards, int simulationFailingProbability,
-                          int maxEnvPathLength = 4, double pathLengthCost = 0.01);
+                          int maxEnvPathLength = 4, double pathLengthCost = 0.01, double stdEnvironmentReward = 10.0);
         ~ComplexController();
 
         void store();

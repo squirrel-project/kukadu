@@ -68,15 +68,7 @@ namespace kukadu {
     void HapticPlanner::performComplexSkill(std::string skillId) {
 
         auto complSkill = registeredComplexControllers[skillId];
-        auto skillResult = complSkill->performAction();
-
-        if(skillResult->wasBored()) {
-            // if it was bored, use the environment model to switch the state
-
-        } else {
-            // else train the model
-            throw KukaduException("model training not implemented yet");
-        }
+        complSkill->performAction();
 
     }
 

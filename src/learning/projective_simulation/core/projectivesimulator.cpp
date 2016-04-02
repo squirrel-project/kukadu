@@ -227,6 +227,14 @@ namespace kukadu {
 
     }
 
+    void ProjectiveSimulator::setNextPredefinedPath(std::vector<KUKADU_SHARED_PTR<Clip> > hopPath) {
+
+        predefinedFirstHop = hopPath.at(0);
+        for(int i = 0; i < hopPath.size() - 1; ++i)
+            hopPath.at(i)->setNextHop(hopPath.at(i + 1));
+
+    }
+
     int ProjectiveSimulator::getIdVecLevel(KUKADU_SHARED_PTR<std::vector<int> > idVec) {
 
         int retCount = 0;
@@ -533,16 +541,19 @@ namespace kukadu {
         KUKADU_SHARED_PTR<Clip> previousClip;
         KUKADU_SHARED_PTR<Clip> currentClip;
 
-        if(operationMode == PS_USE_GEN) {
-            if(!lastGeneralizedPercept) {
-                cerr << "(ProjectiveSimulator) you have to generalize before you walk" << endl;
-                throw KukaduException("(ProjectiveSimulator) you have to generalize before you walk");
-            } else {
-                currentClip = lastGeneralizedPercept;
+        if(!predefinedFirstHop) {
+            if(operationMode == PS_USE_GEN) {
+                if(!lastGeneralizedPercept) {
+                    cerr << "(ProjectiveSimulator) you have to generalize before you walk" << endl;
+                    throw KukaduException("(ProjectiveSimulator) you have to generalize before you walk");
+                } else {
+                    currentClip = lastGeneralizedPercept;
+                }
+            } else if(operationMode == PS_USE_ORIGINAL) {
+                currentClip = reward->generateNextPerceptClip(immunityThresh);
             }
-        } else if(operationMode == PS_USE_ORIGINAL) {
-            currentClip = reward->generateNextPerceptClip(immunityThresh);
-        }
+        } else
+            currentClip = predefinedFirstHop;
 
         std::vector<KUKADU_SHARED_PTR<PerceptClip> >::iterator it = std::find(perceptClips->begin(), perceptClips->end() + 1, currentClip);
         int previousIdx = it - perceptClips->begin();

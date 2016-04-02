@@ -27,11 +27,15 @@ namespace kukadu {
 
     private:
 
+        static constexpr int NEXT_HOP_NOT_PREDEF = -1;
+
         int level;
         int immunity;
         int gotDeleted;
         int previousRank;
         int initialImmunity;
+
+        int nextHop;
 
         KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator;
 
@@ -104,6 +108,9 @@ namespace kukadu {
         std::string getIdVecString() const;
 
         virtual std::string toString() const;
+
+        void setNextHop(int hopIdx);
+        void setNextHop(KUKADU_SHARED_PTR<Clip> hopClip);
 
         KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > getSubClips();
 

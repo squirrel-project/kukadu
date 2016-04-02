@@ -180,6 +180,7 @@ namespace kukadu {
 
         } else {
 
+            // this is here for simulating a non-perfect classifier
             vector<double> precisionProbVec;
             precisionProbVec.push_back((double) simulatedClassificationPrecision);
             precisionProbVec.push_back((double) (100 - simulatedClassificationPrecision));
@@ -201,6 +202,10 @@ namespace kukadu {
 
         return classifierRes;
 
+    }
+
+    int SensingController::getSimulationGroundTruthIdx() {
+        return simulationGroundTruth;
     }
 
     int SensingController::createRandomGroundTruthIdx() {

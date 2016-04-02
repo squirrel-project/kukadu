@@ -31,6 +31,16 @@ namespace kukadu {
         this->initialImmunity = this->immunity = immunity;
         this->gotDeleted = 0;
 
+        nextHop = NEXT_HOP_NOT_PREDEF;
+
+    }
+
+    void Clip::setNextHop(int hopIdx) {
+        nextHop = hopIdx;
+    }
+
+    void Clip::setNextHop(KUKADU_SHARED_PTR<Clip> hopClip) {
+        setNextHop(getSubClipIdx(hopClip));
     }
 
     KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > Clip::getSubClips() {
@@ -120,7 +130,13 @@ namespace kukadu {
 
     std::pair<int, KUKADU_SHARED_PTR<Clip> > Clip::jumpNextRandom() {
 
-        visitedSubNode = discDist(*generator);
+        if(nextHop == NEXT_HOP_NOT_PREDEF)
+            visitedSubNode = discDist(*generator);
+        else {
+            visitedSubNode = nextHop;
+            nextHop = NEXT_HOP_NOT_PREDEF;
+        }
+
         return pair<int, KUKADU_SHARED_PTR<Clip> >(visitedSubNode, subClips->at(visitedSubNode));
 
     }

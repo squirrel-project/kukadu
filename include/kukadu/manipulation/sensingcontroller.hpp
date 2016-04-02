@@ -82,6 +82,7 @@ namespace kukadu {
 
         int performClassification();
         int createRandomGroundTruthIdx();
+        int getSimulationGroundTruthIdx();
 
         virtual int getSensingCatCount() = 0;
 

@@ -4,12 +4,20 @@ using namespace std;
 
 namespace kukadu {
 
-    ControllerResult::ControllerResult(arma::vec t, std::vector<arma::vec> ys) {
-        construct(t, ys, true, false, vector<int>());
+    ControllerResult::ControllerResult(arma::vec t, std::vector<arma::vec> ys, bool success) {
+        this->t = t;
+        this->y = ys;
+        this->success = success;
     }
 
-    ControllerResult::ControllerResult(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored, std::vector<int> walkedPath) {
-        construct(t, ys, success, bored, walkedPath);
+    HapticControllerResult::HapticControllerResult(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored, std::vector<int> walkedPath,
+                                                   KUKADU_SHARED_PTR<std::tuple<double, KUKADU_SHARED_PTR<kukadu::Clip>, std::vector<KUKADU_SHARED_PTR<kukadu::Clip> > > > environmentTransition)
+        : ControllerResult(t, ys, success) {
+
+        this->bored = bored;
+        this->walkedPath = walkedPath;
+        this->environmentTransition = environmentTransition;
+
     }
 
     arma::vec ControllerResult::getTimes() {
@@ -20,14 +28,6 @@ namespace kukadu {
         return y;
     }
 
-    void ControllerResult::construct(arma::vec t, std::vector<arma::vec> ys, bool success, bool bored, std::vector<int> walkedPath) {
-        this->t = t;
-        this->y = ys;
-        this->bored = bored;
-        this->success = success;
-        this->walkedPath = walkedPath;
-    }
-
     void ControllerResult::setSuccess(bool success) {
         this->success = success;
     }
@@ -36,11 +36,11 @@ namespace kukadu {
         return success;
     }
 
-    bool ControllerResult::wasBored() {
+    bool HapticControllerResult::wasBored() {
         return bored;
     }
 
-    std::vector<int> ControllerResult::getWalkedPath() {
+    std::vector<int> HapticControllerResult::getWalkedPath() {
         return walkedPath;
     }
 

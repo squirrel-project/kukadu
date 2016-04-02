@@ -60,6 +60,8 @@ namespace kukadu {
         double gamma;
         double boredom;
 
+        KUKADU_SHARED_PTR<Clip> predefinedFirstHop;
+
         std::vector<std::pair<double, KUKADU_SHARED_PTR<Clip> > > rankVec;
 
         KUKADU_SHARED_PTR<Reward> reward;
@@ -117,6 +119,8 @@ namespace kukadu {
 
         int getClipCount();
         int getStandardImmunity();
+
+        void setNextPredefinedPath(std::vector<KUKADU_SHARED_PTR<Clip> > hopPath);
 
         std::tuple<bool, double, std::vector<int> > performRewarding();
 

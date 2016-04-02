@@ -543,7 +543,7 @@ namespace kukadu {
 
         maxFrcThread->join();
 
-        return KUKADU_SHARED_PTR<ControllerResult>(new ControllerResult(stdToArmadilloVec(retT), retY));
+        return KUKADU_SHARED_PTR<ControllerResult>(new ControllerResult(stdToArmadilloVec(retT), retY, true));
 
     }
 
