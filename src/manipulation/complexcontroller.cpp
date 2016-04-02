@@ -604,7 +604,7 @@ namespace kukadu {
             this->setBoredom(false);
 
             // perform action again
-            this->performAction();
+            ret = this->performAction();
 
             // switching on boredom again
             this->setBoredom(true);
@@ -649,9 +649,9 @@ namespace kukadu {
 
         auto selectedPathPointer = KUKADU_SHARED_PTR<std::tuple<double, KUKADU_SHARED_PTR<kukadu::Clip>, std::vector<KUKADU_SHARED_PTR<kukadu::Clip> > > >(new std::tuple<double, KUKADU_SHARED_PTR<kukadu::Clip>, std::vector<KUKADU_SHARED_PTR<kukadu::Clip> > >(get<0>(selectedPath), get<1>(selectedPath), get<2>(selectedPath)));
 
-        ret = KUKADU_SHARED_PTR<ControllerResult>(new HapticControllerResult(vec(), vector<vec>(),
-                                                                                                           (reward > 0) ? true : false, wasBored,
-                                                                                                           *(projSim->getIntermediateHopIdx()), selectedPathPointer));
+        // this behaviour could be improved --> TODO
+        if(!ret)
+            ret = KUKADU_SHARED_PTR<ControllerResult>(new HapticControllerResult(vec(), vector<vec>(), (reward > 0) ? true : false, wasBored, *(projSim->getIntermediateHopIdx()), selectedPathPointer));
 
         return ret;
 

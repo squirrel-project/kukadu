@@ -10,6 +10,7 @@
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
 #include <kukadu/utils/utils.hpp>
+#include <kukadu/types/controllerresult.hpp>
 #include <kukadu/manipulation/controller.hpp>
 #include <kukadu/manipulation/sensingcontroller.hpp>
 #include <kukadu/learning/projective_simulation/core/projectivesimulator.hpp>
@@ -52,7 +53,7 @@ namespace kukadu {
         virtual KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();
 
         void pickAndPerformComplexSkill();
-        void performComplexSkill(std::string skillId);
+        KUKADU_SHARED_PTR<kukadu::HapticControllerResult> performComplexSkill(std::string skillId);
 
         std::string pickComplexSkill();
 
