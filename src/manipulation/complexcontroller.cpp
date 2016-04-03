@@ -173,6 +173,8 @@ namespace kukadu {
 
         }
 
+        environmentModels.clear();
+
         if(fileExists(envModelPath)) {
 
             // load environment model
@@ -630,7 +632,7 @@ namespace kukadu {
             int resultingStateChildIdx = sensingController->performClassification();
             int resultingStateId = sensingClip->getSubClipByIdx(resultingStateChildIdx)->getClipDimensions()->at(0);
 
-            auto stateVector{stateId, actionId};
+            vector<int> stateVector{stateId, actionId};
             auto currentEnvModel = environmentModels[sensingClip->toString()];
             auto environmentClip = currentEnvModel->retrieveClipsOnLayer(stateVector, 0).at(0);
 

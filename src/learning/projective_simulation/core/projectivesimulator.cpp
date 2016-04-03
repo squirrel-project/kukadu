@@ -391,9 +391,12 @@ namespace kukadu {
         std::vector<KUKADU_SHARED_PTR<Clip> > queriedClips;
         auto requestedLayer = clipLayers->at(layer);
         for(auto clip : *requestedLayer) {
+
             auto clipDims = clip->getClipDimensions();
+
             if(compareIdVectors(queryId, *clipDims))
                 queriedClips.push_back(clip);
+
         }
         return queriedClips;
 

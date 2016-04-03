@@ -42,7 +42,7 @@ namespace kukadu {
                 createDirectory(complexPath);
 
             if(!fileExists(complexPath + "composition")) {
-                cout << complexPath << "composition";
+
                 castCompCont->setSensingControllers(sensingCopy);
                 castCompCont->setPreparatoryControllers(preparatoryControllers);
                 castCompCont->initialize();
