@@ -527,10 +527,6 @@ namespace kukadu {
 
             auto possiblePaths = computeEnvironmentPaths(sensingClip, stateClip, maxEnvPathLength);
 
-            std::sort(possiblePaths.begin(), possiblePaths.end(), [] (std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > p1, std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > p2) {
-                          return std::get<0>(p1) > std::get<0>(p2);
-                      });
-
             computeTotalPathCost(possiblePaths);
 
             std::sort(possiblePaths.begin(), possiblePaths.end(), [] (std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > p1, std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > p2) {
@@ -540,7 +536,6 @@ namespace kukadu {
             selectedPath = possiblePaths.at(0);
             for(auto cl : possiblePaths) {
                 auto targetPercept = get<1>(cl);
-                cout << *targetPercept << " " << *stateClip << endl;
                 if(*targetPercept != *stateClip) {
                     selectedPath = cl;
                     break;
@@ -579,7 +574,6 @@ namespace kukadu {
             // if controller is in simulation mode, check ground truth
 
                 auto groundTruthStateClip = groundTruthStartClip;
-                cout << *stateClip << " ";
                 auto path = get<2>(selectedPath);
                 for(int i = 0; i < path.size(); ++i) {
                     auto cl = path.at(i);
@@ -731,7 +725,7 @@ namespace kukadu {
 
                     double nextConfidence = currentConfidence * transitionConfidence;
 
-                    if(nextConfidence > 0) {
+                    if(nextConfidence > 0.1) {
                         allPaths.push_back(std::make_tuple(nextConfidence, resultingStateClip, currentPath));
                         lastIterationPaths.push_back(std::make_tuple(nextConfidence, resultingStateClip, currentPath));
                     }
