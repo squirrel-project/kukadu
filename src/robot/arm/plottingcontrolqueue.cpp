@@ -55,15 +55,15 @@ namespace kukadu {
     }
 
     void PlottingControlQueue::rollBack(double time) {
-        throw KukaduException("(PlottingControlQueue) roll back mode not supported");
+    //    throw KukaduException("(PlottingControlQueue) roll back mode not supported");
     }
 
     void PlottingControlQueue::stopJointRollBackMode() {
-        throw KukaduException("(PlottingControlQueue) roll back mode not supported");
+    //    throw KukaduException("(PlottingControlQueue) roll back mode not supported");
     }
 
     void PlottingControlQueue::startJointRollBackMode(double possibleTime) {
-        throw KukaduException("(PlottingControlQueue) roll back mode not supported");
+    //    throw KukaduException("(PlottingControlQueue) roll back mode not supported");
     }
 
     void PlottingControlQueue::setJntPtpThresh(double thresh) {
