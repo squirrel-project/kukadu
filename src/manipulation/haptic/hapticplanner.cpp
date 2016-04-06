@@ -29,8 +29,12 @@ namespace kukadu {
             KUKADU_SHARED_PTR<kukadu::ComplexController> castCompCont = KUKADU_DYNAMIC_POINTER_CAST<kukadu::ComplexController>(compCont);
             string contName = compCont->getCaption();
 
+            replace(contName.begin(), contName.end(), ' ', '_');
+
             string complexPath = skillDatabase + contName;
             preparePathString(complexPath);
+
+            replace(complexPath.begin(), complexPath.end(), ' ', '_');
 
             string hapticPath = complexPath + "haptics";
             preparePathString(hapticPath);

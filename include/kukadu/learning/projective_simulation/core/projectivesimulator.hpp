@@ -49,8 +49,8 @@ namespace kukadu {
     private:
 
         bool useRanking;
-        bool useBoredom;
         bool doTraining;
+        bool lastRunWasBored;
 
         int levels;
         int operationMode;
@@ -58,7 +58,7 @@ namespace kukadu {
         int maxNumberOfClips;
 
         double gamma;
-        double boredom;
+        std::vector<double> boredomLevels;
 
         KUKADU_SHARED_PTR<Clip> predefinedFirstHop;
 
@@ -86,7 +86,7 @@ namespace kukadu {
 
         int getIdVecLevel(KUKADU_SHARED_PTR<std::vector<int> > idVec);
 
-        double computeBoredem(KUKADU_SHARED_PTR<Clip> clip);
+        bool computeBoredem(KUKADU_SHARED_PTR<Clip> clip);
 
         KUKADU_SHARED_PTR<Clip> findClipByIdVec(KUKADU_SHARED_PTR<std::vector<int> > idVec);
         KUKADU_SHARED_PTR<Clip> findClipInLevelByIdVec(KUKADU_SHARED_PTR<std::vector<int> > idVec, int level);
@@ -106,9 +106,9 @@ namespace kukadu {
         ~ProjectiveSimulator();
 
         void printWeights();
-        void setBoredom(double boredom);
         void setTrainingMode(bool doTraining);
         void setStandardImmunity(int immunity);
+        void setBoredom(double boredom, int level);
         void setMaxNumberOfClips(int maxNumberOfClips);
         void connectNewClip(KUKADU_SHARED_PTR<Clip> conClip);
         void eliminateClip(KUKADU_SHARED_PTR<Clip> currClip);
@@ -126,7 +126,7 @@ namespace kukadu {
 
         KUKADU_SHARED_PTR<std::vector<int> > getIntermediateHopIdx();
 
-        KUKADU_SHARED_PTR<ActionClip> performRandomWalk();
+        std::pair<int, KUKADU_SHARED_PTR<Clip> > performRandomWalk();
 
         std::vector<KUKADU_SHARED_PTR<Clip> > retrieveClipsOnLayer(std::vector<int> queryId, int layer);
 

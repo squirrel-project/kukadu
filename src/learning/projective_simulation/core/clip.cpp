@@ -6,6 +6,12 @@ using namespace std;
 
 namespace kukadu {
 
+    const int Clip::CLIP_H_HASH_VAL = INT_MIN;
+    const int Clip::CLIP_H_STD_WEIGHT = 1;
+    const int Clip::CLIP_H_LEVEL_FINAL = -1;
+    const int Clip::CLIP_H_NOT_WALKED_YET = -1;
+    const int Clip::PS_DEFAULT_IMMUNITY = 1000;
+
     Clip::Clip(int level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string clipValues, int immunity) {
 
         construct(level, generator, Clip::getIdVectorFromString(clipValues), immunity);
@@ -165,7 +171,6 @@ namespace kukadu {
         std::vector<double> newH;
 
         for(int i = 0; i < childCount; ++i) {
-            children->at(i)->addParent(shared_from_this());
             newH.push_back(CLIP_H_STD_WEIGHT);
         }
 
@@ -178,6 +183,10 @@ namespace kukadu {
         subClips.reset();
         this->subClips = children;
         this->subH = weights;
+
+        for(auto child : *children)
+            child->addParent(shared_from_this());
+
         initRandomGenerator();
 
     }

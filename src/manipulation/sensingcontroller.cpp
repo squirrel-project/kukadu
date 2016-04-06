@@ -238,6 +238,8 @@ namespace kukadu {
                 cout << "(SensingController) folder doesn't exist - create" << endl;
             createDirectory(path);
 
+            cout << path << endl;
+
             // create the database
             numClasses = getSensingCatCount();
             if(!isShutUp)
@@ -251,7 +253,7 @@ namespace kukadu {
                 int cont = 1;
                 for(int sampleNum = 0; cont == 1; ++sampleNum) {
 
-                    cout << "(SensingController) press key to collect sample number " << sampleNum << " for class " << currClass << endl;
+                    cout << "(SensingController) press key to collect sample number " << sampleNum << " for class " << currClass << " with sensing controller " << this->getCaption() << endl;
                     getchar();
 
                     stringstream s;

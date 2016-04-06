@@ -108,7 +108,7 @@ namespace kukadu {
 
                         perceptClips->push_back(pc);
 
-                    } else if(currentLayer == CLIP_H_LEVEL_FINAL) {
+                    } else if(currentLayer == Clip::CLIP_H_LEVEL_FINAL) {
 
                         if(line != "") {
                             nextClip = createClipFunc(line, currentLayer, perceptDimensionality, generator);
@@ -127,7 +127,7 @@ namespace kukadu {
 
                     int clipLevel = currentLayer;
 
-                    if(clipLevel != CLIP_H_LEVEL_FINAL)
+                    if(clipLevel != Clip::CLIP_H_LEVEL_FINAL)
                         clipLayers->at(clipLevel)->insert(nextClip);
                     else
                         clipLayers->at(clipLayers->size() - 1)->insert(nextClip);
@@ -189,12 +189,17 @@ namespace kukadu {
             throw KukaduException("PS file version cannot be handled");
         }
 
+        boredomLevels.clear();
+        for(int i = 0; i < clipLayers->size(); ++i)
+            boredomLevels.push_back(0.0);
+
     }
 
     ProjectiveSimulator::ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file,
                     std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) > createClipFunc) {
 
         loadPsConstructor(reward, generator, file, createClipFunc);
+        lastRunWasBored = false;
 
     }
 
@@ -211,7 +216,7 @@ namespace kukadu {
                 auto pc = KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(atoi(tok.next().c_str()), label, generator, idVec, immunity));
                 return pc;
 
-            } else if(level == CLIP_H_LEVEL_FINAL) {
+            } else if(level == Clip::CLIP_H_LEVEL_FINAL) {
 
                 auto ac = KUKADU_SHARED_PTR<ActionClip>(new ActionClip(atoi(tok.next().c_str()), perceptDimensionality, label, generator));
                 return ac;
@@ -224,6 +229,7 @@ namespace kukadu {
             }
 
         });
+        lastRunWasBored = false;
 
     }
 
@@ -241,7 +247,7 @@ namespace kukadu {
 
         for(int i = 0; i < idVec->size(); ++i) {
             int val = idVec->at(i);
-            if(val == CLIP_H_HASH_VAL)
+            if(val == Clip::CLIP_H_HASH_VAL)
                 retCount++;
         }
 
@@ -296,14 +302,11 @@ namespace kukadu {
 
     }
 
-    void ProjectiveSimulator::setBoredom(double boredom) {
-        if(boredom <= 0.0) {
-            this->boredom = 0.0;
-            this->useBoredom = false;
-        } else {
-            this->boredom = boredom;
-            this->useBoredom = true;
-        }
+    void ProjectiveSimulator::setBoredom(double boredom, int level) {
+        if(boredom <= 0.0)
+            this->boredomLevels.at(level) = 0.0;
+        else
+            this->boredomLevels.at(level) = boredom;
     }
 
     void ProjectiveSimulator::setTrainingMode(bool doTraining) {
@@ -312,9 +315,8 @@ namespace kukadu {
 
     void ProjectiveSimulator::construct(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, double gamma, int operationMode, bool useRanking) {
 
-        this->boredom = 0.0;
+        lastRunWasBored = false;
         this->doTraining = true;
-        this->useBoredom = false;
 
         this->useRanking = useRanking;
         this->operationMode = operationMode;
@@ -337,6 +339,10 @@ namespace kukadu {
 
         clipLayers->at(0)->insert(perceptClips->begin(), perceptClips->end());
         clipLayers->at(clipLayers->size() - 1)->insert(actionClips->begin(), actionClips->end());
+
+        boredomLevels.clear();
+        for(int i = 0; i < clipLayers->size(); ++i)
+            boredomLevels.push_back(0.0);
 
         lastGeneralizedPercept.reset();
 
@@ -433,12 +439,16 @@ namespace kukadu {
             fillClipLayersFromNetwork(pc);
         }
 
+        boredomLevels.clear();
+        for(int i = 0; i < clipLayers->size(); ++i)
+            boredomLevels.push_back(0.0);
+
     }
 
     void ProjectiveSimulator::fillClipLayersFromNetwork(KUKADU_SHARED_PTR<Clip> cl) {
 
         int level = cl->getLevel();
-        if(level != CLIP_H_LEVEL_FINAL) {
+        if(level != Clip::CLIP_H_LEVEL_FINAL) {
             clipLayers->at(level)->insert(cl);
             for(int i = 0; i < cl->getSubClipCount(); ++i)
                 fillClipLayersFromNetwork(cl->getSubClipByIdx(i));
@@ -446,6 +456,10 @@ namespace kukadu {
         } else {
             clipLayers->at(clipLayers->size() - 1)->insert(cl);
         }
+
+        boredomLevels.clear();
+        for(int i = 0; i < clipLayers->size(); ++i)
+            boredomLevels.push_back(0.0);
 
     }
 
@@ -537,7 +551,7 @@ namespace kukadu {
         return actionClips;
     }
 
-    KUKADU_SHARED_PTR<ActionClip> ProjectiveSimulator::performRandomWalk() {
+    std::pair<int, KUKADU_SHARED_PTR<Clip> > ProjectiveSimulator::performRandomWalk() {
 
         lastClipBeforeAction.reset();
         intermediateHops->clear();
@@ -568,47 +582,62 @@ namespace kukadu {
             pair<int, KUKADU_SHARED_PTR<Clip> > nextHop;
             lastClipBeforeAction = previousClip;
             previousClip = currentClip;
-            nextHop = currentClip->jumpNextRandom();
-            previousIdx = nextHop.first;
-            currentClip = nextHop.second;
+
+            auto isBored = computeBoredem(currentClip);
+
+            if(!isBored) {
+                nextHop = currentClip->jumpNextRandom();
+                previousIdx = nextHop.first;
+                currentClip = nextHop.second;
+            } else {
+                lastRunWasBored = true;
+                return pair<int, KUKADU_SHARED_PTR<Clip> > (currentClip->getLevel(), currentClip);
+            }
 
         }
 
         lastActionClip = KUKADU_DYNAMIC_POINTER_CAST<ActionClip>(currentClip);
-        return lastActionClip;
+        return pair<int, KUKADU_SHARED_PTR<Clip> > (currentClip->getLevel(), currentClip);
 
     }
 
-    double ProjectiveSimulator::computeBoredem(KUKADU_SHARED_PTR<Clip> clip) {
+    bool ProjectiveSimulator::computeBoredem(KUKADU_SHARED_PTR<Clip> clip) {
 
-        double entropy = clip->computeSubEntropy();
-        double numberOfSubclips = clip->getSubClipCount();
+        bool beingBored = false;
+        auto clipLevel = clip->getLevel();
 
-        // cout << "entropy: " << entropy << "; log2: " << log2(numberOfSubclips) << "; " << "; boredomConst: " << boredom << "; ";
+        if(clipLevel != Clip::CLIP_H_LEVEL_FINAL) {
 
-        // b * (1 - H / H_max) = 1 - b * H / log2(N)
-        double clipBoredom = 1.0 - boredom * entropy / log2(numberOfSubclips);
+            auto boredom = boredomLevels.at(clipLevel);
+            if(boredomLevels.at(clipLevel) > 0.0) {
 
-        return clipBoredom;
+                double entropy = clip->computeSubEntropy();
+                double numberOfSubclips = clip->getSubClipCount();
+
+                // b * (1 - H / H_max) = 1 - b * H / log2(N)
+                double boredomScore = 1.0 - boredom * entropy / log2(numberOfSubclips);
+
+                vector<double> boredomDistWeights;
+
+                boredomDistWeights.push_back(boredomScore);
+
+                boredomDistWeights.push_back(1 - boredomScore);
+
+                KUKADU_DISCRETE_DISTRIBUTION<int> boredomDist = KUKADU_DISCRETE_DISTRIBUTION<int>(boredomDistWeights.begin(), boredomDistWeights.end());
+
+                beingBored =  (1 - boredomDist(*generator)) ? true : false;
+
+            }
+        }
+
+        return beingBored;
 
     }
 
     std::tuple<bool, double, vector<int> > ProjectiveSimulator::performRewarding() {
 
-        bool beingBored = false;
-        if(useBoredom) {
-
-            double boredomScore = computeBoredem(lastClipBeforeAction);
-            vector<double> boredomDistWeights;
-            boredomDistWeights.push_back(boredomScore);
-            boredomDistWeights.push_back(1 - boredomScore);
-            KUKADU_DISCRETE_DISTRIBUTION<int> boredomDist = KUKADU_DISCRETE_DISTRIBUTION<int>(boredomDistWeights.begin(), boredomDistWeights.end());
-            beingBored =  (1 - boredomDist(*generator)) ? true : false;
-
-        }
-
         double computedReward = 0.0;
-        if(!beingBored) {
+        if(!lastRunWasBored) {
 
             computedReward = reward->computeReward(lastPerceptClip, lastActionClip);
 
@@ -641,7 +670,9 @@ namespace kukadu {
 
         }
 
-        return make_tuple(beingBored, computedReward, *getIntermediateHopIdx());
+        lastRunWasBored = false;
+
+        return make_tuple(lastRunWasBored, computedReward, *getIntermediateHopIdx());
 
     }
 
@@ -709,10 +740,10 @@ namespace kukadu {
 
                     // if they are compatible
                     if(currClip->isCompatibleSubclip(conClip)) {
-                        currClip->addSubClip(conClip, CLIP_H_STD_WEIGHT);
+                        currClip->addSubClip(conClip, Clip::CLIP_H_STD_WEIGHT);
                         conClip->addParent(currClip);
                     } else if(conClip->isCompatibleSubclip(currClip)) {
-                        conClip->addSubClip(currClip, CLIP_H_STD_WEIGHT);
+                        conClip->addSubClip(currClip, Clip::CLIP_H_STD_WEIGHT);
                         currClip->addParent(conClip);
                     } else {
                         // dont connect, they are not compatible
@@ -750,7 +781,7 @@ namespace kukadu {
                 firstClipOnLevel.reset();
                 if(currLevel->size())
                     firstClipOnLevel = *(currLevel->begin());
-                if(currLevel->size() && firstClipOnLevel->getLevel() != CLIP_H_LEVEL_FINAL) {
+                if(currLevel->size() && firstClipOnLevel->getLevel() != Clip::CLIP_H_LEVEL_FINAL) {
 
                     set<KUKADU_SHARED_PTR<Clip>, clip_compare>::iterator currIt;
                     for(currIt = currLevel->begin(); currIt != currLevel->end(); ++currIt) {
@@ -889,7 +920,7 @@ namespace kukadu {
                     if(currentLevel == 0) {
                         KUKADU_SHARED_PTR<PerceptClip> cpc = KUKADU_DYNAMIC_POINTER_CAST<PerceptClip>(cClip);
                         outFile << ";" << cpc->getPerceptId();
-                    } else if(currentLevel == CLIP_H_LEVEL_FINAL) {
+                    } else if(currentLevel == Clip::CLIP_H_LEVEL_FINAL) {
                         KUKADU_SHARED_PTR<ActionClip> cpc = KUKADU_DYNAMIC_POINTER_CAST<ActionClip>(cClip);
                         outFile << ";" << cpc->getActionId();
                     }
@@ -905,7 +936,7 @@ namespace kukadu {
             KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare> > layer = *it;
             if(layer->size() > 0) {
                 int currentLevel = (*layer->begin())->getLevel();
-                if(currentLevel != CLIP_H_LEVEL_FINAL) {
+                if(currentLevel != Clip::CLIP_H_LEVEL_FINAL) {
                     outFile << "layer=" << currentLevel << endl;
 
                     set<KUKADU_SHARED_PTR<Clip>, clip_compare>::iterator currIt;

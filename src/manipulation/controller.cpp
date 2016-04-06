@@ -6,6 +6,8 @@ namespace kukadu {
 
         isShutUp = true;
 
+        std::replace(caption.begin(), caption.end(), ' ', '_');
+
         this->caption = caption;
         this->simulation = false;
 

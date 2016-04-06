@@ -19,7 +19,7 @@ namespace kukadu {
             s << i;
             KUKADU_SHARED_PTR<std::vector<int> > clipDimensionValues = KUKADU_SHARED_PTR<std::vector<int> >(new vector<int>());
             clipDimensionValues->push_back(i);
-            perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(i, s.str(), generator, clipDimensionValues, PS_DEFAULT_IMMUNITY)));
+            perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(i, s.str(), generator, clipDimensionValues, Clip::PS_DEFAULT_IMMUNITY)));
         }
 
         actionClips = KUKADU_SHARED_PTR<vector<KUKADU_SHARED_PTR<ActionClip> > >(new vector<KUKADU_SHARED_PTR<ActionClip> >());

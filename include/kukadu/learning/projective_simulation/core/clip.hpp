@@ -13,14 +13,6 @@
 
 #include <kukadu/types/kukadutypes.hpp>
 
-// start weight according to the paper
-#define CLIP_H_STD_WEIGHT 1
-#define CLIP_H_HASH_VAL INT_MIN
-#define CLIP_H_LEVEL_FINAL -1
-#define CLIP_H_NOT_WALKED_YET -1
-
-#define PS_DEFAULT_IMMUNITY 1000
-
 namespace kukadu {
 
     class Clip : public KUKADU_ENABLE_SHARED_FROM_THIS<Clip> {
@@ -125,6 +117,14 @@ namespace kukadu {
         friend bool operator!= (const Clip &o1, const Clip &o2);
 
         friend std::ostream& operator<<(std::ostream &strm, const Clip &c);
+
+        // start weight according to the paper
+        static const int CLIP_H_STD_WEIGHT;
+        static const int CLIP_H_HASH_VAL;
+        static const int CLIP_H_LEVEL_FINAL;
+        static const int CLIP_H_NOT_WALKED_YET;
+
+        static const int PS_DEFAULT_IMMUNITY;
 
     };
 

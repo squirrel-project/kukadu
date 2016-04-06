@@ -38,8 +38,8 @@ namespace kukadu {
         invasionLeftPercept->push_back(INVASIONGAMEREWARD_H_LEFT_PERCEPT);
         vector<int>* invasionrRightPercept = new vector<int>();
         invasionrRightPercept->push_back(INVASIONGAMEREWARD_H_RIGHT_PERCEPT);
-        perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(INVASIONGAMEREWARD_H_LEFT_PERCEPT, "left sign", generator, KUKADU_SHARED_PTR<vector<int> >(invasionLeftPercept), PS_DEFAULT_IMMUNITY)));
-        perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(INVASIONGAMEREWARD_H_RIGHT_PERCEPT, "right sign", generator, KUKADU_SHARED_PTR<vector<int> >(invasionrRightPercept), PS_DEFAULT_IMMUNITY)));
+        perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(INVASIONGAMEREWARD_H_LEFT_PERCEPT, "left sign", generator, KUKADU_SHARED_PTR<vector<int> >(invasionLeftPercept), Clip::PS_DEFAULT_IMMUNITY)));
+        perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(INVASIONGAMEREWARD_H_RIGHT_PERCEPT, "right sign", generator, KUKADU_SHARED_PTR<vector<int> >(invasionrRightPercept), Clip::PS_DEFAULT_IMMUNITY)));
         return KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > >(this->perceptClips = perceptClips);
     }
 

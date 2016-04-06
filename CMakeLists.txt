@@ -130,7 +130,7 @@ target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${P
     reflexxeslib ncurses gsl gslcblas stdc++ pthread dl util m komo swift algo ann gui ors optim motion rt lapack blas glut GLU GL X11 ${GTK_LIBRARIES} ${GTK2_LIBRARIES} gthread-2.0 qhull python3.4m m)
 
 add_executable(kukadu_demo_guided src/demo/guided.cpp)
-target_link_libraries(kukadu_demo_guided kukadu ${PCL_LIBRARIES} ${catkin_LIBRARIES} komo swift algo ann gui ors optim motion rt lapack blas glut GLU GL X11 ${GTK_LIBRARIES} ${GTK2_LIBRARIES} gthread-2.0 qhull m)
+target_link_libraries(kukadu_demo_guided kukadu ${catkin_LIBRARIES} komo swift algo ann gui ors optim motion rt lapack blas glut GLU GL X11 ${GTK_LIBRARIES} ${GTK2_LIBRARIES} gthread-2.0 qhull m)
 
 add_executable(robotino_demo src/demo/robotino_demo.cpp)
 target_link_libraries(robotino_demo kukadu ${PCL_LIBRARIES} ${catkin_LIBRARIES})

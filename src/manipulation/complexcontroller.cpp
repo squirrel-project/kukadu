@@ -27,6 +27,8 @@ namespace kukadu {
         projSim.reset();
         rewardHistoryStream.reset();
 
+        replace(storePath.begin(), storePath.end(), ' ', '_');
+
         preparePathString(storePath);
 
         this->gamma = gamma;
@@ -95,7 +97,7 @@ namespace kukadu {
                     auto pc = KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(atoi(tok.next().c_str()), label, generator, idVec, immunity));
                     return pc;
 
-                } else if(level == CLIP_H_LEVEL_FINAL) {
+                } else if(level == Clip::CLIP_H_LEVEL_FINAL) {
 
                     auto ac = KUKADU_SHARED_PTR<ActionClip>(new ControllerActionClip(atoi(tok.next().c_str()), (this->availablePreparatoryControllers)[label], generator));
                     return ac;
@@ -197,7 +199,7 @@ namespace kukadu {
 
         }
 
-        projSim->setBoredom(boredom);
+        projSim->setBoredom(boredom, 2);
 
         if(storeReward) {
             rewardHistoryStream = KUKADU_SHARED_PTR<std::ofstream>(new std::ofstream());
@@ -217,7 +219,7 @@ namespace kukadu {
     }
 
     void ComplexController::setBoredom(double boredom) {
-        projSim->setBoredom(boredom);
+        projSim->setBoredom(boredom, 2);
     }
 
     double ComplexController::getPunishReward() {
@@ -499,36 +501,76 @@ namespace kukadu {
         }
 
         ++currentIterationNum;
-        projSim->performRandomWalk();
-        tuple<bool, double, vector<int> > actionRes = projSim->performRewarding();
-        auto wasBored = std::get<0>(actionRes);
-        auto reward = std::get<1>(actionRes);
-        auto hopPath = std::get<2>(actionRes);
+        auto walkRet = projSim->performRandomWalk();
 
-        auto newClips = extractClipsFromPath(hopPath);
-        auto sensingClip = get<0>(newClips);
-        auto stateClip = get<1>(newClips);
-        auto stateId = stateClip->getClipDimensions()->at(0);
-        auto actionClip = get<2>(newClips);
-        auto actionId = actionClip->getClipDimensions()->at(0);
+        bool wasBored = true;
+        double reward = 0.0;
+        std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > selectedPath;
 
-        auto sensingController = sensingClip->getSensingController();
+        // if the last clip is an action clip, PS was not bored
+        if(walkRet.first == Clip::CLIP_H_LEVEL_FINAL) {
 
-        // if simulation mode, retrieve ground truth
-        KUKADU_SHARED_PTR<Clip> groundTruthStartClip;
-        if(getSimulationMode()) {
-            auto groundTruthIdx = sensingController->getSimulationGroundTruthIdx();
-            groundTruthStartClip = sensingClip->getSubClipByIdx(groundTruthIdx);
-        }
+            tuple<bool, double, vector<int> > actionRes = projSim->performRewarding();
+            wasBored = std::get<0>(actionRes);
+            reward = std::get<1>(actionRes);
+            auto hopPath = std::get<2>(actionRes);
 
-        std::tuple<double, KUKADU_SHARED_PTR<kukadu::Clip>, std::vector<KUKADU_SHARED_PTR<kukadu::Clip> > > selectedPath(0.0, nullptr, {});
+            auto newClips = extractClipsFromPath(hopPath);
+            auto sensingClip = get<0>(newClips);
+            auto stateClip = get<1>(newClips);
+            auto stateId = stateClip->getClipDimensions()->at(0);
+            auto actionClip = get<2>(newClips);
+            auto actionId = actionClip->getClipDimensions()->at(0);
 
-        if(wasBored) {
+            auto sensingController = sensingClip->getSensingController();
 
+            // if simulation mode, retrieve ground truth
+            KUKADU_SHARED_PTR<Clip> groundTruthStartClip;
+            if(getSimulationMode()) {
+                auto groundTruthIdx = sensingController->getSimulationGroundTruthIdx();
+                groundTruthStartClip = sensingClip->getSubClipByIdx(groundTruthIdx);
+            }
+
+            // not bored, the preparatory action was executed --> so sense again in order to improve environment model
+
+            // if simulation mode --> set new ground truth after the execution
+            if(getSimulationMode()) {
+                auto groundTruthStateClip = computeGroundTruthTransition(sensingClip, groundTruthStartClip, actionClip);
+
+                if(!isShutUp)
+                    cout << "ground truth: " << *groundTruthStartClip << " (predicted: " << *stateClip << ") + " << *actionClip << " = " << *groundTruthStateClip << endl;
+
+                sensingClip->getSensingController()->setSimulationGroundTruth(sensingClip->getSubClipIdx(groundTruthStateClip));
+            }
+
+            int resultingStateChildIdx = sensingController->performClassification();
+            int resultingStateId = sensingClip->getSubClipByIdx(resultingStateChildIdx)->getClipDimensions()->at(0);
+
+            vector<int> stateVector{stateId, actionId};
+            auto currentEnvModel = environmentModels[sensingClip->toString()];
+            auto environmentClip = currentEnvModel->retrieveClipsOnLayer(stateVector, 0).at(0);
+
+            if(!isShutUp)
+                cout << "(" << stateId << ", " << actionId << ") - " << *environmentClip << " --> " << "E" << resultingStateId << " (idx: " << resultingStateChildIdx << ")" << endl;
+
+            // the action clip id is always reduced by -1  when a new action clip is produced (i dont remember anymore why) - therefore -1
+            auto resultingEnvironmentClip = currentEnvModel->retrieveClipsOnLayer({-resultingStateId - 1, -resultingStateId - 1}, 1).at(0);
+
+            vector<KUKADU_SHARED_PTR<Clip> > envClipPath{environmentClip, resultingEnvironmentClip};
+            currentEnvModel->setNextPredefinedPath(envClipPath);
+            currentEnvModel->performRandomWalk();
+            currentEnvModel->performRewarding();
+
+        } else {
+
+            auto stateClip = walkRet.second;
+            auto sensingClip = *(stateClip->getParents()->begin());
+            auto sensingController = KUKADU_DYNAMIC_POINTER_CAST<IntermediateEventClip>(sensingClip)->getSensingController();
+
+            // it was bored
             auto possiblePaths = computeEnvironmentPaths(sensingClip, stateClip, maxEnvPathLength);
 
             computeTotalPathCost(possiblePaths);
-
             std::sort(possiblePaths.begin(), possiblePaths.end(), [] (std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > p1, std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > p2) {
                           return std::get<0>(p1) > std::get<0>(p2);
                       });
@@ -571,7 +613,15 @@ namespace kukadu {
                 }
 
             } else {
-            // if controller is in simulation mode, check ground truth
+
+                // if controller is in simulation mode, check ground truth
+
+                // retrieve ground truth
+                KUKADU_SHARED_PTR<Clip> groundTruthStartClip;
+                if(getSimulationMode()) {
+                    auto groundTruthIdx = sensingController->getSimulationGroundTruthIdx();
+                    groundTruthStartClip = sensingClip->getSubClipByIdx(groundTruthIdx);
+                }
 
                 auto groundTruthStateClip = groundTruthStartClip;
                 auto path = get<2>(selectedPath);
@@ -604,42 +654,6 @@ namespace kukadu {
 
             // switching on boredom again
             this->setBoredom(true);
-
-            // todo (1):
-            // it seems like the boredom is not working in real mode (random walk needs to stopped in the middle when it is bored)
-            // boredom is only computed in performRewarding() --> it has to be done in performRandomWalk()
-
-        } else {
-
-            // not bored, the preparatory action was executed --> so sense again in order to improve environment model
-
-            // if simulation mode --> set new ground truth after the execution
-            if(getSimulationMode()) {
-                auto groundTruthStateClip = computeGroundTruthTransition(sensingClip, groundTruthStartClip, actionClip);
-
-                if(!isShutUp)
-                    cout << "ground truth: " << *groundTruthStartClip << " (predicted: " << *stateClip << ") + " << *actionClip << " = " << *groundTruthStateClip << endl;
-
-                sensingClip->getSensingController()->setSimulationGroundTruth(sensingClip->getSubClipIdx(groundTruthStateClip));
-            }
-
-            int resultingStateChildIdx = sensingController->performClassification();
-            int resultingStateId = sensingClip->getSubClipByIdx(resultingStateChildIdx)->getClipDimensions()->at(0);
-
-            vector<int> stateVector{stateId, actionId};
-            auto currentEnvModel = environmentModels[sensingClip->toString()];
-            auto environmentClip = currentEnvModel->retrieveClipsOnLayer(stateVector, 0).at(0);
-
-            if(!isShutUp)
-                cout << "(" << stateId << ", " << actionId << ") - " << *environmentClip << " --> " << "E" << resultingStateId << " (idx: " << resultingStateChildIdx << ")" << endl;
-
-            // the action clip id is always reduced by -1  when a new action clip is produced (i dont remember anymore why) - therefore -1
-            auto resultingEnvironmentClip = currentEnvModel->retrieveClipsOnLayer({-resultingStateId - 1, -resultingStateId - 1}, 1).at(0);
-
-            vector<KUKADU_SHARED_PTR<Clip> > envClipPath{environmentClip, resultingEnvironmentClip};
-            currentEnvModel->setNextPredefinedPath(envClipPath);
-            currentEnvModel->performRandomWalk();
-            currentEnvModel->performRewarding();
 
         }
 
