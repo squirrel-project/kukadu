@@ -4,6 +4,8 @@ namespace kukadu {
 
     Controller::Controller(std::string caption, int simulationFailingProbability) {
 
+        std::replace(caption.begin(), caption.end(), ' ', '_');
+
         isShutUp = true;
 
         std::replace(caption.begin(), caption.end(), ' ', '_');
