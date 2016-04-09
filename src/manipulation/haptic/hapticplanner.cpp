@@ -39,11 +39,14 @@ namespace kukadu {
             string hapticPath = complexPath + "haptics";
             preparePathString(hapticPath);
 
-            auto sensingCopy = copySensingControllers(sensingControllers, hapticPath);
-
             if(!fileExists(complexPath))
                 // initialize haptic planner in general (load controllers and create ps)
                 createDirectory(complexPath);
+
+            if(!fileExists(hapticPath))
+                createDirectory(hapticPath);
+
+            auto sensingCopy = copySensingControllers(sensingControllers, hapticPath);
 
             if(!fileExists(complexPath + "composition")) {
 

@@ -7,7 +7,7 @@ namespace pf = boost::filesystem;
 
 namespace kukadu {
 
-    SensingController::SensingController(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int hapticMode, string caption, std::string databasePath, std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, vector<KUKADU_SHARED_PTR<GenericHand> > hands, std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction, int simClassificationPrecision) : Controller(caption, 1) {
+    SensingController::SensingController(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int hapticMode, string caption, std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, vector<KUKADU_SHARED_PTR<GenericHand> > hands, std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction, int simClassificationPrecision) : Controller(caption, 1) {
 
         currentIterationNum = 0;
         classifierParamsSet = false;
@@ -20,10 +20,11 @@ namespace kukadu {
         this->queues = queues;
         this->tmpPath = tmpPath;
         this->hapticMode = hapticMode;
-        this->databasePath = databasePath;
         this->classifierFile = classifierFile;
         this->classifierPath = classifierPath;
         this->classifierFunction = classifierFunction;
+
+        databaseAlreadySet = false;
 
         bestParamC = 0.0;
         bestParamD = 0.0;
@@ -85,6 +86,7 @@ namespace kukadu {
 
     void SensingController::setDatabasePath(std::string databasePath) {
         this->databasePath = databasePath;
+        databaseAlreadySet = true;
         createDataBase();
     }
 
@@ -116,10 +118,15 @@ namespace kukadu {
     }
 
     std::vector<double> SensingController::callClassifier() {
+        if(!databaseAlreadySet)
+            throw KukaduException("(SensingController) database not defined yet");
         return callClassifier(databasePath, tmpPath + "hapticTest/" + queues.at(0)->getRobotFileName() + "_0", true, bestParamC, bestParamD, bestParamParam1, bestParamParam2);
     }
 
     int SensingController::performClassification() {
+
+        if(!databaseAlreadySet)
+            throw KukaduException("(SensingController) database not defined yet");
 
         int classifierRes = -1;
         if(!getSimulationMode()) {
@@ -226,6 +233,9 @@ namespace kukadu {
 
     double SensingController::createDataBase() {
 
+        if(!databaseAlreadySet)
+            throw KukaduException("(SensingController) database not defined yet");
+
         int numClasses = 0;
         string path = getDatabasePath();
         vector<pair<int, string> > collectedSamples;
@@ -237,8 +247,6 @@ namespace kukadu {
             if(!isShutUp)
                 cout << "(SensingController) folder doesn't exist - create" << endl;
             createDirectory(path);
-
-            cout << path << endl;
 
             // create the database
             numClasses = getSensingCatCount();
@@ -416,45 +424,7 @@ namespace kukadu {
                     fprintf(stderr, "Cannot convert argument\n");
 
                 }
-/*
-                PyTuple_SetItem(pArgs, 3, pValue);
 
-                pValue = PyFloat_FromDouble(bestParamD);
-
-                if (!pValue) {
-
-                    Py_DECREF(pArgs);
-                    Py_DECREF(pModule);
-                    fprintf(stderr, "Cannot convert argument\n");
-
-                }
-
-                PyTuple_SetItem(pArgs, 4, pValue);
-
-                pValue = PyFloat_FromDouble(bestParamParam1);
-
-                if (!pValue) {
-
-                    Py_DECREF(pArgs);
-                    Py_DECREF(pModule);
-                    fprintf(stderr, "Cannot convert argument\n");
-
-                }
-
-                PyTuple_SetItem(pArgs, 5, pValue);
-
-                pValue = PyFloat_FromDouble(bestParamParam2);
-
-                if (!pValue) {
-
-                    Py_DECREF(pArgs);
-                    Py_DECREF(pModule);
-                    fprintf(stderr, "Cannot convert argument\n");
-
-                }
-
-                PyTuple_SetItem(pArgs, 6, pValue);
-*/
                 pValue = PyObject_CallObject(pFunc, pArgs);
                 Py_DECREF(pArgs);
 
