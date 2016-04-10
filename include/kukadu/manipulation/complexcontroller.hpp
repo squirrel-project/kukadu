@@ -62,6 +62,7 @@ namespace kukadu {
 
     private:
 
+        bool cleanup;
         bool storeReward;
         bool colPrevRewards;
 
@@ -161,7 +162,10 @@ namespace kukadu {
 
         KUKADU_SHARED_PTR<kukadu_mersenne_twister> getGenerator();
 
-        KUKADU_SHARED_PTR<ControllerResult> performAction();
+        virtual void cleanupAfterAction() = 0;
+        virtual KUKADU_SHARED_PTR<ControllerResult> performAction();
+        virtual KUKADU_SHARED_PTR<ControllerResult> performAction(bool cleanup);
+
         KUKADU_SHARED_PTR<ProjectiveSimulator> getProjectiveSimulator();
         KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
         KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();

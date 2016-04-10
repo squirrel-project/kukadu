@@ -80,7 +80,8 @@ namespace kukadu {
     KUKADU_SHARED_PTR<kukadu::HapticControllerResult> HapticPlanner::performComplexSkill(std::string skillId) {
 
         auto complSkill = KUKADU_DYNAMIC_POINTER_CAST<ComplexController>(registeredComplexControllers[skillId]);
-        auto result = KUKADU_DYNAMIC_POINTER_CAST<HapticControllerResult>(complSkill->performAction());
+        // for learning, it has to cleanup afterwards as well
+        auto result = KUKADU_DYNAMIC_POINTER_CAST<HapticControllerResult>(complSkill->performAction(true));
         complSkill->updateFiles();
         return result;
 

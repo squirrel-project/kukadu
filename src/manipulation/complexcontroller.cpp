@@ -489,6 +489,9 @@ namespace kukadu {
                 retReward = punishReward;
             }
 
+            if(cleanup && executeIt)
+                cleanupAfterAction();
+
         } else {
 
             retReward = getSimulatedRewardInternal(sensCont, providedPercept, castedAction->getActionController(), sensCont->getSimulationGroundTruthIdx(), takenActionIdx);
@@ -503,6 +506,12 @@ namespace kukadu {
     }
 
     KUKADU_SHARED_PTR<ControllerResult> ComplexController::performAction() {
+        performAction(false);
+    }
+
+    KUKADU_SHARED_PTR<ControllerResult> ComplexController::performAction(bool cleanup) {
+
+        this->cleanup = cleanup;
 
         KUKADU_SHARED_PTR<ControllerResult> ret;
 
@@ -591,7 +600,8 @@ namespace kukadu {
             currentEnvModel->performRewarding();
 
             // after doing everything --> perform the complex action and reward it accordingly
-            projSim->performRewarding();
+            auto rewRet = projSim->performRewarding();
+            reward = get<1>(rewRet);
 
         } else {
 
