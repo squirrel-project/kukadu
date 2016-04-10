@@ -71,13 +71,25 @@ namespace kukadu {
         this->preparationControllers = preparatoryControllers;
     }
 
+    void ComplexController::updateFiles() {
+
+        for(auto env : environmentModels)
+            env.second->updatePsFile();
+
+        projSim->updatePsFile();
+
+    }
+
     void ComplexController::initialize() {
 
         // create / load sensing database
         createSensingDatabase();
 
-        bool existsPs = fileExists(storePath + "ps");
-        string envModelPath = storePath + "envmodels";
+        psPath = storePath + "ps";
+        historyPath = rewardHistoryPath + "history";
+
+        bool existsPs = fileExists(psPath);
+        envModelPath = storePath + "envmodels";
         preparePathString(envModelPath);
 
         if(existsPs) {
@@ -114,7 +126,7 @@ namespace kukadu {
 
             };
 
-            projSim = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, storePath + "ps", loadLambda));
+            projSim = KUKADU_SHARED_PTR<ProjectiveSimulator>(new ProjectiveSimulator(shared_from_this(), generator, psPath, loadLambda));
             // ugly syntax - i have to kill these shared pointers some day
             prepActions = (*((*(projSim->getClipLayers()->end() - 1))->begin()))->getSubClips();
             prepActionsCasted = projSim->getActionClips();
@@ -204,7 +216,7 @@ namespace kukadu {
         if(storeReward) {
             rewardHistoryStream = KUKADU_SHARED_PTR<std::ofstream>(new std::ofstream());
             int overWrite = 0;
-            if(fileExists(rewardHistoryPath + "history")) {
+            if(fileExists(historyPath)) {
                 cout << "(ComplexController) should reward history file be overwritten? (0 = no / 1 = yes)" << endl;
                 cin >> overWrite;
                 if(overWrite != 1) {
@@ -216,6 +228,10 @@ namespace kukadu {
             rewardHistoryStream->open(rewardHistoryPath.c_str(), ios::trunc);
         }
 
+    }
+
+    std::string ComplexController::getClassLabel(KUKADU_SHARED_PTR<Clip> sensingClip, KUKADU_SHARED_PTR<Clip> stateClip) {
+        return stateClip->toString();
     }
 
     void ComplexController::setBoredom(double boredom) {
@@ -341,6 +357,7 @@ namespace kukadu {
         storePath = path;
         this->availableSensingControllers = availableSensingControllers;
         this->availablePreparatoryControllers = availablePreparatoryControllers;
+
         initialize();
 
     }
@@ -371,7 +388,7 @@ namespace kukadu {
 
     void ComplexController::storeNextIteration() {
         stringstream s;
-        s << storePath + "ps" << currentIterationNum;
+        s << psPath << currentIterationNum;
         projSim->storePS(s.str());
     }
 
@@ -394,58 +411,6 @@ namespace kukadu {
         vector<KUKADU_SHARED_PTR<PerceptClip> >* rootRet;
         rootRet->push_back(root);
         return KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > >(rootRet);
-    }
-
-    double ComplexController::computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction) {
-
-        int worked = 0;
-        int executeIt = 0;
-
-        double retReward = 0.0;
-
-        KUKADU_SHARED_PTR<vector<int> > intermed = projSim->getIntermediateHopIdx();
-        KUKADU_SHARED_PTR<IntermediateEventClip> sensClip = KUKADU_DYNAMIC_POINTER_CAST<IntermediateEventClip>(providedPercept->getSubClipByIdx(intermed->at(1)));
-        KUKADU_SHARED_PTR<SensingController> sensCont = sensClip->getSensingController();
-
-        KUKADU_SHARED_PTR<ControllerActionClip> castedAction = KUKADU_DYNAMIC_POINTER_CAST<ControllerActionClip>(takenAction);
-
-        int predictedClassIdx = intermed->at(2);
-        int takenActionIdx = intermed->at(3);
-
-        if(!getSimulationMode()) {
-
-            cout << "selected sensing action \"" << *sensClip << "\" resulted in predicted class " << intermed->at(2) << " and preparation action \"" << *takenAction << "\"" << endl;
-
-            castedAction->performAction();
-
-            cout << "(ComplexController) do you want to execute complex action now? (0 = no / 1 = yes)" << endl;
-            cin >> executeIt;
-
-            if(executeIt)
-                executeComplexAction();
-
-            cout << "did the complex action succeed? (0 = no / 1 = yes)" << endl;
-            cin >> worked;
-
-            if(worked) {
-                cout << "preparation action worked; rewarded with " << stdReward << endl;
-                retReward = stdReward;
-            } else {
-                cout << "preparation action didn't work; no reward given" << endl;
-                retReward = punishReward;
-            }
-
-        } else {
-
-            retReward = getSimulatedRewardInternal(sensCont, providedPercept, castedAction->getActionController(), predictedClassIdx, takenActionIdx);
-
-        }
-
-        if(storeReward)
-            *rewardHistoryStream << retReward << "\t" << *sensClip << "\t" << predictedClassIdx << "\t\t" << *takenAction << endl;
-
-        return retReward;
-
     }
 
     double ComplexController::getSimulatedRewardInternal(KUKADU_SHARED_PTR<SensingController> usedSensingController, KUKADU_SHARED_PTR<kukadu::PerceptClip> providedPercept, KUKADU_SHARED_PTR<kukadu::Controller> takenAction, int sensingClassIdx, int prepContIdx) {
@@ -488,6 +453,55 @@ namespace kukadu {
 
     }
 
+    double ComplexController::computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction) {
+
+        int worked = 0;
+        int executeIt = 0;
+
+        double retReward = 0.0;
+
+        KUKADU_SHARED_PTR<vector<int> > intermed = projSim->getIntermediateHopIdx();
+        auto nonCastedSenseClip = providedPercept->getSubClipByIdx(intermed->at(1));
+        KUKADU_SHARED_PTR<IntermediateEventClip> sensClip = KUKADU_DYNAMIC_POINTER_CAST<IntermediateEventClip>(nonCastedSenseClip);
+        KUKADU_SHARED_PTR<SensingController> sensCont = sensClip->getSensingController();
+
+        KUKADU_SHARED_PTR<ControllerActionClip> castedAction = KUKADU_DYNAMIC_POINTER_CAST<ControllerActionClip>(takenAction);
+
+        int predictedClassIdx = intermed->at(2);
+        int takenActionIdx = intermed->at(3);
+
+        if(!getSimulationMode()) {
+
+            cout << "(ComplexController) do you want to execute complex action now? (0 = no / 1 = yes)" << endl;
+            cin >> executeIt;
+
+            if(executeIt)
+                executeComplexAction();
+
+            cout << "did the complex action succeed? (0 = no / 1 = yes)" << endl;
+            cin >> worked;
+
+            if(worked) {
+                cout << "preparation action worked; rewarded with " << stdReward << endl;
+                retReward = stdReward;
+            } else {
+                cout << "preparation action didn't work; no reward given" << endl;
+                retReward = punishReward;
+            }
+
+        } else {
+
+            retReward = getSimulatedRewardInternal(sensCont, providedPercept, castedAction->getActionController(), sensCont->getSimulationGroundTruthIdx(), takenActionIdx);
+
+        }
+
+        if(storeReward)
+            *rewardHistoryStream << retReward << "\t" << *sensClip << "\t" << sensCont->getSimulationGroundTruthIdx() << "\t" << predictedClassIdx << "\t\t" << *takenAction << endl;
+
+        return retReward;
+
+    }
+
     KUKADU_SHARED_PTR<ControllerResult> ComplexController::performAction() {
 
         KUKADU_SHARED_PTR<ControllerResult> ret;
@@ -507,20 +521,27 @@ namespace kukadu {
         double reward = 0.0;
         std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > selectedPath;
 
+        if(walkRet.first == Clip::CLIP_H_LEVEL_FINAL)
+            wasBored = false;
+
         // if the last clip is an action clip, PS was not bored
-        if(walkRet.first == Clip::CLIP_H_LEVEL_FINAL) {
+        if(!wasBored) {
 
-            tuple<bool, double, vector<int> > actionRes = projSim->performRewarding();
-            wasBored = std::get<0>(actionRes);
-            reward = std::get<1>(actionRes);
-            auto hopPath = std::get<2>(actionRes);
+            auto hopPath = projSim->getIntermediateHopIdx();
 
-            auto newClips = extractClipsFromPath(hopPath);
+            auto newClips = extractClipsFromPath(*hopPath);
             auto sensingClip = get<0>(newClips);
             auto stateClip = get<1>(newClips);
             auto stateId = stateClip->getClipDimensions()->at(0);
             auto actionClip = get<2>(newClips);
             auto actionId = actionClip->getClipDimensions()->at(0);
+
+            if(!getSimulationMode()) {
+                auto sensedLabel = getClassLabel(sensingClip, stateClip);
+                cout << "(ComplexController::performAction) selected sensing action \"" << *sensingClip << "\" resulted in predicted class " << sensedLabel << " and preparation action \"" << *actionClip << "\"" << endl;
+            }
+
+            KUKADU_DYNAMIC_POINTER_CAST<ControllerActionClip>(actionClip)->performAction();
 
             auto sensingController = sensingClip->getSensingController();
 
@@ -543,8 +564,16 @@ namespace kukadu {
                 sensingClip->getSensingController()->setSimulationGroundTruth(sensingClip->getSubClipIdx(groundTruthStateClip));
             }
 
+            // check state after preparatory action
             int resultingStateChildIdx = sensingController->performClassification();
-            int resultingStateId = sensingClip->getSubClipByIdx(resultingStateChildIdx)->getClipDimensions()->at(0);
+
+            auto sensedState = sensingClip->getSubClipByIdx(resultingStateChildIdx);
+            int resultingStateId = sensedState->getClipDimensions()->at(0);
+
+            if(!getSimulationMode()) {
+                auto sensedLabel = getClassLabel(sensingClip, sensedState);
+                cout << "(ComplexController::performAction) classifier result is category " << sensedLabel << endl;
+            }
 
             vector<int> stateVector{stateId, actionId};
             auto currentEnvModel = environmentModels[sensingClip->toString()];
@@ -560,6 +589,9 @@ namespace kukadu {
             currentEnvModel->setNextPredefinedPath(envClipPath);
             currentEnvModel->performRandomWalk();
             currentEnvModel->performRewarding();
+
+            // after doing everything --> perform the complex action and reward it accordingly
+            projSim->performRewarding();
 
         } else {
 

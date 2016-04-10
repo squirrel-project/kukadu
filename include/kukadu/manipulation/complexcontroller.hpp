@@ -78,7 +78,10 @@ namespace kukadu {
 
         KUKADU_SHARED_PTR<EnvironmentReward> envReward;
 
+        std::string psPath;
         std::string storePath;
+        std::string historyPath;
+        std::string envModelPath;
         std::string rewardHistoryPath;
 
         KUKADU_SHARED_PTR<PerceptClip> root;
@@ -153,6 +156,9 @@ namespace kukadu {
         double getStdReward();
         double getPunishReward();
 
+        // overwrite this if the ground truth of the sensing classes is known for some sensing actions
+        virtual std::string getClassLabel(KUKADU_SHARED_PTR<Clip> sensingClip, KUKADU_SHARED_PTR<Clip> stateClip);
+
         KUKADU_SHARED_PTR<kukadu_mersenne_twister> getGenerator();
 
         KUKADU_SHARED_PTR<ControllerResult> performAction();
@@ -160,6 +166,8 @@ namespace kukadu {
         KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
         KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();
         KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();
+
+        void updateFiles();
 
 #ifdef USEBOOST
         static const std::string FILE_SENSING_PREFIX;

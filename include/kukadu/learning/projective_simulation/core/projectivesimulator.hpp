@@ -50,6 +50,7 @@ namespace kukadu {
 
         bool useRanking;
         bool doTraining;
+        bool loadedFromFile;
         bool lastRunWasBored;
 
         int levels;
@@ -58,6 +59,9 @@ namespace kukadu {
         int maxNumberOfClips;
 
         double gamma;
+
+        std::string psFile;
+
         std::vector<double> boredomLevels;
 
         KUKADU_SHARED_PTR<Clip> predefinedFirstHop;
@@ -136,6 +140,7 @@ namespace kukadu {
         KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > getActionClips();
         KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > > > getClipLayers();
 
+        void updatePsFile();
         void storePS(std::string targetFile);
 
         static constexpr auto IGNORE_ID = INT_MIN;

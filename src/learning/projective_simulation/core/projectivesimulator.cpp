@@ -5,6 +5,7 @@
 #include <iostream>
 #include <kukadu/utils/kukadutokenizer.hpp>
 #include <kukadu/types/kukadutypes.hpp>
+#include <kukadu/utils/utils.hpp>
 
 using namespace std;
 
@@ -13,6 +14,8 @@ namespace kukadu {
     void ProjectiveSimulator::loadPsConstructor(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file,
                        std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) > createClipFunc) {
 
+        this->psFile = file;
+        this->loadedFromFile = true;
         this->reward = reward;
         this->generator = generator;
 
@@ -198,12 +201,15 @@ namespace kukadu {
     ProjectiveSimulator::ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file,
                     std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) > createClipFunc) {
 
+        this->loadedFromFile = true;
         loadPsConstructor(reward, generator, file, createClipFunc);
         lastRunWasBored = false;
 
     }
 
     ProjectiveSimulator::ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file) {
+
+        this->loadedFromFile = true;
 
         loadPsConstructor(reward, generator, file, [] (const std::string& line, const int& level, const int& perceptDimensionality, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) -> KUKADU_SHARED_PTR<Clip> {
 
@@ -230,6 +236,16 @@ namespace kukadu {
 
         });
         lastRunWasBored = false;
+
+    }
+
+    void ProjectiveSimulator::updatePsFile() {
+
+        if(loadedFromFile) {
+            deleteFile(psFile);
+            storePS(psFile);
+        } else
+            throw KukaduException("(ProjectiveSimulator) PS model was not loaded from file");
 
     }
 
@@ -350,6 +366,8 @@ namespace kukadu {
 
     ProjectiveSimulator::ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, double gamma, int operationMode, bool useRanking) {
 
+        this->loadedFromFile = false;
+
         this->perceptClips = reward->generatePerceptClips();
         this->actionClips = reward->generateActionClips();
 
@@ -412,6 +430,7 @@ namespace kukadu {
                         KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > network,
                         double gamma, int operationMode, bool useRanking) {
 
+        this->loadedFromFile = false;
         this->perceptClips = network;
 
         // set levels and action clips
@@ -889,6 +908,9 @@ namespace kukadu {
                 return;
             }
         }
+
+        psFile = targetFile;
+        loadedFromFile = true;
 
         ofstream outFile;
         outFile.open(targetFile.c_str(), ios::trunc);

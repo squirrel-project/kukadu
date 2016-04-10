@@ -118,15 +118,17 @@ namespace kukadu {
     }
 
     std::vector<double> SensingController::callClassifier() {
+
         if(!databaseAlreadySet)
-            throw KukaduException("(SensingController) database not defined yet");
+            throw KukaduException("(SensingController::callClassifier) database not defined yet");
+
         return callClassifier(databasePath, tmpPath + "hapticTest/" + queues.at(0)->getRobotFileName() + "_0", true, bestParamC, bestParamD, bestParamParam1, bestParamParam2);
     }
 
     int SensingController::performClassification() {
 
         if(!databaseAlreadySet)
-            throw KukaduException("(SensingController) database not defined yet");
+            throw KukaduException("(SensingController::performClassification) database not defined yet");
 
         int classifierRes = -1;
         if(!getSimulationMode()) {
@@ -153,8 +155,8 @@ namespace kukadu {
 
             } else {
                 if(!isShutUp) {
-                    cout << "(ControllerActionClip) you decided not to perform the action" << endl;
-                    cout << "(ControllerActionClip) switching temporarily to haptic mode HAPTIC_MODE_TERMINAL; continue" << endl;
+                    cout << "(SensinController) you decided not to perform the action" << endl;
+                    cout << "(SensinController) switching temporarily to haptic mode HAPTIC_MODE_TERMINAL; continue" << endl;
                 }
                 temporaryHapticMode = SensingController::HAPTIC_MODE_TERMINAL;
             }
@@ -178,7 +180,7 @@ namespace kukadu {
             }
 
             if(!isShutUp)
-                cout << "(main) classifier result is category " << classifierRes << endl << "(main) press enter to continue" << endl;
+                cout << "(SensinController) press enter to continue" << endl;
             getchar();
 
             pf::remove_all(tmpPath + "hapticTest");
@@ -234,7 +236,7 @@ namespace kukadu {
     double SensingController::createDataBase() {
 
         if(!databaseAlreadySet)
-            throw KukaduException("(SensingController) database not defined yet");
+            throw KukaduException("(SensingController::createDataBase) database not defined yet");
 
         int numClasses = 0;
         string path = getDatabasePath();
@@ -252,6 +254,9 @@ namespace kukadu {
             numClasses = getSensingCatCount();
             if(!isShutUp)
                 cout << "(SensingController) " << getCaption() << " offers " << numClasses << " classes" << endl;
+
+            ofstream labelFile;
+            labelFile.open((path + "labels").c_str(), std::ios_base::app);
 
             for(int currClass = 0; currClass < numClasses; ++currClass) {
 
@@ -272,6 +277,7 @@ namespace kukadu {
                     gatherData(nextSamplePath);
 
                     collectedSamples.push_back(pair<int, string>(currClass, relativeClassifyPath));
+                    labelFile << relativeClassifyPath << " " << currClass << endl;
 
                     cout << "(SensingController) want to collect another sample for class " << currClass << "? (0 = no / 1 = yes): ";
                     cin >> cont;
@@ -280,7 +286,7 @@ namespace kukadu {
 
             }
 
-            writeLabelFile(path, collectedSamples);
+            labelFile.close();
 
         } else {
             if(!isShutUp)

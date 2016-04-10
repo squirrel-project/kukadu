@@ -47,6 +47,9 @@ namespace kukadu {
                 createDirectory(hapticPath);
 
             auto sensingCopy = copySensingControllers(sensingControllers, hapticPath);
+            std::map<std::string, KUKADU_SHARED_PTR<kukadu::SensingController> > copiedMap;
+            for(auto sense : sensingCopy)
+                copiedMap[sense->getCaption()] = sense;
 
             if(!fileExists(complexPath + "composition")) {
 
@@ -57,7 +60,7 @@ namespace kukadu {
 
             } else {
 
-                castCompCont->load(complexPath, registeredSensingControllers, registeredPrepControllers);
+                castCompCont->load(complexPath, copiedMap, registeredPrepControllers);
 
             }
 
@@ -76,8 +79,10 @@ namespace kukadu {
 
     KUKADU_SHARED_PTR<kukadu::HapticControllerResult> HapticPlanner::performComplexSkill(std::string skillId) {
 
-        auto complSkill = registeredComplexControllers[skillId];
-        return KUKADU_DYNAMIC_POINTER_CAST<HapticControllerResult>(complSkill->performAction());
+        auto complSkill = KUKADU_DYNAMIC_POINTER_CAST<ComplexController>(registeredComplexControllers[skillId]);
+        auto result = KUKADU_DYNAMIC_POINTER_CAST<HapticControllerResult>(complSkill->performAction());
+        complSkill->updateFiles();
+        return result;
 
     }
 
