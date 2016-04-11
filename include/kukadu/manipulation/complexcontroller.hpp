@@ -145,6 +145,9 @@ namespace kukadu {
         void setSensingControllers(std::vector<KUKADU_SHARED_PTR<kukadu::SensingController> > sensingControllers);
         void setPreparatoryControllers(std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > preparatoryControllers);
 
+        void clearPreparatoryControllers();
+        void addPreparatoryController(KUKADU_SHARED_PTR<kukadu::Controller> prepCont);
+
         virtual void executeComplexAction() = 0;
 
         int getDimensionality();

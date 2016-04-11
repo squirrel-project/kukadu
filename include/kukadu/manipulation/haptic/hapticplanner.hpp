@@ -23,9 +23,15 @@ namespace kukadu {
 
         std::string skillDatabase;
 
-        std::map<std::string, KUKADU_SHARED_PTR<kukadu::SensingController> > registeredSensingControllers;
-        std::map<std::string, KUKADU_SHARED_PTR<kukadu::Controller> > registeredPrepControllers;
         std::map<std::string, KUKADU_SHARED_PTR<kukadu::Controller> > registeredComplexControllers;
+        std::map<std::string, KUKADU_SHARED_PTR<kukadu::SensingController> > registeredSensingControllers;
+
+        std::map<std::string, KUKADU_SHARED_PTR<kukadu::Controller> > allPrepControllers;
+        std::map<std::string, KUKADU_SHARED_PTR<kukadu::Controller> > preparationProducesGraspControllers;
+        std::map<std::string, KUKADU_SHARED_PTR<kukadu::Controller> > preparationProducesNonGraspControllers;
+
+        std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > preparationProducesGraspControllersVector;
+        std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > preparationProducesNonGraspControllersVector;
 
         KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator;
 

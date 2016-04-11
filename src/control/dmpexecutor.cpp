@@ -74,6 +74,14 @@ namespace kukadu {
 
     }
 
+    bool DMPExecutor::requiresGrasp() {
+        return false;
+    }
+
+    bool DMPExecutor::producesGrasp() {
+        return true;
+    }
+
     void  DMPExecutor::setRollbackTime(double rollbackTime) {
         this->rollbackTime = rollbackTime;
     }

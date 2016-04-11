@@ -71,6 +71,14 @@ namespace kukadu {
         this->preparationControllers = preparatoryControllers;
     }
 
+    void ComplexController::clearPreparatoryControllers() {
+        this->preparationControllers.clear();
+    }
+
+    void ComplexController::addPreparatoryController(KUKADU_SHARED_PTR<kukadu::Controller> prepCont) {
+        this->preparationControllers.push_back(prepCont);
+    }
+
     void ComplexController::updateFiles() {
 
         for(auto env : environmentModels)

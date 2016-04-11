@@ -21,8 +21,18 @@ namespace kukadu {
         for(auto sensCont : sensingControllers)
             registeredSensingControllers.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::SensingController> >(sensCont->getCaption(), sensCont));
 
-        for(auto prepCont : preparatoryControllers)
-            registeredPrepControllers.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::Controller> >(prepCont->getCaption(), prepCont));
+        for(auto prepCont : preparatoryControllers) {
+
+            allPrepControllers.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::Controller> >(prepCont->getCaption(), prepCont));
+            if(prepCont->producesGrasp()) {
+                preparationProducesGraspControllers.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::Controller> >(prepCont->getCaption(), prepCont));
+                preparationProducesGraspControllersVector.push_back(prepCont);
+            } else {
+                preparationProducesNonGraspControllers.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::Controller> >(prepCont->getCaption(), prepCont));
+                preparationProducesNonGraspControllersVector.push_back(prepCont);
+            }
+
+        }
 
         for(auto compCont : complexControllers) {
 
@@ -54,13 +64,17 @@ namespace kukadu {
             if(!fileExists(complexPath + "composition")) {
 
                 castCompCont->setSensingControllers(sensingCopy);
-                castCompCont->setPreparatoryControllers(preparatoryControllers);
+                if(castCompCont->requiresGrasp())
+                    castCompCont->setPreparatoryControllers(preparationProducesGraspControllersVector);
+                else
+                    castCompCont->setPreparatoryControllers(preparationProducesNonGraspControllersVector);
+
                 castCompCont->initialize();
                 castCompCont->store(complexPath);
 
             } else {
 
-                castCompCont->load(complexPath, copiedMap, registeredPrepControllers);
+                castCompCont->load(complexPath, copiedMap, allPrepControllers);
 
             }
 

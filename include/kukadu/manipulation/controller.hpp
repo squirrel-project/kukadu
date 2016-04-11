@@ -37,6 +37,9 @@ namespace kukadu {
         void startTalking();
         void setSimulationMode(bool simulationMode);
 
+        virtual bool requiresGrasp() = 0;
+        virtual bool producesGrasp() = 0;
+
         virtual void initialize();
 
         bool getSimulationMode();

@@ -147,6 +147,9 @@ namespace kukadu {
         void construct(KUKADU_SHARED_PTR<Dmp> dmp, KUKADU_SHARED_PTR<ControlQueue> execQueue, int suppressMessages);
         void  setRollbackTime(double rollbackTime);
 
+        virtual bool requiresGrasp();
+        virtual bool producesGrasp();
+
         double getExternalError();
 
         arma::vec doIntegrationStep(double ac);
