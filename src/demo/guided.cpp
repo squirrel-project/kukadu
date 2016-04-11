@@ -30,6 +30,9 @@ int main(int argc, char** args) {
     string prefix = "real";
     string arm = "left";
 
+    if(argc == 2)
+        storeDir = string(args[1]);
+
     // Declare the supported options.
     po::options_description desc("Allowed options");
     desc.add_options()
