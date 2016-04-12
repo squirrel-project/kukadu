@@ -10,6 +10,7 @@ namespace kukadu {
                                  std::vector<KUKADU_SHARED_PTR<kukadu::SensingController> > sensingControllers,
                                  std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > preparatoryControllers,
                                  std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > complexControllers,
+                                 KUKADU_SHARED_PTR<kukadu::Controller> nothingController,
                                  KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) : Reward(generator, false) {
 
         this->generator = generator;
@@ -18,9 +19,22 @@ namespace kukadu {
 
         this->skillDatabase = skillDatabase;
 
-        for(auto sensCont : sensingControllers)
-            registeredSensingControllers.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::SensingController> >(sensCont->getCaption(), sensCont));
+        for(auto sensCont : sensingControllers) {
+            if(sensCont->requiresGrasp()) {
+                requiresGraspSensingControllers.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::SensingController> >(sensCont->getCaption(), sensCont));
+                requiresGraspSensingControllersVec.push_back(sensCont);
+            } else {
+                nonRequiresGraspSensingControllers.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::SensingController> >(sensCont->getCaption(), sensCont));
+                nonRequiresGraspSensingControllersVec.push_back(sensCont);
+            }
+        }
 
+        // "do nothing" controller is available for all actions (no matter if they require grasped objects or not)
+        allPrepControllers.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::Controller> >(nothingController->getCaption(), nothingController));
+        preparationProducesGraspControllers.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::Controller> >(nothingController->getCaption(), nothingController));
+        preparationProducesGraspControllersVector.push_back(nothingController);
+        preparationProducesNonGraspControllers.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::Controller> >(nothingController->getCaption(), nothingController));
+        preparationProducesNonGraspControllersVector.push_back(nothingController);
         for(auto prepCont : preparatoryControllers) {
 
             allPrepControllers.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::Controller> >(prepCont->getCaption(), prepCont));
@@ -56,7 +70,13 @@ namespace kukadu {
             if(!fileExists(hapticPath))
                 createDirectory(hapticPath);
 
-            auto sensingCopy = copySensingControllers(sensingControllers, hapticPath);
+            std::vector<KUKADU_SHARED_PTR<kukadu::SensingController> > sensingCopy;
+            // sensing and complex controllers are assumed to require the same (grasped or not grasped)
+            if(castCompCont->requiresGrasp())
+                sensingCopy = copySensingControllers(requiresGraspSensingControllersVec, hapticPath);
+            else
+                sensingCopy = copySensingControllers(nonRequiresGraspSensingControllersVec, hapticPath);
+
             std::map<std::string, KUKADU_SHARED_PTR<kukadu::SensingController> > copiedMap;
             for(auto sense : sensingCopy)
                 copiedMap[sense->getCaption()] = sense;
@@ -73,9 +93,7 @@ namespace kukadu {
                 castCompCont->store(complexPath);
 
             } else {
-
                 castCompCont->load(complexPath, copiedMap, allPrepControllers);
-
             }
 
             registeredComplexControllers.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::Controller> >(contName, compCont));
@@ -110,6 +128,7 @@ namespace kukadu {
         for(auto comp : registeredComplexControllers) {
             cout << "(" << i << ") " << comp.second->getCaption() << endl;
             keyMap.insert(pair<int, string>(i, comp.second->getCaption()));
+            ++i;
         }
         cout << endl << "selection: ";
         cin >> selection;

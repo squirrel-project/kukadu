@@ -24,7 +24,12 @@ namespace kukadu {
         std::string skillDatabase;
 
         std::map<std::string, KUKADU_SHARED_PTR<kukadu::Controller> > registeredComplexControllers;
-        std::map<std::string, KUKADU_SHARED_PTR<kukadu::SensingController> > registeredSensingControllers;
+
+        std::vector<KUKADU_SHARED_PTR<kukadu::SensingController> > requiresGraspSensingControllersVec;
+        std::vector<KUKADU_SHARED_PTR<kukadu::SensingController> > nonRequiresGraspSensingControllersVec;
+
+        std::map<std::string, KUKADU_SHARED_PTR<kukadu::SensingController> > requiresGraspSensingControllers;
+        std::map<std::string, KUKADU_SHARED_PTR<kukadu::SensingController> > nonRequiresGraspSensingControllers;
 
         std::map<std::string, KUKADU_SHARED_PTR<kukadu::Controller> > allPrepControllers;
         std::map<std::string, KUKADU_SHARED_PTR<kukadu::Controller> > preparationProducesGraspControllers;
@@ -50,6 +55,7 @@ namespace kukadu {
                       std::vector<KUKADU_SHARED_PTR<kukadu::SensingController> > sensingControllers,
                       std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > preparatoryControllers,
                       std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > complexControllers,
+                      KUKADU_SHARED_PTR<kukadu::Controller> nothingController,
                       KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator);
 
         virtual int getDimensionality();
