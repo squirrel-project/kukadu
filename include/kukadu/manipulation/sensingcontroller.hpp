@@ -81,7 +81,7 @@ namespace kukadu {
 
         virtual KUKADU_SHARED_PTR<kukadu::SensingController> clone() = 0;
 
-        int performClassification();
+        virtual int performClassification();
         int createRandomGroundTruthIdx();
         int getSimulationGroundTruthIdx();
 

@@ -48,6 +48,10 @@ namespace kukadu {
 
         }
 
+        // also add complex controllers
+        for(auto compCont : complexControllers)
+            allPrepControllers.insert(std::pair<std::string, KUKADU_SHARED_PTR<kukadu::Controller> >(compCont->getCaption(), compCont));
+
         for(auto compCont : complexControllers) {
 
             KUKADU_SHARED_PTR<kukadu::ComplexController> castCompCont = KUKADU_DYNAMIC_POINTER_CAST<kukadu::ComplexController>(compCont);
@@ -84,10 +88,18 @@ namespace kukadu {
             if(!fileExists(complexPath + "composition")) {
 
                 castCompCont->setSensingControllers(sensingCopy);
-                if(castCompCont->requiresGrasp())
+                if(castCompCont->requiresGrasp()) {
                     castCompCont->setPreparatoryControllers(preparationProducesGraspControllersVector);
-                else
+                    // also complex actions that result in a grasp are added now
+                    for(auto cont : complexControllers)
+                        if(cont != castCompCont && cont->producesGrasp())
+                            castCompCont->addPreparatoryController(cont);
+                } else {
                     castCompCont->setPreparatoryControllers(preparationProducesNonGraspControllersVector);
+                    for(auto cont : complexControllers)
+                        if(cont != castCompCont && !cont->producesGrasp())
+                            castCompCont->addPreparatoryController(cont);
+                }
 
                 castCompCont->initialize();
                 castCompCont->store(complexPath);
@@ -112,9 +124,11 @@ namespace kukadu {
     KUKADU_SHARED_PTR<kukadu::HapticControllerResult> HapticPlanner::performComplexSkill(std::string skillId) {
 
         auto complSkill = KUKADU_DYNAMIC_POINTER_CAST<ComplexController>(registeredComplexControllers[skillId]);
+
         // for learning, it has to cleanup afterwards as well
         auto result = KUKADU_DYNAMIC_POINTER_CAST<HapticControllerResult>(complSkill->performAction(true));
         complSkill->updateFiles();
+
         return result;
 
     }
@@ -132,7 +146,7 @@ namespace kukadu {
         }
         cout << endl << "selection: ";
         cin >> selection;
-        return keyMap[i];
+        return keyMap[selection];
 
     }
 
