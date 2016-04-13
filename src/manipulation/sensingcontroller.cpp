@@ -109,8 +109,6 @@ namespace kukadu {
         store.stopDataStorage();
         storageThread->join();
 
-        cleanUp();
-
     }
 
     std::string SensingController::getFirstRobotFileName() {
@@ -131,6 +129,8 @@ namespace kukadu {
             throw KukaduException("(SensingController::performClassification) database not defined yet");
 
         int classifierRes = -1;
+
+        KUKADU_SHARED_PTR<kukadu_thread> cleanupThread;
         if(!getSimulationMode()) {
 
             int executeIt = 0;
@@ -149,6 +149,10 @@ namespace kukadu {
                 pf::remove_all(tmpPath + "hapticTest");
 
                 gatherData(tmpPath, "hapticTest");
+
+                // start clean up in a separate thread
+                cleanupThread = KUKADU_SHARED_PTR<kukadu_thread>(new kukadu_thread(&SensingController::cleanUp, this));
+
                 stringstream s;
                 s << tmpPath << "hapticTest_" << queues.at(0)->getRobotFileName() << "_0_" << currentIterationNum;
                 copyFile(tmpPath + "hapticTest/" + queues.at(0)->getRobotFileName() + "_0", s.str());
@@ -178,7 +182,7 @@ namespace kukadu {
             } else {
                 throw KukaduException("haptic mode not known");
             }
-
+cout << 4 << endl;
             if(!isShutUp)
                 cout << "(SensinController) press enter to continue" << endl;
             getchar();
@@ -208,6 +212,9 @@ namespace kukadu {
             }
 
         }
+
+        if(cleanupThread)
+            cleanupThread->join();
 
         return classifierRes;
 
@@ -275,6 +282,7 @@ namespace kukadu {
                     string relativeClassifyPath = relativePath + "/" + getFirstRobotFileName() + "_0";
                     string nextSamplePath = path + relativePath;
                     gatherData(nextSamplePath);
+                    cleanUp();
 
                     collectedSamples.push_back(pair<int, string>(currClass, relativeClassifyPath));
                     labelFile << relativeClassifyPath << " " << currClass << endl;

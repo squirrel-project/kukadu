@@ -50,6 +50,9 @@ namespace kukadu {
 
         void writeLabelFile(std::string baseFolderPath, std::vector<std::pair<int, std::string> > collectedSamples);
 
+        void gatherData(std::string completePath);
+        void gatherData(std::string dataBasePath, std::string dataName);
+
     protected:
 
         KUKADU_SHARED_PTR<kukadu_mersenne_twister> getGenerator();
@@ -69,9 +72,7 @@ namespace kukadu {
                           int simClassificationPrecision);
 
         void setSimulationGroundTruth(int idx);
-        void gatherData(std::string completePath);
         void setSimulationClassificationPrecision(int percent);
-        void gatherData(std::string dataBasePath, std::string dataName);
         void setCLassifierParams(double bestParamC, double bestParamD, double bestParamParam1, double bestParamParam2);
 
         virtual void prepare() = 0;
