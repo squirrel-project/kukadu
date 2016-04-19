@@ -15,8 +15,7 @@ namespace kukadu {
 
             this->queue = queue;
             this->activeJointsPrefix = activeJointsPrefix;
-            if(!fileExists("./MT.cfg"))
-                copyFile(mtConfigPath, "./MT.cfg");
+            MT::openConfigFile(mtConfigPath.c_str());
 
             simplePlanner = KUKADU_SHARED_PTR<SimplePlanner>(new SimplePlanner(queue, KUKADU_SHARED_PTR<Kinematics>()));
 
