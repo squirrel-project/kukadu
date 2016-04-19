@@ -134,10 +134,15 @@ target_link_libraries(kukadu_demo_guided kukadu ${catkin_LIBRARIES} komo swift a
 
 add_executable(robotino_demo src/demo/robotino_demo.cpp)
 target_link_libraries(robotino_demo kukadu ${PCL_LIBRARIES} ${catkin_LIBRARIES})
+
+add_executable(planning src/demo/planning.cpp)
+target_link_libraries(planning kukadu ${catkin_LIBRARIES})
+
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS} python3.4m)
 add_dependencies(reflexxeslib ${catkin_EXPORTED_TARGETS})
 add_dependencies(kukadu_demo_guided ${catkin_EXPORTED_TARGETS})
 add_dependencies(robotino_demo ${catkin_EXPORTED_TARGETS})
+add_dependencies(planning ${catkin_EXPORTED_TARGETS})
 
 if(CATKIN_ENABLE_TESTING)
 	catkin_add_gtest(kukadutest test/kukadutest.cpp)

@@ -353,12 +353,13 @@ namespace kukadu {
 
         komoMutex.lock();
             if(!plannerInitialized) {
-
+cout << "a" << endl;
                 planner = KUKADU_SHARED_PTR<PathPlanner>(new KomoPlanner(shared_from_this(),
                                                                          resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/data/iis_robot.kvg"),
                                                                          resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/config/MT.cfg"),
                                                                          getRobotSidePrefix(), acceptCollisions));
                 plannerInitialized = true;
+cout << "b" << endl;
             }
 
             vector<geometry_msgs::Pose> desiredPlan;

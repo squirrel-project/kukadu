@@ -1005,6 +1005,12 @@ namespace kukadu {
 
         copy(begin, end, begin2);
 
+        f.flush();
+        f2.flush();
+
+        f.close();
+        f2.close();
+
     }
 
     void deleteDirectory(std::string path) {

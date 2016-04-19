@@ -72,8 +72,8 @@ class cls_mmr(base.cls_data):
     self.itestmode=0        ## 2 against the training with knn, 10 vectorwise
                             ## 20 Y0 is available
     ## ##################################################
-    ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
-    self.nrepeat=5000
+    ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    self.nrepeat=10000
     self.nfold=5
     ## ##################################################
     self.testknn=5
