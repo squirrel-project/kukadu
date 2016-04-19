@@ -22,6 +22,8 @@ int main(int argc, char** args) {
         realLeftQueue->switchMode(KukieControlQueue::KUKA_JNT_IMP_MODE);
     }
 
+    /****** stuff is set up now --> here you can move as much as you want *******/
+
     cout << "joint ptp" << endl;
     realLeftQueue->jointPtp({-1.5, 1.56, 2.33, -1.74, -1.85, 1.27, 0.71});
 
@@ -35,6 +37,8 @@ int main(int argc, char** args) {
     nextPose.position.z = 0.45;
     realLeftQueue->cartesianPtp(nextPose, 10.0);
     cout << "second ptp done" << endl;
+
+    /****** done with moving? --> clean up everything and quit *******/
 
     realLeftQueue->stopCurrentMode();
     realLeftQueue->setFinish();
