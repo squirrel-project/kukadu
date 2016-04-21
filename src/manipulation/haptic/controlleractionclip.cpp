@@ -11,15 +11,20 @@ namespace kukadu {
 
     void ControllerActionClip::performAction() {
 
-        int executeIt = 0;
-        cout << "(ControllerActionClip) selected preparation action is \"" << actionController->getCaption() << "\"; want to execute it? (0 = no / 1 = yes)" << endl;
-        cin >> executeIt;
+        if(!actionController->getSimulationMode()) {
 
-        if(executeIt == 1) {
-            actionController->performAction();
-        } else {
-            cout << "(ControllerActionClip) you decided not to perform the action; continue" << endl;
+            int executeIt = 0;
+            cout << "(ControllerActionClip) selected preparation action is \"" << actionController->getCaption() << "\"; want to execute it? (0 = no / 1 = yes)" << endl;
+            cin >> executeIt;
+
+            if(executeIt == 1) {
+                actionController->performAction();
+            } else {
+                cout << "(ControllerActionClip) you decided not to perform the action; continue" << endl;
+            }
+
         }
+
     }
 
     KUKADU_SHARED_PTR<Controller> ControllerActionClip::getActionController() {

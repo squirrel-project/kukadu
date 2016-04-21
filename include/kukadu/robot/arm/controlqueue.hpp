@@ -130,6 +130,11 @@ namespace kukadu {
         virtual void setFinish();
 
         /**
+         * @brief sets a complete trajectory after the last action is completed
+         */
+        virtual void setNextTrajectory(std::vector<arma::vec> jointTrajectory);
+
+        /**
          * \brief Adds next joint position to queue
          * \param joints joints to add
          */

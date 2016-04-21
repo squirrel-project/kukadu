@@ -27,7 +27,7 @@ namespace kukadu {
         bool isShutUp;
 
         // is called by set simulation mode
-        virtual void setSimulationModeInChain(bool simulationMode) {}
+        virtual void setSimulationModeInChain(bool simulationMode);
 
     public:
 

@@ -21,6 +21,17 @@ using namespace arma;
 
 namespace kukadu {
 
+    double computeMaxJointDistance(arma::vec joints1, arma::vec joints2) {
+
+        double maxDist = 0.0;
+        for(int i = 0; i < joints1.n_elem; ++i) {
+            double currDist = abs(joints1(i) - joints2(i));
+            maxDist = max(currDist, maxDist);
+        }
+        return maxDist;
+
+    }
+
     void preparePathString(std::string& s) {
         if(*(s.end()) != '/')
             s.append("/");

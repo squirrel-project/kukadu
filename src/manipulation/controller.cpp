@@ -21,6 +21,9 @@ namespace kukadu {
 
     }
 
+    void Controller::setSimulationModeInChain(bool simulationMode) {
+    }
+
     std::string Controller::getCaption() {
         return caption;
     }

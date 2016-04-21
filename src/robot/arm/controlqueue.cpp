@@ -66,6 +66,12 @@ namespace kukadu {
         return isShutUpFlag;
     }
 
+    void ControlQueue::setNextTrajectory(std::vector<arma::vec> jointTrajectory) {
+        for(auto joint : jointTrajectory)
+            addJointsPosToQueue(joint);
+        synchronizeToControlQueue(1);
+    }
+
     void ControlQueue::addCartesianPosToQueue(geometry_msgs::Pose pose) {
         cartesianMovementQueue.push(pose);
     }

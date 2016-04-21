@@ -255,10 +255,12 @@ namespace kukadu {
     }
 
     void ComplexController::setSimulationModeInChain(bool simulationMode) {
-        for(int i = 0; i < sensingControllers.size(); ++i) {
-            KUKADU_SHARED_PTR<SensingController> sensCont = sensingControllers.at(i);
+
+        for(auto sensCont : sensingControllers)
             sensCont->setSimulationMode(simulationMode);
-        }
+
+        for(auto prepCont : availablePreparatoryControllers)
+            prepCont.second->setSimulationMode(simulationMode);
 
     }
 
@@ -634,15 +636,17 @@ namespace kukadu {
                 }
             }
 
-            if(!isShutUp) {
+            //if(!isShutUp) {
                 cout << "(ComplexController) got bored" << endl;
                 cout << "selected path info:" << endl;
+                cout << "source clip: " << *stateClip << endl;
                 cout << "target clip: " << *get<1>(selectedPath) << endl;
                 cout << "selected path: ";
                 for(auto cl : get<2>(selectedPath))
                     cout << *cl << " - ";
                 cout << endl;
-            }
+                getchar();
+            //}
 
             // if controller is in real execution mode, execute the preparatory path
             if(!getSimulationMode()) {

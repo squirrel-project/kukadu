@@ -99,6 +99,8 @@ namespace kukadu {
 
         void allowContact(const char* link, bool allow);
 
+        virtual std::vector<arma::vec> computeSinglePlan(arma::vec startJoints, geometry_msgs::Pose targetPose, bool smoothCartesians = false, bool useCurrentRobotState = true);
+
     public:
 
         KomoPlanner(KUKADU_SHARED_PTR<ControlQueue> queue, std::string configPath, std::string mtConfigPath, std::string activeJointsPrefix, bool acceptCollision = false);

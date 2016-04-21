@@ -117,7 +117,7 @@ namespace kukadu {
 
         setState(sJointNames, queue->getCurrentJoints().joints);
 
-        std::vector<double> goal_state = armadilloToStdVec(intermediateJoints.at(intermediateJoints.size() - 1));
+        std::vector<double> goal_state = armadilloToStdVec(intermediateJoints.back());
 
         CHECK(goal_state.size() == _active_joints.size(), "Unable to plan - invalid size of goal state");
         MT::timerStart();
@@ -257,12 +257,48 @@ namespace kukadu {
 
     std::vector<arma::vec> KomoPlanner::planCartesianTrajectory(arma::vec startJoints, std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians, bool useCurrentRobotState) {
 
+        vector<arma::vec> finalJointPlan;
+
+        if(useCurrentRobotState)
+            finalJointPlan = planJointTrajectory({queue->getCurrentJoints().joints, startJoints});
+
+        if(!intermediatePoses.empty()) {
+
+            auto lastEndJoint = startJoints;
+
+            for(auto nextPose : intermediatePoses) {
+
+                auto jointPlan = computeSinglePlan(lastEndJoint, {nextPose}, false, false);
+                lastEndJoint = jointPlan.back();
+                finalJointPlan.insert(finalJointPlan.end(), jointPlan.begin(), jointPlan.end());
+
+            }
+
+        }
+
+        finalJointPlan = simplePlanner->planJointTrajectory(finalJointPlan);
+
+        if(smoothCartesians)
+            finalJointPlan = smoothJointPlan(finalJointPlan);
+
+        return finalJointPlan;
+
+    }
+
+    std::vector<arma::vec> KomoPlanner::planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians, bool useCurrentRobotState) {
+
+        return planCartesianTrajectory(queue->getCurrentJoints().joints, intermediatePoses, smoothCartesians, useCurrentRobotState);
+
+    }
+
+    std::vector<arma::vec> KomoPlanner::computeSinglePlan(arma::vec startJoints, geometry_msgs::Pose targetPose, bool smoothCartesians, bool useCurrentRobotState) {
+
         std::vector<arma::vec> retTrajectory;
         PlanningResult result;
 
         ors::Transformation goal;
         // geometry_msgs::Pose startPose = intermediatePoses.at(0);
-        geometry_msgs::Pose endPose = intermediatePoses.at(intermediatePoses.size() - 1);
+        geometry_msgs::Pose endPose = targetPose;
         goal.pos.x = endPose.position.x; goal.pos.y = endPose.position.y; goal.pos.z = endPose.position.z;
         goal.rot.set(endPose.orientation.w, endPose.orientation.x, endPose.orientation.y, endPose.orientation.z);
         goal.rot.normalize();
@@ -427,12 +463,6 @@ namespace kukadu {
         listDelete(_world->proxies);
 
         return simplePlanner->planJointTrajectory(retTrajectory);
-
-    }
-
-    std::vector<arma::vec> KomoPlanner::planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians, bool useCurrentRobotState) {
-
-        return planCartesianTrajectory(queue->getCurrentJoints().joints, intermediatePoses, smoothCartesians, useCurrentRobotState);
 
     }
 

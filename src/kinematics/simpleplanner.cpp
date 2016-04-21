@@ -88,12 +88,16 @@ namespace kukadu {
 
     }
 
-    std::vector<arma::vec> SimplePlanner::planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians, bool useCurrentRobotState) {
+    std::vector<arma::vec> SimplePlanner::planCartesianTrajectory(arma::vec startJoints, std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians, bool useCurrentRobotState) {
 
         for(int i = 0; i < MAX_NUM_ATTEMPTS; ++i) {
 
             vector<vec> retJoints;
-            vec currJoints = queue->getCurrentJoints().joints;
+
+            if(useCurrentRobotState)
+                planJointTrajectory({queue->getCurrentJoints().joints, startJoints});
+
+            vec currJoints = startJoints;
             retJoints.push_back(currJoints);
 
             int posesCount = intermediatePoses.size();
@@ -117,6 +121,12 @@ namespace kukadu {
         }
 
         return vector<vec>();
+
+    }
+
+    std::vector<arma::vec> SimplePlanner::planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians, bool useCurrentRobotState) {
+
+        return planCartesianTrajectory(queue->getCurrentJoints().joints, intermediatePoses, smoothCartesians, useCurrentRobotState);
 
     }
 

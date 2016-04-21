@@ -133,6 +133,11 @@ namespace kukadu {
 
     }
 
+    void HapticPlanner::setSimulationMode(bool simulationMode) {
+        for(auto c : registeredComplexControllers)
+            c.second->setSimulationMode(simulationMode);
+    }
+
     std::string HapticPlanner::pickComplexSkill() {
 
         int selection = 0;

@@ -138,6 +138,9 @@ target_link_libraries(robotino_demo kukadu ${PCL_LIBRARIES} ${catkin_LIBRARIES})
 add_executable(planning src/demo/planning.cpp)
 target_link_libraries(planning kukadu ${catkin_LIBRARIES})
 
+add_executable(cart_traj src/demo/cartesian_trajectories.cpp)
+target_link_libraries(cart_traj kukadu ${catkin_LIBRARIES})
+
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS} python3.4m)
 add_dependencies(reflexxeslib ${catkin_EXPORTED_TARGETS})
 add_dependencies(kukadu_demo_guided ${catkin_EXPORTED_TARGETS})

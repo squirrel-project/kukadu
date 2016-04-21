@@ -158,6 +158,8 @@ namespace kukadu {
 
     void preparePathString(std::string& s);
 
+    double computeMaxJointDistance(arma::vec joints1, arma::vec joints2);
+
 }
 
 #endif

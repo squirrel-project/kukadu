@@ -69,6 +69,8 @@ namespace kukadu {
 
         std::string pickComplexSkill();
 
+        void setSimulationMode(bool simulationMode);
+
     };
 
 }
