@@ -1,5 +1,7 @@
 #include <kukadu/manipulation/controller.hpp>
 
+using namespace std;
+
 namespace kukadu {
 
     Controller::Controller(std::string caption, int simulationFailingProbability) {

@@ -1,8 +1,8 @@
 #ifndef KUKADU_CONTROLLERACTIONCLIP_H
 #define KUKADU_CONTROLLERACTIONCLIP_H
 
-#include "../controller.hpp"
-#include "../../learning/projective_simulation/core/actionclip.hpp"
+#include <kukadu/manipulation/controller.hpp>
+#include <kukadu/learning/projective_simulation/core/actionclip.hpp>
 
 #include <cstdio>
 #include <string>
@@ -24,6 +24,8 @@ namespace kukadu {
                               KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator);
 
         void performAction();
+
+        virtual std::string toString() const;
 
         KUKADU_SHARED_PTR<Controller> getActionController();
 

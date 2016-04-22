@@ -21,7 +21,7 @@ namespace kukadu {
         int getActionId();
 
         std::string getLabel();
-        std::string toString() const;
+        virtual std::string toString() const;
 
         std::pair<int, KUKADU_SHARED_PTR<Clip> > jumpNextRandom();
 

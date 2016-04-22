@@ -31,4 +31,8 @@ namespace kukadu {
         return actionController;
     }
 
+    std::string ControllerActionClip::toString() const {
+        return actionController->getCaption();
+    }
+
 }

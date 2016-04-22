@@ -29,7 +29,7 @@ namespace kukadu {
         IntermediateEventClip(KUKADU_SHARED_PTR<SensingController> sensingEvent,
                               int level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, KUKADU_SHARED_PTR<std::vector<int> > clipValues, int immunity);
 
-        std::string toString() const;
+        virtual std::string toString() const;
         std::pair<int, KUKADU_SHARED_PTR<Clip> > jumpNextRandom();
 
         KUKADU_SHARED_PTR<SensingController> getSensingController();

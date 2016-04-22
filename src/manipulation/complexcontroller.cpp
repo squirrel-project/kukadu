@@ -259,8 +259,8 @@ namespace kukadu {
         for(auto sensCont : sensingControllers)
             sensCont->setSimulationMode(simulationMode);
 
-        for(auto prepCont : availablePreparatoryControllers)
-            prepCont.second->setSimulationMode(simulationMode);
+        for(auto prepCont : preparationControllers)
+            prepCont->setSimulationMode(simulationMode);
 
     }
 
@@ -294,7 +294,8 @@ namespace kukadu {
             auto stateId = stateClip->getClipDimensions()->at(0);
             stringstream s;
             s << "E" << stateId;
-            resultingStatePercepts->push_back(KUKADU_SHARED_PTR<ActionClip>(new ActionClip(stateId, idVec->size(), s.str(), generator)));
+            // have to make it -1 because action clip says internally --> -stateId - 1 (i can't remember the reason anymore)
+            resultingStatePercepts->push_back(KUKADU_SHARED_PTR<ActionClip>(new ActionClip(stateId - 1, idVec->size(), s.str(), generator)));
         }
 
         for(int stateIdx = 0, overallId = sensingCatCount; stateIdx < sensingCatCount; ++stateIdx) {
@@ -307,7 +308,7 @@ namespace kukadu {
                 idVec->at(1) = prepClips->at(actId)->getClipDimensions()->at(0);
 
                 stringstream s;
-                s << "(E" << stateId << ",P" << actId << ")";
+                s << "(E" << stateId << ",P" << idVec->at(1) << ")";
                 auto vecCopy = KUKADU_SHARED_PTR<vector<int> >(new vector<int>(idVec->begin(), idVec->end()));
                 auto newPercept = KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(overallId, s.str(), generator, vecCopy, INT_MAX));
                 newPercept->setChildren(resultingStatePercepts);
@@ -598,11 +599,10 @@ namespace kukadu {
             auto currentEnvModel = environmentModels[sensingClip->toString()];
             auto environmentClip = currentEnvModel->retrieveClipsOnLayer(stateVector, 0).at(0);
 
-            if(!isShutUp)
+            //if(!isShutUp)
                 cout << "(" << stateId << ", " << actionId << ") - " << *environmentClip << " --> " << "E" << resultingStateId << " (idx: " << resultingStateChildIdx << ")" << endl;
 
-            // the action clip id is always reduced by -1  when a new action clip is produced (i dont remember anymore why) - therefore -1
-            auto resultingEnvironmentClip = currentEnvModel->retrieveClipsOnLayer({-resultingStateId - 1, -resultingStateId - 1}, 1).at(0);
+            auto resultingEnvironmentClip = currentEnvModel->retrieveClipsOnLayer({-resultingStateId, -resultingStateId}, 1).at(0);
 
             vector<KUKADU_SHARED_PTR<Clip> > envClipPath{environmentClip, resultingEnvironmentClip};
             currentEnvModel->setNextPredefinedPath(envClipPath);
