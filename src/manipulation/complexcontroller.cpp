@@ -520,14 +520,14 @@ namespace kukadu {
         return performAction(false);
     }
 
-    KUKADU_SHARED_PTR<ControllerResult> ComplexController::performAction(bool cleanup) {
+    KUKADU_SHARED_PTR<ControllerResult> ComplexController::performAction(bool cleanup, bool generateNewGroundTruth) {
 
         this->cleanup = cleanup;
 
-        KUKADU_SHARED_PTR<ControllerResult> ret;
+        KUKADU_SHARED_PTR<ControllerResult> ret = nullptr;
 
         // if simulation - set observed state as ground truth for each sensing action (it is not yet know, which sensing action will be selected)
-        if(getSimulationMode()) {
+        if(getSimulationMode() && !generateNewGroundTruth) {
             for(auto sensCont : sensingControllers) {
                 auto nextGroundTruth = getNextSimulatedGroundTruth(sensCont);
                 sensCont->setSimulationGroundTruth(nextGroundTruth);
@@ -705,7 +705,7 @@ namespace kukadu {
             this->setBoredom(false);
 
             // perform action again
-            ret = this->performAction();
+            ret = this->performAction(cleanup, false);
 
             // switching on boredom again
             this->setBoredom(true);
@@ -716,7 +716,7 @@ namespace kukadu {
 
         // this behaviour could be improved --> TODO
         if(!ret)
-            ret = KUKADU_SHARED_PTR<ControllerResult>(new HapticControllerResult(vec(), vector<vec>(), (reward > 0) ? true : false, wasBored, *(projSim->getIntermediateHopIdx()), selectedPathPointer));
+            ret = KUKADU_SHARED_PTR<ControllerResult>(new HapticControllerResult(vec(), vector<vec>(), (reward > 0.0) ? true : false, wasBored, *(projSim->getIntermediateHopIdx()), selectedPathPointer));
 
         return ret;
 

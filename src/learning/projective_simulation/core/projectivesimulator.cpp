@@ -572,6 +572,7 @@ namespace kukadu {
 
     std::pair<int, KUKADU_SHARED_PTR<Clip> > ProjectiveSimulator::performRandomWalk() {
 
+        lastRunWasBored = false;
         lastClipBeforeAction.reset();
         intermediateHops->clear();
         KUKADU_SHARED_PTR<Clip> previousClip;

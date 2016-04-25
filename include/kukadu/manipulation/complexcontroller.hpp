@@ -167,7 +167,7 @@ namespace kukadu {
 
         virtual void cleanupAfterAction() = 0;
         virtual KUKADU_SHARED_PTR<ControllerResult> performAction();
-        virtual KUKADU_SHARED_PTR<ControllerResult> performAction(bool cleanup);
+        virtual KUKADU_SHARED_PTR<ControllerResult> performAction(bool cleanup, bool generateNewGroundTruth = true);
 
         KUKADU_SHARED_PTR<ProjectiveSimulator> getProjectiveSimulator();
         KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
