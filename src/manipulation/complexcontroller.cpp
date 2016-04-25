@@ -517,7 +517,7 @@ namespace kukadu {
     }
 
     KUKADU_SHARED_PTR<ControllerResult> ComplexController::performAction() {
-        performAction(false);
+        return performAction(false);
     }
 
     KUKADU_SHARED_PTR<ControllerResult> ComplexController::performAction(bool cleanup) {
@@ -576,12 +576,14 @@ namespace kukadu {
 
             // if simulation mode --> set new ground truth after the execution
             if(getSimulationMode()) {
+
                 auto groundTruthStateClip = computeGroundTruthTransition(sensingClip, groundTruthStartClip, actionClip);
 
                 if(!isShutUp)
                     cout << "ground truth: " << *groundTruthStartClip << " (predicted: " << *stateClip << ") + " << *actionClip << " = " << *groundTruthStateClip << endl;
 
                 sensingClip->getSensingController()->setSimulationGroundTruth(sensingClip->getSubClipIdx(groundTruthStateClip));
+
             }
 
             // check state after preparatory action
@@ -599,7 +601,7 @@ namespace kukadu {
             auto currentEnvModel = environmentModels[sensingClip->toString()];
             auto environmentClip = currentEnvModel->retrieveClipsOnLayer(stateVector, 0).at(0);
 
-            //if(!isShutUp)
+            if(!isShutUp)
                 cout << "(" << stateId << ", " << actionId << ") - " << *environmentClip << " --> " << "E" << resultingStateId << " (idx: " << resultingStateChildIdx << ")" << endl;
 
             auto resultingEnvironmentClip = currentEnvModel->retrieveClipsOnLayer({-resultingStateId, -resultingStateId}, 1).at(0);
@@ -636,7 +638,7 @@ namespace kukadu {
                 }
             }
 
-            //if(!isShutUp) {
+            if(!isShutUp) {
                 cout << "(ComplexController) got bored" << endl;
                 cout << "selected path info:" << endl;
                 cout << "source clip: " << *stateClip << endl;
@@ -645,8 +647,7 @@ namespace kukadu {
                 for(auto cl : get<2>(selectedPath))
                     cout << *cl << " - ";
                 cout << endl;
-                getchar();
-            //}
+            }
 
             // if controller is in real execution mode, execute the preparatory path
             if(!getSimulationMode()) {

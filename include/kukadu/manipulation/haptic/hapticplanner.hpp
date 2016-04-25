@@ -64,8 +64,10 @@ namespace kukadu {
         virtual KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();
         virtual KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();
 
-        void pickAndPerformComplexSkill();
-        KUKADU_SHARED_PTR<kukadu::HapticControllerResult> performComplexSkill(std::string skillId);
+        void pickAndPerformComplexSkill(bool updateModels = true);
+        KUKADU_SHARED_PTR<kukadu::HapticControllerResult> performComplexSkill(std::string skillId, bool updateModels = true);
+
+        void updateModels();
 
         std::string pickComplexSkill();
 

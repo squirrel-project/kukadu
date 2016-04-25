@@ -114,23 +114,29 @@ namespace kukadu {
 
     }
 
-    void HapticPlanner::pickAndPerformComplexSkill() {
+    void HapticPlanner::pickAndPerformComplexSkill(bool updateFiles) {
 
         auto selectedId = pickComplexSkill();
-        performComplexSkill(selectedId);
+        performComplexSkill(selectedId, updateFiles);
 
     }
 
-    KUKADU_SHARED_PTR<kukadu::HapticControllerResult> HapticPlanner::performComplexSkill(std::string skillId) {
+    KUKADU_SHARED_PTR<kukadu::HapticControllerResult> HapticPlanner::performComplexSkill(std::string skillId, bool updateModels) {
 
         auto complSkill = KUKADU_DYNAMIC_POINTER_CAST<ComplexController>(registeredComplexControllers[skillId]);
 
         // for learning, it has to cleanup afterwards as well
         auto result = KUKADU_DYNAMIC_POINTER_CAST<HapticControllerResult>(complSkill->performAction(true));
-        complSkill->updateFiles();
+        if(updateModels)
+            complSkill->updateFiles();
 
         return result;
 
+    }
+
+    void HapticPlanner::updateModels() {
+        for(auto complSkill : registeredComplexControllers)
+            KUKADU_DYNAMIC_POINTER_CAST<ComplexController>(complSkill.second)->updateFiles();
     }
 
     void HapticPlanner::setSimulationMode(bool simulationMode) {

@@ -108,6 +108,7 @@ namespace kukadu {
 
         KUKADU_SHARED_PTR<Clip> getLikeliestChild();
         KUKADU_SHARED_PTR<Clip> getSubClipByIdx(int idx);
+        KUKADU_SHARED_PTR<Clip> getSubClipByLabel(std::string idx);
         KUKADU_SHARED_PTR<std::vector<int> > getClipDimensions() const;
         KUKADU_SHARED_PTR<Clip> compareClip(KUKADU_SHARED_PTR<Clip> c);
         KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip> > > getParents();

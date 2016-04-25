@@ -49,6 +49,14 @@ namespace kukadu {
         setNextHop(getSubClipIdx(hopClip));
     }
 
+    KUKADU_SHARED_PTR<Clip> Clip::getSubClipByLabel(std::string idx) {
+        for(auto cl : *subClips) {
+            if(cl->toString() == idx)
+                return cl;
+        }
+        return nullptr;
+    }
+
     KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > Clip::getSubClips() {
         return subClips;
     }
