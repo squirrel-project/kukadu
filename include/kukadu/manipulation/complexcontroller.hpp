@@ -119,9 +119,13 @@ namespace kukadu {
     protected:
 
         virtual void setSimulationModeInChain(bool simulationMode);
-        virtual double getSimulatedReward(KUKADU_SHARED_PTR<SensingController> usedSensingController, KUKADU_SHARED_PTR<kukadu::PerceptClip> providedPercept, KUKADU_SHARED_PTR<kukadu::Controller> takenAction, int sensingClassIdx, int prepContIdx) = 0;
+        virtual double getSimulatedReward(KUKADU_SHARED_PTR<kukadu::IntermediateEventClip> sensingClip,
+                                          KUKADU_SHARED_PTR<kukadu::Clip> stateClip,
+                                          KUKADU_SHARED_PTR<kukadu::ControllerActionClip> actionClip) = 0;
 
-        virtual double getSimulatedRewardInternal(KUKADU_SHARED_PTR<SensingController> usedSensingController, KUKADU_SHARED_PTR<kukadu::PerceptClip> providedPercept, KUKADU_SHARED_PTR<kukadu::Controller> takenAction, int sensingClassIdx, int prepContIdx);
+        virtual double getSimulatedRewardInternal(KUKADU_SHARED_PTR<kukadu::IntermediateEventClip> sensingClip,
+                                          KUKADU_SHARED_PTR<kukadu::Clip> stateClip,
+                                          KUKADU_SHARED_PTR<kukadu::ControllerActionClip> actionClip);
 
     public:
 

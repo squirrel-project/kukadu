@@ -424,14 +424,16 @@ namespace kukadu {
         return KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > >(rootRet);
     }
 
-    double ComplexController::getSimulatedRewardInternal(KUKADU_SHARED_PTR<SensingController> usedSensingController, KUKADU_SHARED_PTR<kukadu::PerceptClip> providedPercept, KUKADU_SHARED_PTR<kukadu::Controller> takenAction, int sensingClassIdx, int prepContIdx) {
+    double ComplexController::getSimulatedRewardInternal(KUKADU_SHARED_PTR<kukadu::IntermediateEventClip> sensingClip,
+                                                 KUKADU_SHARED_PTR<kukadu::Clip> stateClip,
+                                                 KUKADU_SHARED_PTR<kukadu::ControllerActionClip> actionClip) {
 
         // simulates non-perfect complex controller
         int failed = simSuccDist(*generator);
         if(failed)
             return getPunishReward();
 
-        double simReward = getSimulatedReward(usedSensingController, providedPercept, takenAction, sensingClassIdx, prepContIdx);
+        double simReward = getSimulatedReward(sensingClip, stateClip, actionClip);
 
         return simReward;
 
@@ -471,15 +473,12 @@ namespace kukadu {
 
         double retReward = 0.0;
 
-        KUKADU_SHARED_PTR<vector<int> > intermed = projSim->getIntermediateHopIdx();
+        auto intermed = projSim->getIntermediateHopIdx();
         auto nonCastedSenseClip = providedPercept->getSubClipByIdx(intermed->at(1));
-        KUKADU_SHARED_PTR<IntermediateEventClip> sensClip = KUKADU_DYNAMIC_POINTER_CAST<IntermediateEventClip>(nonCastedSenseClip);
-        KUKADU_SHARED_PTR<SensingController> sensCont = sensClip->getSensingController();
-
-        KUKADU_SHARED_PTR<ControllerActionClip> castedAction = KUKADU_DYNAMIC_POINTER_CAST<ControllerActionClip>(takenAction);
-
-        int predictedClassIdx = intermed->at(2);
-        int takenActionIdx = intermed->at(3);
+        auto sensClip = KUKADU_DYNAMIC_POINTER_CAST<IntermediateEventClip>(nonCastedSenseClip);
+        auto sensCont = sensClip->getSensingController();
+        auto castedAction = KUKADU_DYNAMIC_POINTER_CAST<ControllerActionClip>(takenAction);
+        auto stateClip = sensClip->getSubClipByIdx(intermed->at(2));
 
         if(!getSimulationMode()) {
 
@@ -505,12 +504,12 @@ namespace kukadu {
 
         } else {
 
-            retReward = getSimulatedRewardInternal(sensCont, providedPercept, castedAction->getActionController(), sensCont->getSimulationGroundTruthIdx(), takenActionIdx);
+            retReward = getSimulatedRewardInternal(sensClip, stateClip, castedAction);
 
         }
 
         if(storeReward)
-            *rewardHistoryStream << retReward << "\t" << *sensClip << "\t" << sensCont->getSimulationGroundTruthIdx() << "\t" << predictedClassIdx << "\t\t" << *takenAction << endl;
+            *rewardHistoryStream << retReward << "\t" << *sensClip << "\t" << sensCont->getSimulationGroundTruthIdx() << "\t" << *stateClip << "\t\t" << *takenAction << endl;
 
         return retReward;
 
@@ -527,7 +526,7 @@ namespace kukadu {
         KUKADU_SHARED_PTR<ControllerResult> ret = nullptr;
 
         // if simulation - set observed state as ground truth for each sensing action (it is not yet know, which sensing action will be selected)
-        if(getSimulationMode() && !generateNewGroundTruth) {
+        if(getSimulationMode() && generateNewGroundTruth) {
             for(auto sensCont : sensingControllers) {
                 auto nextGroundTruth = getNextSimulatedGroundTruth(sensCont);
                 sensCont->setSimulationGroundTruth(nextGroundTruth);
