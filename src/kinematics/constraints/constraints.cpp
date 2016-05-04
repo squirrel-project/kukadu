@@ -5,7 +5,7 @@ using namespace std;
 
 namespace kukadu {
 
-    MoveItConstraint::MoveItConstraint(robot_model::RobotModelPtr robotModel, planning_scene::PlanningScenePtr planningScene, KUKADU_SHARED_PTR<robot_model::JointModelGroup> modelGroup) {
+    MoveItConstraint::MoveItConstraint(robot_model::RobotModelPtr robotModel, planning_scene::PlanningScenePtr planningScene, robot_model::JointModelGroup* modelGroup) {
 
         this->planningScene = planningScene;
         this->modelGroup = modelGroup;
@@ -19,7 +19,7 @@ namespace kukadu {
         double jointStateArray[joint.n_elem];
         for(int i = 0; i < joint.n_elem; ++i)
             jointStateArray[i] = joint[i];
-        state.setJointGroupPositions(modelGroup.get(), jointStateArray);
+        state.setJointGroupPositions(modelGroup, jointStateArray);
         state.update();
 
         /*

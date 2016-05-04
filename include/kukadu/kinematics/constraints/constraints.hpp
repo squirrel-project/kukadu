@@ -30,11 +30,11 @@ namespace kukadu {
 
         robot_model::RobotModelPtr robotModel;
         planning_scene::PlanningScenePtr planningScene;
-        KUKADU_SHARED_PTR<moveit::core::JointModelGroup> modelGroup;
+        moveit::core::JointModelGroup* modelGroup;
 
     public:
 
-        MoveItConstraint(robot_model::RobotModelPtr, planning_scene::PlanningScenePtr planningScene, KUKADU_SHARED_PTR<moveit::core::JointModelGroup> modelGroup);
+        MoveItConstraint(robot_model::RobotModelPtr, planning_scene::PlanningScenePtr planningScene, moveit::core::JointModelGroup* modelGroup);
 
         virtual std::string getConstraintName();
         virtual bool stateOk(arma::vec joint, geometry_msgs::Pose cartPose);

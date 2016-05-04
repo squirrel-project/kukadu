@@ -6,6 +6,7 @@
 #include <ros/ros.h>
 #include <armadillo>
 #include <geometry_msgs/Pose.h>
+#include <kukadu/kinematics/pathplanner.hpp>
 #include <moveit/robot_state/conversions.h>
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/robot_model/robot_model.h>
@@ -14,10 +15,12 @@
 #include <kukadu/kinematics/kinematics.hpp>
 #include <kukadu/kinematics/constraints/constraints.hpp>
 #include <kukadu/types/kukadutypes.hpp>
+#include <moveit_msgs/GetMotionPlan.h>
+#include <moveit/move_group_interface/move_group.h>
 
 namespace kukadu {
 
-    class MoveItKinematics : public Kinematics {
+    class MoveItKinematics : public PathPlanner, public Kinematics {
 
     private:
 
@@ -28,6 +31,16 @@ namespace kukadu {
 
         double timeOut;
 
+        double planning_time_;
+        int planning_attempts_;
+        int max_traj_pts_;
+        double goal_joint_tolerance_;
+        double goal_position_tolerance_; // 0.1 mm
+        double goal_orientation_tolerance_; // ~0.1 deg
+        std::string planner_id_;
+
+        std::vector<std::string> jointNames;
+
         std::string tipLink;
         std::string moveGroupName;
 
@@ -35,21 +48,26 @@ namespace kukadu {
         robot_model_loader::RobotModelLoaderPtr rml_;
         planning_scene::PlanningScenePtr planning_scene_;
 
-        KUKADU_SHARED_PTR<Constraint> modelRestriction;
-        KUKADU_SHARED_PTR<robot_model::JointModelGroup> jnt_model_group;
+        ros::ServiceClient planning_client_;
 
-        void construct(std::string moveGroupName, std::string tipLink, bool avoidCollisions, int maxAttempts, double timeOut);
+        KUKADU_SHARED_PTR<Constraint> modelRestriction;
+        robot_model::JointModelGroup* jnt_model_group;
+
+        void construct(ros::NodeHandle node, std::string moveGroupName, std::vector<std::string> jointNames, std::string tipLink, bool avoidCollisions, int maxAttempts, double timeOut);
 
         bool collisionCheckCallback(moveit::core::RobotState* state, const moveit::core::JointModelGroup* joint_group, const double* solution);
 
     public:
 
-        MoveItKinematics(std::string moveGroupName, std::string tipLink);
-        MoveItKinematics(std::string moveGroupName, std::string tipLink, bool avoidCollisions, int maxAttempts, double timeOut);
-
-        virtual std::vector<arma::vec> computeIk(std::vector<double> currentJointState, const geometry_msgs::Pose& goal);
+        MoveItKinematics(ros::NodeHandle node, std::string moveGroupName, std::vector<std::string> jointNames, std::string tipLink);
+        MoveItKinematics(ros::NodeHandle node, std::string moveGroupName, std::vector<std::string> jointNames, std::string tipLink, bool avoidCollisions, int maxAttempts, double timeOut);
 
         virtual geometry_msgs::Pose computeFk(std::vector<double> jointState);
+        virtual std::vector<arma::vec> computeIk(std::vector<double> currentJointState, const geometry_msgs::Pose& goal);
+
+        virtual std::vector<arma::vec> planJointTrajectory(std::vector<arma::vec> intermediateJoints);
+        virtual std::vector<arma::vec> planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians = false, bool useCurrentRobotState = true);
+        virtual std::vector<arma::vec> planCartesianTrajectory(arma::vec startJoints, std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians = false, bool useCurrentRobotState = true);
 
         bool isColliding(arma::vec jointState, geometry_msgs::Pose pose);
 
