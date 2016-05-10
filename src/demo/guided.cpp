@@ -71,8 +71,8 @@ int main(int argc, char** args) {
     ros::AsyncSpinner spinner(10);
     spinner.start();
 
-    KUKADU_SHARED_PTR<ControlQueue> leftQueue = KUKADU_SHARED_PTR<ControlQueue>(new KukieControlQueue(dmpStepSize, "real", arm + string("_arm"), *node));
-    KUKADU_SHARED_PTR<ControlQueue> simLeftQueue = KUKADU_SHARED_PTR<ControlQueue>(new KukieControlQueue(dmpStepSize, "simulation", arm + string("_arm"), *node));
+    auto leftQueue = KUKADU_SHARED_PTR<ControlQueue>(new KukieControlQueue("real", arm + string("_arm"), *node));
+    auto simLeftQueue = KUKADU_SHARED_PTR<ControlQueue>(new KukieControlQueue("simulation", arm + string("_arm"), *node));
     vector<KUKADU_SHARED_PTR<ControlQueue> > queueVectors;
     queueVectors.push_back(leftQueue);
 

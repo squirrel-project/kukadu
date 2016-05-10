@@ -33,6 +33,10 @@ namespace kukadu {
         return degOfFreedom;
     }
 
+    void ControlQueue::setCycleTime(double cycleTime) {
+        this->sleepTime = cycleTime;
+    }
+
     double ControlQueue::getAbsoluteCartForce() {
 
         mes_result m = getCurrentCartesianFrcTrq();

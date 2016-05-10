@@ -11,7 +11,7 @@ int main(int argc, char** args) {
     ros::AsyncSpinner spinner(10); spinner.start();
 
     cout << "setting up control queue" << endl;
-    auto realLeftQueue = make_shared<KukieControlQueue>(0.014, "simulation", "left_arm", node);
+    auto realLeftQueue = KUKADU_SHARED_PTR<KukieControlQueue>(new KukieControlQueue("simulation", "left_arm", node));
 
     cout << "starting queue" << endl;
     auto realLqThread = realLeftQueue->startQueueThread();

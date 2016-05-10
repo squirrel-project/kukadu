@@ -48,8 +48,13 @@ namespace kukadu {
 
     private:
 
+        bool loadCycleTimeFromServer;
+        bool loadMaxDistPerCycleFromServer;
+
         bool firstModeReceived;
         bool firstJointsReceived;
+        bool firstControllerCycletimeReceived;
+        bool firstMaxDistPerCycleReceived;
 
         int impMode;
         int cartesianPtpReached;
@@ -59,6 +64,9 @@ namespace kukadu {
         bool acceptCollisions;
         bool plannerInitialized;
         bool kinematicsInitialized;
+
+        double controllerCycleTime;
+        double maxDistPerCycle;
 
         arma::vec currJoints;
         arma::vec currentJntFrqTrq;
@@ -94,9 +102,12 @@ namespace kukadu {
         std::string cartMoveWfQueueTopic;
         std::string jntSetPtpThreshTopic;
 
+        std::string clockCycleTopic;
+        std::string maxDistPerCycleTopic;
+
         ros::NodeHandle node;
 
-        ros::Rate* loop_rate;
+        KUKADU_SHARED_PTR<ros::Rate> loop_rate;
 
         ros::Publisher pubPtp;
         ros::Publisher pubCommand;
@@ -111,11 +122,13 @@ namespace kukadu {
 
         ros::Subscriber subJntPos;
         ros::Subscriber subComState;
+        ros::Subscriber subCycleTime;
         ros::Subscriber subjntFrcTrq;
         ros::Subscriber subPtpReached;
         ros::Subscriber subCartFrqTrq;
         ros::Subscriber subCartPoseRf;
         ros::Subscriber subCartPtpReached;
+        ros::Subscriber subMaxDistPerCycle;
 
         kukadu_thread cartPoseThr;
 
@@ -131,6 +144,8 @@ namespace kukadu {
         void jntFrcTrqCallback(const std_msgs::Float64MultiArray& msg);
         void commandStateCallback(const std_msgs::Float32MultiArray& msg);
         void cartPtpReachedCallback(const std_msgs::Int32MultiArray& msg);
+        void maxDistPerCycleCallback(const std_msgs::Float64& msg);
+        void cycleTimeCallback(const std_msgs::Float64& msg);
 
         void computeCurrentCartPose();
 
@@ -150,13 +165,16 @@ namespace kukadu {
 
     public:
 
-        KukieControlQueue(double sleepTime, std::string deviceType, std::string armPrefix, ros::NodeHandle node, bool acceptCollisions = false);
+        KukieControlQueue(std::string deviceType, std::string armPrefix, ros::NodeHandle node,
+                          KUKADU_SHARED_PTR<Kinematics> kin = KUKADU_SHARED_PTR<Kinematics>(), KUKADU_SHARED_PTR<PathPlanner> planner = KUKADU_SHARED_PTR<PathPlanner>(),
+                          bool acceptCollisions = false, double sleepTime = -1.0, double maxDistPerCycle = -1.0);
 
-        void constructQueue(double sleepTime, std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
+        void constructQueue(std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
                             std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
                             std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic,
                             std::string cartPtpTopic, std::string cartPtpReachedTopic, std::string cartMoveRfQueueTopic, std::string cartMoveWfQueueTopic, std::string cartPoseRfTopic,
-                            std::string setPtpThresh, bool acceptCollisions, ros::NodeHandle node
+                            std::string setPtpThresh, std::string clockCycleTopic, std::string maxDistancePerCycleTopic, bool acceptCollisions, ros::NodeHandle node,
+                            KUKADU_SHARED_PTR<Kinematics> kin, KUKADU_SHARED_PTR<PathPlanner> planner, double sleepTime, double maxDistPerCycle
                         );
 
         void safelyDestroy();

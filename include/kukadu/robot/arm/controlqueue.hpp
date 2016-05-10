@@ -108,6 +108,8 @@ namespace kukadu {
          */
         int getMovementDegreesOfFreedom();
 
+        void setCycleTime(double cycleTime);
+
         /**
          * \brief Starts new thread to control the robot with real time capability
          */
