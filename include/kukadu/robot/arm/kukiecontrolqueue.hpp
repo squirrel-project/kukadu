@@ -166,8 +166,9 @@ namespace kukadu {
     public:
 
         KukieControlQueue(std::string deviceType, std::string armPrefix, ros::NodeHandle node,
+                          bool acceptCollisions = false,
                           KUKADU_SHARED_PTR<Kinematics> kin = KUKADU_SHARED_PTR<Kinematics>(), KUKADU_SHARED_PTR<PathPlanner> planner = KUKADU_SHARED_PTR<PathPlanner>(),
-                          bool acceptCollisions = false, double sleepTime = -1.0, double maxDistPerCycle = -1.0);
+                          double sleepTime = -1.0, double maxDistPerCycle = -1.0);
 
         void constructQueue(std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
                             std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,

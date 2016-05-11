@@ -8,16 +8,16 @@ using namespace arma;
 namespace kukadu {
 
     SimplePlanner::SimplePlanner(KUKADU_SHARED_PTR<ControlQueue> queue, KUKADU_SHARED_PTR<Kinematics> kin) {
-
+cout << "cycle time: " << queue->getTimeStep() << endl;
         this->queue = queue;
         this->kin = kin;
 
-        refApi = new ReflexxesAPI(queue->getMovementDegreesOfFreedom(), 1.0 / queue->getTimeStep());
-        refInputParams = new RMLPositionInputParameters(queue->getMovementDegreesOfFreedom());
-        refOutputParams = new RMLPositionOutputParameters(queue->getMovementDegreesOfFreedom());
-
         cycleTime = queue->getTimeStep();
         degOfFreedom = queue->getMovementDegreesOfFreedom();
+
+        refApi = new ReflexxesAPI(queue->getMovementDegreesOfFreedom(), 1.0 / cycleTime);
+        refInputParams = new RMLPositionInputParameters(queue->getMovementDegreesOfFreedom());
+        refOutputParams = new RMLPositionOutputParameters(queue->getMovementDegreesOfFreedom());
 
         for(int i = 0; i < degOfFreedom; ++i) {
             // this seems to be not normal velocity but velocity normalized by time step

@@ -17,7 +17,7 @@ namespace kukadu {
             this->activeJointsPrefix = activeJointsPrefix;
             MT::openConfigFile(mtConfigPath.c_str());
 
-            simplePlanner = KUKADU_SHARED_PTR<SimplePlanner>(new SimplePlanner(queue, KUKADU_SHARED_PTR<Kinematics>()));
+            simplePlanner = make_shared<SimplePlanner>(queue, KUKADU_SHARED_PTR<Kinematics>());
 
             _world = new ors::KinematicWorld(configPath.c_str());
             _world->swift().initActivations(*_world);

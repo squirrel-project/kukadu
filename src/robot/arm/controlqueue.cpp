@@ -35,6 +35,7 @@ namespace kukadu {
 
     void ControlQueue::setCycleTime(double cycleTime) {
         this->sleepTime = cycleTime;
+        this->desiredCycleTime = cycleTime;
     }
 
     double ControlQueue::getAbsoluteCartForce() {

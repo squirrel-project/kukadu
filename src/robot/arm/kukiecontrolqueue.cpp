@@ -95,17 +95,16 @@ namespace kukadu {
 
         if(sleepTime < 0.0) {
             loadCycleTimeFromServer = true;
-            while(firstControllerCycletimeReceived)
+            while(!firstControllerCycletimeReceived)
                 r.sleep();
             sleepTime = controllerCycleTime;
         }
-
-        this->setCycleTime(sleepTime);
 
         while(!firstJointsReceived || !firstModeReceived)
             r.sleep();
 
         loop_rate = make_shared<ros::Rate>(1.0 / sleepTime);
+        setCycleTime(sleepTime);
 
         currentControlType = impMode;
 
@@ -123,7 +122,7 @@ namespace kukadu {
         cartPoseThr = kukadu_thread(&KukieControlQueue::computeCurrentCartPose, this);
     }
 
-    KukieControlQueue::KukieControlQueue(std::string deviceType, std::string armPrefix, ros::NodeHandle node, KUKADU_SHARED_PTR<Kinematics> kin, KUKADU_SHARED_PTR<PathPlanner> planner, bool acceptCollisions, double sleepTime, double maxDistPerCycle) : ControlQueue(7, sleepTime) {
+    KukieControlQueue::KukieControlQueue(std::string deviceType, std::string armPrefix, ros::NodeHandle node, bool acceptCollisions, KUKADU_SHARED_PTR<Kinematics> kin, KUKADU_SHARED_PTR<PathPlanner> planner, double sleepTime, double maxDistPerCycle) : ControlQueue(7, sleepTime) {
 
         commandTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/move";
         retJointPosTopic = "/" + deviceType + "/" + armPrefix + "/joint_control/get_state";
@@ -162,7 +161,7 @@ namespace kukadu {
     void KukieControlQueue::maxDistPerCycleCallback(const std_msgs::Float64& msg) {
         if(loadMaxDistPerCycleFromServer) {
             controllerCycleTime = msg.data;
-            firstControllerCycletimeReceived = true;
+            firstMaxDistPerCycleReceived = true;
         }
     }
 
