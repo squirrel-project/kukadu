@@ -8,7 +8,7 @@ using namespace arma;
 namespace kukadu {
 
     SimplePlanner::SimplePlanner(KUKADU_SHARED_PTR<ControlQueue> queue, KUKADU_SHARED_PTR<Kinematics> kin) {
-cout << "cycle time: " << queue->getTimeStep() << endl;
+
         this->queue = queue;
         this->kin = kin;
 
