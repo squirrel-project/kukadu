@@ -242,6 +242,7 @@ namespace kukadu {
         request.allowed_planning_time = planning_time_;
         request.planner_id = planner_id_;
         request.start_state.joint_state.position = armadilloToStdVec(startJoints);
+        request.goal_constraints.clear();
 
         ROS_DEBUG("Computing possible IK solutions for goal pose");
 
@@ -250,22 +251,28 @@ namespace kukadu {
         // compute a set of ik solutions and construct goal constraint
         for (int i = 0; i < 5; ++i) {
 
-            auto values = computeIk(startJointsVec, intermediatePoses.back()).front();
+            auto values = computeIk(startJointsVec, intermediatePoses.back());
 
-            moveit_msgs::Constraints c;
-            c.joint_constraints.resize(joint_names.size());
+            if(values.size() > 0) {
+                auto ikSol = values.front();
+                moveit_msgs::Constraints c;
+                for (int j = 0; j < joint_names.size(); ++j) {
+                    moveit_msgs::JointConstraint jc;
+                    jc.joint_name = joint_names.at(j);
+                    jc.position = ikSol(j);
+                    jc.tolerance_above = 1e-4;
+                    jc.tolerance_below = 1e-4;
+                    jc.weight = 1.0;
+                    c.joint_constraints.push_back(jc);
+                }
+                request.goal_constraints.push_back(c);
 
-            for (int j = 0; j < joint_names.size(); ++j) {
-                moveit_msgs::JointConstraint &jc = c.joint_constraints.at(j);
-                jc.joint_name = joint_names.at(j);
-                jc.position = values.at(j);
-                jc.tolerance_above = 1e-4;
-                jc.tolerance_below = 1e-4;
-                jc.weight = 1.0;
             }
-            request.goal_constraints.push_back(c);
 
         }
+
+        if(request.goal_constraints.size() == 0)
+            throw KukaduException("no ik solutions found");
 
         moveit_msgs::GetMotionPlanResponse get_mp_response;
 
