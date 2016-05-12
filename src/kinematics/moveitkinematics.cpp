@@ -20,7 +20,14 @@ namespace kukadu {
 
     }
 
+    MoveItKinematics::~MoveItKinematics() {
+        rml_.reset();
+        planning_scene_.reset();
+    }
+
     void MoveItKinematics::construct(ros::NodeHandle node, std::string moveGroupName, std::vector<std::string> jointNames, std::string tipLink, bool avoidCollisions, int maxAttempts, double timeOut) {
+
+        this->node = node;
 
         this->moveGroupName = moveGroupName;
         this->tipLink = tipLink;
@@ -57,8 +64,10 @@ namespace kukadu {
         this->jointNames = jointNames;
 
         if(jnt_model_group->getJointModelNames().size() != jointNames.size()) {
+            for(auto jntName : jnt_model_group->getJointModelNames())
+                cout << jntName << endl;
             stringstream s;
-            s << "number of specified joint names don't match the number of joints specified in the move group (" << jnt_model_group->getJointModelNames().size() << " vs " << jointNames.size() << ")";
+            s << "number of specified joint names don't match the number of joints specified in the move group (movegroup: " << jnt_model_group->getJointModelNames().size() << " vs provided: " << jointNames.size() << ")";
             throw KukaduException(s.str().c_str());
         }
 
@@ -147,6 +156,7 @@ namespace kukadu {
     std::vector<arma::vec> MoveItKinematics::planJointTrajectory(std::vector<arma::vec> intermediateJoints) {
 
         sensor_msgs::JointState start_state;
+        start_state.name = jointNames;
         start_state.position.insert(start_state.position.begin(), intermediateJoints.front().begin(), intermediateJoints.front().end());
         if (!planning_client_.exists()) {
             ROS_ERROR_STREAM("Unable to connect to planning service - ensure that MoveIt is launched!");
@@ -169,7 +179,7 @@ namespace kukadu {
 
         auto jointPos = intermediateJoints.back();
         for (int j = 0; j < joint_names.size(); ++j) {
-            moveit_msgs::JointConstraint &jc = c.joint_constraints.at(j);
+            moveit_msgs::JointConstraint& jc = c.joint_constraints.at(j);
             jc.joint_name = joint_names.at(j);
             jc.position = jointPos.at(j);
             jc.tolerance_above = 1e-4;
@@ -227,6 +237,7 @@ namespace kukadu {
     std::vector<arma::vec> MoveItKinematics::planCartesianTrajectory(arma::vec startJoints, std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians, bool useCurrentRobotState) {
 
         sensor_msgs::JointState start_state;
+        start_state.name = jointNames;
         auto startJointsVec = armadilloToStdVec(startJoints);
         start_state.position.insert(start_state.position.begin(), startJointsVec.begin(), startJointsVec.end());
         if (!planning_client_.exists()) {
@@ -242,6 +253,7 @@ namespace kukadu {
         request.allowed_planning_time = planning_time_;
         request.planner_id = planner_id_;
         request.start_state.joint_state.position = armadilloToStdVec(startJoints);
+        request.start_state.joint_state.name = jointNames;
         request.goal_constraints.clear();
 
         ROS_DEBUG("Computing possible IK solutions for goal pose");
