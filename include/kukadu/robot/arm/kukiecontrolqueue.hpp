@@ -179,6 +179,9 @@ namespace kukadu {
                         );
 
         void safelyDestroy();
+        
+        void setKinematics(KUKADU_SHARED_PTR<Kinematics> kin);
+        void setPathPlanner(KUKADU_SHARED_PTR<PathPlanner> planner);
 
         void setJntPtpThresh(double thresh);
 

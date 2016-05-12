@@ -102,6 +102,8 @@ namespace kukadu {
 
         while(!firstJointsReceived || !firstModeReceived)
             r.sleep();
+            
+        setDegOfFreedom(getCurrentJoints().joints.n_elem);
 
         loop_rate = make_shared<ros::Rate>(1.0 / sleepTime);
         setCycleTime(sleepTime);
@@ -117,6 +119,16 @@ namespace kukadu {
         usleep(1e6);
 
     }
+    
+	void KukieControlQueue::setKinematics(KUKADU_SHARED_PTR<Kinematics> kin) {
+		this->kin = kin;
+		kinematicsInitialized = true;
+	}
+		
+	void KukieControlQueue::setPathPlanner(KUKADU_SHARED_PTR<PathPlanner> planner) {
+		this->planner = planner;
+		plannerInitialized = true;
+	}
 
     void KukieControlQueue::startQueueThreadHook() {
         cartPoseThr = kukadu_thread(&KukieControlQueue::computeCurrentCartPose, this);

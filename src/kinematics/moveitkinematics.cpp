@@ -8,25 +8,27 @@ using namespace arma;
 
 namespace kukadu {
 
-    MoveItKinematics::MoveItKinematics(NodeHandle node, std::string moveGroupName, std::vector<std::string> jointNames, std::string tipLink) {
+    MoveItKinematics::MoveItKinematics(KUKADU_SHARED_PTR<ControlQueue> queue, NodeHandle node, std::string moveGroupName, std::vector<std::string> jointNames, std::string tipLink) {
 
-        construct(node, moveGroupName, jointNames, tipLink, STD_AVOID_COLLISIONS, STD_MAX_ATTEMPTS, STD_TIMEOUT);
-
-    }
-
-    MoveItKinematics::MoveItKinematics(ros::NodeHandle node, std::string moveGroupName, std::vector<std::string> jointNames, std::string tipLink, bool avoidCollisions, int maxAttempts, double timeOut) {
-
-        construct(node, moveGroupName, jointNames, tipLink, avoidCollisions, maxAttempts, timeOut);
+        construct(queue, node, moveGroupName, jointNames, tipLink, STD_AVOID_COLLISIONS, STD_MAX_ATTEMPTS, STD_TIMEOUT);
 
     }
 
-    void MoveItKinematics::construct(ros::NodeHandle node, std::string moveGroupName, std::vector<std::string> jointNames, std::string tipLink, bool avoidCollisions, int maxAttempts, double timeOut) {
+    MoveItKinematics::MoveItKinematics(KUKADU_SHARED_PTR<ControlQueue> queue, ros::NodeHandle node, std::string moveGroupName, std::vector<std::string> jointNames, std::string tipLink, bool avoidCollisions, int maxAttempts, double timeOut) {
+
+        construct(queue, node, moveGroupName, jointNames, tipLink, avoidCollisions, maxAttempts, timeOut);
+
+    }
+
+    void MoveItKinematics::construct(KUKADU_SHARED_PTR<ControlQueue> queue, ros::NodeHandle node, std::string moveGroupName, std::vector<std::string> jointNames, std::string tipLink, bool avoidCollisions, int maxAttempts, double timeOut) {
 
         this->moveGroupName = moveGroupName;
         this->tipLink = tipLink;
         this->avoidCollisions = avoidCollisions;
         this->maxAttempts = maxAttempts;
         this->timeOut = timeOut;
+        
+        simplePlanner = make_shared<SimplePlanner>(queue, KUKADU_SHARED_PTR<Kinematics>());
 
         /* Load the robot model */
         rml_.reset(new robot_model_loader::RobotModelLoader("robot_description"));
@@ -147,6 +149,7 @@ namespace kukadu {
     std::vector<arma::vec> MoveItKinematics::planJointTrajectory(std::vector<arma::vec> intermediateJoints) {
 
         sensor_msgs::JointState start_state;
+        start_state.name = jointNames;
         start_state.position.insert(start_state.position.begin(), intermediateJoints.front().begin(), intermediateJoints.front().end());
         if (!planning_client_.exists()) {
             ROS_ERROR_STREAM("Unable to connect to planning service - ensure that MoveIt is launched!");
@@ -211,7 +214,7 @@ namespace kukadu {
             throw(KukaduException(s.str().c_str()));
         }
 
-        return jointPath;
+		return simplePlanner->planJointTrajectory(jointPath);
 
     }
 
@@ -227,6 +230,7 @@ namespace kukadu {
     std::vector<arma::vec> MoveItKinematics::planCartesianTrajectory(arma::vec startJoints, std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians, bool useCurrentRobotState) {
 
         sensor_msgs::JointState start_state;
+        start_state.name = jointNames;
         auto startJointsVec = armadilloToStdVec(startJoints);
         start_state.position.insert(start_state.position.begin(), startJointsVec.begin(), startJointsVec.end());
         if (!planning_client_.exists()) {
@@ -241,7 +245,7 @@ namespace kukadu {
         request.num_planning_attempts = planning_attempts_;
         request.allowed_planning_time = planning_time_;
         request.planner_id = planner_id_;
-        request.start_state.joint_state.position = armadilloToStdVec(startJoints);
+        request.start_state.joint_state = start_state;
         request.goal_constraints.clear();
 
         ROS_DEBUG("Computing possible IK solutions for goal pose");
@@ -307,7 +311,7 @@ namespace kukadu {
             throw(KukaduException(s.str().c_str()));
         }
 
-        return jointPath;
+		return simplePlanner->planJointTrajectory(jointPath);
 
     }
 

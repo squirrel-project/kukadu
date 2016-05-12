@@ -28,6 +28,10 @@ namespace kukadu {
         continueCollecting = false;
 
     }
+    
+    void ControlQueue::setDegOfFreedom(int degOfFreedom) {
+		this->degOfFreedom = degOfFreedom;
+	}
 
     int ControlQueue::getMovementDegreesOfFreedom() {
         return degOfFreedom;
