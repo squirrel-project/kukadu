@@ -65,7 +65,6 @@ namespace kukadu {
         bool plannerInitialized;
         bool kinematicsInitialized;
 
-        double controllerCycleTime;
         double maxDistPerCycle;
 
         arma::vec currJoints;

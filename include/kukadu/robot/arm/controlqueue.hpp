@@ -52,6 +52,9 @@ namespace kukadu {
         arma::vec startingJoints;
         arma::vec internalJointPasser;
 
+        kukadu_mutex loadMaxDistMutex;
+        kukadu_mutex loadCycleTimeMutex;
+
         geometry_msgs::Pose currentCartPose;
         geometry_msgs::Pose internalPosePasser;
 

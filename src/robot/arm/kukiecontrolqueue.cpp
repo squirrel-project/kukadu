@@ -97,7 +97,7 @@ namespace kukadu {
             loadCycleTimeFromServer = true;
             while(!firstControllerCycletimeReceived)
                 r.sleep();
-            sleepTime = controllerCycleTime;
+            sleepTime = getTimeStep();
         }
 
         while(!firstJointsReceived || !firstModeReceived)
@@ -159,17 +159,21 @@ namespace kukadu {
     }
 
     void KukieControlQueue::maxDistPerCycleCallback(const std_msgs::Float64& msg) {
+
         if(loadMaxDistPerCycleFromServer) {
-            controllerCycleTime = msg.data;
+            maxDistPerCycle = msg.data;
             firstMaxDistPerCycleReceived = true;
         }
+
     }
 
     void KukieControlQueue::cycleTimeCallback(const std_msgs::Float64& msg) {
+
         if(loadCycleTimeFromServer) {
-            controllerCycleTime = msg.data;
+            setCycleTime(msg.data);
             firstControllerCycletimeReceived = true;
         }
+
     }
 
     void KukieControlQueue::submitNextJointMove(arma::vec joints) {

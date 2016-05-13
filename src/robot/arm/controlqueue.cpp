@@ -34,8 +34,10 @@ namespace kukadu {
     }
 
     void ControlQueue::setCycleTime(double cycleTime) {
+        loadCycleTimeMutex.lock();
         this->sleepTime = cycleTime;
         this->desiredCycleTime = cycleTime;
+        loadCycleTimeMutex.unlock();
     }
 
     double ControlQueue::getAbsoluteCartForce() {
@@ -48,7 +50,10 @@ namespace kukadu {
     }
 
     double ControlQueue::getTimeStep() {
-        return desiredCycleTime;
+        loadCycleTimeMutex.lock();
+        auto cycleTmp = desiredCycleTime;
+        loadCycleTimeMutex.unlock();
+        return cycleTmp;
     }
 
     arma::vec ControlQueue::getStartingJoints() {
@@ -214,8 +219,8 @@ namespace kukadu {
         isInit = true;
 
         lastDuration = 0.0;
-        double toleratedMaxDuration = 1.1 * desiredCycleTime;
-        double toleratedMinDuration = 0.9 * desiredCycleTime;
+        double toleratedMaxDuration = 1.1 * getTimeStep();
+        double toleratedMinDuration = 0.9 * getTimeStep();
 
         movement = getCurrentJoints().joints;
 
@@ -373,7 +378,7 @@ namespace kukadu {
         rollbackMode = true;
         rollBackTime = possibleTime;
         // buffer of 1.0 more second
-        rollBackQueueSize = (int) ((possibleTime + 1.0) / desiredCycleTime);
+        rollBackQueueSize = (int) ((possibleTime + 1.0) / getTimeStep());
 
     }
 
@@ -387,7 +392,7 @@ namespace kukadu {
     void ControlQueue::rollBack(double time) {
 
         rollbackMode = false;
-        int rollBackCount = (int) (time / desiredCycleTime);
+        int rollBackCount = (int) (time / getTimeStep());
 
         int stretchFactor = ceil((double) rollBackCount / (double) rollBackQueue.size());
         stretchFactor = max((double) stretchFactor, 1.0);
