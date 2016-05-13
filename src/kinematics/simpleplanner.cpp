@@ -23,7 +23,7 @@ namespace kukadu {
             // this seems to be not normal velocity but velocity normalized by time step
             refInputParams->MaxJerkVector->VecData[i] = 0.003 * cycleTime;
             refInputParams->MaxAccelerationVector->VecData[i] = 0.004 * cycleTime;
-            refInputParams->MaxVelocityVector->VecData[i] = 0.002 * cycleTime;
+            refInputParams->MaxVelocityVector->VecData[i] = 0.004 * cycleTime;
             refInputParams->SelectionVector->VecData[i] = true;
         }
 

@@ -81,6 +81,8 @@ namespace kukadu {
     protected:
 
         int currentControlType;
+        
+        virtual void setDegOfFreedom(int degOfFreedom);
 
         virtual void setInitValues() = 0;
         virtual void jointPtpInternal(arma::vec joints) = 0;
