@@ -60,7 +60,7 @@ namespace kukadu {
 
         if(jnt_model_group->getJointModelNames().size() != jointNames.size()) {
             stringstream s;
-            s << "number of specified joint names don't match the number of joints specified in the move group (" << jnt_model_group->getJointModelNames().size() << " vs " << jointNames.size() << ")";
+            s << "number of specified joint names don't match the number of joints specified in the move group (movegroup: " << jnt_model_group->getJointModelNames().size() << " vs provided: " << jointNames.size() << ")";
             throw KukaduException(s.str().c_str());
         }
 
@@ -172,7 +172,7 @@ namespace kukadu {
 
         auto jointPos = intermediateJoints.back();
         for (int j = 0; j < joint_names.size(); ++j) {
-            moveit_msgs::JointConstraint &jc = c.joint_constraints.at(j);
+            moveit_msgs::JointConstraint& jc = c.joint_constraints.at(j);
             jc.joint_name = joint_names.at(j);
             jc.position = jointPos.at(j);
             jc.tolerance_above = 1e-4;
