@@ -30,7 +30,7 @@ namespace kukadu {
 
     }
 
-    void PlottingControlQueue::startQueueThreadHook() {
+    void PlottingControlQueue::startQueueHook() {
 
     }
 
@@ -87,7 +87,7 @@ namespace kukadu {
 
     }
 
-    mes_result PlottingControlQueue::getCurrentJntFrcTrq() {
+    mes_result PlottingControlQueue::getCurrentJntFrc() {
 
         mes_result ret;
         vec frcTrq(getMovementDegreesOfFreedom());
@@ -106,7 +106,7 @@ namespace kukadu {
 
     void PlottingControlQueue::addJointsPosToQueue(arma::vec joints) {
         currJoints = joints;
-        currTime += getTimeStep();
+        currTime += getCycleTime();
     }
 
     void PlottingControlQueue::addCartesianPosToQueue(geometry_msgs::Pose pose) {
@@ -152,7 +152,7 @@ namespace kukadu {
         currJoints = joints;
     }
 
-    int PlottingControlQueue::getCurrentControlType() {
+    int PlottingControlQueue::getCurrentMode() {
         return CONTROLQUEUE_JNT_POS_MODE;
     }
 

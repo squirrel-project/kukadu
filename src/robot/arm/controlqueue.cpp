@@ -7,11 +7,11 @@ using namespace arma;
 
 namespace kukadu {
 
-    KUKADU_SHARED_PTR<kukadu_thread> ControlQueue::startQueueThread() {
+    KUKADU_SHARED_PTR<kukadu_thread> ControlQueue::startQueue() {
         setInitValues();
         thr = KUKADU_SHARED_PTR<kukadu_thread>(new kukadu_thread(&ControlQueue::run, this));
         while(!this->isInitialized());
-        startQueueThreadHook();
+        startQueueHook();
         return thr;
     }
 
@@ -53,7 +53,7 @@ namespace kukadu {
 
     }
 
-    double ControlQueue::getTimeStep() {
+    double ControlQueue::getCycleTime() {
         loadCycleTimeMutex.lock();
         auto cycleTmp = desiredCycleTime;
         loadCycleTimeMutex.unlock();
@@ -82,11 +82,11 @@ namespace kukadu {
 
     void ControlQueue::setNextTrajectory(std::vector<arma::vec> jointTrajectory) {
         for(auto joint : jointTrajectory)
-            addJointsPosToQueue(joint);
-        synchronizeToControlQueue(1);
+            move(joint);
+        synchronizeToQueue(1);
     }
 
-    void ControlQueue::addCartesianPosToQueue(geometry_msgs::Pose pose) {
+    void ControlQueue::move(geometry_msgs::Pose pose) {
         cartesianMovementQueue.push(pose);
     }
 
@@ -126,7 +126,7 @@ namespace kukadu {
         return currentTime;
     }
 
-    void ControlQueue::setFinish() {
+    void ControlQueue::stopQueue() {
         finish = 1;
         startingJoints = arma::vec(1);
     }
@@ -135,7 +135,7 @@ namespace kukadu {
         return isInit;
     }
 
-    void ControlQueue::addJointsPosToQueue(arma::vec joints) {
+    void ControlQueue::move(arma::vec joints) {
         movementQueue.push(joints);
     }
 
@@ -159,7 +159,7 @@ namespace kukadu {
         return !finish;
     }
 
-    void ControlQueue::synchronizeToControlQueue(int maxNumJointsInQueue) {
+    void ControlQueue::synchronizeToQueue(int maxNumJointsInQueue) {
         if(currentControlType == CONTROLQUEUE_JNT_IMP_MODE || currentControlType == CONTROLQUEUE_JNT_POS_MODE) {
             while(movementQueue.size() > maxNumJointsInQueue);
         } else if(currentControlType == CONTROLQUEUE_CART_IMP_MODE) {
@@ -197,10 +197,6 @@ namespace kukadu {
 
     }
 
-    double ControlQueue::getMeasuredTimeStep() {
-        return lastDuration;
-    }
-
     void ControlQueue::run() {
 
         setInitValuesInternal();
@@ -223,8 +219,8 @@ namespace kukadu {
         isInit = true;
 
         lastDuration = 0.0;
-        double toleratedMaxDuration = 1.1 * getTimeStep();
-        double toleratedMinDuration = 0.9 * getTimeStep();
+        double toleratedMaxDuration = 1.1 * getCycleTime();
+        double toleratedMinDuration = 0.9 * getCycleTime();
 
         movement = getCurrentJoints().joints;
 
@@ -315,7 +311,7 @@ namespace kukadu {
 
         double lastTime = DBL_MIN;
         collectedJoints.clear();
-        ros::Rate r((int) (1.0 / getTimeStep() + 10.0));
+        ros::Rate r((int) (1.0 / getCycleTime() + 10.0));
         while(continueCollecting) {
             mes_result lastResult = getCurrentJoints();
             if(lastResult.time != lastTime)
@@ -376,13 +372,13 @@ namespace kukadu {
 
     }
 
-    void ControlQueue::startJointRollBackMode(double possibleTime) {
+    void ControlQueue::startRollBackMode(double possibleTime) {
 
         rollBackQueue.clear();
         rollbackMode = true;
         rollBackTime = possibleTime;
         // buffer of 1.0 more second
-        rollBackQueueSize = (int) ((possibleTime + 1.0) / getTimeStep());
+        rollBackQueueSize = (int) ((possibleTime + 1.0) / getCycleTime());
 
     }
 
@@ -396,7 +392,7 @@ namespace kukadu {
     void ControlQueue::rollBack(double time) {
 
         rollbackMode = false;
-        int rollBackCount = (int) (time / getTimeStep());
+        int rollBackCount = (int) (time / getCycleTime());
 
         int stretchFactor = ceil((double) rollBackCount / (double) rollBackQueue.size());
         stretchFactor = max((double) stretchFactor, 1.0);
@@ -415,7 +411,7 @@ namespace kukadu {
             // interpolate to stretch the trajectory in case there are not enough measured packets (happens in usage with simulator)
             vec diffUnit = (nextCommand - lastCommand) / (double) stretchFactor;
             for(int j = 0; j < stretchFactor; ++j) {
-                addJointsPosToQueue(lastCommand + j * diffUnit);
+                move(lastCommand + j * diffUnit);
             }
 
             lastCommand = nextCommand;
@@ -424,7 +420,7 @@ namespace kukadu {
         }
 
         // wait until everything has been executed
-        synchronizeToControlQueue(1);
+        synchronizeToQueue(1);
         rollBackQueue.clear();
 
     }

@@ -63,7 +63,7 @@ namespace kukadu {
 
     protected:
 
-        virtual void startQueueThreadHook();
+        virtual void startQueueHook();
         virtual void submitNextJointMove(arma::vec joints);
         virtual void submitNextCartMove(geometry_msgs::Pose pose);
         virtual void setCurrentControlTypeInternal(int controlType);
@@ -95,7 +95,7 @@ namespace kukadu {
         void synchronizeToControlQueue(int maxNumJointsInQueue);
         void setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq);
 
-        virtual int getCurrentControlType();
+        virtual int getCurrentMode();
 
         double getCurrentTime();
 
@@ -108,7 +108,7 @@ namespace kukadu {
         std::vector<std::string> getJointNames();
 
         mes_result getCurrentJoints();
-        mes_result getCurrentJntFrcTrq();
+        mes_result getCurrentJntFrc();
         mes_result getCurrentCartesianPos();
         mes_result getCurrentCartesianFrcTrq();
 

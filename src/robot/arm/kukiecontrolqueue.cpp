@@ -97,7 +97,7 @@ namespace kukadu {
             loadCycleTimeFromServer = true;
             while(!firstControllerCycletimeReceived)
                 r.sleep();
-            sleepTime = getTimeStep();
+            sleepTime = getCycleTime();
         }
 
         while(!firstJointsReceived || !firstModeReceived)
@@ -130,7 +130,7 @@ namespace kukadu {
 		plannerInitialized = true;
 	}
 
-    void KukieControlQueue::startQueueThreadHook() {
+    void KukieControlQueue::startQueueHook() {
         cartPoseThr = kukadu_thread(&KukieControlQueue::computeCurrentCartPose, this);
     }
 
@@ -240,7 +240,7 @@ namespace kukadu {
         basePoseRf.position.z = newTargetWorldPos[2];
 
         // publish robot frame pose to move
-        addCartesianPosToQueue(basePoseRf);
+        move(basePoseRf);
 
         return basePoseRf;
 
@@ -362,7 +362,7 @@ namespace kukadu {
         firstModeReceived = false;
     }
 
-    int KukieControlQueue::getCurrentControlType() {
+    int KukieControlQueue::getCurrentMode() {
         return impMode;
     }
 
@@ -384,7 +384,7 @@ namespace kukadu {
         return false;
     }
 
-    mes_result KukieControlQueue::getCurrentJntFrcTrq() {
+    mes_result KukieControlQueue::getCurrentJntFrc() {
 
         mes_result ret;
 
@@ -441,8 +441,8 @@ namespace kukadu {
                 if(getAbsoluteCartForce() > maxForce)
                     maxForceExceeded = true;
                 else
-                    addJointsPosToQueue(desiredJointPlan.at(i));
-                synchronizeToControlQueue(1);
+                    move(desiredJointPlan.at(i));
+                synchronizeToQueue(1);
 
             }
 
@@ -491,9 +491,9 @@ namespace kukadu {
             if(desiredJointPlan.size() > 0) {
 
                 for(int i = 0; i < desiredJointPlan.size(); ++i)
-                    addJointsPosToQueue(desiredJointPlan.at(i));
+                    move(desiredJointPlan.at(i));
 
-                synchronizeToControlQueue(1);
+                synchronizeToQueue(1);
 
             } else {
                 ROS_ERROR("(KukieControlQueue) Joint plan not reachable");
@@ -525,7 +525,7 @@ namespace kukadu {
 
             pubAddLoad.publish(msg);
 
-            int tmpMode = getCurrentControlType();
+            int tmpMode = getCurrentMode();
             stopCurrentMode();
             switchMode(tmpMode);
 
