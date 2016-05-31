@@ -81,10 +81,26 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Modules </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"></div></div><!-- contents -->
+<div class="textblock"><p>Currently, kukadu consists for 4 major modules:</p>
+<ul>
+<li>The robot module (<a class="el" href="robotpage.html">The robot module</a>): The robot module is the interface to a concrete robot. It provides an interface that defines what kukadu expects a robot to be able to do. If this interface is implemented for a specific robot, the complete stack of the framework is available.</li>
+<li>The kinematics module (<a class="el" href="kinematicspage.html">The kinematics module</a>): As the name already says, the kinematics module provides kinematics for a given robot. It includes interfaces and implementations for forward and inverse kinematics as well as path planning functionality. The only prerequisite is an appropriate robot model in URDF format. Currently, interfaces to MoveIt and KOMO are available.</li>
+<li>The control module (<a class="el" href="controlpage.html">The control module</a>): The control module provides interfaces for control algorithms as well as certain implementations of these interfaces such as DMPs and splines.</li>
+<li>The machine learning module (<a class="el" href="mlpage.html">The machine learning module</a>): The machine learning module provides interfaces for supervised learning and reinforcement learning. Further, these interfaces are implemented for several methods such as<ul>
+<li>Linear regression</li>
+<li>Locally weighted regression</li>
+<li>Gaussian process regression</li>
+<li>SVM</li>
+<li>Control policy reinforcement learning (PoWER)</li>
+<li>Reinforcement learning (Projective simulation, Monte carlo RL, Q-Learning, SARSA)</li>
+</ul>
+</li>
+</ul>
+<p>Prev (<a class="el" href="gettingstartedpage.html">Getting Started</a>), Next (<a class="el" href="robotpage.html">The robot module</a>) </p>
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed May 25 2016 17:07:45 for kukadu by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 31 2016 21:20:22 for kukadu by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

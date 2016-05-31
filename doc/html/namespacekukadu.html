@@ -251,10 +251,10 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interface between the kukadu software stack and the robot hardware. If kukadu shall support another robot, the abstract methods need to be implemented according to the documentation. Then the kukadu software stack is available for usage with the robot.  <a href="classkukadu_1_1ControlQueue.html#details">More...</a><br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkukadu_1_1KukieControlQueue.html">KukieControlQueue</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The <a class="el" href="classkukadu_1_1KukieControlQueue.html" title="The KukieControlQueue provides control capabilities for the Kuka LWR 4+ robotic arm and implements th...">KukieControlQueue</a> provides control capabilities for the Kuka LWR 4+ robotic arm and implements the <a class="el" href="classkukadu_1_1ControlQueue.html" title="Interface between the kukadu software stack and the robot hardware. If kukadu shall support another r...">ControlQueue</a> interface.  <a href="classkukadu_1_1KukieControlQueue.html#details">More...</a><br/></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains an implementation of the control queue interface for robots supporting the IISKukie system. This interface is responsible for all communication the kukadu software stack and the robotic arm.  <a href="classkukadu_1_1KukieControlQueue.html#details">More...</a><br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkukadu_1_1PlottingControlQueue.html">PlottingControlQueue</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The OrocosControlQueue provides control capabilities for the Kuka LWR 4+ robotic arm.  <a href="classkukadu_1_1PlottingControlQueue.html#details">More...</a><br/></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains an implementation of the control queue interface. The <a class="el" href="classkukadu_1_1PlottingControlQueue.html" title="Contains an implementation of the control queue interface. The PlottingControlQueue is not bound to a...">PlottingControlQueue</a> is not bound to a specific robot. It can be used to simulate a robot without any real hardware available.  <a href="classkukadu_1_1PlottingControlQueue.html#details">More...</a><br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkukadu_1_1GenericHand.html">GenericHand</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The <a class="el" href="classkukadu_1_1GenericHand.html" title="The GenericHand provides a very elementary interface to control robot hands mounted on a robot arm Th...">GenericHand</a> provides a very elementary interface to control robot hands mounted on a robot arm This class provides very an interface for the very basic functionalities such as "connect to hand" or "close hand".  <a href="classkukadu_1_1GenericHand.html#details">More...</a><br/></td></tr>
@@ -707,7 +707,7 @@ const std::string&#160;</td><td class="memItemRight" valign="bottom"><b>DEFAULT_
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed May 25 2016 17:07:45 for kukadu by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 31 2016 21:20:22 for kukadu by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

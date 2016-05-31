@@ -46,13 +46,10 @@
 
 namespace kukadu {
 
-    /** \brief The KukieControlQueue provides control capabilities for the Kuka LWR 4+ robotic arm and implements the ControlQueue interface
-     *
-     * This class implements the abstract ControlQueue class for the usage with the IISKukie system. It provides basic functionalities such as commanding in
-     * in joint space as well as point to point movement in cartesian and joint space. To use it, additionally the provided KRL script has to be selected on the robot
-     * controller side. For further information how to use it, please see the sample programs and the kuka documentation
-     * \ingroup Control
-     */
+    /** \brief Contains an implementation of the control queue interface for robots supporting the IISKukie system.
+    * This interface is responsible for all communication the kukadu software stack and the robotic arm.
+    * \ingroup Robot
+    */
     class KukieControlQueue : public ControlQueue {
 
     private:

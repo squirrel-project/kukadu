@@ -18,7 +18,6 @@ var searchData=
   ['computerolloutparamters',['computeRolloutParamters',['../classkukadu_1_1DMPReinforcer.html#abf1b944f57802f5ea3470be9746ad5ab',1,'kukadu::DMPReinforcer::computeRolloutParamters()'],['../classkukadu_1_1GeneralReinforcer.html#aec3cde390852d93c52a01926bbc6feb3',1,'kukadu::GeneralReinforcer::computeRolloutParamters()'],['../classkukadu_1_1GradientDescent.html#abd9d198e248e55a54a346f97a5cce987',1,'kukadu::GradientDescent::computeRolloutParamters()'],['../classkukadu_1_1PoWER.html#a93d5eb1ddf9a07e1e6d713c71ddf009c',1,'kukadu::PoWER::computeRolloutParamters()']]],
   ['connecthand',['connectHand',['../classkukadu_1_1GenericHand.html#a965ed8a8d225fb36eabf5089fa5d4f32',1,'kukadu::GenericHand::connectHand()'],['../classkukadu_1_1PlottingHand.html#ae1f5f384a2e8db0423b2a2ebe889f4f9',1,'kukadu::PlottingHand::connectHand()'],['../classkukadu_1_1RosSchunk.html#a2b263c93cd2afe970121fe0102b5e502',1,'kukadu::RosSchunk::connectHand()']]],
   ['constraint',['Constraint',['../classkukadu_1_1Constraint.html',1,'kukadu']]],
-  ['control',['Control',['../group__Control.html',1,'']]],
   ['controller',['Controller',['../classkukadu_1_1Controller.html',1,'kukadu']]],
   ['controlleractionclip',['ControllerActionClip',['../classkukadu_1_1ControllerActionClip.html',1,'kukadu']]],
   ['controllerresult',['ControllerResult',['../classkukadu_1_1ControllerResult.html',1,'kukadu']]],

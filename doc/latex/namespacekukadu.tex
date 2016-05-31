@@ -142,9 +142,9 @@ class \hyperlink{classkukadu_1_1SensingController}{Sensing\-Controller}
 class \hyperlink{classkukadu_1_1ControlQueue}{Control\-Queue}
 \begin{DoxyCompactList}\small\item\em Interface between the kukadu software stack and the robot hardware. If kukadu shall support another robot, the abstract methods need to be implemented according to the documentation. Then the kukadu software stack is available for usage with the robot. \end{DoxyCompactList}\item 
 class \hyperlink{classkukadu_1_1KukieControlQueue}{Kukie\-Control\-Queue}
-\begin{DoxyCompactList}\small\item\em The \hyperlink{classkukadu_1_1KukieControlQueue}{Kukie\-Control\-Queue} provides control capabilities for the Kuka L\-W\-R 4+ robotic arm and implements the \hyperlink{classkukadu_1_1ControlQueue}{Control\-Queue} interface. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Contains an implementation of the control queue interface for robots supporting the I\-I\-S\-Kukie system. This interface is responsible for all communication the kukadu software stack and the robotic arm. \end{DoxyCompactList}\item 
 class \hyperlink{classkukadu_1_1PlottingControlQueue}{Plotting\-Control\-Queue}
-\begin{DoxyCompactList}\small\item\em The Orocos\-Control\-Queue provides control capabilities for the Kuka L\-W\-R 4+ robotic arm. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Contains an implementation of the control queue interface. The \hyperlink{classkukadu_1_1PlottingControlQueue}{Plotting\-Control\-Queue} is not bound to a specific robot. It can be used to simulate a robot without any real hardware available. \end{DoxyCompactList}\item 
 class \hyperlink{classkukadu_1_1GenericHand}{Generic\-Hand}
 \begin{DoxyCompactList}\small\item\em The \hyperlink{classkukadu_1_1GenericHand}{Generic\-Hand} provides a very elementary interface to control robot hands mounted on a robot arm This class provides very an interface for the very basic functionalities such as \char`\"{}connect to hand\char`\"{} or \char`\"{}close hand\char`\"{}. \end{DoxyCompactList}\item 
 class \hyperlink{classkukadu_1_1PlottingHand}{Plotting\-Hand}

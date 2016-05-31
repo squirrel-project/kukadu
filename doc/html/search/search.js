@@ -10,9 +10,9 @@ var indexSectionsWithContent =
   0: "acdefghijklmnopqrstuv~",
   1: "acdefghijklmnopqrstv",
   2: "k",
-  3: "cfk",
+  3: "cfkp",
   4: "cdefgijklmopqrstu~",
-  5: "cfl",
+  5: "cflr",
   6: "gikmt"
 };
 

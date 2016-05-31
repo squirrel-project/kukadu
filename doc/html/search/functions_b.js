@@ -13,6 +13,5 @@ var searchData=
   ['plotfile_5fxy',['plotfile_xy',['../classkukadu_1_1Gnuplot.html#a69a964c20551ba369846d10c74e53d51',1,'kukadu::Gnuplot']]],
   ['plotfile_5fxy_5ferr',['plotfile_xy_err',['../classkukadu_1_1Gnuplot.html#a78fb33f6b8f7c169bad61f7767b4452f',1,'kukadu::Gnuplot']]],
   ['plotfile_5fxyz',['plotfile_xyz',['../classkukadu_1_1Gnuplot.html#a03b4eec7a72bc05abfcdfd7bcd61513b',1,'kukadu::Gnuplot']]],
-  ['plottingcontrolqueue',['PlottingControlQueue',['../classkukadu_1_1PlottingControlQueue.html#a5776d92fe9c9ebd49752be09333e732f',1,'kukadu::PlottingControlQueue']]],
   ['polytrajectorygenerator',['PolyTrajectoryGenerator',['../classkukadu_1_1PolyTrajectoryGenerator.html#aaae3f21fde5c8bef81f3cc9eb365fcfb',1,'kukadu::PolyTrajectoryGenerator']]]
 ];

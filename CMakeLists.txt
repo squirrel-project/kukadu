@@ -138,6 +138,9 @@ target_link_libraries(planning kukadu ${catkin_LIBRARIES})
 add_executable(cart_traj tutorials/cartesian_trajectories.cpp)
 target_link_libraries(cart_traj kukadu ${catkin_LIBRARIES})
 
+add_executable(control_queue tutorials/control_queue.cpp)
+target_link_libraries(control_queue kukadu ${catkin_LIBRARIES})
+
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS} python3.4m)
 add_dependencies(reflexxeslib ${catkin_EXPORTED_TARGETS})
 add_dependencies(kukadu_demo_guided ${catkin_EXPORTED_TARGETS})
@@ -148,5 +151,6 @@ if(CATKIN_ENABLE_TESTING)
 endif()
 
 install(TARGETS kukadu_demo_guided RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(TARGETS control_queue RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 install(TARGETS ${PROJECT_NAME} reflexxeslib ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION} LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION} RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
 install(DIRECTORY include/${PROJECT_NAME}/ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})

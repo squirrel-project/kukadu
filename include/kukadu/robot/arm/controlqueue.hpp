@@ -24,12 +24,15 @@
 namespace kukadu {
 
     /**
-     * \defgroup Control
+     * \defgroup Robot
      * The control module provides control interfaces to robots and certain control
      * methods such as DMPs
      */
 
-    /** \brief Interface between the kukadu software stack and the robot hardware. If
+    /**
+     * \class ControlQueue
+     *
+     * \brief Interface between the kukadu software stack and the robot hardware. If
      * kukadu shall support another robot, the abstract methods need to be implemented
      * according to the documentation. Then the kukadu software stack is available
      * for usage with the robot.
@@ -37,7 +40,7 @@ namespace kukadu {
      * The ControlQueue interface is the bridge between all implemented control methods (DMPs, ...) and
      * the robot hardware. It supports functionlity such as trajectory following, simple point to point
      * planning or security mechanisms such as maximum force values for execution.
-     * \ingroup Control
+     * \ingroup Robot
      */
     class ControlQueue : public DestroyableObject, public KUKADU_ENABLE_SHARED_FROM_THIS<ControlQueue> {
 
