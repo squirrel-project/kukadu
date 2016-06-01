@@ -25,8 +25,9 @@ namespace kukadu {
 
     /**
      * \defgroup Robot
-     * The control module provides control interfaces to robots and certain control
-     * methods such as DMPs
+     * The robot module provides control interfaces to robots and
+     * methods to automatically collect and store sensor and robot
+     * state information
      */
 
     /**

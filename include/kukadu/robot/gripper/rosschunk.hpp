@@ -15,10 +15,9 @@
 #include <trajectory_msgs/JointTrajectoryPoint.h>
 #include <control_msgs/FollowJointTrajectoryGoal.h>
 #include <control_msgs/FollowJointTrajectoryActionGoal.h>
-
-#include "generichand.hpp"
-#include "../../utils/utils.hpp"
-#include "../../types/kukadutypes.hpp"
+#include <kukadu/robot/gripper/generichand.hpp>
+#include <kukadu/utils/utils.hpp>
+#include <kukadu/types/kukadutypes.hpp>
 
 namespace kukadu {
 
@@ -26,9 +25,12 @@ namespace kukadu {
 
     enum kukadu_grasps {eGID_CENTRICAL, eGID_CYLINDRICAL, eGID_PARALLEL, eGID_SPHERICAL};
 
-    /** \brief Provides control capabilities for the Schunk SDH robotic hand with ROS binding
+    /**
+     * \class RosSchunk
+     *
+     * \brief Provides control capabilities for the Schunk SDH robotic hand with ROS binding
      * Implements the GenericHand interface for the Schunk SDH robotic hand. Note that using this class the programm has to be executed with root rights
-     * \ingroup RobotFramework
+     * \ingroup Robot
      */
     class RosSchunk : public GenericHand {
 

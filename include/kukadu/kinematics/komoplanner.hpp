@@ -41,6 +41,12 @@ namespace kukadu {
 
     };
 
+    /**
+     * \class KomoPlanner
+     *
+     * \brief
+     * \ingroup Kinematics
+     */
     class KomoPlanner : public PathPlanner, public Kinematics {
 
     private:

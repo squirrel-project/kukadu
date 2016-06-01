@@ -4,6 +4,8 @@
 #include <kukadu/kinematics/moveitkinematics.hpp>
 #include <tf/tf.h>
 #include <stdexcept>
+#include <chrono>
+#include <thread>
 
 using namespace std;
 using namespace arma;
@@ -22,6 +24,7 @@ namespace kukadu {
 
         set_ctrlc_exit_handler();
 
+        firstCartsComputed = false;
         this->acceptCollisions = acceptCollisions;
 
         this->ptpTopic = ptpTopic;
@@ -119,19 +122,38 @@ namespace kukadu {
         usleep(1e6);
 
     }
+
+    KUKADU_SHARED_PTR<Kinematics> KukieControlQueue::getKinematics() {
+        return kin;
+    }
     
 	void KukieControlQueue::setKinematics(KUKADU_SHARED_PTR<Kinematics> kin) {
+
+        planAndKinMutex.lock();
+
 		this->kin = kin;
 		kinematicsInitialized = true;
+
+        planAndKinMutex.unlock();
+
 	}
 		
 	void KukieControlQueue::setPathPlanner(KUKADU_SHARED_PTR<PathPlanner> planner) {
+
+        planAndKinMutex.lock();
+
 		this->planner = planner;
 		plannerInitialized = true;
+
+        planAndKinMutex.unlock();
+
 	}
 
     void KukieControlQueue::startQueueHook() {
+        firstCartsComputed = false;
         cartPoseThr = kukadu_thread(&KukieControlQueue::computeCurrentCartPose, this);
+        while(!firstCartsComputed)
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     KukieControlQueue::KukieControlQueue(std::string deviceType, std::string armPrefix, ros::NodeHandle node, bool acceptCollisions, KUKADU_SHARED_PTR<Kinematics> kin, KUKADU_SHARED_PTR<PathPlanner> planner, double sleepTime, double maxDistPerCycle) : ControlQueue(7, sleepTime) {
@@ -318,19 +340,24 @@ namespace kukadu {
 
         if(!kinematicsInitialized) {
 
-            kin = KUKADU_SHARED_PTR<Kinematics>(new KomoPlanner(shared_from_this(),
+            planAndKinMutex.lock();
+            kin = make_shared<KomoPlanner>(shared_from_this(),
                                                                      resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/data/iis_robot.kvg"),
                                                                      resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/config/MT.cfg"),
-                                                                     getRobotSidePrefix(), acceptCollisions));
+                                                                     getRobotSidePrefix(), acceptCollisions);
             kinematicsInitialized = true;
+            planAndKinMutex.unlock();
 
         }
 
         while(getQueueRunning()) {
 
-            forwadKinMutex.lock();
+            planAndKinMutex.lock();
+
                 currCarts = kin->computeFk(armadilloToStdVec(getCurrentJoints().joints));
-            forwadKinMutex.unlock();
+                firstCartsComputed = true;
+
+            planAndKinMutex.unlock();
 
         }
 
@@ -414,24 +441,29 @@ namespace kukadu {
 
         cartesianPtpReached = false;
 
-        komoMutex.lock();
+        if(!plannerInitialized) {
 
-            if(!plannerInitialized) {
+            planAndKinMutex.lock();
+            planner = make_shared<KomoPlanner>(shared_from_this(),
+                                                                     resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/data/iis_robot.kvg"),
+                                                                     resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/config/MT.cfg"),
+                                                                     getRobotSidePrefix(), acceptCollisions);
+            plannerInitialized = true;
+            planAndKinMutex.unlock();
 
-                planner = KUKADU_SHARED_PTR<PathPlanner>(new KomoPlanner(shared_from_this(),
-                                                                         resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/data/iis_robot.kvg"),
-                                                                         resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/config/MT.cfg"),
-                                                                         getRobotSidePrefix(), acceptCollisions));
-                plannerInitialized = true;
+        }
 
-            }
+        auto currentPose = getCurrentCartesianPose();
+        printPose(currentPose);
+        vector<geometry_msgs::Pose> desiredPlan;
+        desiredPlan.push_back(currentPose);
+        desiredPlan.push_back(pos);
 
-            vector<geometry_msgs::Pose> desiredPlan;
-            desiredPlan.push_back(getCurrentCartesianPose());
-            desiredPlan.push_back(pos);
-            vector<vec> desiredJointPlan = planner->planCartesianTrajectory(desiredPlan, false, true);
+        planAndKinMutex.lock();
 
-        komoMutex.unlock();
+            vector<vec> desiredJointPlan = planner->planCartesianTrajectory(getCurrentJoints().joints, desiredPlan, false, true);
+
+        planAndKinMutex.unlock();
 
         bool maxForceExceeded = false;
         if(desiredJointPlan.size() > 0) {
@@ -456,14 +488,15 @@ namespace kukadu {
 
         ptpReached = false;
 
-        komoMutex.lock();
         if(!plannerInitialized) {
 
-            planner = KUKADU_SHARED_PTR<PathPlanner>(new KomoPlanner(shared_from_this(),
+            planAndKinMutex.lock();
+            planner = make_shared<KomoPlanner>(shared_from_this(),
                                                                      resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/data/iis_robot.kvg"),
                                                                      resolvePath("$KUKADU_HOME/external/komo/share/data/kuka/config/MT.cfg"),
-                                                                     getRobotSidePrefix(), acceptCollisions));
+                                                                     getRobotSidePrefix(), acceptCollisions);
             plannerInitialized = true;
+            planAndKinMutex.unlock();
 
         }
 
@@ -482,10 +515,11 @@ namespace kukadu {
             vector<arma::vec> desiredPlan;
             desiredPlan.push_back(getCurrentJoints().joints);
             desiredPlan.push_back(joints);
+            planAndKinMutex.lock();
             desiredJointPlan = planner->planJointTrajectory(desiredPlan);
+            planAndKinMutex.unlock();
 
         }
-        komoMutex.unlock();
 
         if(performPtp) {
             if(desiredJointPlan.size() > 0) {

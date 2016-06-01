@@ -21,6 +21,12 @@
 
 namespace kukadu {
 
+    /**
+     * \class MoveItKinematics
+     *
+     * \brief
+     * \ingroup Kinematics
+     */
     class MoveItKinematics : public PathPlanner, public Kinematics {
 
     private:

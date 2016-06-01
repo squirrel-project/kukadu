@@ -58,6 +58,7 @@ namespace kukadu {
         bool loadMaxDistPerCycleFromServer;
 
         bool firstModeReceived;
+        bool firstCartsComputed;
         bool firstJointsReceived;
         bool firstControllerCycletimeReceived;
         bool firstMaxDistPerCycleReceived;
@@ -77,8 +78,7 @@ namespace kukadu {
         arma::vec currentJntFrqTrq;
         arma::vec currentCartFrqTrq;
 
-        kukadu_mutex komoMutex;
-        kukadu_mutex forwadKinMutex;
+        kukadu_mutex planAndKinMutex;
         kukadu_mutex cartFrcTrqMutex;
         kukadu_mutex currentJointsMutex;
 
@@ -210,6 +210,8 @@ namespace kukadu {
         geometry_msgs::Pose moveCartesianRelativeWf(geometry_msgs::Pose basePoseRf, geometry_msgs::Pose offset);
 
         arma::vec getFrcTrqCart();
+
+        KUKADU_SHARED_PTR<Kinematics> getKinematics();
 
         static const int KUKA_STOP_MODE = 0;
         static const int KUKA_JNT_POS_MODE = 10;

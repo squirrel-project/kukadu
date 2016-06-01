@@ -9,9 +9,11 @@
 namespace kukadu {
 
     /**
+     * \class GenericHand
+     *
      * \brief The GenericHand provides a very elementary interface to control robot hands mounted on a robot arm
      * This class provides very an interface for the very basic functionalities such as "connect to hand" or "close hand"
-     * \ingroup RobotFramework
+     * \ingroup Robot
      */
     class GenericHand : public DestroyableObject {
 

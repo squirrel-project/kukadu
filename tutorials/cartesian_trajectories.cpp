@@ -64,6 +64,7 @@ int main(int argc, char** args) {
     // as soon as the previously loaded movements are done (in this case no previous movement is in the
     // queue anymore)
     realLeftQueue->setNextTrajectory(jointPlan);
+    realLeftQueue->synchronizeToQueue(1);
 
     cout << "execution done" << endl;
 

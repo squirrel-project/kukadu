@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['learningframework',['LearningFramework',['../group__LearningFramework.html',1,'']]]
+  ['kinematics',['Kinematics',['../group__Kinematics.html',1,'']]]
 ];

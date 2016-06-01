@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['robot',['Robot',['../group__Robot.html',1,'']]]
+  ['learningframework',['LearningFramework',['../group__LearningFramework.html',1,'']]]
 ];

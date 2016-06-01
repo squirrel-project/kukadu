@@ -12,6 +12,12 @@
 
 namespace kukadu {
 
+    /**
+     * \class Constraint
+     *
+     * \brief
+     * \ingroup Kinematics
+     */
     class Constraint {
 
     private:
@@ -24,6 +30,12 @@ namespace kukadu {
 
     };
 
+    /**
+     * \class MoveItConstraint
+     *
+     * \brief
+     * \ingroup Kinematics
+     */
     class MoveItConstraint: public Constraint {
 
     private:
@@ -41,6 +53,12 @@ namespace kukadu {
 
     };
 
+    /**
+     * \class TableConstraint
+     *
+     * \brief
+     * \ingroup Kinematics
+     */
     class TableConstraint: public Constraint {
 
     public:

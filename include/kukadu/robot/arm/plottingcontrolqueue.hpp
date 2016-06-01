@@ -44,7 +44,10 @@
 
 namespace kukadu {
 
-    /** \brief Contains an implementation of the control queue interface. The PlottingControlQueue
+    /**
+    * \class PlottingControlQueue
+    *
+    * \brief Contains an implementation of the control queue interface. The PlottingControlQueue
     * is not bound to a specific robot. It can be used to simulate a robot without any real
     * hardware available.
     * \ingroup Robot

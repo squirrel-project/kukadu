@@ -151,6 +151,18 @@
  * to test other functionality. The kukadu::PlottingControlQueue simply
  * ignores all submitted control commands.
  * 
+ * Further, kukadu provides an interface for hand control, namely
+ * kukadu::GenericHand. It supports similar functionality to the
+ * kukadu::ControlQueue. However, the interface is different to the arm
+ * interface, as many hands behave different than arms, e.g. the
+ * kukadu::GenericHand interface provides functions for simply closing
+ * and opening the hand. This is especially essential in order to react to the
+ * rise of underactuated hands in modern robotics.
+ * 
+ * The last part of the \ref Robot module is the kukadu::SensorStorage
+ * interface. This class is made to collect and store sensor information
+ * from robotic arms and hands.
+ * 
  * <h1>kukadu::KukieControlQueue</h1>
  * The following code snippet shows how to use the kukadu::KukieControlQueue.
  * In order to make the program run, make sure that the kukie system is
@@ -208,10 +220,118 @@
  * the execution mode, the queue is stopped (line 50) and the program
  * waits until the queue is stopped completely (line 53).
  * 
+ * <h1>kukadu::PlottingControlQueue</h1>
+ * 
+ * todo
+ * 
+ * <h1>kukadu::GenericHand</h1>
+ * 
+ * todo
+ * 
+ * <h1>kukadu::PlottingHand</h1>
+ * 
+ * todo
+ * 
+ * <h1>kukadu::SensorStorage</h1>
+ * 
+ * todo
+ * 
  * Prev (\ref modulespage), Next (\ref kinematicspage)
 */
 
 /*! \page kinematicspage The kinematics module
+ * The \ref kinematics module provides interfaces and their implementations
+ * for path planning and kinematics (forward, inverse). It is possible
+ * to easily instantiate different versions of path planners and use the
+ * optimal planner for the desired purpose. Currently, there are 3 different
+ * planners implemented:
+ *   - kukadu::SimplePlanner: This planner implements a simple interpolation
+ * in joint space in order to compute a plan from one joint position to another.
+ * In order to do so, it uses the <a href="http://www.reflexxes.ws/">
+ * Reflexxes</a> library. For Cartesian planning it simple performs
+ * inverse kinematics for the target position and interpolates in joint
+ * space. It does not support any functionality for obstacle avoidance or
+ * for fulfilling specific constraints.
+ *   - kukadu::KomoPlanner:
+ *   - kukadu::MoveItKinematics:
+ * 
+ * <h1>kukadu::KomoPlanner</h1>
+ * The next code snippet shows, how kukadu can be used in combination
+ * with KOMO. KOMO is a robust and stable path planner and we recommend
+ * to use this planner. If you don't select a specific planner, KOMO
+ * will be used automatically.
+ * 
+ * \includelineno komo_planning.cpp
+ * 
+ * <h2>Prerequisites</h2>
+ * The only prerequisite is the started kukie controller. Further, the
+ * environment variable <em>KUKADU_HOME</em> needs to be set to the
+ * base folder of kukadu. This variable should be set in your bash by
+ * \code
+ * export KUKADU_HOME=%INSERT_YOUR_PATH_TO_YOUR_CATKIN%/src/kukadu
+ * \endcode
+ * Alternatively, instead of exporting this value every time, you can
+ * also add this line to your <em>.bashrc</em> file.
+ * 
+ * <h2>Description</h2>
+ * In this example, most lines should look familiar to you. If not,
+ * please check out again chapter \ref robotpage. The new part is
+ * found in lines 15 - 17. In line 15 a new KOMO instance is created.
+ * In lines 16 and 17 this instance is set as the planner and kinematics
+ * solver in your
+ * kukadu::KukieControlQueue. In the current version of kukadu, this
+ * theoretically is not required, as KOMO is the standard planner.
+ * However, you can set it explitely, which is done in the shown
+ * example. Whenever the functions kukadu::ControlQueue::jointPtp()
+ * and kukadu::ControlQueue::cartesianPtp() are used, the planner
+ * that was set in lines 16 and 17 is consulted. The generated plan
+ * is executed immediately.
+ * 
+ * It is also possible to use the planner directly without calling
+ * the PtP methods of kukadu::ControlQueue. You find these functions
+ * in the API description of kukadu::PathPlanner. You can execute the
+ * generated plan by using kukadu::ControlQueue::setNextTrajectory().
+ * An example on how this is done is given in the next code snippet.
+ * 
+ * \includelineno cartesian_trajectories.cpp
+ * 
+ * <h1>kukadu::MoveItKinematics</h1>
+ * MoveIt is one of the standard ways in the ROS universe for robot
+ * control and path planning. kukadu also provides an interface
+ * to this framework.
+ * 
+ * \includelineno moveit_planning.cpp
+ * 
+ * <h2>Prerequisites</h2>
+ * In order to use kukadu with MoveIt, you need to upload the robot
+ * model and the MoveIt configuration to the parameter server.
+ * Typically, this can be done by using the launch files generated
+ * by the MoveIt configuration setup. You might execute something
+ * similar to
+ * \code
+ * roslaunch uibk_robot_moveit_config demo.launch
+ * \endcode
+ * If you are not familiar with MoveIt, please consult the
+ * <a href="http://moveit.ros.org/documentation/tutorials/">MoveIt
+ * tutorial</a> on how to set up MoveIt for your robot.
+ * 
+ * <h2>Description</h2>
+ * The code is very similar to the one that was described for the
+ * KOMO planner. As both planners (MoveIt and KOMO) implement the same
+ * kukadu interface (kukadu::PathPlanner), the only difference is found
+ * in line 15, where you create a kukadu::MoveItKinematics instance
+ * instead of an kukadu::KomoPlanner instance. The rest of the code
+ * is independent of the concrete planner.
+ * 
+ * <h1>kukadu::SimplePlanner</h1>
+ * 
+ * TODO: this code is not tested yet
+ * 
+ * \includelineno simple_planning.cpp
+ * 
+ * <h2>Prerequisites</h2>
+ * None
+ * 
  * Prev (\ref robotpage), Next (\ref controlpage)
 */
 

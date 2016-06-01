@@ -17,6 +17,14 @@
 
 namespace kukadu {
 
+    /**
+     * \class SensorStorage
+     *
+     * \brief Can collect and store sensor information of the robot represented
+     * by a kukadu::ControlQueue and a kukadu::GenericHand.
+     *
+     * \ingroup Robot
+     */
     class SensorStorage {
 
     private:

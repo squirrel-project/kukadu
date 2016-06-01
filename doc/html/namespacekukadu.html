@@ -266,6 +266,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provides control capabilities for the Schunk SDH robotic hand with ROS binding Implements the <a class="el" href="classkukadu_1_1GenericHand.html" title="The GenericHand provides a very elementary interface to control robot hands mounted on a robot arm Th...">GenericHand</a> interface for the Schunk SDH robotic hand. Note that using this class the programm has to be executed with root rights.  <a href="classkukadu_1_1RosSchunk.html#details">More...</a><br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkukadu_1_1SensorStorage.html">SensorStorage</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Can collect and store sensor information of the robot represented by a <a class="el" href="classkukadu_1_1ControlQueue.html" title="Interface between the kukadu software stack and the robot hardware. If kukadu shall support another r...">kukadu::ControlQueue</a> and a <a class="el" href="classkukadu_1_1GenericHand.html" title="The GenericHand provides a very elementary interface to control robot hands mounted on a robot arm Th...">kukadu::GenericHand</a>.  <a href="classkukadu_1_1SensorStorage.html#details">More...</a><br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkukadu_1_1CartesianDMP.html">CartesianDMP</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -420,6 +421,9 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>double_to_stri
 template&lt;typename Container &gt; </td></tr>
 <tr class="memitem:adc0c3a0b9a1affd427c8585758459256"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>stringtok</b> (Container &amp;container, std::string const &amp;in, const char *const delimiters=&quot; \t\n&quot;)</td></tr>
 <tr class="separator:adc0c3a0b9a1affd427c8585758459256"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3fb37a9c958c64d8f6b0159db10fd9a7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3fb37a9c958c64d8f6b0159db10fd9a7"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>printPose</b> (const geometry_msgs::Pose &amp;p)</td></tr>
+<tr class="separator:a3fb37a9c958c64d8f6b0159db10fd9a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a28a41c42826259bab68aed7975b56c83"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a28a41c42826259bab68aed7975b56c83"></a>
 double&#160;</td><td class="memItemRight" valign="bottom"><b>computeMaxJointDistance</b> (arma::vec joints1, arma::vec joints2)</td></tr>
 <tr class="separator:a28a41c42826259bab68aed7975b56c83"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -707,7 +711,7 @@ const std::string&#160;</td><td class="memItemRight" valign="bottom"><b>DEFAULT_
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 31 2016 21:20:22 for kukadu by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Jun 1 2016 23:18:28 for kukadu by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
