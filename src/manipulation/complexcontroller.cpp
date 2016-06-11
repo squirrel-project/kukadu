@@ -238,6 +238,43 @@ namespace kukadu {
             rewardHistoryStream->open(rewardHistoryPath.c_str(), ios::trunc);
         }
 
+        stateClips = projSim->getClipsOnLayer(2);
+        for(auto sensingClips : *projSim->getPerceptClips()->at(0)->getSubClips())
+            stateClipsBySensing.push_back(*sensingClips->getSubClips());
+
+    }
+
+    std::vector<KUKADU_SHARED_PTR<Clip> > ComplexController::getStateClipsForSensingId(int sensingId) {
+        return stateClipsBySensing.at(sensingId);
+    }
+
+    std::vector<KUKADU_SHARED_PTR<Clip> > ComplexController::getAllStateClips() {
+        return stateClips;
+    }
+
+    std::vector<std::pair<double, double> > ComplexController::computeEntropyMeanAndVariance(std::vector<int> sensingIds) {
+
+        std::vector<std::pair<double, double> > retVector;
+        for(auto sensingId : sensingIds) {
+            double entropyMean = 0.0;
+            double entropyVar = 0.0;
+            vector<double> entropies;
+            for(auto stateClip : getStateClipsForSensingId(sensingId)) {
+                double entropy = stateClip->computeSubEntropy();
+                entropyMean += entropy;
+                entropies.push_back(entropy);
+            }
+            entropyMean /= stateClips.size();
+
+            for(auto entropy : entropies)
+                entropyVar += std::pow(entropy - entropyMean, 2.0);
+            entropyVar /= stateClips.size();
+
+            retVector.push_back({entropyMean, entropyVar});
+        }
+
+        return retVector;
+
     }
 
     std::string ComplexController::getClassLabel(KUKADU_SHARED_PTR<Clip> sensingClip, KUKADU_SHARED_PTR<Clip> stateClip) {

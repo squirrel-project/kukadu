@@ -21,6 +21,9 @@ namespace kukadu {
 
     private:
 
+        bool computeMeanAndVariance;
+        std::vector<int> meanAndVarianceForSensingIds;
+
         std::string skillDatabase;
 
         std::map<std::string, KUKADU_SHARED_PTR<kukadu::Controller> > registeredComplexControllers;
@@ -56,7 +59,8 @@ namespace kukadu {
                       std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > preparatoryControllers,
                       std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > complexControllers,
                       KUKADU_SHARED_PTR<kukadu::Controller> nothingController,
-                      KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator);
+                      KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator,
+                      std::vector<int> meanAndVarianceForSensingIds = {});
 
         virtual int getDimensionality();
 

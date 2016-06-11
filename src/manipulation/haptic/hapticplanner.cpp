@@ -11,7 +11,14 @@ namespace kukadu {
                                  std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > preparatoryControllers,
                                  std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > complexControllers,
                                  KUKADU_SHARED_PTR<kukadu::Controller> nothingController,
-                                 KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) : Reward(generator, false) {
+                                 KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::vector<int> meanAndVarianceForSensingIds) : Reward(generator, false) {
+
+        if(meanAndVarianceForSensingIds.size() > 0)
+            this->computeMeanAndVariance = true;
+        else
+            this->computeMeanAndVariance = false;
+
+        this->meanAndVarianceForSensingIds = meanAndVarianceForSensingIds;
 
         this->generator = generator;
 
@@ -127,6 +134,10 @@ namespace kukadu {
 
         // for learning, it has to cleanup afterwards as well
         auto result = KUKADU_DYNAMIC_POINTER_CAST<HapticControllerResult>(complSkill->performAction(true));
+        if(computeMeanAndVariance) {
+            auto meanAndVar = complSkill->computeEntropyMeanAndVariance(meanAndVarianceForSensingIds);
+            result->setEntropyMeanAndVariance(meanAndVar);
+        }
         if(updateModels)
             complSkill->updateFiles();
 

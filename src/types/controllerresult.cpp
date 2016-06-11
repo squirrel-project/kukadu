@@ -44,4 +44,12 @@ namespace kukadu {
         return walkedPath;
     }
 
+    void HapticControllerResult::setEntropyMeanAndVariance(std::vector<std::pair<double, double> > meanAndVar) {
+        this->meanAndVar = meanAndVar;
+    }
+
+    std::vector<std::pair<double, double> > HapticControllerResult::getMeanAndVar() {
+        return meanAndVar;
+    }
+
 }

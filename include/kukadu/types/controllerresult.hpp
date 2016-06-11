@@ -52,6 +52,8 @@ namespace kukadu {
 
         std::vector<int> walkedPath;
 
+        std::vector<std::pair<double, double> > meanAndVar;
+
         KUKADU_SHARED_PTR<std::tuple<double, KUKADU_SHARED_PTR<kukadu::Clip>, std::vector<KUKADU_SHARED_PTR<kukadu::Clip> > > > environmentTransition;
 
     public:
@@ -61,6 +63,10 @@ namespace kukadu {
         bool wasBored();
 
         std::vector<int> getWalkedPath();
+
+        std::vector<std::pair<double, double> > getMeanAndVar();
+
+        void setEntropyMeanAndVariance(std::vector<std::pair<double, double> > meanAndVar);
 
     };
 

@@ -140,6 +140,8 @@ namespace kukadu {
         KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > getActionClips();
         KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > > > getClipLayers();
 
+        std::vector<KUKADU_SHARED_PTR<Clip> > getClipsOnLayer(int layerId);
+
         void updatePsFile();
         void storePS(std::string targetFile);
 

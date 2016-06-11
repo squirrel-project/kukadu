@@ -239,6 +239,10 @@ namespace kukadu {
 
     }
 
+    std::vector<KUKADU_SHARED_PTR<Clip> > ProjectiveSimulator::getClipsOnLayer(int layerId) {
+        return vector<KUKADU_SHARED_PTR<Clip> >(getClipLayers()->at(layerId)->begin(), getClipLayers()->at(layerId)->end());
+    }
+
     void ProjectiveSimulator::updatePsFile() {
 
         if(loadedFromFile) {

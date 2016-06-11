@@ -86,6 +86,9 @@ namespace kukadu {
         std::string envModelPath;
         std::string rewardHistoryPath;
 
+        std::vector<KUKADU_SHARED_PTR<Clip> > stateClips;
+        std::vector<std::vector<KUKADU_SHARED_PTR<Clip> > > stateClipsBySensing;
+
         KUKADU_SHARED_PTR<PerceptClip> root;
         KUKADU_SHARED_PTR<kukadu_mersenne_twister> gen;
         KUKADU_SHARED_PTR<ProjectiveSimulator> projSim;
@@ -117,6 +120,9 @@ namespace kukadu {
 
         std::tuple<KUKADU_SHARED_PTR<IntermediateEventClip>, KUKADU_SHARED_PTR<Clip>, KUKADU_SHARED_PTR<ControllerActionClip> > extractClipsFromPath(std::vector<int>& hops);
 
+        std::vector<KUKADU_SHARED_PTR<Clip> > getAllStateClips();
+        std::vector<KUKADU_SHARED_PTR<Clip> > getStateClipsForSensingId(int sensingId);
+
     protected:
 
         virtual void setSimulationModeInChain(bool simulationMode);
@@ -146,6 +152,8 @@ namespace kukadu {
         void store(std::string destination);
         void setTrainingMode(bool doTraining);
         void createSensingDatabase(std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers);
+
+        std::vector<std::pair<double, double> > computeEntropyMeanAndVariance(std::vector<int> sensingIds);
 
         bool isTrained();
 
