@@ -1,6 +1,16 @@
 #ifndef KUKADU_PLOTTINGCONTROLQUEUE_H
 #define KUKADU_PLOTTINGCONTROLQUEUE_H
 
+/**
+ * @file   plottingcontrolqueue.hpp
+ * @Author Simon Hangl (simon.hangl@uibk.ac.at)
+ * @date   May, 2016
+ * @brief  Contains an implementation of the control queue interface. The PlottingControlQueue
+ * is not bound to a specific robot. It can be used to simulate a robot without any real
+ * hardware available.
+ *
+ */
+
 #include <queue>
 #include <time.h>
 #include <math.h>
@@ -34,13 +44,14 @@
 
 namespace kukadu {
 
-    /** \brief The OrocosControlQueue provides control capabilities for the Kuka LWR 4+ robotic arm
-     *
-     * This class implements the abstract ControlQueue class for the usage with the iisorocos system. It provides basic functionalities such as command mode control
-     * in joint space as well as point to point movement in cartesian and joint space. To use it, the additionally provided KRL script has to be selected on the robot
-     * controller side. For further information how to use it, please see the sample programs and the kuka documentation
-     * \ingroup RobotFramework
-     */
+    /**
+    * \class PlottingControlQueue
+    *
+    * \brief Contains an implementation of the control queue interface. The PlottingControlQueue
+    * is not bound to a specific robot. It can be used to simulate a robot without any real
+    * hardware available.
+    * \ingroup Robot
+    */
     class PlottingControlQueue : public ControlQueue {
 
     private:
@@ -63,7 +74,7 @@ namespace kukadu {
 
     protected:
 
-        virtual void startQueueThreadHook();
+        virtual void startQueueHook();
         virtual void submitNextJointMove(arma::vec joints);
         virtual void submitNextCartMove(geometry_msgs::Pose pose);
         virtual void setCurrentControlTypeInternal(int controlType);
@@ -72,13 +83,7 @@ namespace kukadu {
 
     public:
 
-        /** \brief Constructor for KukaControlQueue
-         * \param port port to listen for incoming fri connection
-         * \param sleepTime cycle sleep time (time between to packets sent in command mode)
-         * \param initMode control mode (e.g. command mode, monitor mode) with which the queue should be started
-         */
         PlottingControlQueue(int degOfFreedom, double timeStep);
-
         PlottingControlQueue(std::vector<std::string> jointNames, double timeStep);
 
         void safelyDestroy();
@@ -95,7 +100,7 @@ namespace kukadu {
         void synchronizeToControlQueue(int maxNumJointsInQueue);
         void setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq);
 
-        virtual int getCurrentControlType();
+        virtual int getCurrentMode();
 
         double getCurrentTime();
 
@@ -108,7 +113,7 @@ namespace kukadu {
         std::vector<std::string> getJointNames();
 
         mes_result getCurrentJoints();
-        mes_result getCurrentJntFrcTrq();
+        mes_result getCurrentJntFrc();
         mes_result getCurrentCartesianPos();
         mes_result getCurrentCartesianFrcTrq();
 

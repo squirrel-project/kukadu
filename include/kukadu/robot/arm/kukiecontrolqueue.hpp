@@ -1,6 +1,15 @@
 #ifndef KUKADU_KUKIECONTROLQUEUE_H
 #define KUKADU_KUKIECONTROLQUEUE_H
 
+/**
+ * @file   kukiecontrolqueue.hpp
+ * @Author Simon Hangl (simon.hangl@uibk.ac.at)
+ * @date   May, 2016
+ * @brief  Contains an implementation of the control queue interface for robots supporting the IISKukie system.
+ * This interface is responsible for all communication the kukadu software stack and the robotic arm.
+ *
+ */
+
 #include <queue>
 #include <deque>
 #include <math.h>
@@ -37,13 +46,10 @@
 
 namespace kukadu {
 
-    /** \brief The KukieControlQueue provides control capabilities for the Kuka LWR 4+ robotic arm
-     *
-     * This class implements the abstract ControlQueue class for the usage with the iisKukie system. It provides basic functionalities such as command mode control
-     * in joint space as well as point to point movement in cartesian and joint space. To use it, the additionally provided KRL script has to be selected on the robot
-     * controller side. For further information how to use it, please see the sample programs and the kuka documentation
-     * \ingroup RobotFramework
-     */
+    /** \brief Contains an implementation of the control queue interface for robots supporting the IISKukie system.
+    * This interface is responsible for all communication the kukadu software stack and the robotic arm.
+    * \ingroup Robot
+    */
     class KukieControlQueue : public ControlQueue {
 
     private:
@@ -52,6 +58,7 @@ namespace kukadu {
         bool loadMaxDistPerCycleFromServer;
 
         bool firstModeReceived;
+        bool firstCartsComputed;
         bool firstJointsReceived;
         bool firstControllerCycletimeReceived;
         bool firstMaxDistPerCycleReceived;
@@ -71,8 +78,7 @@ namespace kukadu {
         arma::vec currentJntFrqTrq;
         arma::vec currentCartFrqTrq;
 
-        kukadu_mutex komoMutex;
-        kukadu_mutex forwadKinMutex;
+        kukadu_mutex planAndKinMutex;
         kukadu_mutex cartFrcTrqMutex;
         kukadu_mutex currentJointsMutex;
 
@@ -134,7 +140,6 @@ namespace kukadu {
         KUKADU_SHARED_PTR<Kinematics> kin;
         KUKADU_SHARED_PTR<PathPlanner> planner;
 
-        /* Kukie callback functions */
         void cartPosRfCallback(const geometry_msgs::Pose msg);
         void cartFrcTrqCallback(const geometry_msgs::Wrench& msg);
         void jntMoveCallback(const std_msgs::Float64MultiArray& msg);
@@ -150,10 +155,18 @@ namespace kukadu {
 
         double computeDistance(float* a1, float* a2, int size);
 
+        void constructQueue(std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
+                            std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
+                            std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic,
+                            std::string cartPtpTopic, std::string cartPtpReachedTopic, std::string cartMoveRfQueueTopic, std::string cartMoveWfQueueTopic, std::string cartPoseRfTopic,
+                            std::string setPtpThresh, std::string clockCycleTopic, std::string maxDistancePerCycleTopic, bool acceptCollisions, ros::NodeHandle node,
+                            KUKADU_SHARED_PTR<Kinematics> kin, KUKADU_SHARED_PTR<PathPlanner> planner, double sleepTime, double maxDistPerCycle
+                        );
+
     protected:
 
         virtual void setInitValues();
-        virtual void startQueueThreadHook();
+        virtual void startQueueHook();
         virtual void jointPtpInternal(arma::vec joints);
         virtual void submitNextJointMove(arma::vec joints);
         virtual void cartPtpInternal(geometry_msgs::Pose pos, double maxForce);
@@ -169,14 +182,6 @@ namespace kukadu {
                           KUKADU_SHARED_PTR<Kinematics> kin = KUKADU_SHARED_PTR<Kinematics>(), KUKADU_SHARED_PTR<PathPlanner> planner = KUKADU_SHARED_PTR<PathPlanner>(),
                           double sleepTime = -1.0, double maxDistPerCycle = -1.0);
 
-        void constructQueue(std::string commandTopic, std::string retPosTopic, std::string switchModeTopic, std::string retCartPosTopic,
-                            std::string cartStiffnessTopic, std::string jntStiffnessTopic, std::string ptpTopic,
-                            std::string commandStateTopic, std::string ptpReachedTopic, std::string addLoadTopic, std::string jntFrcTrqTopic, std::string cartFrcTrqTopic,
-                            std::string cartPtpTopic, std::string cartPtpReachedTopic, std::string cartMoveRfQueueTopic, std::string cartMoveWfQueueTopic, std::string cartPoseRfTopic,
-                            std::string setPtpThresh, std::string clockCycleTopic, std::string maxDistancePerCycleTopic, bool acceptCollisions, ros::NodeHandle node,
-                            KUKADU_SHARED_PTR<Kinematics> kin, KUKADU_SHARED_PTR<PathPlanner> planner, double sleepTime, double maxDistPerCycle
-                        );
-
         void safelyDestroy();
         
         void setKinematics(KUKADU_SHARED_PTR<Kinematics> kin);
@@ -187,7 +192,7 @@ namespace kukadu {
         void setAdditionalLoad(float loadMass, float loadPos);
         void setStiffness(float cpstiffnessxyz, float cpstiffnessabc, float cpdamping, float cpmaxdelta, float maxforce, float axismaxdeltatrq);
 
-        int getCurrentControlType();
+        int getCurrentMode();
 
         std::string getRobotName();
         std::string getRobotFileName();
@@ -197,7 +202,7 @@ namespace kukadu {
         std::vector<std::string> getJointNames();
 
         mes_result getCurrentJoints();
-        mes_result getCurrentJntFrcTrq();
+        mes_result getCurrentJntFrc();
         mes_result getCurrentCartesianFrcTrq();
 
         geometry_msgs::Pose getCurrentCartesianPose();
@@ -205,6 +210,8 @@ namespace kukadu {
         geometry_msgs::Pose moveCartesianRelativeWf(geometry_msgs::Pose basePoseRf, geometry_msgs::Pose offset);
 
         arma::vec getFrcTrqCart();
+
+        KUKADU_SHARED_PTR<Kinematics> getKinematics();
 
         static const int KUKA_STOP_MODE = 0;
         static const int KUKA_JNT_POS_MODE = 10;

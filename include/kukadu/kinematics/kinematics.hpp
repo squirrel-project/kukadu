@@ -10,6 +10,20 @@
 
 namespace kukadu {
 
+    /**
+     * \defgroup Kinematics
+     * The kinematics module provides interfaces for motion planning
+     * and kinematics (forward and inverse). Further, it contains
+     * different implementations to path planners such as MoveIt
+     * or KOMO
+     */
+
+    /**
+     * \class Kinematics
+     *
+     * \brief
+     * \ingroup Kinematics
+     */
     class Kinematics {
 
     private:

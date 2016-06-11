@@ -8,6 +8,12 @@
 
 namespace kukadu {
 
+    /**
+     * \class PathPlanner
+     *
+     * \brief
+     * \ingroup Kinematics
+     */
     class PathPlanner {
 
     private:

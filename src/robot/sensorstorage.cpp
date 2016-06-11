@@ -235,7 +235,7 @@ namespace kukadu {
                         cartPos = currentQueue->getCurrentCartesianPos();
 
                     if(storeJntFrc)
-                        jntFrcTrq = currentQueue->getCurrentJntFrcTrq();
+                        jntFrcTrq = currentQueue->getCurrentJntFrc();
 
                     if(storeCartFrcTrq)
                         cartFrcTrq = currentQueue->getCurrentCartesianFrcTrq();

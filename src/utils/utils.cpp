@@ -21,6 +21,10 @@ using namespace arma;
 
 namespace kukadu {
 
+    void printPose(const geometry_msgs::Pose& p) {
+        cout << p.position.x << " " << p.position.y << " " << p.position.z << " " << p.orientation.x << " " << p.orientation.y << " " << p.orientation.z << " " << p.orientation.w << endl;
+    }
+
     double computeMaxJointDistance(arma::vec joints1, arma::vec joints2) {
 
         double maxDist = 0.0;

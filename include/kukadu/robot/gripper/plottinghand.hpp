@@ -22,9 +22,12 @@
 
 namespace kukadu {
 
-    /** \brief Provides control capabilities for the Schunk SDH robotic hand with ROS binding
+    /**
+     * \class PlottingHand
+     *
+     * \brief Provides control capabilities for the Schunk SDH robotic hand with ROS binding
      * Implements the GenericHand interface for the Schunk SDH robotic hand. Note that using this class the programm has to be executed with root rights
-     * \ingroup RobotFramework
+     * \ingroup Robot
      */
     class PlottingHand : public RosSchunk {
 

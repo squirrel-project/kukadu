@@ -16,6 +16,12 @@
 
 namespace kukadu {
 
+    /**
+     * \class SimplePlanner
+     *
+     * \brief
+     * \ingroup Kinematics
+     */
     class SimplePlanner : public PathPlanner {
 
     private:

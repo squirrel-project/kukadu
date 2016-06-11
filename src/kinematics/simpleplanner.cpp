@@ -12,7 +12,7 @@ namespace kukadu {
         this->queue = queue;
         this->kin = kin;
 
-        cycleTime = queue->getTimeStep();
+        cycleTime = queue->getCycleTime();
         degOfFreedom = queue->getMovementDegreesOfFreedom();
 
         refApi = new ReflexxesAPI(queue->getMovementDegreesOfFreedom(), 1.0 / cycleTime);

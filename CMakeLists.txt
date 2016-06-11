@@ -129,28 +129,39 @@ add_library(reflexxeslib ${REFLEXXESSRC})
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${ARMADILLO_LIBRARIES} ${PCL_LIBRARIES}
     reflexxeslib ncurses gsl gslcblas stdc++ pthread dl util m komo swift algo ann gui ors optim motion rt lapack blas glut GLU GL X11 ${GTK_LIBRARIES} ${GTK2_LIBRARIES} gthread-2.0 qhull python3.4m m)
 
-add_executable(kukadu_demo_guided src/demo/guided.cpp)
+add_executable(kukadu_demo_guided tutorials/guided.cpp)
 target_link_libraries(kukadu_demo_guided kukadu ${catkin_LIBRARIES} komo swift algo ann gui ors optim motion rt lapack blas glut GLU GL X11 ${GTK_LIBRARIES} ${GTK2_LIBRARIES} gthread-2.0 qhull m)
 
-add_executable(robotino_demo src/demo/robotino_demo.cpp)
-target_link_libraries(robotino_demo kukadu ${PCL_LIBRARIES} ${catkin_LIBRARIES})
+add_executable(simple_planning tutorials/simple_planning.cpp)
+target_link_libraries(simple_planning kukadu ${catkin_LIBRARIES})
 
-add_executable(planning src/demo/planning.cpp)
-target_link_libraries(planning kukadu ${catkin_LIBRARIES})
+add_executable(komo_planning tutorials/komo_planning.cpp)
+target_link_libraries(komo_planning kukadu ${catkin_LIBRARIES})
 
-add_executable(cart_traj src/demo/cartesian_trajectories.cpp)
+add_executable(moveit_planning tutorials/moveit_planning.cpp)
+target_link_libraries(moveit_planning kukadu ${catkin_LIBRARIES})
+
+add_executable(cart_traj tutorials/cartesian_trajectories.cpp)
 target_link_libraries(cart_traj kukadu ${catkin_LIBRARIES})
+
+add_executable(control_queue tutorials/control_queue.cpp)
+target_link_libraries(control_queue kukadu ${catkin_LIBRARIES})
 
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS} python3.4m)
 add_dependencies(reflexxeslib ${catkin_EXPORTED_TARGETS})
 add_dependencies(kukadu_demo_guided ${catkin_EXPORTED_TARGETS})
-add_dependencies(robotino_demo ${catkin_EXPORTED_TARGETS})
-add_dependencies(planning ${catkin_EXPORTED_TARGETS})
+add_dependencies(komo_planning ${catkin_EXPORTED_TARGETS})
+add_dependencies(moveit_planning ${catkin_EXPORTED_TARGETS})
+add_dependencies(simple_planning ${catkin_EXPORTED_TARGETS})
 
 if(CATKIN_ENABLE_TESTING)
 	catkin_add_gtest(kukadutest test/kukadutest.cpp)
 endif()
 
-install(TARGETS kukadu_demo_guided robotino_demo RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(TARGETS kukadu_demo_guided RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(TARGETS control_queue RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(TARGETS simple_planning RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(TARGETS komo_planning RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(TARGETS moveit_planning RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 install(TARGETS ${PROJECT_NAME} reflexxeslib ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION} LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION} RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
 install(DIRECTORY include/${PROJECT_NAME}/ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
