@@ -24,6 +24,8 @@ namespace kukadu {
                                          int simulationFailingProbability, int maxEnvPathLength, double pathLengthCost, double stdEnvironmentReward)
         : Controller(caption, simulationFailingProbability), Reward(generator, collectPrevRewards) {
 
+        consecutiveBoredomCount = 0;
+
         projSim.reset();
         rewardHistoryStream.reset();
 
@@ -262,6 +264,12 @@ namespace kukadu {
         for(auto prepCont : preparationControllers)
             prepCont->setSimulationMode(simulationMode);
 
+    }
+
+    bool ComplexController::isTrained() {
+        if(consecutiveBoredomCount > 20)
+            return true;
+        return false;
     }
 
     KUKADU_SHARED_PTR<kukadu::ProjectiveSimulator> ComplexController::createEnvironmentModelForSensingAction(KUKADU_SHARED_PTR<kukadu::SensingController> sensingAction,
@@ -546,6 +554,8 @@ namespace kukadu {
         // if the last clip is an action clip, PS was not bored
         if(!wasBored) {
 
+            consecutiveBoredomCount = 0;
+
             auto hopPath = projSim->getIntermediateHopIdx();
 
             auto newClips = extractClipsFromPath(*hopPath);
@@ -615,6 +625,8 @@ namespace kukadu {
             reward = get<1>(rewRet);
 
         } else {
+
+            ++consecutiveBoredomCount;
 
             auto stateClip = walkRet.second;
             auto sensingClip = *(stateClip->getParents()->begin());
@@ -793,7 +805,7 @@ namespace kukadu {
 
                     double nextConfidence = currentConfidence * transitionConfidence;
 
-                    if(nextConfidence > 0.1) {
+                    if(nextConfidence > 0.4) {
                         allPaths.push_back(std::make_tuple(nextConfidence, resultingStateClip, currentPath));
                         lastIterationPaths.push_back(std::make_tuple(nextConfidence, resultingStateClip, currentPath));
                     }

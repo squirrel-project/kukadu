@@ -55,6 +55,9 @@ namespace kukadu {
     void deleteFile(std::string path);
     void deleteDirectory(std::string path);
 
+    bool fileIsEmpty(std::string& filePath);
+    bool fileIsEmpty(std::ifstream& pFile);
+
     void printDoubleVector(std::vector<double>* data);
     void printDoubleVector(double* data, int size);
     void printDoubleMatrix(double** data, int rows, int columns);

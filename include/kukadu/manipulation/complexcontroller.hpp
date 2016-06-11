@@ -69,6 +69,7 @@ namespace kukadu {
         int stdPrepWeight;
         int maxEnvPathLength;
         int currentIterationNum;
+        int consecutiveBoredomCount;
 
         double gamma;
         double boredom;
@@ -145,6 +146,8 @@ namespace kukadu {
         void store(std::string destination);
         void setTrainingMode(bool doTraining);
         void createSensingDatabase(std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers);
+
+        bool isTrained();
 
         void setSensingControllers(std::vector<KUKADU_SHARED_PTR<kukadu::SensingController> > sensingControllers);
         void setPreparatoryControllers(std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > preparatoryControllers);

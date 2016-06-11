@@ -369,6 +369,14 @@ namespace kukadu {
 
     }
 
+    bool fileIsEmpty(std::string& filePath) {
+        ifstream inFile;
+        inFile.open(filePath.c_str(), ios::in | ios::app | ios::binary);
+        auto retVal = fileIsEmpty(inFile);
+        inFile.close();
+        return retVal;
+    }
+
     arma::mat readMovements(std::ifstream& inFile) {
 
         mat joints;
@@ -825,6 +833,10 @@ namespace kukadu {
         sigemptyset(&sigIntHandler.sa_mask);
         sigIntHandler.sa_flags = 0;
         sigaction(SIGINT, &sigIntHandler, NULL);
+    }
+
+    bool fileIsEmpty(std::ifstream& pFile) {
+        return pFile.peek() == std::ifstream::traits_type::eof();
     }
 
     void exit_handler(int s) {
