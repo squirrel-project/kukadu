@@ -44,12 +44,28 @@ namespace kukadu {
         return walkedPath;
     }
 
-    void HapticControllerResult::setEntropyMeanAndVariance(std::vector<std::pair<double, double> > meanAndVar) {
+    void HapticControllerResult::setEntropyMeanAndVariance(std::map<std::string, std::pair<double, double> > meanAndVar) {
         this->meanAndVar = meanAndVar;
     }
 
-    std::vector<std::pair<double, double> > HapticControllerResult::getMeanAndVar() {
+    std::map<std::string, std::pair<double, double> > HapticControllerResult::getMeanAndVar() {
         return meanAndVar;
+    }
+
+    void HapticControllerResult::setEntropies(std::map<std::string, std::vector<double> > entropies) {
+        this->entropies = entropies;
+    }
+
+    std::map<std::string, std::vector<double> > HapticControllerResult::getEntropies() {
+        return entropies;
+    }
+
+    int HapticControllerResult::getFinalStateClass() {
+        return *(getWalkedPath().end() - 2);
+    }
+
+    void HapticControllerResult::setWasBored(bool wasBored) {
+        bored = wasBored;
     }
 
 }

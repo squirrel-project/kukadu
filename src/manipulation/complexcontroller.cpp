@@ -239,41 +239,50 @@ namespace kukadu {
         }
 
         stateClips = projSim->getClipsOnLayer(2);
-        for(auto sensingClips : *projSim->getPerceptClips()->at(0)->getSubClips())
-            stateClipsBySensing.push_back(*sensingClips->getSubClips());
+        for(auto sensingClip : *projSim->getPerceptClips()->at(0)->getSubClips()) {
+            stateClipsBySensing.push_back(*sensingClip->getSubClips());
+            stateClipsPerSensingAction[KUKADU_DYNAMIC_POINTER_CAST<IntermediateEventClip>(sensingClip)->getSensingController()->getCaption()] = *sensingClip->getSubClips();
+        }
 
     }
 
-    std::vector<KUKADU_SHARED_PTR<Clip> > ComplexController::getStateClipsForSensingId(int sensingId) {
-        return stateClipsBySensing.at(sensingId);
+    std::vector<KUKADU_SHARED_PTR<Clip> > ComplexController::getStateClipsForSensingId(KUKADU_SHARED_PTR<SensingController> sensingId) {
+        return stateClipsPerSensingAction[sensingId->getCaption()];
     }
 
     std::vector<KUKADU_SHARED_PTR<Clip> > ComplexController::getAllStateClips() {
         return stateClips;
     }
 
-    std::vector<std::pair<double, double> > ComplexController::computeEntropyMeanAndVariance(std::vector<int> sensingIds) {
+    std::map<std::string, std::tuple<double, double, std::vector<double> > > ComplexController::computeEntropyMeanAndVariance(std::vector<KUKADU_SHARED_PTR<SensingController> > sensingIds) {
 
-        std::vector<std::pair<double, double> > retVector;
+        std::map<std::string, std::tuple<double, double, std::vector<double> > > retMap;
+
         for(auto sensingId : sensingIds) {
+
             double entropyMean = 0.0;
             double entropyVar = 0.0;
             vector<double> entropies;
-            for(auto stateClip : getStateClipsForSensingId(sensingId)) {
+
+            auto sensingStateClips = getStateClipsForSensingId(sensingId);
+            for(auto stateClip : sensingStateClips) {
                 double entropy = stateClip->computeSubEntropy();
                 entropyMean += entropy;
                 entropies.push_back(entropy);
             }
-            entropyMean /= stateClips.size();
+
+            entropyMean /= sensingStateClips.size();
 
             for(auto entropy : entropies)
                 entropyVar += std::pow(entropy - entropyMean, 2.0);
-            entropyVar /= stateClips.size();
+            entropyVar /= sensingStateClips.size();
 
-            retVector.push_back({entropyMean, entropyVar});
+            std::tuple<double, double, std::vector<double> > entropyInf{entropyMean, entropyVar, entropies};
+            retMap[sensingId->getCaption()] = entropyInf;
+
         }
 
-        return retVector;
+        return retMap;
 
     }
 
@@ -672,7 +681,7 @@ namespace kukadu {
             // it was bored
             auto possiblePaths = computeEnvironmentPaths(sensingClip, stateClip, maxEnvPathLength);
 
-            computeTotalPathCost(possiblePaths);
+            computeTotalPathCost(KUKADU_DYNAMIC_POINTER_CAST<IntermediateEventClip>(sensingClip), possiblePaths);
             std::sort(possiblePaths.begin(), possiblePaths.end(), [] (std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > p1, std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > p2) {
                           return std::get<0>(p1) > std::get<0>(p2);
                       });
@@ -754,6 +763,7 @@ namespace kukadu {
 
             // perform action again
             ret = this->performAction(cleanup, false);
+            KUKADU_DYNAMIC_POINTER_CAST<HapticControllerResult>(ret)->setWasBored(true);
 
             // switching on boredom again
             this->setBoredom(true);
@@ -764,7 +774,7 @@ namespace kukadu {
 
         // this behaviour could be improved --> TODO
         if(!ret)
-            ret = KUKADU_SHARED_PTR<ControllerResult>(new HapticControllerResult(vec(), vector<vec>(), (reward > 0.0) ? true : false, wasBored, *(projSim->getIntermediateHopIdx()), selectedPathPointer));
+            ret = make_shared<HapticControllerResult>(vec(), vector<vec>(), (reward > 0.0) ? true : false, false, *(projSim->getIntermediateHopIdx()), selectedPathPointer);
 
         return ret;
 
@@ -779,14 +789,23 @@ namespace kukadu {
         }
     }
 
-    void ComplexController::computeTotalPathCost(std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > >& paths) {
+    void ComplexController::computeTotalPathCost(KUKADU_SHARED_PTR<IntermediateEventClip> sensingClip,
+                                                 std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>,
+                                                 std::vector<KUKADU_SHARED_PTR<Clip> > > >& paths) {
 
         for(auto& path : paths) {
 
             double& pathCost = std::get<0>(path);
-            KUKADU_SHARED_PTR<Clip> finalStateClip = std::get<1>(path);
+            auto finalStateClip = std::get<1>(path);
             auto& clipPath = std::get<2>(path);
+
+            // active learning version
             double finalClipEntropy = finalStateClip->computeSubEntropy();
+
+            // intrinsic motivation version
+            //auto sensingController = sensingClip->getSensingController();
+            //auto meanAndVariance = computeEntropyMeanAndVariance({sensingController})[sensingController->getCaption()];
+            //double finalClipEntropy = std::exp(-std::pow(finalStateClip->computeSubEntropy() - get<0>(meanAndVariance), 2.0) / (2.0 * get<1>(meanAndVariance)));
 
             // there are state clips and action clips mixed - the first and the last clips are state clips, so the
             // size has to be reduced by one --> then the number of taken actions is half of that size

@@ -107,12 +107,13 @@ namespace kukadu {
 
         // novelty in icdl paper
         std::map<std::string, KUKADU_SHARED_PTR<kukadu::ProjectiveSimulator> > environmentModels;
+        std::map<std::string, std::vector<KUKADU_SHARED_PTR<kukadu::Clip> > > stateClipsPerSensingAction;
 
         double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction);
 
         KUKADU_SHARED_PTR<kukadu::ProjectiveSimulator> createEnvironmentModelForSensingAction(KUKADU_SHARED_PTR<kukadu::SensingController> sensingAction, KUKADU_SHARED_PTR<ProjectiveSimulator> projSim);
         std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > > computeEnvironmentPaths(KUKADU_SHARED_PTR<Clip> sensingClip, KUKADU_SHARED_PTR<Clip> stateClip, int maxPathLength);
-        void computeTotalPathCost(std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > >& paths);
+        void computeTotalPathCost(KUKADU_SHARED_PTR<IntermediateEventClip> sensingClip, std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > >& paths);
 
         std::pair<double, int> computeEnvironmentTransitionConfidence(KUKADU_SHARED_PTR<Clip> stateClip);
 
@@ -121,7 +122,7 @@ namespace kukadu {
         std::tuple<KUKADU_SHARED_PTR<IntermediateEventClip>, KUKADU_SHARED_PTR<Clip>, KUKADU_SHARED_PTR<ControllerActionClip> > extractClipsFromPath(std::vector<int>& hops);
 
         std::vector<KUKADU_SHARED_PTR<Clip> > getAllStateClips();
-        std::vector<KUKADU_SHARED_PTR<Clip> > getStateClipsForSensingId(int sensingId);
+        std::vector<KUKADU_SHARED_PTR<Clip> > getStateClipsForSensingId(KUKADU_SHARED_PTR<SensingController> sensingId);
 
     protected:
 
@@ -153,7 +154,7 @@ namespace kukadu {
         void setTrainingMode(bool doTraining);
         void createSensingDatabase(std::vector<KUKADU_SHARED_PTR<SensingController> > sensingControllers);
 
-        std::vector<std::pair<double, double> > computeEntropyMeanAndVariance(std::vector<int> sensingIds);
+        std::map<std::string, std::tuple<double, double, std::vector<double> > > computeEntropyMeanAndVariance(std::vector<KUKADU_SHARED_PTR<SensingController> > sensingIds);
 
         bool isTrained();
 
