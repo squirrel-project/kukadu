@@ -1,6 +1,8 @@
 #include <tuple>
 #include <armadillo>
+#include <kukadu/utils/kukadutokenizer.hpp>
 #include <kukadu/manipulation/controller.hpp>
+#include <kukadu/manipulation/concatcontroller.hpp>
 #include <kukadu/manipulation/complexcontroller.hpp>
 #include <kukadu/manipulation/haptic/controlleractionclip.hpp>
 #include <kukadu/manipulation/haptic/intermediateeventclip.hpp>
@@ -16,6 +18,7 @@ namespace kukadu {
     const std::string ComplexController::FILE_SENSING_PREFIX = "***sensing controllers:";
     const std::string ComplexController::FILE_PREP_PREFIX = "***preparatory controllers:";
     const std::string ComplexController::FILE_END_PREFIX = "***end";
+    const std::string ComplexController::FILE_CONCAT_PREFIX = "***concatenated controllers:";
 #endif
 
     ComplexController::ComplexController(std::string caption, std::string storePath,
@@ -404,16 +407,29 @@ namespace kukadu {
                 controllerMode = 1;
             else if(!line.compare(FILE_PREP_PREFIX))
                 controllerMode = 2;
+            else if(!line.compare(FILE_CONCAT_PREFIX))
+                controllerMode = 3;
             else if(!line.compare(FILE_END_PREFIX))
                 controllerMode = 10;
             else if(line.compare("")) {
                 // we are reading sensing controllers
-                if(controllerMode == 1) {
+                if(controllerMode == 1)
                     sensingControllers.push_back(availableSensingControllers[line]);
-                } else if(controllerMode == 2) {
+                else if(controllerMode == 2 )
                     preparationControllers.push_back(availablePreparatoryControllers[line]);
+                else if(controllerMode == 3) {
+
+                    // construct composed controllers here
+                    KukaduTokenizer tok(line);
+                    auto splits = tok.split();
+                    vector<KUKADU_SHARED_PTR<kukadu::Controller> > controllerParts;
+                    for(auto cont : splits)
+                        controllerParts.push_back(availablePreparatoryControllers[cont]);
+                    auto conc = make_shared<ConcatController>(controllerParts);
+                    preparationControllers.push_back(conc);
+
                 } else if(controllerMode == 10) {
-                    throw KukaduException("(ComplexController) malformed composition file");
+                    break;
                 }
             }
 
@@ -444,8 +460,18 @@ namespace kukadu {
             compositionFile << sensCont->getCaption() << endl;
 
         compositionFile << FILE_PREP_PREFIX << endl;
-        for(auto prepCont : preparationControllers)
-            compositionFile << prepCont->getCaption() << endl;
+        for(auto prepCont : preparationControllers) {
+            string contCaption = prepCont->getCaption();
+            if(contCaption.find(' ') == std::string::npos)
+                compositionFile << contCaption << endl;
+        }
+
+        compositionFile << FILE_CONCAT_PREFIX << endl;
+        for(auto prepCont : preparationControllers) {
+            string contCaption = prepCont->getCaption();
+            if(contCaption.find(' ') != std::string::npos)
+                compositionFile << contCaption << endl;
+        }
 
         compositionFile.close();
 
@@ -588,18 +614,20 @@ namespace kukadu {
         }
 
         ++currentIterationNum;
-        auto walkRet = projSim->performRandomWalk();
 
-        bool wasBored = true;
+        auto walkRet = projSim->performRandomWalk(2);
+        auto wasBored = projSim->nextHopIsBored();
+
         double reward = 0.0;
         std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > selectedPath;
 
-        if(walkRet.first == Clip::CLIP_H_LEVEL_FINAL)
-            wasBored = false;
-
         // if the last clip is an action clip, PS was not bored
         if(!wasBored) {
+cout << 1 << endl;
+            // if not bored, eventually add a new preparatory skill by creative composition
 
+            // continue last walk if it was not bored
+            walkRet = projSim->performRandomWalk(ProjectiveSimulator::PS_WALK_UNTIL_END, true);
             consecutiveBoredomCount = 0;
 
             auto hopPath = projSim->getIntermediateHopIdx();
@@ -673,14 +701,14 @@ namespace kukadu {
         } else {
 
             ++consecutiveBoredomCount;
+            walkRet = projSim->performRandomWalk(ProjectiveSimulator::PS_WALK_UNTIL_END, true);
 
             auto stateClip = walkRet.second;
             auto sensingClip = *(stateClip->getParents()->begin());
             auto sensingController = KUKADU_DYNAMIC_POINTER_CAST<IntermediateEventClip>(sensingClip)->getSensingController();
 
             // it was bored
-            auto possiblePaths = computeEnvironmentPaths(sensingClip, stateClip, maxEnvPathLength);
-
+            auto possiblePaths = computeEnvironmentPaths(sensingClip, stateClip, maxEnvPathLength, 0.4);
             computeTotalPathCost(KUKADU_DYNAMIC_POINTER_CAST<IntermediateEventClip>(sensingClip), possiblePaths);
             std::sort(possiblePaths.begin(), possiblePaths.end(), [] (std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > p1, std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > p2) {
                           return std::get<0>(p1) > std::get<0>(p2);
@@ -819,7 +847,7 @@ namespace kukadu {
     }
 
     std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > > ComplexController::computeEnvironmentPaths(
-            KUKADU_SHARED_PTR<Clip> sensingClip, KUKADU_SHARED_PTR<Clip> stateClip, int maxPathLength) {
+            KUKADU_SHARED_PTR<Clip> sensingClip, KUKADU_SHARED_PTR<Clip> stateClip, int maxPathLength, double confidenceCut) {
 
         auto sensingId = sensingClip->toString();
         auto stateId = stateClip->getClipDimensions()->at(0);
@@ -861,7 +889,7 @@ namespace kukadu {
 
                     double nextConfidence = currentConfidence * transitionConfidence;
 
-                    if(nextConfidence > 0.4) {
+                    if(nextConfidence > confidenceCut) {
                         allPaths.push_back(std::make_tuple(nextConfidence, resultingStateClip, currentPath));
                         lastIterationPaths.push_back(std::make_tuple(nextConfidence, resultingStateClip, currentPath));
                     }

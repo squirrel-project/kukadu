@@ -4,7 +4,7 @@ using namespace std;
 
 namespace kukadu {
 
-    Controller::Controller(std::string caption, int simulationFailingProbability) {
+    Controller::Controller(std::string caption, double simulationFailingProbability) {
 
         std::replace(caption.begin(), caption.end(), ' ', '_');
 

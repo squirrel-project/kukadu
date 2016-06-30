@@ -112,7 +112,7 @@ namespace kukadu {
         double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction);
 
         KUKADU_SHARED_PTR<kukadu::ProjectiveSimulator> createEnvironmentModelForSensingAction(KUKADU_SHARED_PTR<kukadu::SensingController> sensingAction, KUKADU_SHARED_PTR<ProjectiveSimulator> projSim);
-        std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > > computeEnvironmentPaths(KUKADU_SHARED_PTR<Clip> sensingClip, KUKADU_SHARED_PTR<Clip> stateClip, int maxPathLength);
+        std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > > computeEnvironmentPaths(KUKADU_SHARED_PTR<Clip> sensingClip, KUKADU_SHARED_PTR<Clip> stateClip, int maxPathLength, double confidenceCut);
         void computeTotalPathCost(KUKADU_SHARED_PTR<IntermediateEventClip> sensingClip, std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > >& paths);
 
         std::pair<double, int> computeEnvironmentTransitionConfidence(KUKADU_SHARED_PTR<Clip> stateClip);
@@ -196,9 +196,11 @@ namespace kukadu {
         static const std::string FILE_SENSING_PREFIX;
         static const std::string FILE_PREP_PREFIX;
         static const std::string FILE_END_PREFIX;
+        static const std::string FILE_CONCAT_PREFIX;
 #else
         static constexpr auto FILE_SENSING_PREFIX = "***sensing controllers:";
         static constexpr auto FILE_PREP_PREFIX = "***preparatory controllers:";
+        static constexpr auto FILE_CONCAT_PREFIX = "***concatenated controllers:";
         static constexpr auto FILE_END_PREFIX = "***end";
 #endif
 

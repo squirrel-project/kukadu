@@ -18,7 +18,7 @@ namespace kukadu {
 
         bool simulation;
 
-        int simulationFailingProbability;
+        double simulationFailingProbability;
 
         std::string caption;
 
@@ -31,7 +31,7 @@ namespace kukadu {
 
     public:
 
-        Controller(std::string caption, int simulationFailingProbability);
+        Controller(std::string caption, double simulationFailingProbability);
 
         void shutUp();
         void startTalking();
