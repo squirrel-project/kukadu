@@ -67,7 +67,8 @@ namespace kukadu {
         KUKADU_SHARED_PTR<Clip> predefinedFirstHop;
         KUKADU_SHARED_PTR<Clip> lastVisitedClip;
 
-        int lastVistedPreviousIdx;
+        int lastVisitedPreviousIdx;
+        int lastVisitedLevel;
         bool lastBoredomResult;
         bool walkedFurtherSinceLastBoredom;
 
@@ -132,6 +133,9 @@ namespace kukadu {
         void setNextPredefinedPath(std::vector<KUKADU_SHARED_PTR<Clip> > hopPath);
 
         bool nextHopIsBored();
+        bool lastHopWasBored();
+
+        KUKADU_SHARED_PTR<Clip> getLastVisitedClip();
 
         std::tuple<bool, double, std::vector<int> > performRewarding();
 

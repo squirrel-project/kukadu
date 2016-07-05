@@ -623,7 +623,7 @@ namespace kukadu {
 
         // if the last clip is an action clip, PS was not bored
         if(!wasBored) {
-cout << 1 << endl;
+
             // if not bored, eventually add a new preparatory skill by creative composition
 
             // continue last walk if it was not bored
