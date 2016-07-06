@@ -99,6 +99,8 @@ namespace kukadu {
 
         std::string getIdVecString() const;
 
+        std::pair<double, KUKADU_SHARED_PTR<Clip> > getMaxProbability();
+
         virtual std::string toString() const;
 
         void setNextHop(int hopIdx);

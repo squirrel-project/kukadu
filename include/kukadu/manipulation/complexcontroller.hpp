@@ -78,7 +78,12 @@ namespace kukadu {
         double senseStretch;
         double pathLengthCost;
 
+        KUKADU_SHARED_PTR<Controller> nothingController;
         KUKADU_SHARED_PTR<EnvironmentReward> envReward;
+
+        // outer map is used to create a nothing clip map for each sensing action
+        // the inner one is used to search faster inside the nothing clips
+        std::map<std::string, std::map<std::string, KUKADU_SHARED_PTR<Clip> > > nothingStateClips;
 
         std::string psPath;
         std::string storePath;
@@ -140,6 +145,7 @@ namespace kukadu {
         ComplexController(std::string caption, std::string storePath,
                           bool storeReward, double senseStretch, double boredom, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator,
                           int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards, int simulationFailingProbability,
+                          KUKADU_SHARED_PTR<Controller> nothingController,
                           int maxEnvPathLength = 4, double pathLengthCost = 0.01, double stdEnvironmentReward = 10.0);
         ~ComplexController();
 

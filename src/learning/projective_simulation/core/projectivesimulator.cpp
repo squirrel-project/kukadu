@@ -639,6 +639,7 @@ namespace kukadu {
 
             std::vector<KUKADU_SHARED_PTR<PerceptClip> >::iterator it = std::find(perceptClips->begin(), perceptClips->end() + 1, currentClip);
             lastVisitedPreviousIdx = previousIdx = it - perceptClips->begin();
+            intermediateHops->push_back(previousIdx);
 
             lastPerceptClip = KUKADU_DYNAMIC_POINTER_CAST<PerceptClip>(currentClip);
 
@@ -656,7 +657,6 @@ namespace kukadu {
 
         while(previousClip != currentClip && currentLevel != untilLevel) {
 
-            intermediateHops->push_back(previousIdx);
             pair<int, KUKADU_SHARED_PTR<Clip> > nextHop;
             lastClipBeforeAction = previousClip;
             previousClip = currentClip;
@@ -682,7 +682,13 @@ namespace kukadu {
             lastVisitedClip = currentClip;
             lastVisitedLevel = currentLevel;
 
+            intermediateHops->push_back(previousIdx);
+
         }
+
+        // if previous and current clip are the same, then the last entry is duplicate in the intermediate hops --> remove it
+        if(previousClip == currentClip)
+            intermediateHops->resize(intermediateHops->size() - 1);
 
         lastActionClip = KUKADU_DYNAMIC_POINTER_CAST<ActionClip>(currentClip);
         return {currentClip->getLevel(), currentClip};

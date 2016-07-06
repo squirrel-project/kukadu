@@ -57,6 +57,29 @@ namespace kukadu {
         return nullptr;
     }
 
+    std::pair<double, KUKADU_SHARED_PTR<Clip> > Clip::getMaxProbability() {
+
+        double maxWeightSum = 0.0;
+        double maxProbability = 0.0;
+        KUKADU_SHARED_PTR<Clip> maxProbClip = subClips->front();
+
+        int subClipCount = subClips->size();
+
+        for(int i = 0; i < subClipCount; ++i) {
+
+            double currProb = subH.at(i);
+            maxWeightSum += currProb;
+            if(currProb > maxProbability) {
+                maxProbClip = subClips->at(i);
+                maxProbability = currProb;
+            }
+
+        }
+
+        return {maxProbability / maxWeightSum, maxProbClip};
+
+    }
+
     KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > Clip::getSubClips() {
         return subClips;
     }
