@@ -85,6 +85,7 @@ namespace kukadu {
 
         virtual bool isCompatibleSubclip(KUKADU_SHARED_PTR<Clip> c);
 
+        int getMaxH();
         int getLevel();
         int getPreviousRank();
         int getSubClipCount();
@@ -116,6 +117,7 @@ namespace kukadu {
         KUKADU_SHARED_PTR<std::vector<int> > getClipDimensions() const;
         KUKADU_SHARED_PTR<Clip> compareClip(KUKADU_SHARED_PTR<Clip> c);
         KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip> > > getParents();
+        std::pair<int, KUKADU_SHARED_PTR<Clip> > getLikeliestChildWithWeight();
 
         friend bool operator< (const Clip &o1, const Clip &o2);
         friend bool operator== (const Clip &o1, const Clip &o2);

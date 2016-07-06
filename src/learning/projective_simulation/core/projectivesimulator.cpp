@@ -15,6 +15,7 @@ namespace kukadu {
                        std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) > createClipFunc) {
 
         maxActionId = 0;
+        maxPerceptId = 0;
         lastBoredomResult = false;
         walkedFurtherSinceLastBoredom = true;
         lastRunWasBored = false;
@@ -106,6 +107,7 @@ namespace kukadu {
 
                         nextClip = createClipFunc(line, currentLayer, 0, generator);
                         auto pc = KUKADU_DYNAMIC_POINTER_CAST<PerceptClip>(nextClip);
+                        maxPerceptId = std::max(maxPerceptId, pc->getPerceptId());
 
                         if(isFirstPercept) {
 
@@ -209,6 +211,7 @@ namespace kukadu {
                     std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) > createClipFunc) {
 
         maxActionId = 0;
+        maxPerceptId = 0;
         this->loadedFromFile = true;
         loadPsConstructor(reward, generator, file, createClipFunc);
         lastRunWasBored = false;
@@ -220,6 +223,7 @@ namespace kukadu {
     ProjectiveSimulator::ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file) {
 
         maxActionId = 0;
+        maxPerceptId = 0;
         this->loadedFromFile = true;
         walkedFurtherSinceLastBoredom = true;
         lastBoredomResult = false;
@@ -286,6 +290,17 @@ namespace kukadu {
 
         return retCount;
 
+    }
+
+    void ProjectiveSimulator::addActionClip(KUKADU_SHARED_PTR<ActionClip> newAction) {
+        actionClips->push_back(newAction);
+        clipLayers->at(clipLayers->size() - 1)->insert(newAction);
+    }
+
+    void ProjectiveSimulator::addPerceptClip(KUKADU_SHARED_PTR<PerceptClip> newPercept) {
+        perceptClips->push_back(newPercept);
+        clipLayers->at(0)->insert(newPercept);
+        intDist = kukadu_uniform_distribution(0, perceptClips->size() - 1);
     }
 
     KUKADU_SHARED_PTR<Clip> ProjectiveSimulator::findClipInLevelByLabel(std::string label, int level) {
@@ -409,6 +424,7 @@ namespace kukadu {
     ProjectiveSimulator::ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, double gamma, int operationMode, bool useRanking) {
 
         maxActionId = 0;
+        maxPerceptId = 0;
         this->loadedFromFile = false;
 
         this->perceptClips = reward->generatePerceptClips();
@@ -429,7 +445,8 @@ namespace kukadu {
         }
 
         for(int i = 0; i < perceptClips->size(); ++i) {
-            KUKADU_SHARED_PTR<Clip> currentClip = perceptClips->at(i);
+            auto currentClip = perceptClips->at(i);
+            maxPerceptId = std::max(maxPerceptId, KUKADU_DYNAMIC_POINTER_CAST<PerceptClip>(currentClip)->getPerceptId());
             currentClip->setChildren(clipActionClips);
         }
 
@@ -475,15 +492,17 @@ namespace kukadu {
                         double gamma, int operationMode, bool useRanking) {
 
         maxActionId = 0;
+        maxPerceptId = 0;
         this->loadedFromFile = false;
         this->perceptClips = network;
 
         // set levels and action clips
-        // walk down to last percept
+        // walk down to last clip
         levels = 0;
         KUKADU_SHARED_PTR<Clip> lastClip;
         lastClip.reset();
         KUKADU_SHARED_PTR<Clip> currClip = perceptClips->at(0);
+        maxPerceptId = KUKADU_DYNAMIC_POINTER_CAST<PerceptClip>(currClip)->getPerceptId();
         while(currClip->getSubClipCount()) {
             lastClip = currClip;
             currClip = currClip->getSubClipByIdx(0);
@@ -501,6 +520,7 @@ namespace kukadu {
 
         for(int i = 0; i < perceptClips->size(); ++i) {
             KUKADU_SHARED_PTR<PerceptClip> pc = perceptClips->at(i);
+            maxPerceptId = std::max(maxPerceptId, pc->getPerceptId());
             fillClipLayersFromNetwork(pc);
         }
 
@@ -839,7 +859,7 @@ namespace kukadu {
         for(it = toConnect->begin(); it != toConnect->end(); ++it) {
             KUKADU_SHARED_PTR<Clip> con = *it;
             if(PS_PRINT_DEBUG_INFO)
-                cout << "calling connect function for " << *con << endl;
+                cout << "(ProjectiveSimulator) calling connect function for " << *con << endl;
 
             if(useRanking)
                 con->setPreviousRank();
@@ -859,14 +879,14 @@ namespace kukadu {
         for(it = clipLayers->begin(); it != clipLayers->end(); ++it) {
 
             KUKADU_SHARED_PTR<set<KUKADU_SHARED_PTR<Clip>, clip_compare> > currLevel = *it;
-            cout << "clips on layer " << level << endl << "=========================" << endl;
+            cout << "(ProjectiveSimulator) clips on layer " << level << endl << "=========================" << endl;
 
             set<KUKADU_SHARED_PTR<Clip>, clip_compare>::iterator currIt;
             for(currIt = currLevel->begin(); currIt != currLevel->end(); ++currIt) {
                 KUKADU_SHARED_PTR<Clip> currClip = *currIt;
                 int subClipCount = currClip->getSubClipCount();
                 for(int i = 0; i < subClipCount; ++i) {
-                    cout << *currClip << " --> " << *currClip->getSubClipByIdx(i) << " with weight " << currClip->getWeightByIdx(i) << endl;
+                    cout << "(ProjectiveSimulator) " << *currClip << " --> " << *currClip->getSubClipByIdx(i) << " with weight " << currClip->getWeightByIdx(i) << endl;
                 }
             }
 
@@ -975,6 +995,10 @@ namespace kukadu {
 
     int ProjectiveSimulator::generateNewActionId() {
         return ++maxActionId;
+    }
+
+    int ProjectiveSimulator::generateNewPerceptId() {
+        return ++maxPerceptId;
     }
 
     KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > > > ProjectiveSimulator::getClipLayers() {

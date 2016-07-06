@@ -424,10 +424,18 @@ namespace kukadu {
         return initialImmunity;
     }
 
+    int Clip::getMaxH() {
+        return getLikeliestChildWithWeight().first;
+    }
+
     KUKADU_SHARED_PTR<Clip> Clip::getLikeliestChild() {
+        return getLikeliestChildWithWeight().second;
+    }
+
+    std::pair<int, KUKADU_SHARED_PTR<Clip> > Clip::getLikeliestChildWithWeight() {
         auto maxIt = std::max_element(subH.begin(), subH.end());
         int maxIdx = maxIt - subH.begin();
-        return subClips->at(maxIdx);
+        return {*maxIt, subClips->at(maxIdx)};
     }
 
     KUKADU_SHARED_PTR<Clip> Clip::compareClip(KUKADU_SHARED_PTR<Clip> c) {

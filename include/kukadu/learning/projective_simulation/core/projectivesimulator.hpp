@@ -55,6 +55,7 @@ namespace kukadu {
 
         int levels;
         int maxActionId;
+        int maxPerceptId;
         int operationMode;
         int immunityThresh;
         int maxNumberOfClips;
@@ -132,7 +133,10 @@ namespace kukadu {
         int getClipCount();
         int getStandardImmunity();
         int generateNewActionId();
+        int generateNewPerceptId();
 
+        void addActionClip(KUKADU_SHARED_PTR<ActionClip> newAction);
+        void addPerceptClip(KUKADU_SHARED_PTR<PerceptClip> newPercept);
         void setNextPredefinedPath(std::vector<KUKADU_SHARED_PTR<Clip> > hopPath);
 
         bool nextHopIsBored();

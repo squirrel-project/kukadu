@@ -32,6 +32,13 @@ namespace kukadu {
         this->controllers = controllers;
     }
 
+    bool ConcatController::getSimulationMode() {
+        for(auto cont : controllers)
+            if(!cont->getSimulationMode())
+                return false;
+        return true;
+    }
+
     bool ConcatController::requiresGrasp() {
 
         return controllers.front()->producesGrasp();

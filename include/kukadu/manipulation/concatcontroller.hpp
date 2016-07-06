@@ -19,6 +19,7 @@ public:
 
     virtual bool requiresGrasp();
     virtual bool producesGrasp();
+    virtual bool getSimulationMode();
 
     virtual KUKADU_SHARED_PTR<ControllerResult> performAction();
 
