@@ -2,7 +2,7 @@
 #include <utility>
 #include <fstream>
 #include <fstream>
-#include <iostream>
+#include <algorithm>
 #include <kukadu/utils/kukadutokenizer.hpp>
 #include <kukadu/types/kukadutypes.hpp>
 #include <kukadu/utils/utils.hpp>
@@ -14,6 +14,7 @@ namespace kukadu {
     void ProjectiveSimulator::loadPsConstructor(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file,
                        std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) > createClipFunc) {
 
+        maxActionId = 0;
         lastBoredomResult = false;
         walkedFurtherSinceLastBoredom = true;
         lastRunWasBored = false;
@@ -119,7 +120,9 @@ namespace kukadu {
 
                         if(line != "") {
                             nextClip = createClipFunc(line, currentLayer, perceptDimensionality, generator);
-                            actionClips->push_back(KUKADU_DYNAMIC_POINTER_CAST<ActionClip>(nextClip));
+                            auto nextActionClip = KUKADU_DYNAMIC_POINTER_CAST<ActionClip>(nextClip);
+                            maxActionId = std::max(maxActionId, nextActionClip->getActionId());
+                            actionClips->push_back(nextActionClip);
                         } else
                             continue;
 
@@ -205,6 +208,7 @@ namespace kukadu {
     ProjectiveSimulator::ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file,
                     std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) > createClipFunc) {
 
+        maxActionId = 0;
         this->loadedFromFile = true;
         loadPsConstructor(reward, generator, file, createClipFunc);
         lastRunWasBored = false;
@@ -215,6 +219,7 @@ namespace kukadu {
 
     ProjectiveSimulator::ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file) {
 
+        maxActionId = 0;
         this->loadedFromFile = true;
         walkedFurtherSinceLastBoredom = true;
         lastBoredomResult = false;
@@ -227,18 +232,18 @@ namespace kukadu {
             int immunity = atoi(tok.next().c_str());
             if(level == 0) {
 
-                auto pc = KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(atoi(tok.next().c_str()), label, generator, idVec, immunity));
+                auto pc = make_shared<PerceptClip>(atoi(tok.next().c_str()), label, generator, idVec, immunity);
                 return pc;
 
             } else if(level == Clip::CLIP_H_LEVEL_FINAL) {
 
-                auto ac = KUKADU_SHARED_PTR<ActionClip>(new ActionClip(atoi(tok.next().c_str()), perceptDimensionality, label, generator));
+                auto ac = make_shared<ActionClip>(atoi(tok.next().c_str()), perceptDimensionality, label, generator);
                 return ac;
 
             } else {
 
 
-                return KUKADU_SHARED_PTR<Clip>(new Clip(level, generator, idVec, immunity));
+                return make_shared<Clip>(level, generator, idVec, immunity);
 
             }
 
@@ -283,7 +288,30 @@ namespace kukadu {
 
     }
 
+    KUKADU_SHARED_PTR<Clip> ProjectiveSimulator::findClipInLevelByLabel(std::string label, int level) {
+
+        if(level == Clip::CLIP_H_LEVEL_FINAL)
+            level = clipLayers->size() - 1;
+
+        KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > currentLayer = clipLayers->at(level);
+
+        std::set<KUKADU_SHARED_PTR<Clip>, clip_compare>::iterator it;
+        for(auto& clip : *currentLayer) {
+
+            const auto& currentClipLabel = clip->toString();
+            if(currentClipLabel == label)
+                return clip;
+
+        }
+
+        return nullptr;
+
+    }
+
     KUKADU_SHARED_PTR<Clip> ProjectiveSimulator::findClipInLevelByIdVec(KUKADU_SHARED_PTR<std::vector<int> > idVec, int level) {
+
+        if(level == Clip::CLIP_H_LEVEL_FINAL)
+            level = clipLayers->size() - 1;
 
         KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > currentLayer = clipLayers->at(level);
 
@@ -297,7 +325,8 @@ namespace kukadu {
 
         }
 
-        return KUKADU_SHARED_PTR<Clip>();
+        return nullptr;
+
     }
 
     KUKADU_SHARED_PTR<Clip> ProjectiveSimulator::findClipByIdVec(KUKADU_SHARED_PTR<std::vector<int> > idVec) {
@@ -379,6 +408,7 @@ namespace kukadu {
 
     ProjectiveSimulator::ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, double gamma, int operationMode, bool useRanking) {
 
+        maxActionId = 0;
         this->loadedFromFile = false;
 
         this->perceptClips = reward->generatePerceptClips();
@@ -393,8 +423,9 @@ namespace kukadu {
 
         KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > clipActionClips = KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > >(new std::vector<KUKADU_SHARED_PTR<Clip> >());
         for(int i = 0; i < actionClips->size(); ++i) {
-            KUKADU_SHARED_PTR<Clip> t = actionClips->at(i);
-            clipActionClips->push_back(KUKADU_DYNAMIC_POINTER_CAST<Clip>(t));
+            auto t = actionClips->at(i);
+            maxActionId = std::max(maxActionId, t->getActionId());
+            clipActionClips->push_back(t);
         }
 
         for(int i = 0; i < perceptClips->size(); ++i) {
@@ -443,6 +474,7 @@ namespace kukadu {
                         KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > network,
                         double gamma, int operationMode, bool useRanking) {
 
+        maxActionId = 0;
         this->loadedFromFile = false;
         this->perceptClips = network;
 
@@ -462,6 +494,7 @@ namespace kukadu {
         for(int i = 0; i < lastClip->getSubClipCount(); ++i) {
             KUKADU_SHARED_PTR<ActionClip> nextActClip = KUKADU_DYNAMIC_POINTER_CAST<ActionClip>(lastClip->getSubClipByIdx(i));
             actionClips->push_back(nextActClip);
+            maxActionId = std::max(maxActionId, nextActClip->getActionId());
         }
 
         construct(reward, generator, gamma, operationMode, useRanking);
@@ -500,6 +533,33 @@ namespace kukadu {
     }
 
     ProjectiveSimulator::~ProjectiveSimulator() {
+
+        rankVec.clear();
+        intermediateHops->clear();
+        actionClips->clear();
+        perceptClips->clear();
+        for(auto& layer : *clipLayers) {
+            for(auto& cl : *layer)
+                // required to get rid of the memory leak (removing pointer cycles)
+                cl->clearClip();
+            layer->clear();
+        }
+        clipLayers->clear();
+
+        reward = nullptr;
+        predefinedFirstHop = nullptr;
+        lastVisitedClip = nullptr;
+        reward = nullptr;
+        lastClipBeforeAction = nullptr;
+
+        lastActionClip = nullptr;
+        lastPerceptClip = nullptr;
+        generator = nullptr;
+        lastGeneralizedPercept = nullptr;
+        intermediateHops = nullptr;
+        actionClips = nullptr;
+        perceptClips = nullptr;
+        clipLayers = nullptr;
 
     }
 
@@ -911,6 +971,10 @@ namespace kukadu {
 
         return conClips;
 
+    }
+
+    int ProjectiveSimulator::generateNewActionId() {
+        return ++maxActionId;
     }
 
     KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip>, clip_compare> > > > ProjectiveSimulator::getClipLayers() {

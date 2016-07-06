@@ -29,32 +29,16 @@ namespace kukadu {
 
     protected:
 
-        virtual double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction) {
-            // all paths are rewarded, because only observed paths are performed
-            return reward;
-        }
+        virtual double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction);
 
     public:
 
-        EnvironmentReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, double stdReward) : Reward(generator, false) {
-            reward = stdReward;
-        }
+        EnvironmentReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, double stdReward);
 
-        virtual int getDimensionality() {
-            return 2;
-        }
-
-        virtual KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity) {
-            return nullptr;
-        }
-
-        virtual KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips() {
-            return KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > >(new std::vector<KUKADU_SHARED_PTR<ActionClip> >());
-        }
-
-        virtual KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips() {
-            return KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > >(new std::vector<KUKADU_SHARED_PTR<PerceptClip> >());
-        }
+        virtual int getDimensionality();
+        virtual KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
+        virtual KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();
+        virtual KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();
 
     };
 
@@ -77,6 +61,8 @@ namespace kukadu {
         double punishReward;
         double senseStretch;
         double pathLengthCost;
+
+        KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator;
 
         KUKADU_SHARED_PTR<Controller> nothingController;
         KUKADU_SHARED_PTR<EnvironmentReward> envReward;
@@ -128,6 +114,8 @@ namespace kukadu {
 
         std::vector<KUKADU_SHARED_PTR<Clip> > getAllStateClips();
         std::vector<KUKADU_SHARED_PTR<Clip> > getStateClipsForSensingId(KUKADU_SHARED_PTR<SensingController> sensingId);
+
+        bool hasDuplicateStatesInPath(std::vector<KUKADU_SHARED_PTR<Clip> >& path);
 
     protected:
 

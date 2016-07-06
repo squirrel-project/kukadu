@@ -102,10 +102,24 @@ namespace kukadu {
 
     }
 
+    void Clip::clearClip() {
+
+        subClips->clear();
+        parents->clear();
+        subClipsSet->clear();
+        clipDimensionValues->clear();
+
+    }
+
     Clip::~Clip() {
+
+        clearClip();
+
         subClips.reset();
         parents.reset();
         subClipsSet.reset();
+        clipDimensionValues.reset();
+
     }
 
     double Clip::computeSubEntropy() const {
@@ -155,6 +169,7 @@ namespace kukadu {
     }
 
     void Clip::addChildUpwards(KUKADU_SHARED_PTR<Clip> sub) {
+
         this->addSubClip(sub, CLIP_H_STD_WEIGHT);
 
         set<KUKADU_SHARED_PTR<Clip> >::iterator it;

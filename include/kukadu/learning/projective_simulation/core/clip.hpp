@@ -53,6 +53,8 @@ namespace kukadu {
         Clip(int level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, KUKADU_SHARED_PTR<std::vector<int> > clipValues, int immunity);
         ~Clip();
 
+        void clearClip();
+
         // must set the visitedSubnode member if overwritten --> otherwise it will not update its weights
         // todo: remove that requirement that subclasses have to set that by themselves
         virtual std::pair<int, KUKADU_SHARED_PTR<Clip> > jumpNextRandom();

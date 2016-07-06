@@ -22,6 +22,8 @@ public:
 
     virtual KUKADU_SHARED_PTR<ControllerResult> performAction();
 
+    static std::string generateLabelFromControllers(std::vector<KUKADU_SHARED_PTR<kukadu::Controller> >& controllers);
+
 };
 
 }
