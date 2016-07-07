@@ -57,8 +57,13 @@ namespace kukadu {
         return nullptr;
     }
 
-    std::pair<double, KUKADU_SHARED_PTR<Clip> > Clip::getMaxProbability() {
+    void Clip::setSpecificWeight(KUKADU_SHARED_PTR<Clip> child, double weight) {
+        subH.at(getSubClipIdx(child)) = weight;
+    }
 
+    std::tuple<double, int, KUKADU_SHARED_PTR<Clip> > Clip::getMaxProbability() {
+
+        int maxWeight = 0;
         double maxWeightSum = 0.0;
         double maxProbability = 0.0;
         KUKADU_SHARED_PTR<Clip> maxProbClip = subClips->front();
@@ -72,11 +77,12 @@ namespace kukadu {
             if(currProb > maxProbability) {
                 maxProbClip = subClips->at(i);
                 maxProbability = currProb;
+                maxWeight = currProb;
             }
 
         }
 
-        return {maxProbability / maxWeightSum, maxProbClip};
+        return make_tuple(maxProbability / maxWeightSum, maxWeight, maxProbClip);
 
     }
 
@@ -85,7 +91,10 @@ namespace kukadu {
     }
 
     int Clip::getSubClipIdx(KUKADU_SHARED_PTR<Clip> subClip) {
-        return (std::find(subClips->begin(), subClips->end(), subClip) - subClips->begin());
+        auto foundClipIt = std::find(subClips->begin(), subClips->end(), subClip);
+        if(subClip == *foundClipIt)
+            return (foundClipIt - subClips->begin());
+        throw KukaduException("(Clip) clip not found");
     }
 
     KUKADU_SHARED_PTR<std::vector<int> > Clip::getIdVectorFromString(std::string str) {
@@ -286,7 +295,7 @@ namespace kukadu {
 
     void Clip::printSubWeights() {
         for(int i = 0; i < subH.size(); ++i) {
-            cout << subH.at(i) << " ";
+            cout << subH.at(i) << " (" << *subClips->at(i) << ") ";
         }
         cout << endl;
     }

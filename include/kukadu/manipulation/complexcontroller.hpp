@@ -48,6 +48,7 @@ namespace kukadu {
 
         bool cleanup;
         bool storeReward;
+        bool useCreativity;
         bool colPrevRewards;
 
         int stdPrepWeight;
@@ -61,6 +62,15 @@ namespace kukadu {
         double punishReward;
         double senseStretch;
         double pathLengthCost;
+
+        double creativityAlpha1;
+        double creativityAlpha2;
+        double creativityBeta;
+        double creativityCthresh;
+        double nothingStateProbThresh;
+
+        double creativityGamma;
+        double creativityDelta;
 
         KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator;
 
@@ -134,7 +144,8 @@ namespace kukadu {
                           bool storeReward, double senseStretch, double boredom, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator,
                           int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards, int simulationFailingProbability,
                           KUKADU_SHARED_PTR<Controller> nothingController,
-                          int maxEnvPathLength = 4, double pathLengthCost = 0.01, double stdEnvironmentReward = 10.0);
+                          int maxEnvPathLength = 4, double pathLengthCost = 0.01, double stdEnvironmentReward = 10.0,
+                          double creativityAlpha1 = 0.1, double creativityAlpha2 = 0.9, double creativityBeta = 0.3, double creativityCthresh = 0.8, double nothingStateProbThresh = 0.8);
         ~ComplexController();
 
         void store();
@@ -151,6 +162,7 @@ namespace kukadu {
         std::map<std::string, std::tuple<double, double, std::vector<double> > > computeEntropyMeanAndVariance(std::vector<KUKADU_SHARED_PTR<SensingController> > sensingIds);
 
         bool isTrained();
+        bool setUseCreativity(bool useCreativity);
 
         void setSensingControllers(std::vector<KUKADU_SHARED_PTR<kukadu::SensingController> > sensingControllers);
         void setPreparatoryControllers(std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > preparatoryControllers);

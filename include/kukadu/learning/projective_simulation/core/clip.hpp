@@ -81,6 +81,8 @@ namespace kukadu {
         void setChildren(KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > children);
         void setChildren(KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > children, std::vector<double> weights);
 
+        void setSpecificWeight(KUKADU_SHARED_PTR<Clip> child, double weight);
+
         bool isImmune();
 
         virtual bool isCompatibleSubclip(KUKADU_SHARED_PTR<Clip> c);
@@ -102,7 +104,7 @@ namespace kukadu {
 
         std::string getIdVecString() const;
 
-        std::pair<double, KUKADU_SHARED_PTR<Clip> > getMaxProbability();
+        std::tuple<double, int, KUKADU_SHARED_PTR<Clip> > getMaxProbability();
 
         virtual std::string toString() const;
 
