@@ -1,22 +1,23 @@
 ######################
 ## Version 0.1 #######
 ## /**********************************************************************
-##   Copyright 2014, Sandor Szedmak  
+##   Copyright 2015, Sandor Szedmak  
 ##   email: sandor.szedmak@uibk.ac.at
+##          szedmak777@gmail.com
 ##
 ##   This file is part of Maximum Margin Multi-valued Regression code(MMMVR).
 ##
 ##   MMMVR is free software: you can redistribute it and/or modify
-##   it under the terms of the GNU Lesser General Public License as published by
+##   it under the terms of the GNU General Public License as published by
 ##   the Free Software Foundation, either version 3 of the License, or
 ##   (at your option) any later version. 
 ##
 ##   MMMVR is distributed in the hope that it will be useful,
 ##   but WITHOUT ANY WARRANTY; without even the implied warranty of
 ##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##   GNU Lesser General Public License for more details.
+##   GNU General Public License for more details.
 ##
-##   You should have received a copy of the GNU Lesser General Public License
+##   You should have received a copy of the GNU General Public License
 ##   along with MMMVR.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ## ***********************************************************************/
@@ -39,8 +40,8 @@ def mvm_datasplit(xdatacls,itrain,itest):
   """
   xdata_rel=xdatacls.xdata_rel
   nitem=len(xdata_rel)
-  xdatacls.xdata_tra=[ None for i in range(nitem) ]
-  xdatacls.xdata_tes=[ None for i in range(nitem) ]
+  xdatacls.xdata_tra=[None]*nitem
+  xdatacls.xdata_tes=[None]*nitem
   for i in range(nitem):
     xdatacls.xdata_tra[i]=xdata_rel[i][itrain]
     xdatacls.xdata_tes[i]=xdata_rel[i][itest]
@@ -59,22 +60,22 @@ def mvm_datasplit_subset(xdatacls,itrain,itest):
   """
   xdata_rel=xdatacls.xdata_rel
   nitem=len(xdata_rel)
-  xdatacls.xdata_tra=[ None for i in range(nitem) ]
-  xdatacls.xdata_tes=[ None for i in range(nitem) ]
+  xdatacls.xdata_tra=[None]*nitem
+  xdatacls.xdata_tes=[None]*nitem
   for i in range(nitem):
     xdatacls.xdata_tra[i]=xdata_rel[i][xdatacls.iobjects_data[itrain]]
     xdatacls.xdata_tes[i]=xdata_rel[i][xdatacls.iobjects_data[itest]]
 
   return
 ## ###########################################################
-def mvm_ranges(xdata,nitem,params):
+def mvm_ranges(xdata,nitem):
   """
   Creates the ranges of the data to each column index
 
   Input:
   xdata       data, for example xdatacls.xdata_tra
   nitem       number of rows, for example  xdatacls.nrow
-  params      global parameters
+
   Output:
   xranges     the range matrix with two coluns (starting point, length)
   """
@@ -91,14 +92,13 @@ def mvm_ranges(xdata,nitem,params):
     
   return(xranges)
 ## ###########################################################
-def mvm_loadmatrix(xdatacls,params):
+def mvm_loadmatrix(xdatacls):
   """
   It can load the sparse relation matrix of the training data
   Not used in the current version
   
   Input:
   xdatacls          data class
-  params            global parameters
   """
   
   nrow=xdatacls.nrow
@@ -205,11 +205,6 @@ def mvm_ygrid(xdatacls):
 ##  ncol=xdatacls.ncol
 
   ydata=xdatacls.xdata_tra[2]
-  tydim=ydata.shape
-  if len(tydim)==1:
-    nydim=1
-  else:
-    nydim=tydim[1]
 
 ## compute grid  
   ymax=np.max(ydata)
@@ -227,8 +222,10 @@ def mvm_ygrid(xdatacls):
     xdatacls.YKernel.ymin=ymin
     
   ## xdatacls.YKernel.yrange=(ymax-ymin)/ystep
-  ystep=(ymax-ymin)/yrange  
-  xdatacls.YKernel.ystep=ystep
+  ystep=xdatacls.YKernel.ystep
+  ## ystep=(ymax-ymin)/yrange  
+  ## xdatacls.YKernel.ystep=ystep
+  xdatacls.YKernel.yrange=np.ceil((ymax-ymin)/ystep)
 
   ydata=xdatacls.xdata_tra[2]
   xdatacls.xdata_tra[2]=np.round(ydata/ystep)*ystep
@@ -308,19 +305,23 @@ def mvm_largest_category(xdatacls):
   return
 
 ## #######################################################
-def sort_table(xdata0,ifloat=1):
+def sort_table(xdata0,ifloat=1,idata=1):
 
   nitem=len(xdata0)
   ndata=len(xdata0[0])
-  ldata=[ [xdata0[0][i],xdata0[1][i],i] for i in range(ndata)] 
+  ldata=[ [xdata0[0][i],xdata0[1][i],i] for i in range(ndata)]
   ldata.sort()
   xdata=[None]*nitem 
   xdata[0]=np.array([ xitem[0] for xitem in ldata]).astype(int)
   xdata[1]=np.array([ xitem[1] for xitem in ldata]).astype(int)
-  xdata[2]=np.array([ xdata0[2][xitem[2]] for xitem in ldata]).astype(float)
-  if ifloat==0:
-    xdata[2]=xdata[2].astype(int)
-
+  if idata==1:
+    xdata[2]=np.array([ xdata0[2][xitem[2]] for xitem in ldata]).astype(float)
+    if ifloat==0:
+      xdata[2]=xdata[2].astype(int)
+  else:
+    ## only data indexes preserved in the original xdata0
+    xdata[2]=np.array([ xitem[2] for xitem in ldata]).astype(int)
+ 
   return(xdata)
 ## #######################################################
 

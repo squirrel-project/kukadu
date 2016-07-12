@@ -1,4 +1,4 @@
-#include "trajectory.hpp"
+#include <kukadu/types/trajectory.hpp>
 
 namespace kukadu {
 

@@ -1,4 +1,4 @@
-#include "trafficlightreward.hpp"
+#include <kukadu/learning/projective_simulation/application/trafficlightreward.hpp>
 
 using namespace std;
 
@@ -22,10 +22,10 @@ namespace kukadu {
         tmp2->push_back(0); tmp2->push_back(1);
         tmp3->push_back(1); tmp3->push_back(0);
         tmp4->push_back(1); tmp4->push_back(1);
-        perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(TRAFFICLIGHTREWARD_GREEN_RIGHT, "(green, left)", generator, KUKADU_SHARED_PTR<vector<int> >(tmp1), PS_DEFAULT_IMMUNITY)));
-        perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(TRAFFICLIGHTREWARD_GREEN_LEFT, "(green, right)", generator, KUKADU_SHARED_PTR<vector<int> >(tmp2), PS_DEFAULT_IMMUNITY)));
-        perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(TRAFFICLIGHTREWARD_RED_RIGHT, "(red, left)", generator, KUKADU_SHARED_PTR<vector<int> >(tmp3), PS_DEFAULT_IMMUNITY)));
-        perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(TRAFFICLIGHTREWARD_RED_LEFT, "(red, right)", generator, KUKADU_SHARED_PTR<vector<int> >(tmp4), PS_DEFAULT_IMMUNITY)));
+        perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(TRAFFICLIGHTREWARD_GREEN_RIGHT, "(green, left)", generator, KUKADU_SHARED_PTR<vector<int> >(tmp1), Clip::PS_DEFAULT_IMMUNITY)));
+        perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(TRAFFICLIGHTREWARD_GREEN_LEFT, "(green, right)", generator, KUKADU_SHARED_PTR<vector<int> >(tmp2), Clip::PS_DEFAULT_IMMUNITY)));
+        perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(TRAFFICLIGHTREWARD_RED_RIGHT, "(red, left)", generator, KUKADU_SHARED_PTR<vector<int> >(tmp3), Clip::PS_DEFAULT_IMMUNITY)));
+        perceptClips->push_back(KUKADU_SHARED_PTR<PerceptClip>(new PerceptClip(TRAFFICLIGHTREWARD_RED_LEFT, "(red, right)", generator, KUKADU_SHARED_PTR<vector<int> >(tmp4), Clip::PS_DEFAULT_IMMUNITY)));
 
     }
 

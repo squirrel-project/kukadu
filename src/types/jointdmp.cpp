@@ -1,4 +1,4 @@
-#include "jointdmp.hpp"
+#include <kukadu/types/jointdmp.hpp>
 
 namespace kukadu {
 

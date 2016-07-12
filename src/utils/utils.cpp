@@ -12,14 +12,34 @@
 #include <pcl/common/common.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#include "../utils/utils.hpp"
-#include "../types/kukadutypes.hpp"
-#include "../trajectory/dmpexecutor.hpp"
+#include <kukadu/utils/utils.hpp>
+#include <kukadu/types/kukadutypes.hpp>
+#include <kukadu/control/dmpexecutor.hpp>
 
 using namespace std;
 using namespace arma;
 
 namespace kukadu {
+
+    void printPose(const geometry_msgs::Pose& p) {
+        cout << p.position.x << " " << p.position.y << " " << p.position.z << " " << p.orientation.x << " " << p.orientation.y << " " << p.orientation.z << " " << p.orientation.w << endl;
+    }
+
+    double computeMaxJointDistance(arma::vec joints1, arma::vec joints2) {
+
+        double maxDist = 0.0;
+        for(int i = 0; i < joints1.n_elem; ++i) {
+            double currDist = abs(joints1(i) - joints2(i));
+            maxDist = max(currDist, maxDist);
+        }
+        return maxDist;
+
+    }
+
+    void preparePathString(std::string& s) {
+        if(*(s.end()) != '/')
+            s.append("/");
+    }
 
     int createDirectory(std::string path) {
 
@@ -351,6 +371,14 @@ namespace kukadu {
 
         return retMat;
 
+    }
+
+    bool fileIsEmpty(std::string& filePath) {
+        ifstream inFile;
+        inFile.open(filePath.c_str(), ios::in | ios::app | ios::binary);
+        auto retVal = fileIsEmpty(inFile);
+        inFile.close();
+        return retVal;
     }
 
     arma::mat readMovements(std::ifstream& inFile) {
@@ -769,7 +797,7 @@ namespace kukadu {
     arma::mat armaJoinRows(arma::vec v1, arma::mat m2) {
 
         if(v1.n_elem != m2.n_rows)
-            throw "(armaJoinRows) matrix dimensions do not match";
+            throw KukaduException("(armaJoinRows) matrix dimensions do not match");
 
         arma::mat retMat(m2.n_rows, 1 + m2.n_cols);
         for(int i = 0; i < m2.n_rows; ++i) {
@@ -785,7 +813,7 @@ namespace kukadu {
     arma::mat armaJoinRows(arma::mat m1, arma::mat m2) {
 
         if(m1.n_rows != m2.n_rows)
-            throw "(armaJoinRows) matrix dimensions do not match";
+            throw KukaduException("(armaJoinRows) matrix dimensions do not match");
 
         arma::mat retMat(m1.n_rows, m1.n_cols + m2.n_cols);
         for(int i = 0; i < m1.n_rows; ++i) {
@@ -809,6 +837,10 @@ namespace kukadu {
         sigemptyset(&sigIntHandler.sa_mask);
         sigIntHandler.sa_flags = 0;
         sigaction(SIGINT, &sigIntHandler, NULL);
+    }
+
+    bool fileIsEmpty(std::ifstream& pFile) {
+        return pFile.peek() == std::ifstream::traits_type::eof();
     }
 
     void exit_handler(int s) {
@@ -874,7 +906,7 @@ namespace kukadu {
 
     }
 
-    tf::Quaternion exp(arma::vec logQuat) {
+    tf::Quaternion vecExp(arma::vec logQuat) {
 
         double x, y, z, w;
         double modR = sqrt(logQuat(0) * logQuat(0) + logQuat(1) * logQuat(1) + logQuat(2) * logQuat(2));
@@ -1000,6 +1032,12 @@ namespace kukadu {
 
         copy(begin, end, begin2);
 
+        f.flush();
+        f2.flush();
+
+        f.close();
+        f2.close();
+
     }
 
     void deleteDirectory(std::string path) {
@@ -1009,12 +1047,21 @@ namespace kukadu {
         }
     }
 
-    pcl::PointCloud<pcl::PointXYZ> sensorMsgsPcToPclPc(sensor_msgs::PointCloud2 pc) {
+    void deleteFile(std::string path) {
+        if(!isDirectory(path)) {
+            boost::filesystem::path p = path.c_str();
+            boost::filesystem::remove_all(p);
+        }
+    }
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr sensorMsgsPcToPclPc(sensor_msgs::PointCloud2::Ptr pc) {
         pcl::PCLPointCloud2 intermediate;
         pcl::PointCloud<pcl::PointXYZ> output;
-        pcl_conversions::toPCL(pc, intermediate);
+        pcl::PointCloud<pcl::PointXYZ>::Ptr outputPtr;
+        pcl_conversions::toPCL(*pc, intermediate);
         pcl::fromPCLPointCloud2(intermediate, output);
-        return output;
+        outputPtr = output.makeShared();
+        return outputPtr;
     }
 
     sensor_msgs::PointCloud2 pclPcToSensorMsgsPc(pcl::PointCloud<pcl::PointXYZ>::Ptr pc) {

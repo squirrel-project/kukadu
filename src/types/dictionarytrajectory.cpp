@@ -1,4 +1,4 @@
-#include "dictionarytrajectory.hpp"
+#include <kukadu/types/dictionarytrajectory.hpp>
 
 using namespace std;
 using namespace arma;
@@ -105,7 +105,7 @@ namespace kukadu {
 
         string errStr = "(DictionaryTrajectory) == operator not implemted yet";
         cerr << errStr << endl;
-        throw errStr;
+        throw KukaduException(errStr.c_str());
 
     }
 

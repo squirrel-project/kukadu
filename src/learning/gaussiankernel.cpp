@@ -1,4 +1,4 @@
-#include "gaussiankernel.hpp"
+#include <kukadu/learning/regression/gaussiankernel.hpp>
 
 using namespace std;
 using namespace arma;

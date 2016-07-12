@@ -160,7 +160,7 @@ template<class T> struct Array {
   void setCarray(const T **buffer, uint D0, uint D1);
   void referTo(const T *buffer, uint n);
   void referTo(const Array<T>& a);
-  void referToSubRange(const Array<T>& a, uint i, int I);
+  void referToSubRange(const Array<T>& a, int i, int I);
   void referToSubDim(const Array<T>& a, uint dim);
   void referToSubDim(const Array<T>& a, uint i, uint j);
   void takeOver(Array<T>& a);  //a becomes a reference to its previously owned memory!
@@ -178,7 +178,7 @@ template<class T> struct Array {
   T& operator()(const Array<uint> &I) const;
   Array<T> operator[](uint i) const;     // calls referToSubDim(*this, i)
   Array<T> subDim(uint i, uint j) const; // calls referToSubDim(*this, i, j)
-  Array<T> subRange(uint i, int I) const; // calls referToSubRange(*this, i, I)
+  Array<T> subRange(int i, int I) const; // calls referToSubRange(*this, i, I)
   Array<T>& operator()();
   T** getCarray(Array<T*>& Cpointers) const;
   
@@ -767,12 +767,13 @@ struct RowShiftedPackedMatrix {
   uintA rowShift;   ///< amount of shift of each row (rowShift.N==Z.d0)
   uintA colPatches; ///< column-patch: (nd=2,d0=real_d1,d1=2) range of non-zeros in a COLUMN; starts with 'a', ends with 'b'-1
   bool symmetric;   ///< flag: if true, this stores a symmetric (banded) matrix: only the upper triangle
+  arr *nextInSum;
   
   RowShiftedPackedMatrix(arr& X);
   RowShiftedPackedMatrix(arr& X, RowShiftedPackedMatrix &aux);
   ~RowShiftedPackedMatrix();
   double acc(uint i, uint j);
-  void computeColPatches(bool assumeMonotonic); //currently presumes monotonous rowShifts
+  void computeColPatches(bool assumeMonotonic);
   arr At_A();
   arr A_At();
   arr At_x(const arr& x);

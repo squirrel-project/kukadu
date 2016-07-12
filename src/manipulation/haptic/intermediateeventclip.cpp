@@ -1,4 +1,4 @@
-#include "intermediateeventclip.hpp"
+#include <kukadu/manipulation/haptic/intermediateeventclip.hpp>
 
 #include <cstdio>
 #include <iostream>
@@ -6,6 +6,14 @@
 using namespace std;
 
 namespace kukadu {
+
+    IntermediateEventClip::IntermediateEventClip(KUKADU_SHARED_PTR<SensingController> sensingEvent,
+                      int level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string clipValues, int immunity) : Clip(level, generator, clipValues, immunity) {
+
+        this->caption = sensingEvent->getCaption();
+        this->sensingEvent = sensingEvent;
+
+    }
 
     IntermediateEventClip::IntermediateEventClip(KUKADU_SHARED_PTR<SensingController> sensingEvent,
                                                  int level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, KUKADU_SHARED_PTR<std::vector<int> > clipValues, int immunity)

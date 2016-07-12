@@ -1,19 +1,18 @@
-#include "sensingcontroller.hpp"
-
 #include <Python.h>
 #include <boost/filesystem.hpp>
+#include <kukadu/manipulation/sensingcontroller.hpp>
 
 using namespace std;
 namespace pf = boost::filesystem;
 
 namespace kukadu {
 
-    SensingController::SensingController(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int hapticMode, string caption, std::string databasePath, std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, vector<KUKADU_SHARED_PTR<GenericHand> > hands, std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction) : Controller(caption) {
+    SensingController::SensingController(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int hapticMode, string caption, std::vector<KUKADU_SHARED_PTR<ControlQueue> > queues, vector<KUKADU_SHARED_PTR<GenericHand> > hands, std::string tmpPath, std::string classifierPath, std::string classifierFile, std::string classifierFunction, int simClassificationPrecision) : Controller(caption, 1) {
 
         currentIterationNum = 0;
         classifierParamsSet = false;
         simulationGroundTruth = 0;
-        simulatedClassificationPrecision = 100;
+        simulatedClassificationPrecision = simClassificationPrecision;
 
         this->generator = generator;
 
@@ -21,10 +20,11 @@ namespace kukadu {
         this->queues = queues;
         this->tmpPath = tmpPath;
         this->hapticMode = hapticMode;
-        this->databasePath = databasePath;
         this->classifierFile = classifierFile;
         this->classifierPath = classifierPath;
         this->classifierFunction = classifierFunction;
+
+        databaseAlreadySet = false;
 
         bestParamC = 0.0;
         bestParamD = 0.0;
@@ -35,7 +35,46 @@ namespace kukadu {
 
     }
 
+    KUKADU_SHARED_PTR<kukadu_mersenne_twister> SensingController::getGenerator() {
+        return generator;
+    }
+
+    std::vector<KUKADU_SHARED_PTR<ControlQueue> > SensingController::getQueues() {
+        return queues;
+    }
+
+    std::vector<KUKADU_SHARED_PTR<GenericHand> > SensingController::getHands() {
+        return hands;
+    }
+
+    std::string SensingController::getTmpPath() {
+        return tmpPath;
+    }
+
+    std::string SensingController::getClassifierPath() {
+        return classifierPath;
+    }
+
+    std::string SensingController::getClassifierFile() {
+        return classifierFile;
+    }
+
+    std::string SensingController::getClassifierFunction() {
+        return classifierFunction;
+    }
+
+    int SensingController::getHapticMode() {
+        return hapticMode;
+    }
+
+    int SensingController::getSimClassificationPrecision() {
+        return simulatedClassificationPrecision;
+    }
+
     void SensingController::gatherData(std::string dataBasePath, std::string dataName) {
+
+        if(!fileExists(dataBasePath))
+            createDirectory(dataBasePath);
 
         gatherData(dataBasePath + dataName);
 
@@ -43,6 +82,12 @@ namespace kukadu {
 
     std::string SensingController::getDatabasePath() {
         return databasePath;
+    }
+
+    void SensingController::setDatabasePath(std::string databasePath) {
+        this->databasePath = databasePath;
+        databaseAlreadySet = true;
+        createDataBase();
     }
 
     void SensingController::gatherData(std::string completePath) {
@@ -64,8 +109,6 @@ namespace kukadu {
         store.stopDataStorage();
         storageThread->join();
 
-        cleanUp();
-
     }
 
     std::string SensingController::getFirstRobotFileName() {
@@ -73,12 +116,21 @@ namespace kukadu {
     }
 
     std::vector<double> SensingController::callClassifier() {
+
+        if(!databaseAlreadySet)
+            throw KukaduException("(SensingController::callClassifier) database not defined yet");
+
         return callClassifier(databasePath, tmpPath + "hapticTest/" + queues.at(0)->getRobotFileName() + "_0", true, bestParamC, bestParamD, bestParamParam1, bestParamParam2);
     }
 
     int SensingController::performClassification() {
 
+        if(!databaseAlreadySet)
+            throw KukaduException("(SensingController::performClassification) database not defined yet");
+
         int classifierRes = -1;
+
+        KUKADU_SHARED_PTR<kukadu_thread> cleanupThread;
         if(!getSimulationMode()) {
 
             int executeIt = 0;
@@ -91,20 +143,24 @@ namespace kukadu {
                 if(!classifierParamsSet) {
                     string errorMsg = "(SensingController) classifier parameters not yet set" ;
                     cerr << errorMsg << endl;
-                    throw errorMsg;
+                    throw KukaduException(errorMsg.c_str());
                 }
 
                 pf::remove_all(tmpPath + "hapticTest");
 
                 gatherData(tmpPath, "hapticTest");
+
+                // start clean up in a separate thread
+                cleanupThread = KUKADU_SHARED_PTR<kukadu_thread>(new kukadu_thread(&SensingController::cleanUp, this));
+
                 stringstream s;
                 s << tmpPath << "hapticTest_" << queues.at(0)->getRobotFileName() << "_0_" << currentIterationNum;
                 copyFile(tmpPath + "hapticTest/" + queues.at(0)->getRobotFileName() + "_0", s.str());
 
             } else {
                 if(!isShutUp) {
-                    cout << "(ControllerActionClip) you decided not to perform the action" << endl;
-                    cout << "(ControllerActionClip) switching temporarily to haptic mode HAPTIC_MODE_TERMINAL; continue" << endl;
+                    cout << "(SensinController) you decided not to perform the action" << endl;
+                    cout << "(SensinController) switching temporarily to haptic mode HAPTIC_MODE_TERMINAL; continue" << endl;
                 }
                 temporaryHapticMode = SensingController::HAPTIC_MODE_TERMINAL;
             }
@@ -113,23 +169,22 @@ namespace kukadu {
                 cout << "(SensingController) what was the haptic result? [0, " << (getSensingCatCount() - 1) << "]" << endl;
                 cin >> classifierRes;
             } else if(temporaryHapticMode == SensingController::HAPTIC_MODE_CLASSIFIER) {
-                cout << 1 << endl;
                 vector<double> res = callClassifier(databasePath, tmpPath + "hapticTest/" + queues.at(0)->getRobotFileName() + "_0", true, bestParamC, bestParamD, bestParamParam1, bestParamParam2);
                 int maxIdx = 0;
                 double maxElement = res.at(0);
                 for(int i = 1; i < getSensingCatCount(); ++i) {
-                    if(res.at(i) > maxIdx) {
+                    if(res.at(i) > maxElement) {
                         maxElement = res.at(i);
                         maxIdx = i;
                     }
                 }
                 classifierRes = maxIdx;
             } else {
-                throw "haptic mode not known";
+                throw KukaduException("haptic mode not known");
             }
-
+cout << 4 << endl;
             if(!isShutUp)
-                cout << "(main) classifier result is category " << classifierRes << endl << "(main) press enter to continue" << endl;
+                cout << "(SensinController) press enter to continue" << endl;
             getchar();
 
             pf::remove_all(tmpPath + "hapticTest");
@@ -138,12 +193,14 @@ namespace kukadu {
 
         } else {
 
+            // this is here for simulating a non-perfect classifier
             vector<double> precisionProbVec;
-            precisionProbVec.push_back((double) (simulatedClassificationPrecision));
+            precisionProbVec.push_back((double) simulatedClassificationPrecision);
             precisionProbVec.push_back((double) (100 - simulatedClassificationPrecision));
-            KUKADU_DISCRETE_DISTRIBUTION<int> precisionProb(precisionProbVec);
+            KUKADU_DISCRETE_DISTRIBUTION<int> precisionProb(precisionProbVec.begin(), precisionProbVec.end());
 
             int correctClass = precisionProb(*generator);
+
             // simulate correct classification
             if(!correctClass)
                 classifierRes = simulationGroundTruth;
@@ -156,8 +213,15 @@ namespace kukadu {
 
         }
 
+        if(cleanupThread)
+            cleanupThread->join();
+
         return classifierRes;
 
+    }
+
+    int SensingController::getSimulationGroundTruthIdx() {
+        return simulationGroundTruth;
     }
 
     int SensingController::createRandomGroundTruthIdx() {
@@ -178,11 +242,15 @@ namespace kukadu {
 
     double SensingController::createDataBase() {
 
+        if(!databaseAlreadySet)
+            throw KukaduException("(SensingController::createDataBase) database not defined yet");
+
         int numClasses = 0;
         string path = getDatabasePath();
         vector<pair<int, string> > collectedSamples;
         if(!isShutUp)
             cout << "(SensingController) data is stored to " << path << endl;
+
         if(!fileExists(path)) {
 
             if(!isShutUp)
@@ -194,12 +262,18 @@ namespace kukadu {
             if(!isShutUp)
                 cout << "(SensingController) " << getCaption() << " offers " << numClasses << " classes" << endl;
 
+            ofstream labelFile;
+            labelFile.open((path + "labels").c_str(), std::ios_base::app);
+
             for(int currClass = 0; currClass < numClasses; ++currClass) {
+
+                if(currClass != 0)
+                    this->prepareNextState();
 
                 int cont = 1;
                 for(int sampleNum = 0; cont == 1; ++sampleNum) {
 
-                    cout << "(SensingController) press key to collect sample number " << sampleNum << " for class " << currClass << endl;
+                    cout << "(SensingController) press key to collect sample number " << sampleNum << " for class " << currClass << " with sensing controller " << this->getCaption() << endl;
                     getchar();
 
                     stringstream s;
@@ -208,8 +282,10 @@ namespace kukadu {
                     string relativeClassifyPath = relativePath + "/" + getFirstRobotFileName() + "_0";
                     string nextSamplePath = path + relativePath;
                     gatherData(nextSamplePath);
+                    cleanUp();
 
                     collectedSamples.push_back(pair<int, string>(currClass, relativeClassifyPath));
+                    labelFile << relativeClassifyPath << " " << currClass << endl;
 
                     cout << "(SensingController) want to collect another sample for class " << currClass << "? (0 = no / 1 = yes): ";
                     cin >> cont;
@@ -218,7 +294,7 @@ namespace kukadu {
 
             }
 
-            writeLabelFile(path, collectedSamples);
+            labelFile.close();
 
         } else {
             if(!isShutUp)
@@ -230,13 +306,22 @@ namespace kukadu {
 
             // determine confidence value on database
             vector<double> classRes = callClassifier(path, "", false, 0.0, 0.0, 0.0, 0.0);
+            for(double res : classRes)
+                cout << res << endl;
 
-            cerr << "(SensingController) this part currently wont work (switched back to old classifier (repair later)" << endl;
-            double confidence = classRes.at(classRes.size() - 5);
+            double confidence = classRes.at(classRes.size() - 1);
+
+            /*
             double bestParamC = classRes.at(classRes.size() - 4);
             double bestParamD = classRes.at(classRes.size() - 3);
             double bestParamPar1 = classRes.at(classRes.size() - 2);
             double bestParamPar2 = classRes.at(classRes.size() - 1);
+            */
+
+            double bestParamC = 0.0;
+            double bestParamD = 0.0;
+            double bestParamPar1 = 0.0;
+            double bestParamPar2 = 0.0;
 
             ofstream ofile;
             ofile.open((path + "classRes").c_str());
@@ -305,7 +390,8 @@ namespace kukadu {
 
             if (pFunc && PyCallable_Check(pFunc)) {
 
-                pArgs = PyTuple_New(7);
+                //pArgs = PyTuple_New(7);
+                pArgs = PyTuple_New(3);
                 pValue = PyUnicode_FromString(argumentVal.c_str());
 
                 if (!pValue) {
@@ -352,44 +438,6 @@ namespace kukadu {
                     fprintf(stderr, "Cannot convert argument\n");
 
                 }
-
-                PyTuple_SetItem(pArgs, 3, pValue);
-
-                pValue = PyFloat_FromDouble(bestParamD);
-
-                if (!pValue) {
-
-                    Py_DECREF(pArgs);
-                    Py_DECREF(pModule);
-                    fprintf(stderr, "Cannot convert argument\n");
-
-                }
-
-                PyTuple_SetItem(pArgs, 4, pValue);
-
-                pValue = PyFloat_FromDouble(bestParamParam1);
-
-                if (!pValue) {
-
-                    Py_DECREF(pArgs);
-                    Py_DECREF(pModule);
-                    fprintf(stderr, "Cannot convert argument\n");
-
-                }
-
-                PyTuple_SetItem(pArgs, 5, pValue);
-
-                pValue = PyFloat_FromDouble(bestParamParam2);
-
-                if (!pValue) {
-
-                    Py_DECREF(pArgs);
-                    Py_DECREF(pModule);
-                    fprintf(stderr, "Cannot convert argument\n");
-
-                }
-
-                PyTuple_SetItem(pArgs, 6, pValue);
 
                 pValue = PyObject_CallObject(pFunc, pArgs);
                 Py_DECREF(pArgs);

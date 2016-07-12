@@ -1,4 +1,4 @@
-#include "generickernel.hpp"
+#include <kukadu/learning/regression/generickernel.hpp>
 
 namespace kukadu {
 

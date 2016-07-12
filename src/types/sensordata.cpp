@@ -1,4 +1,4 @@
-#include "sensordata.hpp"
+#include <kukadu/types/sensordata.hpp>
 
 using namespace std;
 using namespace arma;

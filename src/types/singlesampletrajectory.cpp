@@ -1,4 +1,4 @@
-#include "singlesampletrajectory.hpp"
+#include <kukadu/types/singlesampletrajectory.hpp>
 
 using namespace std;
 using namespace arma;

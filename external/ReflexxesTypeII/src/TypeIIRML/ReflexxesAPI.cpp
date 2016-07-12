@@ -52,6 +52,7 @@
 #include <RMLVelocityInputParameters.h>
 #include <RMLVelocityOutputParameters.h>
 #include <RMLVelocityFlags.h>
+#include <iostream>
 
 
 //****************************************************************************
@@ -78,8 +79,9 @@ ReflexxesAPI::ReflexxesAPI(     const unsigned int  &DegreesOfFreedom
 
 ReflexxesAPI::~ReflexxesAPI(void)
 {
-    delete  (TypeIIRMLVelocity*)this->RMLVelocityObject;
-    delete  (TypeIIRMLPosition*)this->RMLPositionObject;
+    std::cout << "(ReflexxesAPI) memory leak here" << std::endl;
+    //delete  (TypeIIRMLVelocity*)this->RMLVelocityObject;
+    //delete  (TypeIIRMLPosition*)this->RMLPositionObject;
 
     this->RMLVelocityObject =   NULL;
     this->RMLPositionObject =   NULL;

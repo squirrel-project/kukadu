@@ -1,22 +1,23 @@
 ######################
 ## Version 0.1 #######
 ## /**********************************************************************
-##   Copyright 2014, Sandor Szedmak  
+##   Copyright 2015, Sandor Szedmak  
 ##   email: sandor.szedmak@uibk.ac.at
+##          szedmak777@gmail.com
 ##
 ##   This file is part of Maximum Margin Multi-valued Regression code(MMMVR).
 ##
 ##   MMMVR is free software: you can redistribute it and/or modify
-##   it under the terms of the GNU Lesser General Public License as published by
+##   it under the terms of the GNU General Public License as published by
 ##   the Free Software Foundation, either version 3 of the License, or
 ##   (at your option) any later version. 
 ##
 ##   MMMVR is distributed in the hope that it will be useful,
 ##   but WITHOUT ANY WARRANTY; without even the implied warranty of
 ##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##   GNU Lesser General Public License for more details.
+##   GNU General Public License for more details.
 ##
-##   You should have received a copy of the GNU Lesser General Public License
+##   You should have received a copy of the GNU General Public License
 ##   along with MMMVR.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ## ***********************************************************************/
@@ -85,10 +86,6 @@ def mmr_normalization(ilocal,iscale,XTrain,XTest,ipar):
   else:
     mtest=0
     XTest=array([])
-    
-  print('mmr_normalization_new')
-  print(ilocal)
-  print(iscale)
 
   if ilocal==-1:
     pass
@@ -105,9 +102,6 @@ def mmr_normalization(ilocal,iscale,XTrain,XTest,ipar):
     xcenter=dot(XTrain.T,xalpha)
   elif ilocal==5:   ## row mean row wise
     xcenter=mean(XTrain,axis=1)
-
-  print(XTrain)
-  print(xcenter)
 
   if ilocal in (0,1,2,3,4):
     XTrain=XTrain-tile(xcenter,(mtrain,1))
@@ -348,7 +342,7 @@ def mmr_geometricmedian_ker(K):
 
   e1=ones(m)
 
-  for i in range(niter):
+  for iiter in range(niter):
     ## d2u=sqrt((zeros(m)+aKa)+diag(K)-2*Ka)
     d2u_2=aKa+diag(K)-2*Ka
     ineg=where(d2u_2<0)[0]

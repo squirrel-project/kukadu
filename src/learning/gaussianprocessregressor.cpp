@@ -1,4 +1,4 @@
-#include "gaussianprocessregressor.hpp"
+#include <kukadu/learning/regression/gaussianprocessregressor.hpp>
 
 using namespace std;
 using namespace arma;

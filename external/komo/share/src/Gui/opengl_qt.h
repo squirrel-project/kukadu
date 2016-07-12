@@ -29,8 +29,7 @@
 // #  define QT3_SUPPORT
 // #  include <Qt/Qt3Support>
 // #  include <Qt/qtimer.h>
-//#include <QtGui/QApplication>
-#include <QtWidgets/QApplication>
+#include <QtGui/QApplication>
 #include <QtOpenGL/QGLWidget>
 // #  include <Qt/qobject.h>
 // #  include <Qt/qevent.h>

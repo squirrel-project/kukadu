@@ -1,4 +1,4 @@
-#include "quadratickernel.hpp"
+#include <kukadu/learning/regression/quadratickernel.hpp>
 
 using namespace std;
 using namespace arma;

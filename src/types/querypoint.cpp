@@ -1,4 +1,4 @@
-#include "querypoint.hpp"
+#include <kukadu/types/querypoint.hpp>
 
 using namespace std;
 

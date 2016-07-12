@@ -1,13 +1,34 @@
 ######################
 ## Version 0.1 #######
+## /**********************************************************************
+##   Copyright 2015, Sandor Szedmak  
+##   email: sandor.szedmak@uibk.ac.at
+##          szedmak777@gmail.com
+##
+##   This file is part of Maximum Margin Multi-valued Regression code(MMMVR).
+##
+##   MMMVR is free software: you can redistribute it and/or modify
+##   it under the terms of the GNU General Public License as published by
+##   the Free Software Foundation, either version 3 of the License, or
+##   (at your option) any later version. 
+##
+##   MMMVR is distributed in the hope that it will be useful,
+##   but WITHOUT ANY WARRANTY; without even the implied warranty of
+##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##   GNU General Public License for more details.
+##
+##   You should have received a copy of the GNU General Public License
+##   along with MMMVR.  If not, see <http://www.gnu.org/licenses/>.
+##
+## ***********************************************************************/
 ######################
 import time
 
 import numpy as np
-import numpy.linalg as np_lin
+## import numpy.linalg as np_lin
 ## ####################
 import mmr_base_classes
-from mmr_kernel_eval import kernel_operator_valued
+## from mmr_kernel_eval import kernel_operator_valued
 ## #######################################################################
 def inverse_knn(Y0,cPredict):
 
@@ -15,7 +36,7 @@ def inverse_knn(Y0,cPredict):
   n=Y0.shape[1]
   Ypred=np.zeros((mtest,n))
 
-  p=np.ones(k)/k
+  ## p=np.ones(k)/k
   for i in range(mtest):
     inear=cPredict.knnPredCat[:,i]
     Z=Y0[inear]
@@ -40,7 +61,7 @@ def inverse_knn_real(Y0,cPredict):
   n=Y0.shape[1]
   Ypred=np.zeros((mtest,n))
 
-  p=np.ones(k)/k
+  ## p=np.ones(k)/k
   for i in range(mtest):
     inear=cPredict.knnPredCat[:,i]
     Z=Y0[inear]
@@ -60,7 +81,7 @@ def inverse_knn_real(Y0,cPredict):
 
   return(Ypred)
 ## ###########################################################
-def test_dynamic_prog(cDataTest,params,cOptDual):
+def test_dynamic_prog(cDataTest,cOptDual):
 
   (mtrain,mtest)=cDataTest.KXcross.shape
   ndim=cDataTest.YTrainNorm.shape[1]
@@ -72,17 +93,17 @@ def test_dynamic_prog(cDataTest,params,cOptDual):
   beta=beta.T
 
   ## inverse covariance
-  ymean=np.mean(cDataTest.YTrainNorm,axis=0)
+  ## ymean=np.mean(cDataTest.YTrainNorm,axis=0)
   Y=cDataTest.YTrainNorm
-  Yn=Y-np.outer(np.ones(mtrain),ymean)
-  Ycov=np.dot(Yn.T,Yn)/mtrain
-  Ycovinv=np_lin.pinv(Ycov,rcond=1e-2)/(2*(params.output.ipar1**2))
-  Ycovinv=np.eye(ndim)/(2*(params.output.ipar1**2))
+  ## Yn=Y-np.outer(np.ones(mtrain),ymean)
+  ## Ycov=np.dot(Yn.T,Yn)/mtrain
+  ## Ycovinv=np_lin.pinv(Ycov,rcond=1e-2)/(2*(params.output.ipar1**2))
+  Ycovinv=np.eye(ndim)/(2*(cDataTest.kernel_params.ipar1**2))
   CY=np.dot(Ycovinv,Y.T)
   cy0=np.sum(Y*CY.T,axis=1)
   y0=np.zeros(ndim)
   ## y0c=np.zeros(ndim)
-  e=np.ones(mtrain)
+  ## e=np.ones(mtrain)
 
   rtime=time.time()
 

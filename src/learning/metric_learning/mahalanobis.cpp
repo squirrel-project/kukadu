@@ -1,4 +1,5 @@
-#include "mahalanobis.hpp"
+#include <kukadu/learning/metric_learning/mahalanobis.hpp>
+#include <kukadu/types/kukadutypes.hpp>
 
 using namespace std;
 using namespace arma;
@@ -63,7 +64,7 @@ namespace kukadu {
         if(M.n_cols != M.n_rows) {
             string error = "(Mahalanobis) not a squared matrix";
             cerr << error << endl;
-            throw error;
+            throw KukaduException(error.c_str());
         }
         this->M = M;
     }

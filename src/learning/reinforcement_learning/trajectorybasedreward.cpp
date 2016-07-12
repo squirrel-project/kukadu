@@ -1,4 +1,5 @@
-#include "trajectorybasedreward.hpp"
+#include <kukadu/learning/rl/trajectorybasedreward.hpp>
+#include <math.h>
 
 using namespace std;
 using namespace arma;
@@ -79,7 +80,7 @@ namespace kukadu {
             retT(i) = t - tmin;
         }
 
-        return KUKADU_SHARED_PTR<ControllerResult>(new ControllerResult(retT, computeFun(retT)));
+        return KUKADU_SHARED_PTR<ControllerResult>(new ControllerResult(retT, computeFun(retT), true));
 
     }
 
@@ -106,7 +107,7 @@ namespace kukadu {
 
         vector<vec> yss;
         yss.push_back(ys);
-        return KUKADU_SHARED_PTR<ControllerResult>(new ControllerResult(retT, yss));
+        return KUKADU_SHARED_PTR<ControllerResult>(new ControllerResult(retT, yss, true));
 
     }
 

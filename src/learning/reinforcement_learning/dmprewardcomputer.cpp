@@ -1,10 +1,9 @@
-#include "dmprewardcomputer.hpp"
-
-#include "../../types/dmp.hpp"
-#include "../../types/sensordata.hpp"
-#include "../../robot/sensorstorage.hpp"
-#include "../../trajectory/dmpexecutor.hpp"
-#include "../../trajectory/jointdmplearner.hpp"
+#include <kukadu/learning/rl/dmprewardcomputer.hpp>
+#include <kukadu/types/dmp.hpp>
+#include <kukadu/types/sensordata.hpp>
+#include <kukadu/robot/sensorstorage.hpp>
+#include <kukadu/control/dmpexecutor.hpp>
+#include <kukadu/control/jointdmplearner.hpp>
 
 using namespace std;
 using namespace arma;
@@ -20,7 +19,6 @@ namespace kukadu {
         KUKADU_SHARED_PTR<ControlQueue> pcq = KUKADU_SHARED_PTR<ControlQueue>(new PlottingControlQueue(degOfFreedom, timeStep));
 
         cout << "(DmpRewardComputer) starting execution of sample trajectory with timeStep size " << timeStep << endl;
-        //executionResult = executeDemo(pcq, file, az, bz, 0);
         KUKADU_SHARED_PTR<SensorData> data = SensorStorage::readStorage(pcq, file);
         arma::vec times = data->getTimes();
         KUKADU_SHARED_PTR<JointDMPLearner> dmpLearner = KUKADU_SHARED_PTR<JointDMPLearner>(new JointDMPLearner(az, bz, join_rows(times, data->getJointPos())));

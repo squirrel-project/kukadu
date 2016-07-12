@@ -244,8 +244,12 @@ void setGraspGoals_PR2(MotionProblem& MP, uint T, uint shapeId, uint side, uint 
     case ors::cylinderST:
       target = ARR(0.);  //y-axis of m9 is orthogonal to world z-axis (tricky :-) )
       break;
+    case ors::meshST:
+      target = ARR(0.);  //works for simple cylinder-like objects
+      break;
     case ors::boxST: {
       //jrel=target_shape->X;
+      //  side =1; //! Hack for PR2
       if (side==1) jvec.set(0,1,0);
       if (side==2) jvec.set(1,0,0);
       target = ARR(1.);  //y-axis of m9 is aligned with one of the 3 sides of the cube
@@ -265,7 +269,7 @@ void setGraspGoals_PR2(MotionProblem& MP, uint T, uint shapeId, uint side, uint 
   //-- finger tips close to surface : using ProxyTaskVariable
   uintA shapes = stringListToShapeIndices(
                    ARRAY<const char*>("l_gripper_l_finger_tip_link_0",
-                                      "l_gripper_r_finger_tip_link_0"), MP.world.shapes);
+									  "l_gripper_r_finger_tip_link_0"), MP.world.shapes);
   shapes.append(shapeId); shapes.append(shapeId);
   shapes.reshape(2,2); shapes = ~shapes;
   c = MP.addTask("graspContacts", new ProxyTaskMap(vectorPTMT, shapes, .1, false));

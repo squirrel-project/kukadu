@@ -1,4 +1,4 @@
-#include "generalfitter.hpp"
+#include <kukadu/learning/regression/generalfitter.hpp>
 
 using namespace std;
 using namespace arma;

@@ -1,4 +1,4 @@
-#include "treedrawer.hpp"
+#include <kukadu/learning/projective_simulation/visualization/treedrawer.hpp>
 
 #if VISUALIZATION == 1
     #include <allegro5/allegro_ttf.h>
@@ -36,7 +36,7 @@ namespace kukadu {
 
         if(!al_init()) {
             cerr << "(TreeDrawer) failed to initialize allegro" << endl;
-            throw "(TreeDrawer) failed to initialize allegro";
+            throw KukaduException("(TreeDrawer) failed to initialize allegro");
         }
 
         display = al_create_display(windowXSize, windowYSize);
@@ -47,7 +47,7 @@ namespace kukadu {
 
         if(!display) {
             cerr << "(TreeDrawer) failed to create display" << endl;
-            throw "(TreeDrawer) failed to create display";
+            throw KukaduException("(TreeDrawer) failed to create display");
         }
 
         al_clear_to_color(al_map_rgb(0,0,0));
@@ -57,13 +57,13 @@ namespace kukadu {
         font = al_load_ttf_font(textFont.c_str(), 20, 0);
         if (!font){
             cerr << "(TreeDrawer) Could not load '" + textFont + "'" << endl;
-            throw "(TreeDrawer) Could not load '" + textFont + "'";
+            throw KukaduException(string("(TreeDrawer) Could not load '" + textFont + "'").c_str());
         }
 
         event_queue = al_create_event_queue();
         if(!event_queue) {
             cerr << "(TreeDrawer) failed to create event_queue" << endl;
-            throw "(TreeDrawer) failed to create event_queue";
+            throw KukaduException("(TreeDrawer) failed to create event_queue");
         }
 
         al_register_event_source(event_queue, al_get_keyboard_event_source());
@@ -196,6 +196,7 @@ namespace kukadu {
     #if VISUALIZATION == 1
 
         while(true) {
+
             ALLEGRO_EVENT ev;
             al_wait_for_event(event_queue, &ev);
 
@@ -204,6 +205,7 @@ namespace kukadu {
                 if(ev.keyboard.keycode == ALLEGRO_KEY_ENTER)
                     return;
             }
+
         }
 
     #endif

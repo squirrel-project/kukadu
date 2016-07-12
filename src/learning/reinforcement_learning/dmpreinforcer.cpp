@@ -1,5 +1,5 @@
-#include "dmpreinforcer.hpp"
-#include "../../utils/gnuplot-cpp/gnuplot_i.hpp"
+#include <kukadu/learning/rl/dmpreinforcer.hpp>
+#include <kukadu/utils/gnuplot.hpp>
 
 using namespace std;
 using namespace arma;
@@ -96,11 +96,11 @@ namespace kukadu {
 
                     movementQueue->setStartingJoints(startingJoints);
                     movementQueue->setStiffness(2200, 300, 1.0, 15000, 150, 2.0);
-                    KUKADU_SHARED_PTR<kukadu_thread> thr = movementQueue->startQueueThread();
+                    KUKADU_SHARED_PTR<kukadu_thread> thr = movementQueue->startQueue();
 
                     dmpResult.push_back(dmpsim.executeTrajectory(ac, 0, rollout.at(k)->getTmax(), tolAbsErr, tolRelErr));
 
-                    movementQueue->setFinish();
+                    movementQueue->stopQueue();
                     thr->join();
 
                 }

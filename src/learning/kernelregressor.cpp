@@ -1,4 +1,4 @@
-#include "kernelregressor.hpp"
+#include <kukadu/learning/regression/kernelregressor.hpp>
 
 namespace kukadu {
 

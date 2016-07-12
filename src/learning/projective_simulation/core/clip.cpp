@@ -1,11 +1,16 @@
-#include "clip.hpp"
-#include "../utils/tokenizer.hpp"
-
+#include <kukadu/learning/projective_simulation/core/clip.hpp>
+#include <kukadu/utils/kukadutokenizer.hpp>
 #include <typeinfo>
 
 using namespace std;
 
 namespace kukadu {
+
+    const int Clip::CLIP_H_HASH_VAL = INT_MIN;
+    const int Clip::CLIP_H_STD_WEIGHT = 1;
+    const int Clip::CLIP_H_LEVEL_FINAL = -1;
+    const int Clip::CLIP_H_NOT_WALKED_YET = -1;
+    const int Clip::PS_DEFAULT_IMMUNITY = 1000;
 
     Clip::Clip(int level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string clipValues, int immunity) {
 
@@ -32,12 +37,38 @@ namespace kukadu {
         this->initialImmunity = this->immunity = immunity;
         this->gotDeleted = 0;
 
+        nextHop = NEXT_HOP_NOT_PREDEF;
+
+    }
+
+    void Clip::setNextHop(int hopIdx) {
+        nextHop = hopIdx;
+    }
+
+    void Clip::setNextHop(KUKADU_SHARED_PTR<Clip> hopClip) {
+        setNextHop(getSubClipIdx(hopClip));
+    }
+
+    KUKADU_SHARED_PTR<Clip> Clip::getSubClipByLabel(std::string idx) {
+        for(auto cl : *subClips) {
+            if(cl->toString() == idx)
+                return cl;
+        }
+        return nullptr;
+    }
+
+    KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > Clip::getSubClips() {
+        return subClips;
+    }
+
+    int Clip::getSubClipIdx(KUKADU_SHARED_PTR<Clip> subClip) {
+        return (std::find(subClips->begin(), subClips->end(), subClip) - subClips->begin());
     }
 
     KUKADU_SHARED_PTR<std::vector<int> > Clip::getIdVectorFromString(std::string str) {
 
         KUKADU_SHARED_PTR<std::vector<int> > retVec = KUKADU_SHARED_PTR<std::vector<int> >(new std::vector<int>());
-        Tokenizer tok(str, "(),");
+        KukaduTokenizer tok(str, "(),");
 
         string t = "";
 
@@ -113,7 +144,13 @@ namespace kukadu {
 
     std::pair<int, KUKADU_SHARED_PTR<Clip> > Clip::jumpNextRandom() {
 
-        visitedSubNode = discDist(*generator);
+        if(nextHop == NEXT_HOP_NOT_PREDEF)
+            visitedSubNode = discDist(*generator);
+        else {
+            visitedSubNode = nextHop;
+            nextHop = NEXT_HOP_NOT_PREDEF;
+        }
+
         return pair<int, KUKADU_SHARED_PTR<Clip> >(visitedSubNode, subClips->at(visitedSubNode));
 
     }
@@ -142,7 +179,6 @@ namespace kukadu {
         std::vector<double> newH;
 
         for(int i = 0; i < childCount; ++i) {
-            children->at(i)->addParent(shared_from_this());
             newH.push_back(CLIP_H_STD_WEIGHT);
         }
 
@@ -155,6 +191,10 @@ namespace kukadu {
         subClips.reset();
         this->subClips = children;
         this->subH = weights;
+
+        for(auto child : *children)
+            child->addParent(shared_from_this());
+
         initRandomGenerator();
 
     }
@@ -222,7 +262,7 @@ namespace kukadu {
                     return false;
             return true;
         }
-        throw "(Clip==) clip dimensions do not match";
+        throw KukaduException("(Clip==) clip dimensions do not match");
 
     }
 
@@ -245,7 +285,7 @@ namespace kukadu {
                 else return o1.clipDimensionValues->at(i) < o2.clipDimensionValues->at(i);
         }
         return false;
-        throw "(Clip==) clip dimensions do not match";
+        throw KukaduException("(Clip==) clip dimensions do not match");
 
     }
 
@@ -266,7 +306,7 @@ namespace kukadu {
             }
             return true;
         }
-        throw "(Clip checkCompatible) clip dimensions do not match";
+        throw KukaduException("(Clip checkCompatible) clip dimensions do not match");
 
     }
 
@@ -344,6 +384,12 @@ namespace kukadu {
 
     int Clip::getInitialImmunity() {
         return initialImmunity;
+    }
+
+    KUKADU_SHARED_PTR<Clip> Clip::getLikeliestChild() {
+        auto maxIt = std::max_element(subH.begin(), subH.end());
+        int maxIdx = maxIt - subH.begin();
+        return subClips->at(maxIdx);
     }
 
     KUKADU_SHARED_PTR<Clip> Clip::compareClip(KUKADU_SHARED_PTR<Clip> c) {

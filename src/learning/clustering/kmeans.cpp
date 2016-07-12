@@ -1,4 +1,4 @@
-#include "kmeans.hpp"
+#include <kukadu/learning/clustering/kmeans.hpp>
 
 namespace kukadu {
 

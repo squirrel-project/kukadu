@@ -1,5 +1,4 @@
-#include "neverendingcolorreward.hpp"
-
+#include <kukadu/learning/projective_simulation/application/neverendingcolorreward.hpp>
 #include <sstream>
 
 using namespace std;
@@ -9,7 +8,7 @@ namespace kukadu {
     NeverendingColorReward::NeverendingColorReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, int numberOfActions, int numberOfCategories, bool collectPrevRewards) : Reward(generator, collectPrevRewards) {
 
         if(numberOfActions > 9)
-            throw "(NeverEndingColorReward) number of actions must be smaller than 10";
+            throw KukaduException("(NeverEndingColorReward) number of actions must be smaller than 10");
 
         currentT = 0;
         this->numberOfActions = numberOfActions;

@@ -1,4 +1,4 @@
-#include "reward.hpp"
+#include <kukadu/learning/projective_simulation/core/reward.hpp>
 
 using namespace std;
 

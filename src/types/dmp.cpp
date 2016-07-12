@@ -1,4 +1,4 @@
-#include "dmp.hpp"
+#include <kukadu/types/dmp.hpp>
 
 using namespace std;
 using namespace arma;
