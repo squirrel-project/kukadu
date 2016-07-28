@@ -63,6 +63,7 @@ namespace kukadu {
         robot_model::JointModelGroup* jnt_model_group;
         
         KUKADU_SHARED_PTR<SimplePlanner> simplePlanner;
+        KUKADU_SHARED_PTR<ControlQueue> queue;
 
         void construct(KUKADU_SHARED_PTR<ControlQueue> queue, ros::NodeHandle node, std::string moveGroupName, std::vector<std::string> jointNames, std::string tipLink, bool avoidCollisions, int maxAttempts, double timeOut);
 
@@ -80,7 +81,7 @@ namespace kukadu {
         virtual std::vector<arma::vec> planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians = false, bool useCurrentRobotState = true);
         virtual std::vector<arma::vec> planCartesianTrajectory(arma::vec startJoints, std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians = false, bool useCurrentRobotState = true);
 
-        virtual Eigen::MatrixXd getJacobian();
+        virtual Eigen::MatrixXd getJacobian(std::vector<double> jointState = std::vector<double>());
 
         bool isColliding(arma::vec jointState, geometry_msgs::Pose pose);
 
