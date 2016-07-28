@@ -27,7 +27,8 @@ namespace kukadu {
                                          int simulationFailingProbability,
                                          KUKADU_SHARED_PTR<Controller> nothingController,
                                          int maxEnvPathLength, double pathLengthCost, double stdEnvironmentReward,
-                                         double creativityAlpha1, double creativityAlpha2, double creativityBeta, double creativityCthresh, double nothingStateProbThresh)
+                                         double creativityAlpha1, double creativityAlpha2, double creativityBeta, double creativityCthresh,
+                                         double nothingStateProbThresh, double creativityMultiplier)
         : Controller(caption, simulationFailingProbability), Reward(generator, collectPrevRewards) {
 
         this->useCreativity = false;
@@ -36,6 +37,10 @@ namespace kukadu {
         this->creativityBeta = creativityBeta;
         this->creativityCthresh = creativityCthresh;
         this->nothingStateProbThresh = nothingStateProbThresh;
+        this->creativityMultiplier = creativityMultiplier;
+
+        cout << creativityAlpha1 << " " << creativityAlpha2 << " " << creativityBeta << " " << creativityCthresh << " " << nothingStateProbThresh << " " << creativityMultiplier << endl;
+        getchar();
 
         this->creativityGamma = (atanh(1.0 - 2 * creativityAlpha1) - atanh(1.0 - 2 * creativityAlpha2)) / (creativityCthresh * creativityBeta);
         this->creativityDelta = ((2 * creativityBeta - 1.0) * tanh(1.0 - 2 * creativityAlpha1) + atanh(1.0 - 2 * creativityAlpha2)) / creativityBeta;
@@ -735,7 +740,7 @@ namespace kukadu {
                                                 // first add it to skill ecm...
                                                 // if we are at the currently observed state --> connect it strongly
                                                 if(isCorrectSensingClip && currentStateClip == stateClip)
-                                                    currentStateClip->addSubClip(newConcatClip, stdPrepWeight * (1.0 + pathConfidence));
+                                                    currentStateClip->addSubClip(newConcatClip, stdPrepWeight * (1.0 + creativityMultiplier * pathConfidence));
                                                 else
                                                     currentStateClip->addSubClip(newConcatClip, stdPrepWeight);
 
@@ -759,9 +764,6 @@ namespace kukadu {
                                                 stringstream s2; s2 << "E" << idVec->at(0);
                                                 auto envChildEnhanceClip = currentEnvModel->findClipInLevelByLabel(s2.str(), 1);
                                                 newPercept->setSpecificWeight(envChildEnhanceClip, get<3>(path));
-
-                                                newPercept->printSubWeights();
-                                                getchar();
 
                                             }
                                         }

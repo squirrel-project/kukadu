@@ -20,6 +20,19 @@ namespace kukadu {
 
     }
 
+    Eigen::MatrixXd MoveItKinematics::getJacobian() {
+
+        Eigen::Vector3d reference_point_position;
+        Eigen::MatrixXd jacobian;
+        reference_point_position.conservativeResize(jointNames.size());
+        for(int i = 0; i < jointNames.size(); ++i)
+            reference_point_position.coeff(i) = 10;
+        moveit::core::RobotState state(robot_model_);
+        state.getJacobian(jnt_model_group, state.getLinkModel(jnt_model_group->getLinkModelNames().back()), reference_joint_position, jacobian);
+        return jacobian;
+
+    }
+
     void MoveItKinematics::construct(KUKADU_SHARED_PTR<ControlQueue> queue, ros::NodeHandle node, std::string moveGroupName, std::vector<std::string> jointNames, std::string tipLink, bool avoidCollisions, int maxAttempts, double timeOut) {
 
         this->moveGroupName = moveGroupName;

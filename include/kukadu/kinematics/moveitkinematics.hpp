@@ -80,6 +80,8 @@ namespace kukadu {
         virtual std::vector<arma::vec> planCartesianTrajectory(std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians = false, bool useCurrentRobotState = true);
         virtual std::vector<arma::vec> planCartesianTrajectory(arma::vec startJoints, std::vector<geometry_msgs::Pose> intermediatePoses, bool smoothCartesians = false, bool useCurrentRobotState = true);
 
+        virtual Eigen::MatrixXd getJacobian();
+
         bool isColliding(arma::vec jointState, geometry_msgs::Pose pose);
 
         KUKADU_SHARED_PTR<Constraint> getModelConstraint();

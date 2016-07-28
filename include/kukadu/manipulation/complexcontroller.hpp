@@ -67,6 +67,7 @@ namespace kukadu {
         double creativityAlpha2;
         double creativityBeta;
         double creativityCthresh;
+        double creativityMultiplier;
         double nothingStateProbThresh;
 
         double creativityGamma;
@@ -145,7 +146,8 @@ namespace kukadu {
                           int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards, int simulationFailingProbability,
                           KUKADU_SHARED_PTR<Controller> nothingController,
                           int maxEnvPathLength = 4, double pathLengthCost = 0.01, double stdEnvironmentReward = 10.0,
-                          double creativityAlpha1 = 0.1, double creativityAlpha2 = 0.9, double creativityBeta = 0.3, double creativityCthresh = 0.8, double nothingStateProbThresh = 0.8);
+                          double creativityAlpha1 = 0.1, double creativityAlpha2 = 0.9, double creativityBeta = 0.3, double creativityCthresh = 0.8,
+                          double nothingStateProbThresh = 0.8, double creativityMultiplier = 3.0);
         ~ComplexController();
 
         void store();
