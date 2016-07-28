@@ -65,6 +65,11 @@ namespace kukadu {
         std::vector<double> boredomLevels;
 
         KUKADU_SHARED_PTR<Clip> predefinedFirstHop;
+        KUKADU_SHARED_PTR<Clip> lastVisitedClip;
+
+        int lastVistedPreviousIdx;
+        bool lastBoredomResult;
+        bool walkedFurtherSinceLastBoredom;
 
         std::vector<std::pair<double, KUKADU_SHARED_PTR<Clip> > > rankVec;
 
@@ -90,7 +95,7 @@ namespace kukadu {
 
         int getIdVecLevel(KUKADU_SHARED_PTR<std::vector<int> > idVec);
 
-        bool computeBoredem(KUKADU_SHARED_PTR<Clip> clip);
+        bool computeBoredom(KUKADU_SHARED_PTR<Clip> clip);
 
         KUKADU_SHARED_PTR<Clip> findClipByIdVec(KUKADU_SHARED_PTR<std::vector<int> > idVec);
         KUKADU_SHARED_PTR<Clip> findClipInLevelByIdVec(KUKADU_SHARED_PTR<std::vector<int> > idVec, int level);
@@ -126,11 +131,13 @@ namespace kukadu {
 
         void setNextPredefinedPath(std::vector<KUKADU_SHARED_PTR<Clip> > hopPath);
 
+        bool nextHopIsBored();
+
         std::tuple<bool, double, std::vector<int> > performRewarding();
 
         KUKADU_SHARED_PTR<std::vector<int> > getIntermediateHopIdx();
 
-        std::pair<int, KUKADU_SHARED_PTR<Clip> > performRandomWalk();
+        std::pair<int, KUKADU_SHARED_PTR<Clip> > performRandomWalk(int untilLevel = PS_WALK_UNTIL_END, bool continueLastWalk = false);
 
         std::vector<KUKADU_SHARED_PTR<Clip> > retrieveClipsOnLayer(std::vector<int> queryId, int layer);
 
@@ -154,6 +161,8 @@ namespace kukadu {
         static constexpr auto PS_PRINT_RANKING_DEBUG_INFO = 1;
 
         static constexpr auto PS_MAX_NUMBER_OF_CLIPS = 1000;
+
+        static constexpr auto PS_WALK_UNTIL_END = -1;
 
     };
 

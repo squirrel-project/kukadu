@@ -9,6 +9,7 @@
 #include <wordexp.h>
 #include <memory>
 #include <armadillo>
+#include <map>
 
 #ifndef USEBOOST
 #include <tuple>
@@ -52,7 +53,8 @@ namespace kukadu {
 
         std::vector<int> walkedPath;
 
-        std::vector<std::pair<double, double> > meanAndVar;
+        std::map<std::string, std::vector<double> > entropies;
+        std::map<std::string, std::pair<double, double> > meanAndVar;
 
         KUKADU_SHARED_PTR<std::tuple<double, KUKADU_SHARED_PTR<kukadu::Clip>, std::vector<KUKADU_SHARED_PTR<kukadu::Clip> > > > environmentTransition;
 
@@ -62,11 +64,16 @@ namespace kukadu {
 
         bool wasBored();
 
+        void setWasBored(bool wasBored);
+
+        int getFinalStateClass();
         std::vector<int> getWalkedPath();
 
-        std::vector<std::pair<double, double> > getMeanAndVar();
+        std::map<std::string, std::vector<double> > getEntropies();
+        std::map<std::string, std::pair<double, double> > getMeanAndVar();
 
-        void setEntropyMeanAndVariance(std::vector<std::pair<double, double> > meanAndVar);
+        void setEntropyMeanAndVariance(std::map<std::string, std::pair<double, double> > meanAndVar);
+        void setEntropies(std::map<std::string, std::vector<double> > entropies);
 
     };
 

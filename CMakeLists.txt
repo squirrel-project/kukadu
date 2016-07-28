@@ -121,6 +121,8 @@ AUX_SOURCE_DIRECTORY(src/learning/projective_simulation/application KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/learning/projective_simulation/visualization KUKADUSRC)
 AUX_SOURCE_DIRECTORY(src/learning/projective_simulation/application/reward KUKADUSRC)
 
+AUX_SOURCE_DIRECTORY(src/statistics/ KUKADUSRC)
+
 add_subdirectory(external/komo)
 
 add_library(${PROJECT_NAME} ${KUKADUSRC})

@@ -11,7 +11,7 @@ namespace kukadu {
                                  std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > preparatoryControllers,
                                  std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > complexControllers,
                                  KUKADU_SHARED_PTR<kukadu::Controller> nothingController,
-                                 KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::vector<int> meanAndVarianceForSensingIds) : Reward(generator, false) {
+                                 KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::vector<KUKADU_SHARED_PTR<SensingController> > meanAndVarianceForSensingIds) : Reward(generator, false) {
 
         if(meanAndVarianceForSensingIds.size() > 0)
             this->computeMeanAndVariance = true;
@@ -136,8 +136,17 @@ namespace kukadu {
         auto result = KUKADU_DYNAMIC_POINTER_CAST<HapticControllerResult>(complSkill->performAction(true));
         if(computeMeanAndVariance) {
             auto meanAndVar = complSkill->computeEntropyMeanAndVariance(meanAndVarianceForSensingIds);
-            result->setEntropyMeanAndVariance(meanAndVar);
+            std::map<std::string, std::vector<double> > entropies;
+            std::map<std::string, std::pair<double, double> > meanAndVariances;
+            for(auto& entrop : meanAndVar) {
+                entropies[entrop.first] = get<2>(entrop.second);
+                meanAndVariances[entrop.first] = {get<0>(entrop.second), get<1>(entrop.second)};
+            }
+
+            result->setEntropyMeanAndVariance(meanAndVariances);
+            result->setEntropies(entropies);
         }
+
         if(updateModels)
             complSkill->updateFiles();
 

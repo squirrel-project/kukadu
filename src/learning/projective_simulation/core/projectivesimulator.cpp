@@ -14,6 +14,9 @@ namespace kukadu {
     void ProjectiveSimulator::loadPsConstructor(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file,
                        std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) > createClipFunc) {
 
+        walkedFurtherSinceLastBoredom = true;
+        lastRunWasBored = false;
+
         this->psFile = file;
         this->loadedFromFile = true;
         this->reward = reward;
@@ -204,12 +207,14 @@ namespace kukadu {
         this->loadedFromFile = true;
         loadPsConstructor(reward, generator, file, createClipFunc);
         lastRunWasBored = false;
+        walkedFurtherSinceLastBoredom = true;
 
     }
 
     ProjectiveSimulator::ProjectiveSimulator(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file) {
 
         this->loadedFromFile = true;
+        walkedFurtherSinceLastBoredom = true;
 
         loadPsConstructor(reward, generator, file, [] (const std::string& line, const int& level, const int& perceptDimensionality, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator) -> KUKADU_SHARED_PTR<Clip> {
 
@@ -574,58 +579,100 @@ namespace kukadu {
         return actionClips;
     }
 
-    std::pair<int, KUKADU_SHARED_PTR<Clip> > ProjectiveSimulator::performRandomWalk() {
+    bool ProjectiveSimulator::nextHopIsBored() {
 
-        lastRunWasBored = false;
-        lastClipBeforeAction.reset();
-        intermediateHops->clear();
+        // if nextHopIsBored was already called for the same hop before without walking in between
+        // then this function should deliver the same result
+        cout << "walkedFurtherSinceLastBoredom: " << walkedFurtherSinceLastBoredom << endl;
+        cout << "lastVisitedClip: " << lastVisitedClip << endl;
+        if(!walkedFurtherSinceLastBoredom)
+            return lastBoredomResult;
+
+        if(lastVisitedClip)
+            lastBoredomResult = computeBoredom(lastVisitedClip);
+
+        walkedFurtherSinceLastBoredom = false;
+        lastBoredomResult = false;
+
+        return lastBoredomResult;
+
+    }
+
+    std::pair<int, KUKADU_SHARED_PTR<Clip> > ProjectiveSimulator::performRandomWalk(int untilLevel, bool continueLastWalk) {
+
         KUKADU_SHARED_PTR<Clip> previousClip;
         KUKADU_SHARED_PTR<Clip> currentClip;
 
-        if(!predefinedFirstHop) {
-            if(operationMode == PS_USE_GEN) {
-                if(!lastGeneralizedPercept) {
-                    cerr << "(ProjectiveSimulator) you have to generalize before you walk" << endl;
-                    throw KukaduException("(ProjectiveSimulator) you have to generalize before you walk");
-                } else {
-                    currentClip = lastGeneralizedPercept;
+        int previousIdx = 0;
+
+        if(!continueLastWalk) {
+
+            walkedFurtherSinceLastBoredom = true;
+            lastRunWasBored = false;
+            lastClipBeforeAction.reset();
+            intermediateHops->clear();
+
+            if(!predefinedFirstHop) {
+                if(operationMode == PS_USE_GEN) {
+                    if(!lastGeneralizedPercept) {
+                        cerr << "(ProjectiveSimulator) you have to generalize before you walk" << endl;
+                        throw KukaduException("(ProjectiveSimulator) you have to generalize before you walk");
+                    } else {
+                        currentClip = lastGeneralizedPercept;
+                    }
+                } else if(operationMode == PS_USE_ORIGINAL) {
+                    currentClip = reward->generateNextPerceptClip(immunityThresh);
                 }
-            } else if(operationMode == PS_USE_ORIGINAL) {
-                currentClip = reward->generateNextPerceptClip(immunityThresh);
-            }
-        } else
-            currentClip = predefinedFirstHop;
+            } else
+                currentClip = predefinedFirstHop;
 
-        std::vector<KUKADU_SHARED_PTR<PerceptClip> >::iterator it = std::find(perceptClips->begin(), perceptClips->end() + 1, currentClip);
-        int previousIdx = it - perceptClips->begin();
-        lastPerceptClip = KUKADU_DYNAMIC_POINTER_CAST<PerceptClip>(currentClip);
+            std::vector<KUKADU_SHARED_PTR<PerceptClip> >::iterator it = std::find(perceptClips->begin(), perceptClips->end() + 1, currentClip);
+            lastVistedPreviousIdx = previousIdx = it - perceptClips->begin();
 
-        while(previousClip != currentClip) {
+            lastPerceptClip = KUKADU_DYNAMIC_POINTER_CAST<PerceptClip>(currentClip);
+
+        } else {
+
+            currentClip = lastVisitedClip;
+            previousIdx = lastVistedPreviousIdx;
+
+        }
+
+        lastVisitedClip = currentClip;
+
+        int currentLevel = 0;
+        auto isBored = nextHopIsBored();
+
+        while(previousClip != currentClip && currentLevel != untilLevel) {
 
             intermediateHops->push_back(previousIdx);
             pair<int, KUKADU_SHARED_PTR<Clip> > nextHop;
             lastClipBeforeAction = previousClip;
             previousClip = currentClip;
 
-            auto isBored = computeBoredem(currentClip);
-
             if(!isBored) {
+                walkedFurtherSinceLastBoredom = true;
                 nextHop = currentClip->jumpNextRandom();
-                previousIdx = nextHop.first;
+                lastVistedPreviousIdx = previousIdx = nextHop.first;
                 currentClip = nextHop.second;
             } else {
                 lastRunWasBored = true;
+
                 return pair<int, KUKADU_SHARED_PTR<Clip> > (currentClip->getLevel(), currentClip);
             }
+            isBored = nextHopIsBored();
+
+            ++currentLevel;
+            lastVisitedClip = currentClip;
 
         }
 
         lastActionClip = KUKADU_DYNAMIC_POINTER_CAST<ActionClip>(currentClip);
-        return pair<int, KUKADU_SHARED_PTR<Clip> > (currentClip->getLevel(), currentClip);
+        return {currentClip->getLevel(), currentClip};
 
     }
 
-    bool ProjectiveSimulator::computeBoredem(KUKADU_SHARED_PTR<Clip> clip) {
+    bool ProjectiveSimulator::computeBoredom(KUKADU_SHARED_PTR<Clip> clip) {
 
         bool beingBored = false;
         auto clipLevel = clip->getLevel();
@@ -633,7 +680,10 @@ namespace kukadu {
         if(clipLevel != Clip::CLIP_H_LEVEL_FINAL) {
 
             auto boredom = boredomLevels.at(clipLevel);
+            cout << "clipLevel: " << clipLevel << " " << boredomLevels.at(clipLevel) << endl;
             if(boredomLevels.at(clipLevel) > 0.0) {
+
+                return true;
 
                 double entropy = clip->computeSubEntropy();
                 double numberOfSubclips = clip->getSubClipCount();
