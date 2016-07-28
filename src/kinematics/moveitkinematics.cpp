@@ -213,7 +213,7 @@ namespace kukadu {
             ROS_DEBUG_STREAM(s.str());
             throw(KukaduException(s.str().c_str()));
         }
-
+cout << "working well until here" << endl;
 		return simplePlanner->planJointTrajectory(jointPath);
 
     }
