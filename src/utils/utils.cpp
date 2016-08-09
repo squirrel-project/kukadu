@@ -21,6 +21,10 @@ using namespace arma;
 
 namespace kukadu {
 
+    double sigmoid(double x) {
+        return (1.0 + tanh(x / 2.0)) / 2.0;
+    }
+
     void printPose(const geometry_msgs::Pose& p) {
         cout << p.position.x << " " << p.position.y << " " << p.position.z << " " << p.orientation.x << " " << p.orientation.y << " " << p.orientation.z << " " << p.orientation.w << endl;
     }

@@ -4,7 +4,7 @@ using namespace std;
 
 namespace kukadu {
 
-    std::string computeTotalLabel(std::vector<KUKADU_SHARED_PTR<kukadu::Controller> >& controllers) {
+    std::string ConcatController::generateLabelFromControllers(std::vector<KUKADU_SHARED_PTR<kukadu::Controller> >& controllers) {
 
         string retLabel = "";
         bool first = true;
@@ -28,8 +28,15 @@ namespace kukadu {
     }
 
     ConcatController::ConcatController(std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > controllers)
-        : Controller(computeTotalLabel(controllers), computeSimulationFailingProbability(controllers)) {
+        : Controller(generateLabelFromControllers(controllers), computeSimulationFailingProbability(controllers)) {
         this->controllers = controllers;
+    }
+
+    bool ConcatController::getSimulationMode() {
+        for(auto cont : controllers)
+            if(!cont->getSimulationMode())
+                return false;
+        return true;
     }
 
     bool ConcatController::requiresGrasp() {

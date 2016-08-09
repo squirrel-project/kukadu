@@ -29,32 +29,16 @@ namespace kukadu {
 
     protected:
 
-        virtual double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction) {
-            // all paths are rewarded, because only observed paths are performed
-            return reward;
-        }
+        virtual double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction);
 
     public:
 
-        EnvironmentReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, double stdReward) : Reward(generator, false) {
-            reward = stdReward;
-        }
+        EnvironmentReward(KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, double stdReward);
 
-        virtual int getDimensionality() {
-            return 2;
-        }
-
-        virtual KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity) {
-            return nullptr;
-        }
-
-        virtual KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips() {
-            return KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > >(new std::vector<KUKADU_SHARED_PTR<ActionClip> >());
-        }
-
-        virtual KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips() {
-            return KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > >(new std::vector<KUKADU_SHARED_PTR<PerceptClip> >());
-        }
+        virtual int getDimensionality();
+        virtual KUKADU_SHARED_PTR<PerceptClip> generateNextPerceptClip(int immunity);
+        virtual KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<ActionClip> > > generateActionClips();
+        virtual KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<PerceptClip> > > generatePerceptClips();
 
     };
 
@@ -64,6 +48,7 @@ namespace kukadu {
 
         bool cleanup;
         bool storeReward;
+        bool useCreativity;
         bool colPrevRewards;
 
         int stdPrepWeight;
@@ -78,7 +63,24 @@ namespace kukadu {
         double senseStretch;
         double pathLengthCost;
 
+        double creativityAlpha1;
+        double creativityAlpha2;
+        double creativityBeta;
+        double creativityCthresh;
+        double creativityMultiplier;
+        double nothingStateProbThresh;
+
+        double creativityGamma;
+        double creativityDelta;
+
+        KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator;
+
+        KUKADU_SHARED_PTR<Controller> nothingController;
         KUKADU_SHARED_PTR<EnvironmentReward> envReward;
+
+        // outer map is used to create a nothing clip map for each sensing action
+        // the inner one is used to search faster inside the nothing clips
+        std::map<std::string, std::map<std::string, KUKADU_SHARED_PTR<Clip> > > nothingStateClips;
 
         std::string psPath;
         std::string storePath;
@@ -112,10 +114,10 @@ namespace kukadu {
         double computeRewardInternal(KUKADU_SHARED_PTR<PerceptClip> providedPercept, KUKADU_SHARED_PTR<ActionClip> takenAction);
 
         KUKADU_SHARED_PTR<kukadu::ProjectiveSimulator> createEnvironmentModelForSensingAction(KUKADU_SHARED_PTR<kukadu::SensingController> sensingAction, KUKADU_SHARED_PTR<ProjectiveSimulator> projSim);
-        std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > > computeEnvironmentPaths(KUKADU_SHARED_PTR<Clip> sensingClip, KUKADU_SHARED_PTR<Clip> stateClip, int maxPathLength, double confidenceCut);
-        void computeTotalPathCost(KUKADU_SHARED_PTR<IntermediateEventClip> sensingClip, std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > >& paths);
+        std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> >, int> > computeEnvironmentPaths(KUKADU_SHARED_PTR<Clip> sensingClip, KUKADU_SHARED_PTR<Clip> stateClip, int maxPathLength, double confidenceCut);
+        void computeTotalPathCost(KUKADU_SHARED_PTR<IntermediateEventClip> sensingClip, std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> >, int> >& paths);
 
-        std::pair<double, int> computeEnvironmentTransitionConfidence(KUKADU_SHARED_PTR<Clip> stateClip);
+        std::tuple<double, int, int> computeEnvironmentTransitionConfidence(KUKADU_SHARED_PTR<Clip> stateClip);
 
         void printPaths(std::vector<std::tuple<double, KUKADU_SHARED_PTR<Clip>, std::vector<KUKADU_SHARED_PTR<Clip> > > >& paths);
 
@@ -123,6 +125,8 @@ namespace kukadu {
 
         std::vector<KUKADU_SHARED_PTR<Clip> > getAllStateClips();
         std::vector<KUKADU_SHARED_PTR<Clip> > getStateClipsForSensingId(KUKADU_SHARED_PTR<SensingController> sensingId);
+
+        bool hasDuplicateStatesInPath(std::vector<KUKADU_SHARED_PTR<Clip> >& path);
 
     protected:
 
@@ -140,7 +144,10 @@ namespace kukadu {
         ComplexController(std::string caption, std::string storePath,
                           bool storeReward, double senseStretch, double boredom, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator,
                           int stdReward, double punishReward, double gamma, int stdPrepWeight, bool collectPrevRewards, int simulationFailingProbability,
-                          int maxEnvPathLength = 4, double pathLengthCost = 0.01, double stdEnvironmentReward = 10.0);
+                          KUKADU_SHARED_PTR<Controller> nothingController,
+                          int maxEnvPathLength = 4, double pathLengthCost = 0.01, double stdEnvironmentReward = 10.0,
+                          double creativityAlpha1 = 0.1, double creativityAlpha2 = 0.9, double creativityBeta = 0.3, double creativityCthresh = 0.8,
+                          double nothingStateProbThresh = 0.8, double creativityMultiplier = 3.0);
         ~ComplexController();
 
         void store();
@@ -157,6 +164,7 @@ namespace kukadu {
         std::map<std::string, std::tuple<double, double, std::vector<double> > > computeEntropyMeanAndVariance(std::vector<KUKADU_SHARED_PTR<SensingController> > sensingIds);
 
         bool isTrained();
+        bool setUseCreativity(bool useCreativity);
 
         void setSensingControllers(std::vector<KUKADU_SHARED_PTR<kukadu::SensingController> > sensingControllers);
         void setPreparatoryControllers(std::vector<KUKADU_SHARED_PTR<kukadu::Controller> > preparatoryControllers);

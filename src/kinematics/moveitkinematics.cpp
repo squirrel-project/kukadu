@@ -20,8 +20,23 @@ namespace kukadu {
 
     }
 
+    Eigen::MatrixXd MoveItKinematics::getJacobian(std::vector<double> jointState) {
+
+        if(jointState.size() == 0)
+            jointState = armadilloToStdVec(queue->getCurrentJoints().joints);
+
+        Eigen::Vector3d reference_point_position(0.0, 0.0, 0.0);
+        Eigen::MatrixXd jacobian;
+        moveit::core::RobotState state(robot_model_);
+        state.setJointGroupPositions(jnt_model_group, jointState);
+        state.getJacobian(jnt_model_group, state.getLinkModel(jnt_model_group->getLinkModelNames().back()), reference_point_position, jacobian);
+        return jacobian;
+
+    }
+
     void MoveItKinematics::construct(KUKADU_SHARED_PTR<ControlQueue> queue, ros::NodeHandle node, std::string moveGroupName, std::vector<std::string> jointNames, std::string tipLink, bool avoidCollisions, int maxAttempts, double timeOut) {
 
+        this->queue = queue;
         this->moveGroupName = moveGroupName;
         this->tipLink = tipLink;
         this->avoidCollisions = avoidCollisions;
@@ -213,7 +228,7 @@ namespace kukadu {
             ROS_DEBUG_STREAM(s.str());
             throw(KukaduException(s.str().c_str()));
         }
-
+cout << "working well until here" << endl;
 		return simplePlanner->planJointTrajectory(jointPath);
 
     }

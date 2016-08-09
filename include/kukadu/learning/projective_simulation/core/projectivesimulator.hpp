@@ -54,6 +54,8 @@ namespace kukadu {
         bool lastRunWasBored;
 
         int levels;
+        int maxActionId;
+        int maxPerceptId;
         int operationMode;
         int immunityThresh;
         int maxNumberOfClips;
@@ -67,7 +69,8 @@ namespace kukadu {
         KUKADU_SHARED_PTR<Clip> predefinedFirstHop;
         KUKADU_SHARED_PTR<Clip> lastVisitedClip;
 
-        int lastVistedPreviousIdx;
+        int lastVisitedPreviousIdx;
+        int lastVisitedLevel;
         bool lastBoredomResult;
         bool walkedFurtherSinceLastBoredom;
 
@@ -97,9 +100,6 @@ namespace kukadu {
 
         bool computeBoredom(KUKADU_SHARED_PTR<Clip> clip);
 
-        KUKADU_SHARED_PTR<Clip> findClipByIdVec(KUKADU_SHARED_PTR<std::vector<int> > idVec);
-        KUKADU_SHARED_PTR<Clip> findClipInLevelByIdVec(KUKADU_SHARED_PTR<std::vector<int> > idVec, int level);
-
         void loadPsConstructor(KUKADU_SHARED_PTR<Reward> reward, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, std::string file,
                                std::function<KUKADU_SHARED_PTR<Clip> (const std::string&, const int&, const int&, KUKADU_SHARED_PTR<kukadu_mersenne_twister>) > createClipFunc);
 
@@ -124,14 +124,25 @@ namespace kukadu {
         void generalize(KUKADU_SHARED_PTR<PerceptClip> nextClip);
         void fillClipLayersFromNetwork(KUKADU_SHARED_PTR<Clip> cl);
 
+        KUKADU_SHARED_PTR<Clip> findClipByIdVec(KUKADU_SHARED_PTR<std::vector<int> > idVec);
+        KUKADU_SHARED_PTR<Clip> findClipInLevelByIdVec(KUKADU_SHARED_PTR<std::vector<int> > idVec, int level);
+        KUKADU_SHARED_PTR<Clip> findClipInLevelByLabel(std::string label, int level);
+
         bool compareIdVectors(std::vector<int>& idVec1, std::vector<int>& idVec2);
 
         int getClipCount();
         int getStandardImmunity();
+        int generateNewActionId();
+        int generateNewPerceptId();
 
+        void addActionClip(KUKADU_SHARED_PTR<ActionClip> newAction);
+        void addPerceptClip(KUKADU_SHARED_PTR<PerceptClip> newPercept);
         void setNextPredefinedPath(std::vector<KUKADU_SHARED_PTR<Clip> > hopPath);
 
         bool nextHopIsBored();
+        bool lastHopWasBored();
+
+        KUKADU_SHARED_PTR<Clip> getLastVisitedClip();
 
         std::tuple<bool, double, std::vector<int> > performRewarding();
 

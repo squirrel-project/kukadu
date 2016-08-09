@@ -6,16 +6,10 @@ using namespace ros;
 using namespace arma;
 
 namespace kukadu {
-
-    SimplePlanner::SimplePlanner(KUKADU_SHARED_PTR<ControlQueue> queue, KUKADU_SHARED_PTR<Kinematics> kin) {
-
-        this->queue = queue;
-        this->kin = kin;
-
-        cycleTime = queue->getCycleTime();
-        degOfFreedom = queue->getMovementDegreesOfFreedom();
-
-        refApi = new ReflexxesAPI(queue->getMovementDegreesOfFreedom(), 1.0 / cycleTime);
+	
+	void SimplePlanner::initialize(double cycleTime, int degOfFreedom) {
+		
+		refApi = new ReflexxesAPI(queue->getMovementDegreesOfFreedom(), 1.0 / cycleTime);
         refInputParams = new RMLPositionInputParameters(queue->getMovementDegreesOfFreedom());
         refOutputParams = new RMLPositionOutputParameters(queue->getMovementDegreesOfFreedom());
 
@@ -26,6 +20,21 @@ namespace kukadu {
             refInputParams->MaxVelocityVector->VecData[i] = 0.002 * cycleTime;
             refInputParams->SelectionVector->VecData[i] = true;
         }
+		
+	}
+
+    SimplePlanner::SimplePlanner(KUKADU_SHARED_PTR<ControlQueue> queue, KUKADU_SHARED_PTR<Kinematics> kin) {
+
+        this->queue = queue;
+        this->kin = kin;
+
+        cycleTime = queue->getCycleTime();
+        degOfFreedom = queue->getMovementDegreesOfFreedom();
+        
+        refApi = NULL;
+        refInputParams = NULL;
+		refOutputParams = NULL;
+        initialize(cycleTime, degOfFreedom);
 
     }
 
@@ -38,6 +47,13 @@ namespace kukadu {
         vector<vec> returnedTrajectory;
 
         int intermedJointsSize = intermediateJoints.size();
+        int newDegOfFreedom = intermediateJoints.front().n_elem;
+        int degOfFreedom = this->degOfFreedom;
+        
+        if(newDegOfFreedom != degOfFreedom) {
+			initialize(cycleTime, newDegOfFreedom);
+			degOfFreedom = newDegOfFreedom;
+		}
 
         if(intermedJointsSize >= 1) {
 
@@ -83,6 +99,9 @@ namespace kukadu {
             }
 
         }
+        
+        if(newDegOfFreedom != degOfFreedom)
+			initialize(cycleTime, degOfFreedom);
 
         return returnedTrajectory;
 

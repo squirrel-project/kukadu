@@ -19,8 +19,11 @@ public:
 
     virtual bool requiresGrasp();
     virtual bool producesGrasp();
+    virtual bool getSimulationMode();
 
     virtual KUKADU_SHARED_PTR<ControllerResult> performAction();
+
+    static std::string generateLabelFromControllers(std::vector<KUKADU_SHARED_PTR<kukadu::Controller> >& controllers);
 
 };
 

@@ -42,7 +42,9 @@ namespace kukadu {
 
         virtual void initialize();
 
-        bool getSimulationMode();
+        // returns true, if the controller should be simulated
+        // returns false otherwise
+        virtual bool getSimulationMode();
 
         double getSimFailingProb();
 

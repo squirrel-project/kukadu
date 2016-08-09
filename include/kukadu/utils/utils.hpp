@@ -51,6 +51,8 @@
 
 namespace kukadu {
 
+    double sigmoid(double x);
+
     void printPose(const geometry_msgs::Pose &p);
     int createDirectory(std::string path);
     void deleteFile(std::string path);

@@ -40,6 +40,8 @@ namespace kukadu {
 
         bool checkRestrictions(const std::vector<arma::vec>& plan);
         bool checkPlanSmoothness(const std::vector<arma::vec>& plan);
+        
+        void initialize(double cycleTime, int degOfFreedom);
 
 #ifdef CPP11SUPPORTED
         static constexpr int MAX_NUM_ATTEMPTS = 10;

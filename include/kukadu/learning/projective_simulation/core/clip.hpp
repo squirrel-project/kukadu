@@ -53,6 +53,8 @@ namespace kukadu {
         Clip(int level, KUKADU_SHARED_PTR<kukadu_mersenne_twister> generator, KUKADU_SHARED_PTR<std::vector<int> > clipValues, int immunity);
         ~Clip();
 
+        void clearClip();
+
         // must set the visitedSubnode member if overwritten --> otherwise it will not update its weights
         // todo: remove that requirement that subclasses have to set that by themselves
         virtual std::pair<int, KUKADU_SHARED_PTR<Clip> > jumpNextRandom();
@@ -79,10 +81,13 @@ namespace kukadu {
         void setChildren(KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > children);
         void setChildren(KUKADU_SHARED_PTR<std::vector<KUKADU_SHARED_PTR<Clip> > > children, std::vector<double> weights);
 
+        void setSpecificWeight(KUKADU_SHARED_PTR<Clip> child, double weight);
+
         bool isImmune();
 
         virtual bool isCompatibleSubclip(KUKADU_SHARED_PTR<Clip> c);
 
+        int getMaxH();
         int getLevel();
         int getPreviousRank();
         int getSubClipCount();
@@ -99,6 +104,8 @@ namespace kukadu {
 
         std::string getIdVecString() const;
 
+        std::tuple<double, int, KUKADU_SHARED_PTR<Clip> > getMaxProbability();
+
         virtual std::string toString() const;
 
         void setNextHop(int hopIdx);
@@ -112,6 +119,7 @@ namespace kukadu {
         KUKADU_SHARED_PTR<std::vector<int> > getClipDimensions() const;
         KUKADU_SHARED_PTR<Clip> compareClip(KUKADU_SHARED_PTR<Clip> c);
         KUKADU_SHARED_PTR<std::set<KUKADU_SHARED_PTR<Clip> > > getParents();
+        std::pair<int, KUKADU_SHARED_PTR<Clip> > getLikeliestChildWithWeight();
 
         friend bool operator< (const Clip &o1, const Clip &o2);
         friend bool operator== (const Clip &o1, const Clip &o2);
