@@ -84,7 +84,7 @@ namespace kukadu {
         planning_attempts_ = 5;
         max_traj_pts_ = 50;
         goal_joint_tolerance_ = 1e-4;
-        goal_position_tolerance_ = 1e-4; // 0.1 mm
+        goal_position_tolerance_ = 1e-3; // 0.1 mm
         goal_orientation_tolerance_ = 1e-3; // ~0.1 deg
         planner_id_ = "RRTstarkConfigDefault";
 
@@ -190,8 +190,8 @@ namespace kukadu {
             moveit_msgs::JointConstraint& jc = c.joint_constraints.at(j);
             jc.joint_name = joint_names.at(j);
             jc.position = jointPos.at(j);
-            jc.tolerance_above = 1e-4;
-            jc.tolerance_below = 1e-4;
+            jc.tolerance_above = 1e-3;
+            jc.tolerance_below = 1e-3;
             jc.weight = 1.0;
         }
         request.goal_constraints.push_back(c);
@@ -228,7 +228,7 @@ namespace kukadu {
             ROS_DEBUG_STREAM(s.str());
             throw(KukaduException(s.str().c_str()));
         }
-cout << "working well until here" << endl;
+
 		return simplePlanner->planJointTrajectory(jointPath);
 
     }
@@ -279,8 +279,8 @@ cout << "working well until here" << endl;
                     moveit_msgs::JointConstraint jc;
                     jc.joint_name = joint_names.at(j);
                     jc.position = ikSol(j);
-                    jc.tolerance_above = 1e-4;
-                    jc.tolerance_below = 1e-4;
+                    jc.tolerance_above = 1e-3;
+                    jc.tolerance_below = 1e-3;
                     jc.weight = 1.0;
                     c.joint_constraints.push_back(jc);
                 }
