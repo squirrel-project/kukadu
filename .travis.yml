@@ -22,7 +22,7 @@ script:
   - cd $CATKIN_WS/src/kukadu
   - git submodule update --init
   - cd $CATKIN_WS
-  - git clone git@github.com:shangl/uibk_moveit_tools.git ~/catkin_ws/src/uibk_moveit_tools
+  - git clone https://github.com/squirrel-project/uibk_moveit_tools.git ~/catkin_ws/src/uibk_moveit_tools
   - catkin init
   - rosdep install --from-paths src/ -i -y --rosdistro $CI_ROS_DISTRO
   - catkin build --limit-status-rate 0.1 --no-notify -DCMAKE_BUILD_TYPE=Release
