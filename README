@@ -1,4 +1,4 @@
-install dependencies
+Install dependencies
 
 sudo apt-get install libgsl0-dev gnuplot gnuplot-x11 libarmadillo-dev \
 libboost-all-dev libncurses5-dev libarmadillo-dev liballegro5-dev \
