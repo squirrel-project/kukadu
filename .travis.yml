@@ -15,7 +15,7 @@ install:
   - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
   - sudo apt-get update -qq
   - sudo apt-get install qt5-default
-  - sudo apt-get install -qq -y python-rosdep python-catkin-tools python-wstool
+  - sudo apt-get install -qq -y python-rosdep python-catkin-tools python-wstool cmake
   - sudo apt-get install -qq -y ros-${CI_ROS_DISTRO}-ros > /dev/null 2>&1
   - sudo rosdep init
   - rosdep update
