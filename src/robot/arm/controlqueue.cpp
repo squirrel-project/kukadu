@@ -169,10 +169,15 @@ namespace kukadu {
     }
 
     void ControlQueue::synchronizeToQueue(int maxNumJointsInQueue) {
+        ros::Rate r(1.0 / sleepTime);
         if(currentControlType == CONTROLQUEUE_JNT_IMP_MODE || currentControlType == CONTROLQUEUE_JNT_POS_MODE) {
-            while(movementQueue.size() > maxNumJointsInQueue);
+            while(movementQueue.size() > maxNumJointsInQueue) {
+                r.sleep();
+            }
         } else if(currentControlType == CONTROLQUEUE_CART_IMP_MODE) {
-            while(cartesianMovementQueue.size() > maxNumJointsInQueue);
+            while(cartesianMovementQueue.size() > maxNumJointsInQueue) {
+                r.sleep();
+            }
         }
     }
 
@@ -331,6 +336,7 @@ namespace kukadu {
     }
 
     std::vector<mes_result> ControlQueue::jointPtp(arma::vec joints) {
+
         jointPtpRunning = true;
 
         if(!continueCollecting) {

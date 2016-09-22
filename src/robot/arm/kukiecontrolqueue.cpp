@@ -454,7 +454,6 @@ namespace kukadu {
         }
 
         auto currentPose = getCurrentCartesianPose();
-        printPose(currentPose);
         vector<geometry_msgs::Pose> desiredPlan;
         desiredPlan.push_back(currentPose);
         desiredPlan.push_back(pos);
@@ -508,7 +507,6 @@ namespace kukadu {
                 break;
             }
 
-
         vector<vec> desiredJointPlan;
         if(performPtp) {
 
@@ -526,7 +524,6 @@ namespace kukadu {
 
                 for(int i = 0; i < desiredJointPlan.size(); ++i)
                     move(desiredJointPlan.at(i));
-
                 synchronizeToQueue(1);
 
             } else {
