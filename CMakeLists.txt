@@ -22,9 +22,9 @@ else()
     add_definitions(-DVISUALIZATION=0)
 endif()
 
-find_package(cmake_modules REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
+    cmake_modules
     actionlib_msgs
     control_msgs
     eigen_conversions
