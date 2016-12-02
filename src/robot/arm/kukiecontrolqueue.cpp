@@ -459,8 +459,16 @@ namespace kukadu {
         desiredPlan.push_back(pos);
 
         planAndKinMutex.lock();
+	vector<vec> desiredJointPlan;
 
-            vector<vec> desiredJointPlan = planner->planCartesianTrajectory(getCurrentJoints().joints, desiredPlan, false, true);
+	try {
+            desiredJointPlan = planner->planCartesianTrajectory(getCurrentJoints().joints, desiredPlan, false, true);
+	} catch (...) {
+	  planAndKinMutex.unlock();	  
+	  stringstream s;
+	  s << "cartPtpInternal() failed to plan" << endl;
+	  throw KukaduException(s.str().c_str());
+	} 
 
         planAndKinMutex.unlock();
 

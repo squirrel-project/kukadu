@@ -265,7 +265,7 @@ namespace kukadu {
         request.start_state.joint_state = start_state;
         request.goal_constraints.clear();
 
-        ROS_DEBUG("Computing possible IK solutions for goal pose");
+        ROS_INFO("Computing possible IK solutions for goal pose");
 
         vector<string> joint_names = jointNames;
 
@@ -292,8 +292,10 @@ namespace kukadu {
 
         }
 
-        if(request.goal_constraints.size() == 0)
+        if(request.goal_constraints.size() == 0){
+	  ROS_INFO("No plan found - throwing exception!");
             throw KukaduException("no ik solutions found");
+	}
 
         moveit_msgs::GetMotionPlanResponse get_mp_response;
 
@@ -311,7 +313,7 @@ namespace kukadu {
 
             if(error_code != moveit_msgs::MoveItErrorCodes::SUCCESS) {
                 stringstream s;
-                s << "Planning failed with status code '" << solution.error_code.val << "'";
+                s << "Planning failed with moveit status code '" << solution.error_code.val << "'";
                 ROS_DEBUG_STREAM(s.str());
                 throw(KukaduException(s.str().c_str()));
             }
@@ -325,6 +327,7 @@ namespace kukadu {
             stringstream s;
             s << "Planning failed with status code '" << solution.error_code.val << "'";
             ROS_DEBUG_STREAM(s.str());
+   	    ROS_INFO("No plan found - throwing exception (latter)!");
             throw(KukaduException(s.str().c_str()));
         }
 

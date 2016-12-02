@@ -359,26 +359,26 @@ namespace kukadu {
     }
 
     std::vector<mes_result> ControlQueue::cartesianPtp(geometry_msgs::Pose pos, double maxForce) {
-
-        cartesianPtpRunning = true;
-
-        if(!continueCollecting) {
-
-            continueCollecting = true;
-            jointsColletorThr = KUKADU_SHARED_PTR<kukadu_thread>(new kukadu_thread(&ControlQueue::jointsCollector, this));
-            cartPtpInternal(pos, maxForce);
-            continueCollecting = false;
-            jointsColletorThr->join();
-
-        } else {
-
-            throw KukaduException("(ControlQueue) only one ptp at a time can be executed");
-
-        }
-
-        cartesianPtpRunning = false;
-        return collectedJoints;
-
+      cartesianPtpRunning = true;
+      
+      if(!continueCollecting) {
+	continueCollecting = true;
+	jointsColletorThr = KUKADU_SHARED_PTR<kukadu_thread>(new kukadu_thread(&ControlQueue::jointsCollector, this));
+	try {
+	  cartPtpInternal(pos, maxForce);
+	} catch (KukaduException &ex) {
+	  continueCollecting = false;
+	  cartesianPtpRunning = false;
+	  jointsColletorThr->join();
+	  throw(ex);
+	}
+	continueCollecting = false;
+	jointsColletorThr->join();
+      } else {	  
+	throw KukaduException("(ControlQueue) only one ptp at a time can be executed");
+      }
+      cartesianPtpRunning = false;
+      return collectedJoints;      
     }
 
     std::vector<mes_result> ControlQueue::cartesianPtp(geometry_msgs::Pose pos) {
