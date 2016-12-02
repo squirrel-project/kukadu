@@ -8,13 +8,15 @@ using namespace arma;
 
 namespace kukadu {
 
-    MoveItKinematics::MoveItKinematics(KUKADU_SHARED_PTR<ControlQueue> queue, NodeHandle node, std::string moveGroupName, std::vector<std::string> jointNames, std::string tipLink) {
+    MoveItKinematics::MoveItKinematics(KUKADU_SHARED_PTR<ControlQueue> queue, NodeHandle node, std::string moveGroupName, std::vector<std::string> jointNames, std::string tipLink)
+        : Kinematics(jointNames) {
 
         construct(queue, node, moveGroupName, jointNames, tipLink, STD_AVOID_COLLISIONS, STD_MAX_ATTEMPTS, STD_TIMEOUT);
 
     }
 
-    MoveItKinematics::MoveItKinematics(KUKADU_SHARED_PTR<ControlQueue> queue, ros::NodeHandle node, std::string moveGroupName, std::vector<std::string> jointNames, std::string tipLink, bool avoidCollisions, int maxAttempts, double timeOut) {
+    MoveItKinematics::MoveItKinematics(KUKADU_SHARED_PTR<ControlQueue> queue, ros::NodeHandle node, std::string moveGroupName, std::vector<std::string> jointNames, std::string tipLink, bool avoidCollisions, int maxAttempts, double timeOut)
+        : Kinematics(jointNames) {
 
         construct(queue, node, moveGroupName, jointNames, tipLink, avoidCollisions, maxAttempts, timeOut);
 
@@ -84,7 +86,7 @@ namespace kukadu {
         planning_attempts_ = 5;
         max_traj_pts_ = 50;
         goal_joint_tolerance_ = 1e-4;
-        goal_position_tolerance_ = 1e-4; // 0.1 mm
+        goal_position_tolerance_ = 1e-3; // 0.1 mm
         goal_orientation_tolerance_ = 1e-3; // ~0.1 deg
         planner_id_ = "RRTstarkConfigDefault";
 
@@ -190,8 +192,8 @@ namespace kukadu {
             moveit_msgs::JointConstraint& jc = c.joint_constraints.at(j);
             jc.joint_name = joint_names.at(j);
             jc.position = jointPos.at(j);
-            jc.tolerance_above = 1e-4;
-            jc.tolerance_below = 1e-4;
+            jc.tolerance_above = 1e-3;
+            jc.tolerance_below = 1e-3;
             jc.weight = 1.0;
         }
         request.goal_constraints.push_back(c);
@@ -228,7 +230,7 @@ namespace kukadu {
             ROS_DEBUG_STREAM(s.str());
             throw(KukaduException(s.str().c_str()));
         }
-cout << "working well until here" << endl;
+
 		return simplePlanner->planJointTrajectory(jointPath);
 
     }
@@ -263,7 +265,7 @@ cout << "working well until here" << endl;
         request.start_state.joint_state = start_state;
         request.goal_constraints.clear();
 
-        ROS_DEBUG("Computing possible IK solutions for goal pose");
+        ROS_INFO("Computing possible IK solutions for goal pose");
 
         vector<string> joint_names = jointNames;
 
@@ -279,8 +281,8 @@ cout << "working well until here" << endl;
                     moveit_msgs::JointConstraint jc;
                     jc.joint_name = joint_names.at(j);
                     jc.position = ikSol(j);
-                    jc.tolerance_above = 1e-4;
-                    jc.tolerance_below = 1e-4;
+                    jc.tolerance_above = 1e-3;
+                    jc.tolerance_below = 1e-3;
                     jc.weight = 1.0;
                     c.joint_constraints.push_back(jc);
                 }
@@ -290,8 +292,10 @@ cout << "working well until here" << endl;
 
         }
 
-        if(request.goal_constraints.size() == 0)
+        if(request.goal_constraints.size() == 0){
+	  ROS_INFO("No plan found - throwing exception!");
             throw KukaduException("no ik solutions found");
+	}
 
         moveit_msgs::GetMotionPlanResponse get_mp_response;
 
@@ -309,7 +313,7 @@ cout << "working well until here" << endl;
 
             if(error_code != moveit_msgs::MoveItErrorCodes::SUCCESS) {
                 stringstream s;
-                s << "Planning failed with status code '" << solution.error_code.val << "'";
+                s << "Planning failed with moveit status code '" << solution.error_code.val << "'";
                 ROS_DEBUG_STREAM(s.str());
                 throw(KukaduException(s.str().c_str()));
             }
@@ -323,6 +327,7 @@ cout << "working well until here" << endl;
             stringstream s;
             s << "Planning failed with status code '" << solution.error_code.val << "'";
             ROS_DEBUG_STREAM(s.str());
+   	    ROS_INFO("No plan found - throwing exception (latter)!");
             throw(KukaduException(s.str().c_str()));
         }
 
