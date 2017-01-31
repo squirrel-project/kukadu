@@ -8,21 +8,28 @@ using namespace arma;
 namespace kukadu {
 
     KUKADU_SHARED_PTR<kukadu_thread> ControlQueue::startQueue() {
+
         setInitValues();
         thr = KUKADU_SHARED_PTR<kukadu_thread>(new kukadu_thread(&ControlQueue::run, this));
+
+        if(!frcTrqFilterRunning) {
+            frcTrqFilterRunning = true;
+            currentFrcTrqSensorFilter = make_shared<StandardFilter>();
+            frcTrqFilterUpdateThr = make_shared<kukadu_thread>(&ControlQueue::frcTrqFilterUpdateHandler, this);
+        }
 
         while(!this->isInitialized());
         startQueueHook();
         return thr;
+
     }
 
     ControlQueue::ControlQueue(int degOfFreedom, double desiredCycleTime) {
 
         jointPtpRunning = false;
         cartesianPtpRunning = false;
-        currentFrcTrqSensorFilter=KUKADU_SHARED_PTR<FrcTrqSensorFilter>(new StandardFilter());
-        frcTrqFilterRunning=true;
-        frcTrqFilterUpdateThr = KUKADU_SHARED_PTR<kukadu_thread>(new kukadu_thread(&ControlQueue::frcTrqFilterUpdateHandler, this));
+        frcTrqFilterRunning = false;
+        currentFrcTrqSensorFilter = nullptr;
         currentTime = 0.0;
         this->degOfFreedom = degOfFreedom;
         this->desiredCycleTime = desiredCycleTime;
@@ -137,6 +144,7 @@ namespace kukadu {
 
     void ControlQueue::stopQueue() {
         finish = 1;
+        frcTrqFilterRunning = false;
         startingJoints = arma::vec(1);
     }
 
