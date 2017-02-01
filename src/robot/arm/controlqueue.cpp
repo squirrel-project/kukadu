@@ -325,7 +325,7 @@ namespace kukadu {
         }
 
         if(!isShutUp())
-            cout << "thread finished" << endl;
+            cout << "(Kukadu: control queue) thread finished" << endl;
 
     }
 
