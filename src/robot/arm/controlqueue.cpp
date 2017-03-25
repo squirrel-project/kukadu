@@ -102,6 +102,10 @@ namespace kukadu {
         synchronizeToQueue(1);
     }
 
+    bool ControlQueue::is_empty() {
+        return cartesianMovementQueue.size() == 0;
+    }
+
     void ControlQueue::move(geometry_msgs::Pose pose) {
         cartesianMovementQueue.push(pose);
     }

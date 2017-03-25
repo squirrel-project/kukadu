@@ -109,7 +109,7 @@ namespace kukadu {
     protected:
 
         int currentControlType;
-        
+
         /**
          * @brief Can be used to set the number of degrees of freedom.
          */
@@ -227,6 +227,12 @@ namespace kukadu {
          * \param joints joints to add
          */
         virtual void move(arma::vec joints);
+
+        /**
+         * Fixing fucked up code.
+         *
+         */
+        virtual bool is_empty();
 
         /**
          * \brief Adds next cartesian position to the end of the queue (can be used for trajectory following)
