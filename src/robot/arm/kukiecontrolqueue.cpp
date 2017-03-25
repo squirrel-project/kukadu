@@ -105,7 +105,7 @@ namespace kukadu {
 
         while(!firstJointsReceived || !firstModeReceived)
             r.sleep();
-            
+
         setDegOfFreedom(getCurrentJoints().joints.n_elem);
 
         loop_rate = make_shared<ros::Rate>(1.0 / sleepTime);
@@ -126,7 +126,7 @@ namespace kukadu {
     KUKADU_SHARED_PTR<Kinematics> KukieControlQueue::getKinematics() {
         return kin;
     }
-    
+
 	void KukieControlQueue::setKinematics(KUKADU_SHARED_PTR<Kinematics> kin) {
 
         planAndKinMutex.lock();
@@ -137,7 +137,7 @@ namespace kukadu {
         planAndKinMutex.unlock();
 
 	}
-		
+
 	void KukieControlQueue::setPathPlanner(KUKADU_SHARED_PTR<PathPlanner> planner) {
 
         planAndKinMutex.lock();
@@ -459,16 +459,16 @@ namespace kukadu {
         desiredPlan.push_back(pos);
 
         planAndKinMutex.lock();
-	vector<vec> desiredJointPlan;
+    	vector<vec> desiredJointPlan;
 
-	try {
+	    try {
             desiredJointPlan = planner->planCartesianTrajectory(getCurrentJoints().joints, desiredPlan, false, true);
-	} catch (...) {
-	  planAndKinMutex.unlock();	  
-	  stringstream s;
-	  s << "cartPtpInternal() failed to plan" << endl;
-	  throw KukaduException(s.str().c_str());
-	} 
+	    } catch (...) {
+	        planAndKinMutex.unlock();
+	        stringstream s;
+	        s << "cartPtpInternal() failed to plan" << endl;
+	        throw KukaduException(s.str().c_str());
+	    }
 
         planAndKinMutex.unlock();
 
@@ -522,7 +522,14 @@ namespace kukadu {
             desiredPlan.push_back(getCurrentJoints().joints);
             desiredPlan.push_back(joints);
             planAndKinMutex.lock();
+            try{
             desiredJointPlan = planner->planJointTrajectory(desiredPlan);
+            } catch (...) {
+          planAndKinMutex.unlock();
+          stringstream s;
+          s << "jointPtpInternal() failed to plan" << endl;
+      throw KukaduException(s.str().c_str());
+    }
             planAndKinMutex.unlock();
 
         }
